@@ -40,31 +40,27 @@ void print_error(ErrorCode error)
 int main(void) 
 {
     ptree pt;
-//    ErrorCode error = ErrorCode::UNKNOWN;
+    ErrorCode error;
 
 #if 0
-    ptree pt1;
-    write_json(std::cout, pt);
     init(pt1);
-    write_json(std::cout, pt);
     Metadata::save("test", MetadataClass::TABLE, pt);
 #endif
 
-#if 0
     //
-    //  Metadata Class Test
+    //  Static function test
     //
 
     //
-    //  load raw metadatas
+    //  load metadatas
     //
-    error = Metadata::load("test", MetadataClass::TABLE, pt);
+    error = TableMetadata::load("test_db", pt);
     if (error != ErrorCode::OK) {
         print_error(error);
         return -1;
     }
 
-    BOOST_FOREACH (const ptree::value_type& child, pt.get_child(TableMetadata::TABLE_NODE)) {
+    BOOST_FOREACH (const ptree::value_type& child, pt.get_child(TableMetadata::TABLES_NODE)) {
         const ptree& table = child.second;
 
         if (boost::optional<int> id = table.get_optional<int>("id")) {
@@ -74,63 +70,30 @@ int main(void)
         if (boost::optional<std::string> name = table.get_optional<std::string>("name")) {
             std::cout << "name : " << name.get() << std::endl;
         }
+        BOOST_FOREACH (const ptree::value_type& child, table.get_child(TableMetadata::COLUMNS_NODE)) {
+            const ptree& column = child.second;
+
+            if (boost::optional<std::string> name = column.get_optional<std::string>("name")) {
+                std::cout << "column name : " << name.get() << std::endl;
+            }
+        }
     }
     //
-    //  save raw metadatas
+    //  save metadatas
     //
-    Metadata::save("test", MetadataClass::TABLE, pt);
-#endif
+    error = TableMetadata::save("test_db", pt);
+    if (error != ErrorCode::OK) {
+        print_error(error);
+        return -1;
+    }
  
+
     //
     // TableMetadata Class test
     //
-    TableMetadata tables("test_database");
-    tables.load();
+    Metadata* tables = new TableMetadata("TEST_DATABASE");
 
-    //
-    //  load table-metadata
-    //
-    std::cout << "load table-metadata" << std::endl;
-    while (tables.next(pt) == ErrorCode::OK) {
-        // table metadata
-        boost::optional<std::string> name = pt.get_optional<std::string>("name");
-        // column metadata
-        BOOST_FOREACH (const boost::property_tree::ptree::value_type& e, pt.get_child("columns")) {
-            const ptree& column = e.second;
-
-            // column name
-            boost::optional<std::string> name = column.get_optional<std::string>("name");
-            if (!name) {
-                print_error(ErrorCode::NOT_FOUND);
-                return -1;
-            }
-            std::cout << name << std::endl;
-
-            // column number
-            boost::optional<uint64_t> column_number = column.get_optional<uint64_t>("column_number");
-            if (!column_number) {
-                print_error(ErrorCode::NOT_FOUND);
-                return -1;
-            }
-            std::cout << column_number << std::endl;
-
-            // column data type
-            boost::optional<std::string> data_type = column.get_optional<std::string>("data_type");
-            if (!data_type) {
-                print_error(ErrorCode::NOT_FOUND);
-                return -1;
-            }
-            std::cout << data_type << std::endl;
-
-            // nullable
-            boost::optional<bool> nullable = column.get_optional<bool>("nullable");
-            if (!nullable) {
-                print_error(ErrorCode::NOT_FOUND);
-                return -1;
-            }
-            std::cout << nullable << std::endl;
-        }
-    }
+    tables->load();
 
     //
     //  add table-metadata and save
@@ -160,7 +123,7 @@ int main(void)
     }
     new_table.add_child("columns", columns);
 
-    tables.add(new_table);
+    tables->add(new_table);
 
     {
         // table-metadata
@@ -182,7 +145,49 @@ int main(void)
         columns.push_back(std::make_pair("", column));
     }
     new_table.add_child("columns", columns);
-    tables.add(new_table);
+    tables->add(new_table);
+
+    //
+    //  load table-metadata
+    //
+    std::cout << "load table-metadata" << std::endl;
+    while (tables->next(pt) == ErrorCode::OK) {
+        write_json(std::cout, pt);
+        // table metadata
+        boost::optional<std::string> name = pt.get_optional<std::string>("name");
+        // column metadata
+        BOOST_FOREACH (const ptree::value_type& e, pt.get_child("columns")) {
+            const ptree& column = e.second;
+
+            // column name
+            boost::optional<std::string> name = column.get_optional<std::string>("name");
+            if (!name) {
+                print_error(ErrorCode::NOT_FOUND);
+                return -1;
+            }
+
+            // column number
+            boost::optional<uint64_t> column_number = column.get_optional<uint64_t>("column_number");
+            if (!column_number) {
+                print_error(ErrorCode::NOT_FOUND);
+                return -1;
+            }
+
+            // column data type
+            boost::optional<std::string> data_type = column.get_optional<std::string>("data_type");
+            if (!data_type) {
+                print_error(ErrorCode::NOT_FOUND);
+                return -1;
+            }
+
+            // nullable
+            boost::optional<bool> nullable = column.get_optional<bool>("nullable");
+            if (!nullable) {
+                print_error(ErrorCode::NOT_FOUND);
+                return -1;
+            }
+        }
+    }
 
     return 0;
 }

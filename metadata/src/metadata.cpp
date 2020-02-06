@@ -13,90 +13,165 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 #include <iostream>
-#include <string>
-#include <string_view>
+#include <queue>
+
+#include <boost/foreach.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
 
 #include "error_code.h"
 #include "metadata.h"
 
+using namespace boost::property_tree;
+
 namespace management::metadata {
 
 /**
  *  @brief  Load metadata from metadata-table.
- *  @param  (database)      [in]  database name
- *  @param  (MetadataClass) [in]  classification of metadata-table to load.
- *  @param  (pt)            [out] property_tree object for storing metadata.
- *  @param  (version)       [in]  metadata version to load. load latest version if NOT provided.
+ *  @param  (database)  [in]  database name.
+ *  @param  (tablename) [in]  metadata-table name.
+ *  @param  (pt)        [out] property_tree object to populating metadata.
+ *  @param  (version)   [in]  metadata version to load. load latest version if NOT provided.
  *  @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode Metadata::load(
-    __attribute__((unused))  std::string_view database, MetadataClass MetadataClass, 
-    boost::property_tree::ptree& pt, __attribute__((unused))  const uint64_t version)
+    __attribute__((unused)) std::string_view database, std::string_view tablename,
+    boost::property_tree::ptree& pt, __attribute__((unused)) const uint64_t version)
 {
     ErrorCode error = ErrorCode::UNKNOWN;
-    std::string file;
-
-    switch (MetadataClass) {
-        case MetadataClass::TABLE:
-            file = FILE_NAME;
-            break;
-        default:
-            file.clear();
-            break;
-    }
-
-    if (!file.empty()) {
-        try {
-            read_json(file, pt);
-        } catch (boost::property_tree::json_parser_error& e) {
-            std::wcout << "read_json() error. " << e.what() << std::endl;
-        } catch (...) {
-            std::cout << "read_json() error." << std::endl;
-            return error;
-        }
+    std::string filename{tablename};
+    
+    try {
+        read_json(filename, pt);
         error = ErrorCode::OK;
-    } else {
-        error = ErrorCode::NOT_FOUND;
+    } catch (boost::property_tree::json_parser_error& e) {
+        std::wcout << "read_json() error. " << e.what() << std::endl;
+    } catch (...) {
+        std::cout << "read_json() error." << std::endl;
+        return error;
     }
 
     return error;
 }
 
 /**
- *  @brief  Save metadta to metadta-table.
- *  @param  (database)      [in]  database name.
- *  @param  (MetadataClass) [in]  classification of metadata-table to save.
- *  @param  (pt)            [in]  property_tree object that stores metadata to be saved.
+ *  @brief  Save the metadta to metadta-table.
+ *  @param  (database) [in]  database name.
+ *  @param  (tablename) [in]  metadata-table name.
+ *  @param  (pt)       [in]  property_tree object that stores metadata to be saved.
+ *  @param  (version)  [out] the version of saved metadata.
  */
 ErrorCode Metadata::save(
-    __attribute__((unused)) std::string_view database, MetadataClass MetadataClass, 
-    boost::property_tree::ptree& pt)
+    __attribute__((unused)) std::string_view database, std::string_view tablename, 
+    boost::property_tree::ptree& pt, __attribute__((unused)) uint64_t* version)
 {
     ErrorCode error = ErrorCode::UNKNOWN;
-    std::string file;
+    std::string filename{tablename};
 
-    switch (MetadataClass) {
-        case MetadataClass::TABLE:
-            file = FILE_NAME;
-            break;
-        default:
-            error = ErrorCode::NOT_FOUND;
-            break;
+    try {
+        write_json(filename, pt);
+        error = ErrorCode::OK;
+    } 
+    catch (...) {
+        std::cout << "write_json() error." << std::endl;
     }
 
-    if (!file.empty()) {
-        try {
-            write_json(file, pt);
-        } 
-        catch (...) {
-            std::cout << "write_json() error." << std::endl;
-            return error;
+    return error;
+}
+
+/**
+ *  @brief  Read latest table-metadata from metadata-table.
+ *  @return ErrorCode::OK if success, otherwise an error code.
+ */
+ErrorCode Metadata::load()
+{
+    return this->load(Metadata::LATEST_VERSION);
+}
+
+/**
+ *  @brief  Read table-metadata which specific version from metadata-table.
+ *  @param  (version)   [in]  metadata version to read. 
+ *  @return ErrorCode::OK if success, otherwise an error code.
+ */
+ErrorCode Metadata::load(const uint64_t version)
+{
+    return Metadata::load(this->database(), this->tablename(), this->prop_tree_, version);
+}
+
+/**
+ *  @brief  Add metadata-object to metadata-table.
+ *  @param  (pt)        [in]  metadata-object to add.
+ *  @return ErrorCode::OK if success, otherwise an error code.
+ */
+ErrorCode Metadata::add(boost::property_tree::ptree pt)
+{
+    return this->add(pt, nullptr);
+}
+
+/**
+ *  @brief  Add metadata-object to metadata-table.
+ *  @param  (pt)        [in]  metadata-object to add.
+ *  @param  (table_id)  [out] ID of the added metadata-object.
+ *  @return ErrorCode::OK if success, otherwise an error code.
+ */
+ErrorCode Metadata::add(boost::property_tree::ptree pt, uint64_t* table_id)
+{
+    ErrorCode error = ErrorCode::UNKNOWN;
+
+    ptree child;
+
+    // re-create child tree.
+    BOOST_FOREACH(const ptree::value_type& e, this->prop_tree_.get_child(first_node())) {
+        const ptree& e_ptree = e.second;
+        child.push_back(std::make_pair("", e_ptree));
+    }
+    // add new element.
+    child.push_back(std::make_pair("", pt));
+    this->prop_tree_.put_child(first_node(), child);
+
+    Metadata::save(this->database(), this->tablename(), this->prop_tree_);
+
+    if (table_id != nullptr) {
+        *table_id = 1;
+    }
+
+    error = ErrorCode::OK;
+
+    return error;    
+}
+
+/**
+ *  @brief  Get next metadata-object.
+ *  @param  (pt) [out] property_tree object to populating metadata.
+ *  @return ErrorCode::OK if success, otherwise an error code.
+ *  @note   Return ErrorCode::END_OF_ROW if there is no more data to read.
+ */
+ErrorCode Metadata::next(boost::property_tree::ptree& pt) const
+{
+    ErrorCode error = ErrorCode::UNKNOWN;
+    static std::queue<boost::property_tree::ptree> table_queue;
+
+    if (!table_queue.empty()) {
+        table_queue.pop();
+        if (!table_queue.empty()) {
+            pt = table_queue.front();
+            error = ErrorCode::OK;
+        } else {
+            error = ErrorCode::END_OF_ROW;
         }
-        error = ErrorCode::OK;
+    } else {
+        // create metadata-object queue
+        BOOST_FOREACH (const ptree::value_type& e, this->prop_tree_.get_child(first_node())) {
+            const ptree e_ptree = e.second;
+            table_queue.push(e_ptree);
+        }
+        if (!table_queue.empty()) {
+            pt = table_queue.front();
+            error = ErrorCode::OK;
+        } else {
+            error = ErrorCode::END_OF_ROW;
+        }
     }
 
     return error;

@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 #ifndef TABLE_METADATA_H_
 #define TABLE_METADATA_H_
 
+#include <string>
 #include <string_view>
 #include <boost/property_tree/ptree.hpp>
 
@@ -27,104 +27,45 @@ namespace management::metadata {
 
 class TableMetadata : public Metadata {
     public:
-        static const char* const ROOT_NODE;
-        static const char* const TABLES_NODE;
-        static const char* const COLUMNS_NODE;
-        static const char* const COLUMN_CONSTRAINTS_NODE;
-        static const char* const TABLE_CONSTRAINTS_NODE;
+        static constexpr char const * TABLES_NODE = "tables";
+        static constexpr char const * COLUMNS_NODE = "columns";
+        static constexpr char const * CONSTRAINTS_NODE = "constraints";
 
         /**
-         *  @brief  Constructor for creating a new object.
+         *  @brief  Load metadata from metadata-table.
+         *  @param  (database) [in]  database name
+         *  @param  (pt)       [out] property_tree object to populating metadata.
+         *  @param  (version)  [in]  metadata version to load. load latest version if NOT provided.
+         *  @return ErrorCode::OK if success, otherwise an error code.
+         */
+        static ErrorCode load(
+            std::string_view database, boost::property_tree::ptree& pt, 
+            const uint64_t version = LATEST_VERSION);
+
+        /**
+         *  @brief  Save the metadta to metadta-table.
+         *  @param  (database) [in]  database name.
+         *  @param  (pt)       [in]  property_tree object that stores metadata to be saved.
+         *  @param  (version)  [out] the version of saved metadata.
+         */
+        static ErrorCode save(
+            std::string_view database, boost::property_tree::ptree& pt, 
+            uint64_t* version = nullptr);
+
+        /**
+         *  @brief  Constructor
          *  @param  (database) [in]  database name.
          *  @return none.
          */
         TableMetadata(std::string_view database, std::string_view component = "visitor") 
             : Metadata(database, component) {}
 
-        /**
-         *  @brief  Read latest table-metadata from metadata-table.
-         *  @return ErrorCode::OK if success, otherwise an error code.
-         */
-        ErrorCode load();
+    protected:
+        std::string_view tablename() const { return TABLE_NAME; }
+        const std::string first_node() const { return TABLES_NODE; }
 
-        /**
-         *  @brief  Read table-metadata which specific version from metadata-table.
-         *  @param  (version)   [in]  metadata version to read. 
-         *  @return ErrorCode::OK if success, otherwise an error code.
-         */
-        ErrorCode load(uint64_t version);
-
-        /**
-         *  @brief  Add table-object to metadata-table.
-         *  @param  (pt)        [in]  table-object to add.
-         *  @return ErrorCode::OK if success, otherwise an error code.
-         */
-        ErrorCode add(boost::property_tree::ptree pt);
-
-        /**
-         *  @brief  Add table-object to metadata-table.
-         *  @param  (pt)        [in]  table-object to add.
-         *  @param  (table_id)  [out] ID of the added table-object.
-         *  @return ErrorCode::OK if success, otherwise an error code.
-         */
-        ErrorCode add(boost::property_tree::ptree pt, uint64_t* table_id);
-#if 0
-        /**
-         *  @brief  Get table-object.
-         *  @param  (table_id)  [in]  table-object ID
-         *  @param  (pt)        [out] property_tree object to populating metadata.
-         *  @return ErrorCode::OK if success, otherwise an error code.
-         */
-        ErrorCode get(const uint64_t table_id, boost::property_tree::ptree& pt) const;
-
-        /**
-         *  @brief  Get table-object.
-         *  @param  (name)  [in]  name of table-object. (Value of "name" key.)
-         *  @param  (pt)    [out] property_tree object to populating metadata.
-         *  @return ErrorCode::OK if success, otherwise an error code.
-         */
-        ErrorCode get(std::vector<std::string> name, boost::property_tree::ptree& pt) const;
-
-        /**
-         *  @brief  Set table-object to metadata-table.
-         *  @param  (table_id)  [in] table-object ID.
-         *  @param  (pt)        [in] property_tree object containing metadata.
-         *  @return ErrorCode::OK if success, otherwise an error code.
-         *  @note   Return ErrorCode::NOT_FOUND, if table_id not found.
-         */
-        ErrorCode set(const uint64_t table_id, boost::property_tree::ptree const pt);
-
-        /**
-         *  @brief  Set table-object to metadata-table.
-         *  @param  (name)  [in] name of table-object. (Value of "name" key.)
-         *  @param  (pt)    [in] property_tree object containing metadata.
-         *  @return ErrorCode::OK if success, otherwise an error code.
-         *  @note   Return ErrorCode::NOT_FOUND, if name not found.
-         */
-        ErrorCode set(std::string_view name, boost::property_tree::ptree const pt);
-
-        /**
-         *  @brief  Remove table-object from metadata-table.
-         *  @param  (talbe_id)  [in]  table-object ID.
-         *  @return ErrorCode::OK if success, otherwise an error code.
-         */
-        ErrorCode remove(const uint64_t table_id);
-
-        /**
-         *  @brief  Remove table-object from metadata-table.
-         *  @param  (name)  [in] name of table-object. (Value of "name" key.)
-         *  @return ErrorCode::OK if success, otherwise an error code.
-         */
-        ErrorCode remove(std::string_view name);
-#endif
-        /**
-         *  @brief  Get next table-object.
-         *  @param  (pt) [out] property_tree object to populating metadata.
-         *  @return ErrorCode::OK if success, otherwise an error code.
-         *  @note   Return ErrorCode::END_OF_ROW if there is no more data to read.
-         */
-        ErrorCode next(boost::property_tree::ptree& pt) const;
-
+    private:
+        static constexpr char const * TABLE_NAME = "tables.json";
 };
 
 }
