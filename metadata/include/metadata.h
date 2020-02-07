@@ -18,6 +18,7 @@
 
 #include <string>
 #include <string_view>
+#include <queue>
 #include <boost/property_tree/ptree.hpp>
 
 #include "error_code.h"
@@ -121,7 +122,7 @@ class Metadata {
          *  @return ErrorCode::OK if success, otherwise an error code.
          *  @note   Return ErrorCode::END_OF_ROW if there is no more data to read.
          */
-        ErrorCode next(boost::property_tree::ptree& pt) const;
+        ErrorCode next(boost::property_tree::ptree& pt);
        
     protected:
         /**
@@ -158,6 +159,7 @@ class Metadata {
         std::string database_;
         std::string component_;
         uint64_t version_;
+        std::queue<boost::property_tree::ptree> table_queue_;
 };
 
 } // namespace management::metadata

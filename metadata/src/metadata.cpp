@@ -147,15 +147,14 @@ ErrorCode Metadata::add(boost::property_tree::ptree pt, uint64_t* table_id)
  *  @return ErrorCode::OK if success, otherwise an error code.
  *  @note   Return ErrorCode::END_OF_ROW if there is no more data to read.
  */
-ErrorCode Metadata::next(boost::property_tree::ptree& pt) const
+ErrorCode Metadata::next(boost::property_tree::ptree& pt)
 {
     ErrorCode error = ErrorCode::UNKNOWN;
-    static std::queue<boost::property_tree::ptree> table_queue;
 
-    if (!table_queue.empty()) {
-        table_queue.pop();
-        if (!table_queue.empty()) {
-            pt = table_queue.front();
+    if (!this->table_queue_.empty()) {
+          this->table_queue_.pop();
+          if (!table_queue_.empty()) {
+            pt = table_queue_.front();
             error = ErrorCode::OK;
         } else {
             error = ErrorCode::END_OF_ROW;
@@ -164,10 +163,10 @@ ErrorCode Metadata::next(boost::property_tree::ptree& pt) const
         // create metadata-object queue
         BOOST_FOREACH (const ptree::value_type& e, this->prop_tree_.get_child(first_node())) {
             const ptree e_ptree = e.second;
-            table_queue.push(e_ptree);
+            this->table_queue_.push(e_ptree);
         }
-        if (!table_queue.empty()) {
-            pt = table_queue.front();
+        if (!this->table_queue_.empty()) {
+            pt = this->table_queue_.front();
             error = ErrorCode::OK;
         } else {
             error = ErrorCode::END_OF_ROW;
