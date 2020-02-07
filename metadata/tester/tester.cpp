@@ -122,23 +122,24 @@ int main(void)
         columns.push_back(std::make_pair("", column));
     }
     new_table.add_child("columns", columns);
-
     tables->add(new_table);
 
+    new_table.clear();
     {
         // table-metadata
         new_table.put("name", "new_table2");
     }
+    columns.clear();
     {
         // column-metadata
         ptree column;
-        column.put("name", "column1");
+        column.put("name", "column21");
         column.put<uint64_t>("column_number", 1);
         column.put("data_type", "TEXT");
         column.put<bool>("nullable", false);
         columns.push_back(std::make_pair("", column));
 
-        column.put("name", "column2");
+        column.put("name", "column22");
         column.put<uint64_t>("column_number", 2);
         column.put("data_type", "INT32");
         column.put<bool>("nullable", true);
