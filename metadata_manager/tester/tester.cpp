@@ -60,6 +60,18 @@ int main(void)
         return -1;
     }
 
+    ptree tables = pt.get_child("tables");
+//    auto it = tables.begin();
+//    const auto end = tables.end();
+
+    for (boost::property_tree::ptree::const_iterator ite = tables.begin(); ite != tables.end(); ite++) {
+        const ptree& table = ite->second;
+        if (boost::optional<std::string> name = table.get_optional<std::string>("name")) {
+            std::cout << "name : " << name.get() << std::endl;
+        }
+    }
+
+#if 0
     BOOST_FOREACH (const ptree::value_type& child, pt.get_child(TableMetadata::TABLES_NODE)) {
         const ptree& table = child.second;
 
@@ -86,8 +98,9 @@ int main(void)
         print_error(error);
         return -1;
     }
+#endif
  
-
+#if 0
     //
     // TableMetadata Class test
     //
@@ -109,13 +122,13 @@ int main(void)
     {
         // column-metadata
         ptree column;
-        column.put("name", "new_column1");
+        column.put("name", "new_column11");
         column.put<uint64_t>("column_number", 1);
         column.put("data_type", "TEXT");
         column.put<bool>("nullable", false);
         columns.push_back(std::make_pair("", column));
 
-        column.put("name", "new_column2");
+        column.put("name", "new_column12");
         column.put<uint64_t>("column_number", 2);
         column.put("data_type", "INT32");
         column.put<bool>("nullable", true);
@@ -124,6 +137,7 @@ int main(void)
     new_table.add_child("columns", columns);
     tables->add(new_table);
 
+#if 0
     new_table.clear();
     {
         // table-metadata
@@ -147,7 +161,7 @@ int main(void)
     }
     new_table.add_child("columns", columns);
     tables->add(new_table);
-
+#endif
     //
     //  load table-metadata
     //
@@ -189,6 +203,6 @@ int main(void)
             }
         }
     }
-
+#endif
     return 0;
 }

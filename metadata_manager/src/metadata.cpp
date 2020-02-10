@@ -19,6 +19,7 @@
 #include <boost/foreach.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
+#include <boost/iterator_adaptors.hpp>
 
 #include "error_code.h"
 #include "metadata.h"
@@ -96,7 +97,7 @@ ErrorCode Metadata::load()
  */
 ErrorCode Metadata::load(const uint64_t version)
 {
-    return Metadata::load(this->database(), this->tablename(), this->prop_tree_, version);
+    return Metadata::load(this->database(), this->tablename(), this->metadata_, version);
 }
 
 /**
@@ -122,15 +123,15 @@ ErrorCode Metadata::add(boost::property_tree::ptree pt, uint64_t* table_id)
     ptree child;
 
     // re-create child tree.
-    BOOST_FOREACH(const ptree::value_type& e, this->prop_tree_.get_child(first_node())) {
+    BOOST_FOREACH(const ptree::value_type& e, this->metadata_.get_child(this->first_node())) {
         const ptree& e_ptree = e.second;
         child.push_back(std::make_pair("", e_ptree));
     }
     // add new element.
     child.push_back(std::make_pair("", pt));
-    this->prop_tree_.put_child(first_node(), child);
+    this->metadata_.put_child(first_node(), child);
 
-    Metadata::save(this->database(), this->tablename(), this->prop_tree_);
+    Metadata::save(this->database(), this->tablename(), this->metadata_);
 
     if (table_id != nullptr) {
         *table_id = 1;
@@ -150,28 +151,20 @@ ErrorCode Metadata::add(boost::property_tree::ptree pt, uint64_t* table_id)
 ErrorCode Metadata::next(boost::property_tree::ptree& pt)
 {
     ErrorCode error = ErrorCode::UNKNOWN;
+    ptree tables;
 
-    if (!this->table_queue_.empty()) {
-          this->table_queue_.pop();
-          if (!table_queue_.empty()) {
-            pt = table_queue_.front();
-            error = ErrorCode::OK;
-        } else {
-            error = ErrorCode::END_OF_ROW;
-        }
-    } else {
-        // create metadata-object queue
-        BOOST_FOREACH (const ptree::value_type& e, this->prop_tree_.get_child(first_node())) {
-            const ptree e_ptree = e.second;
-            this->table_queue_.push(e_ptree);
-        }
-        if (!this->table_queue_.empty()) {
-            pt = this->table_queue_.front();
-            error = ErrorCode::OK;
-        } else {
-            error = ErrorCode::END_OF_ROW;
-        }
+    if (table_ite_ == ptree::const_iterator) {
+        tables = pt.get_child(this->first_node());
+        table_ite_ = tables.begin();
     }
+
+    if (table_ite_ != tables.end()) {
+        pt = table_ite_->second;
+        table_ite_++;
+        error = ErrorCode::OK;
+    } else {
+        error = ErrorCode::END_OF_ROW;
+    } 
 
     return error;
 }

@@ -19,7 +19,9 @@
 #include <string>
 #include <string_view>
 #include <queue>
+
 #include <boost/property_tree/ptree.hpp>
+#include <boost/iterator_adaptors.hpp>
 
 #include "error_code.h"
 
@@ -150,7 +152,7 @@ class Metadata {
 
 
         static const uint64_t LATEST_VERSION = 0;
-        boost::property_tree::ptree prop_tree_;
+        boost::property_tree::ptree metadata_;
 
         virtual std::string_view tablename() const = 0;
         virtual const std::string first_node() const = 0;
@@ -160,6 +162,7 @@ class Metadata {
         std::string component_;
         uint64_t version_;
         std::queue<boost::property_tree::ptree> table_queue_;
+        boost::property_tree::ptree::const_iterator table_ite_;
 };
 
 } // namespace management::metadata
