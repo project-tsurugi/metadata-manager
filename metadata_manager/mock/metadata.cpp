@@ -16,11 +16,9 @@
 #include <iostream>
 #include <queue>
 
-#include <boost/iterator/iterator_facade.hpp>
 #include <boost/foreach.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
-#include <boost/iterator_adaptors.hpp>
 
 #include "error_code.h"
 #include "metadata.h"
@@ -124,13 +122,13 @@ ErrorCode Metadata::add(boost::property_tree::ptree pt, uint64_t* table_id)
     ptree child;
 
     // re-create child tree.
-    BOOST_FOREACH(const ptree::value_type& e, this->metadata_.get_child(this->first_node())) {
+    BOOST_FOREACH(const ptree::value_type& e, this->metadata_.get_child(this->root_node())) {
         const ptree& e_ptree = e.second;
         child.push_back(std::make_pair("", e_ptree));
     }
     // add new element.
     child.push_back(std::make_pair("", pt));
-    this->metadata_.put_child(first_node(), child);
+    this->metadata_.put_child(root_node(), child);
 
     Metadata::save(this->database(), this->tablename(), this->metadata_);
 
@@ -163,7 +161,7 @@ ErrorCode Metadata::next(boost::property_tree::ptree& pt)
         }
     } else {
         // create metadata-object queue
-        BOOST_FOREACH (const ptree::value_type& e, this->metadata_.get_child(first_node())) {
+        BOOST_FOREACH (const ptree::value_type& e, this->metadata_.get_child(root_node())) {
             const ptree e_ptree = e.second;
             this->object_queue_.push(e_ptree);
         }

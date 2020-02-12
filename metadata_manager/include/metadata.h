@@ -153,8 +153,9 @@ class Metadata {
 
         static const uint64_t LATEST_VERSION = 0;
 
+        // functions for template-method.
         virtual std::string_view tablename() const = 0;
-        virtual const std::string first_node() const = 0;
+        virtual const std::string root_node() const = 0;
 
     private:
         boost::property_tree::ptree metadata_;

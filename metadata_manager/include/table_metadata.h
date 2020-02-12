@@ -27,7 +27,7 @@ namespace manager::metadata_manager {
 
 class TableMetadata : public Metadata {
     public:
-        static constexpr char const * TABLES_NODE = "tables";
+        static constexpr char const * TABLES_NODE = "tables";   
         static constexpr char const * COLUMNS_NODE = "columns";
         static constexpr char const * CONSTRAINTS_NODE = "constraints";
 
@@ -61,8 +61,9 @@ class TableMetadata : public Metadata {
             : Metadata(database, component) {}
 
     protected:
+        // functions for template-method
         std::string_view tablename() const { return TABLE_NAME; }
-        const std::string first_node() const { return TABLES_NODE; }
+        const std::string root_node() const { return TABLES_NODE; }
 
     private:
         static constexpr char const * TABLE_NAME = "tables.json";
