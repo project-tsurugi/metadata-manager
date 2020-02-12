@@ -1,5 +1,5 @@
 
-# V1 テーブルメタデータ データ形式(rev.0.2)
+# V1 テーブルメタデータ データ形式(rev.0.3)
 
 2020.02.10 NEC
 
@@ -32,10 +32,10 @@
     "table_id"          : number,           [-] // カラムが属するテーブルのID
     "name"              : string,           [*] // カラム名
     "ordinal_position"  : number,           [*] // カラム番号(1 origin)
-    "data_type_id"      : number,           [*] // カラムのデータ型のID
+    "datatype_id"       : number,           [*] // カラムのデータ型のID
                                                 // データタイプメタデータを参照(別途)
-    "data_type_name"    : string,           [*] // カラムのデータ型名
-                                                // "data_type_id" と "data_type_name" は選択必須
+    "datatype_name"     : string,           [*] // カラムのデータ型名
+                                                // "datatype_id" と "datatype_name" は選択必須
     "data_length"       : array[number],    [+] // データ長(配列長)
                                                 // varchar(20)など ※V1では未使用
     "nullable"          : bool,             [*] // NOT NULL制約の有無
@@ -60,7 +60,7 @@
 // Indexメタデータオブジェクト
 {
     "name"          : string,       [*] // Index名
-    {
+    "column" : {
         "name"      : string,       [*] // カラム名
         "direction" : number        [*] // 方向（0: ASCENDANT, 1: DESCENDANT）
     }
@@ -72,13 +72,13 @@
 {
     "format_version"    : number,       // データ形式フォーマットバージョン
     "generation"        : number,       // メタデータの世代
-    "data_types"        : array[object] // DataTypeメタデータオブジェクト
+    "datatypes"        : array[object] // DataTypeメタデータオブジェクト
 }
 
 // DataTypeメタデータオブジェクト
 {
     "id"            : number,   // データ型ID
     "name"          : string,   // データ型名
-    "pg_data_type"  : number    // 対応するPostgreSQLのデータ型のOID
+    "pg_datatype"   : number    // 対応するPostgreSQLのデータ型のOID
 }
 ```
