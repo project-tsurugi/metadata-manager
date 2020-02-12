@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef MANAGER_TABLE_METADATA_H_
-#define MANAGER_TABLE_METADATA_H_
+#ifndef MANAGER_DATATYPE_METADATA
+#define MANAGER_DATATYPE_METADATA
 
 #include <string>
 #include <string_view>
@@ -25,11 +25,9 @@
 
 namespace manager::metadata_manager {
 
-class TableMetadata : public Metadata {
+class DatatypeMetadata : public Metadata {
     public:
-        static constexpr char const * TABLES_NODE = "tables";   
-        static constexpr char const * COLUMNS_NODE = "columns";
-        static constexpr char const * CONSTRAINTS_NODE = "constraints";
+        static constexpr char const * DATATYPES_NODE = "datatypes";
 
         /**
          *  @brief  Load metadata from metadata-table.
@@ -57,18 +55,18 @@ class TableMetadata : public Metadata {
          *  @param  (database) [in]  database name.
          *  @return none.
          */
-        TableMetadata(std::string_view database, std::string_view component = "visitor") 
+        DatatypeMetadata(std::string_view database, std::string_view component = "visitor") 
             : Metadata(database, component) {}
 
     protected:
         // functions for template-method
         std::string_view tablename() const { return TABLE_NAME; }
-        const std::string root_node() const { return TABLES_NODE; }
+        const std::string root_node() const { return DATATYPES_NODE; }
 
     private:
-        static constexpr char const * TABLE_NAME = "tables.json";
+        static constexpr char const * TABLE_NAME = "datatypes.json";
 };
 
 }
 
-#endif // MANAGER_TABLE_METADATA_H_
+#endif // MANAGER_DATATYPE_METADATA

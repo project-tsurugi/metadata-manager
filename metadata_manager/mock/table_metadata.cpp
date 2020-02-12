@@ -19,7 +19,6 @@
 #include <boost/foreach.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
-#include <boost/property_tree/ini_parser.hpp>
 
 #include "error_code.h"
 #include "metadata.h"
@@ -27,7 +26,7 @@
 
 using namespace boost::property_tree;
 
-namespace management::metadata {
+namespace manager::metadata_manager {
 
 /**
  *  @brief  Load metadata from metadata-table.
@@ -54,4 +53,4 @@ ErrorCode TableMetadata::save(
     return Metadata::save(database, TableMetadata::TABLE_NAME, pt, version);
 }
 
-} // namespace management::metadata
+} // namespace manager::metadata_manager

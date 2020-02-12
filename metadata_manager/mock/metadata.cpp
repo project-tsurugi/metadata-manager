@@ -19,14 +19,13 @@
 #include <boost/foreach.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
-#include <boost/iterator_adaptors.hpp>
 
 #include "error_code.h"
 #include "metadata.h"
 
 using namespace boost::property_tree;
 
-namespace management::metadata {
+namespace manager::metadata_manager {
 
 /**
  *  @brief  Load metadata from metadata-table.
@@ -123,13 +122,13 @@ ErrorCode Metadata::add(boost::property_tree::ptree pt, uint64_t* table_id)
     ptree child;
 
     // re-create child tree.
-    BOOST_FOREACH(const ptree::value_type& e, this->metadata_.get_child(this->first_node())) {
+    BOOST_FOREACH(const ptree::value_type& e, this->metadata_.get_child(this->root_node())) {
         const ptree& e_ptree = e.second;
         child.push_back(std::make_pair("", e_ptree));
     }
     // add new element.
     child.push_back(std::make_pair("", pt));
-    this->metadata_.put_child(first_node(), child);
+    this->metadata_.put_child(root_node(), child);
 
     Metadata::save(this->database(), this->tablename(), this->metadata_);
 
@@ -151,22 +150,30 @@ ErrorCode Metadata::add(boost::property_tree::ptree pt, uint64_t* table_id)
 ErrorCode Metadata::next(boost::property_tree::ptree& pt)
 {
     ErrorCode error = ErrorCode::UNKNOWN;
-    ptree tables;
 
-    if (table_ite_ == ptree::const_iterator) {
-        tables = pt.get_child(this->first_node());
-        table_ite_ = tables.begin();
-    }
-
-    if (table_ite_ != tables.end()) {
-        pt = table_ite_->second;
-        table_ite_++;
-        error = ErrorCode::OK;
+    if (!this->object_queue_.empty()) {
+        this->object_queue_.pop();
+        if (!object_queue_.empty()) {
+            pt = object_queue_.front();
+            error = ErrorCode::OK;
+        } else {
+            error = ErrorCode::END_OF_ROW;
+        }
     } else {
-        error = ErrorCode::END_OF_ROW;
-    } 
+        // create metadata-object queue
+        BOOST_FOREACH (const ptree::value_type& e, this->metadata_.get_child(root_node())) {
+            const ptree e_ptree = e.second;
+            this->object_queue_.push(e_ptree);
+        }
+        if (!this->object_queue_.empty()) {
+            pt = this->object_queue_.front();
+            error = ErrorCode::OK;
+        } else {
+            error = ErrorCode::END_OF_ROW;
+        }
+    }
 
     return error;
 }
 
-} // namespace management::metadata
+} // namespace manager::metadata_manager

@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef METADATA_H_
-#define METADATA_H_
+#ifndef MANAGER_METADATA_H_
+#define MANAGER_METADATA_H_
 
 #include <string>
 #include <string_view>
@@ -25,7 +25,7 @@
 
 #include "error_code.h"
 
-namespace management::metadata {
+namespace manager::metadata_manager {
 
 class Metadata {
     public:
@@ -152,20 +152,20 @@ class Metadata {
 
 
         static const uint64_t LATEST_VERSION = 0;
-        boost::property_tree::ptree metadata_;
 
+        // functions for template-method.
         virtual std::string_view tablename() const = 0;
-        virtual const std::string first_node() const = 0;
+        virtual const std::string root_node() const = 0;
 
     private:
+        boost::property_tree::ptree metadata_;
         std::string database_;
         std::string component_;
         uint64_t version_;
-        std::queue<boost::property_tree::ptree> table_queue_;
-        boost::property_tree::ptree::const_iterator table_ite_;
+        std::queue<boost::property_tree::ptree> object_queue_;
 };
 
-} // namespace management::metadata
+} // namespace manager::metadata_manager
 
 
-#endif // METADATA_H_
+#endif // MANAGER_METADATA_H_
