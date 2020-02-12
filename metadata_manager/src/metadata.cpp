@@ -16,6 +16,7 @@
 #include <iostream>
 #include <queue>
 
+#include <boost/iterator/iterator_facade.hpp>
 #include <boost/foreach.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
@@ -26,7 +27,7 @@
 
 using namespace boost::property_tree;
 
-namespace management::metadata {
+namespace manager::metadata_manager {
 
 /**
  *  @brief  Load metadata from metadata-table.
@@ -151,22 +152,30 @@ ErrorCode Metadata::add(boost::property_tree::ptree pt, uint64_t* table_id)
 ErrorCode Metadata::next(boost::property_tree::ptree& pt)
 {
     ErrorCode error = ErrorCode::UNKNOWN;
-    ptree tables;
 
-    if (table_ite_ == ptree::const_iterator) {
-        tables = pt.get_child(this->first_node());
-        table_ite_ = tables.begin();
-    }
-
-    if (table_ite_ != tables.end()) {
-        pt = table_ite_->second;
-        table_ite_++;
-        error = ErrorCode::OK;
+    if (!this->object_queue_.empty()) {
+        this->object_queue_.pop();
+        if (!object_queue_.empty()) {
+            pt = object_queue_.front();
+            error = ErrorCode::OK;
+        } else {
+            error = ErrorCode::END_OF_ROW;
+        }
     } else {
-        error = ErrorCode::END_OF_ROW;
-    } 
+        // create metadata-object queue
+        BOOST_FOREACH (const ptree::value_type& e, this->metadata_.get_child(first_node())) {
+            const ptree e_ptree = e.second;
+            this->object_queue_.push(e_ptree);
+        }
+        if (!this->object_queue_.empty()) {
+            pt = this->object_queue_.front();
+            error = ErrorCode::OK;
+        } else {
+            error = ErrorCode::END_OF_ROW;
+        }
+    }
 
     return error;
 }
 
-} // namespace management::metadata
+} // namespace manager::metadata_manager

@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef MANAGEMENT_ERROR_CODE_H_
-#define MANAGEMENT_ERROR_CODE_H_
+#ifndef MANAGER_ERROR_CODE_H_
+#define MANAGER_ERROR_CODE_H_
 
-namespace management::metadata {
+namespace manager::metadata_manager {
 
 enum class ErrorCode {
     /**
@@ -47,4 +47,4 @@ enum class ErrorCode {
 
 }
 
-#endif // MANAGEMENT_ERROR_CODE_H_
+#endif // MANAGER_ERROR_CODE_H_

@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TABLE_METADATA_H_
-#define TABLE_METADATA_H_
+#ifndef MANAGER_TABLE_METADATA_H_
+#define MANAGER_TABLE_METADATA_H_
 
 #include <string>
 #include <string_view>
@@ -23,7 +23,7 @@
 #include "error_code.h"
 #include "metadata.h"
 
-namespace management::metadata {
+namespace manager::metadata_manager {
 
 class TableMetadata : public Metadata {
     public:
@@ -70,4 +70,4 @@ class TableMetadata : public Metadata {
 
 }
 
-#endif // TABLE_METADATA_H_
+#endif // MANAGER_TABLE_METADATA_H_

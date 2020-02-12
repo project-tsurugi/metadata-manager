@@ -27,7 +27,7 @@
 
 using namespace boost::property_tree;
 
-namespace management::metadata {
+namespace manager::metadata_manager {
 
 /**
  *  @brief  Load metadata from metadata-table.
@@ -54,4 +54,4 @@ ErrorCode TableMetadata::save(
     return Metadata::save(database, TableMetadata::TABLE_NAME, pt, version);
 }
 
-} // namespace management::metadata
+} // namespace manager::metadata_manager
