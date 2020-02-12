@@ -211,7 +211,6 @@ ErrorCode static_functions_test()
         std::cout << "namespace : " << table_namespace.get() << std::endl;
 
         std::cout << "--- columns ---" << std::endl;
-        ptree columns = table.get_child("columns");
         BOOST_FOREACH (const ptree::value_type& child, table.get_child("columns")) {
             const ptree& column = child.second;
             boost::optional<std::string> name = column.get_optional<std::string>("name");
@@ -231,8 +230,8 @@ ErrorCode static_functions_test()
             }
             std::cout << "ordinal_position : " << ordinal_position.get() << std::endl;
 
-            boost::optional<uint64_t> datatype_name 
-                = column.get_optional<uint64_t>("datatype_name");
+            boost::optional<std::string> datatype_name 
+                = column.get_optional<std::string>("datatype_name");
             if (!datatype_name) {
                 error = ErrorCode::NOT_FOUND;
                 print_error(error, __LINE__);
@@ -250,7 +249,6 @@ ErrorCode static_functions_test()
         }
 
         std::cout << "--- constraints ---" << std::endl;
-        ptree constraints = table.get_child("constraints");
         BOOST_FOREACH (const ptree::value_type& child, table.get_child("constraints")) {
             const ptree& constraint = child.second;
 
@@ -268,6 +266,62 @@ ErrorCode static_functions_test()
             std::cout << "constraint type : " << type.get() << std::endl;
         }
 
+        std::cout << "--- primary index ---" << std::endl;
+        const ptree& primary_index = table.get_child("primary_index");
+        boost::optional<std::string> index_name = primary_index.get_optional<std::string>("name");
+        if (!index_name) {
+            error = ErrorCode::NOT_FOUND;
+            print_error(error, __LINE__);
+            return error;
+        }
+        std::cout << "primary index name : " << index_name.get() << std::endl;      
+
+        const ptree& column = primary_index.get_child("column");
+        boost::optional<std::string> column_name = column.get_optional<std::string>("name");
+        if (!column_name) {
+            error = ErrorCode::NOT_FOUND;
+            print_error(error, __LINE__);
+            return error;
+        }
+        std::cout << "column name : " << column_name.get() << std::endl;      
+
+        boost::optional<uint16_t> direction = column.get_optional<uint16_t>("direction");
+        if (!direction) {
+            error = ErrorCode::NOT_FOUND;
+            print_error(error, __LINE__);
+            return error;
+        }
+        std::cout << "direction : " << direction.get() << std::endl;
+
+        std::cout << "--- secondary indices ---" << std::endl;
+        BOOST_FOREACH (const ptree::value_type& child, table.get_child("secondary_indices")) {
+            const ptree& secondary_index = child.second;
+
+            boost::optional<std::string> index_name = secondary_index.get_optional<std::string>("name");
+            if (!index_name) {
+                error = ErrorCode::NOT_FOUND;
+                print_error(error, __LINE__);
+                return error;
+            }
+            std::cout << "secondary index name : " << index_name.get() << std::endl;
+
+            const ptree& column = secondary_index.get_child("column");
+            boost::optional<std::string> column_name = column.get_optional<std::string>("name");
+            if (!column_name) {
+                error = ErrorCode::NOT_FOUND;
+                print_error(error, __LINE__);
+                return error;
+            }
+            std::cout << "column name : " << column_name.get() << std::endl;      
+
+            boost::optional<uint16_t> direction = column.get_optional<uint16_t>("direction");
+            if (!direction) {
+                error = ErrorCode::NOT_FOUND;
+                print_error(error, __LINE__);
+                return error;
+            }
+            std::cout << "direction : " << direction.get() << std::endl;
+        }
 
     }
 
