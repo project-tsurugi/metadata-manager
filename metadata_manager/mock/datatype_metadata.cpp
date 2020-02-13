@@ -1,7 +1,7 @@
 /*
- * Copyright 2019-2020 tsurugi project.
+ * Copyright 2020 tsurugi project.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
+ * Licensed under the Apache License, generation 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
@@ -13,9 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <iostream>
-#include <queue>
-
 #include <boost/foreach.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
@@ -30,27 +27,27 @@ namespace manager::metadata_manager {
 
 /**
  *  @brief  Load metadata from metadata-table.
- *  @param  (database) [in]  database name
- *  @param  (pt)       [out] property_tree object to populating metadata.
- *  @param  (version)  [in]  metadata version to load. load latest version if NOT provided.
+ *  @param  (database)   [in]  database name
+ *  @param  (pt)         [out] property_tree object to populating metadata.
+ *  @param  (generation) [in]  metadata generation to load. load latest generation if NOT provided.
  *  @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode DatatypeMetadata::load(
-    std::string_view database, boost::property_tree::ptree& pt, const uint64_t version)
+    std::string_view database, boost::property_tree::ptree& pt, const uint64_t generation)
 {
-    return Metadata::load(database, DatatypeMetadata::TABLE_NAME, pt, version);
+    return Metadata::load(database, DatatypeMetadata::TABLE_NAME, pt, generation);
 }
 
 /**
  *  @brief  Save the metadta to metadta-table.
- *  @param  (database) [in]  database name.
- *  @param  (pt)       [in]  property_tree object that stores metadata to be saved.
- *  @param  (version)  [out] the version of saved metadata.
+ *  @param  (database)   [in]  database name.
+ *  @param  (pt)         [in]  property_tree object that stores metadata to be saved.
+ *  @param  (generation) [out] the generation of saved metadata.
  */
 ErrorCode DatatypeMetadata::save(
-    std::string_view database, boost::property_tree::ptree& pt, uint64_t* version)
+    std::string_view database, boost::property_tree::ptree& pt, uint64_t* generation)
 {
-    return Metadata::save(database, DatatypeMetadata::TABLE_NAME, pt, version);
+    return Metadata::save(database, DatatypeMetadata::TABLE_NAME, pt, generation);
 }
 
 } // namespace manager::metadata_manager
