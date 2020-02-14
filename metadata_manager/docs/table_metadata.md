@@ -21,7 +21,7 @@
     "name"              : string,           [*] // テーブル名
     "namespace"         : string,           [*] // 名前空間（テーブル名を除く）
     "columns"           : array[object],    [*] // カラムメタデータオブジェクト
-    "primaryIdnex"      : object,           [*] // Indexメタデータオブジェクト（Primary Index）
+    "primaryIndex"      : object,           [*] // Indexメタデータオブジェクト（Primary Index）
     "secondaryIndices"  : array[object],    [*] // Indexメタデータオブジェクト（Secondary Indices）
     "constraints"       : array[object]     [+] // Constraintメタデータオブジェクト（テーブル制約）
 }
@@ -32,11 +32,11 @@
     "tableId"           : number,           [-] // カラムが属するテーブルのID
     "name"              : string,           [*] // カラム名
     "ordinalPosition"   : number,           [*] // カラム番号(1 origin)
-    "datatypeId"        : number,           [*] // カラムのデータ型のID
+    "dataTypeId"        : number,           [*] // カラムのデータ型のID
                                                 // データタイプメタデータを参照(別途)
-    "datatype_name"     : string,           [*] // カラムのデータ型名
-                                                // "datatype_id" と "datatype_name" は選択必須
-    "data_length"       : array[number],    [+] // データ長(配列長)
+    "dataTypeName"      : string,           [*] // カラムのデータ型名
+                                                // "dataTypeId" と "dataTypeName" は選択必須
+    "dataLength"        : array[number],    [+] // データ長(配列長)
                                                 // varchar(20)など ※V1では未使用
     "nullable"          : bool,             [*] // NOT NULL制約の有無
     "constraints"       : array             [+] // Constraintメタデータオブジェクト（カラム制約）
@@ -72,13 +72,13 @@
 {
     "formatVersion"    : number,       // データ形式フォーマットバージョン
     "generation"        : number,       // メタデータの世代
-    "datatypes"        : array[object] // DataTypeメタデータオブジェクト
+    "dataTypes"        : array[object] // DataTypeメタデータオブジェクト
 }
 
 // DataTypeメタデータオブジェクト
 {
     "id"            : number,   // データ型ID
     "name"          : string,   // データ型名
-    "pg_atatype"   : number    // 対応するPostgreSQLのデータ型のOID
+    "pg_datatype"   : number    // 対応するPostgreSQLのデータ型のOID
 }
 ```
