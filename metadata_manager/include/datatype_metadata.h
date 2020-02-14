@@ -1,7 +1,7 @@
 /*
  * Copyright 2020 tsurugi project.
  *
- * Licensed under the Apache License, generation 2.0 (the "License");
+ * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
@@ -29,6 +29,8 @@ class DatatypeMetadata : public Metadata {
     public:
         static constexpr char const * DATATYPES_NODE = "datatypes";
 
+        static ErrorCode init();
+
         /**
          *  @brief  Load metadata from metadata-table.
          *  @param  (database)   [in]  database name
@@ -38,7 +40,7 @@ class DatatypeMetadata : public Metadata {
          */
         static ErrorCode load(
             std::string_view database, boost::property_tree::ptree& pt, 
-            const uint64_t generation = LATEST_GENERATION);
+            const GenerationType generation = LATEST_GENERATION);
 
         /**
          *  @brief  Save the metadta to metadta-table.
@@ -48,7 +50,7 @@ class DatatypeMetadata : public Metadata {
          */
         static ErrorCode save(
             std::string_view database, boost::property_tree::ptree& pt, 
-            uint64_t* generation = nullptr);
+            GenerationType* generation = nullptr);
 
         /**
          *  @brief  Constructor
@@ -63,7 +65,7 @@ class DatatypeMetadata : public Metadata {
         std::string_view tablename() const { return TABLE_NAME; }
         const std::string root_node() const { return DATATYPES_NODE; }
         uint64_t generate_object_id() const { 
-            static ObjectId datatype_id = 0; 
+            static ObjectIdType datatype_id = 0; 
             return ++datatype_id; 
         }
         ErrorCode fill_parameters( __attribute__((unused)) boost::property_tree::ptree& object) { 
@@ -71,7 +73,7 @@ class DatatypeMetadata : public Metadata {
         }
 
     private:
-        static constexpr char const * TABLE_NAME = "datatypes.json";
+        static constexpr char const * TABLE_NAME = "datatypes";
 };
 
 }

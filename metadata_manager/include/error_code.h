@@ -45,6 +45,11 @@ enum class ErrorCode {
     END_OF_ROW,
 
     /**
+     *  @brief the object with same parameter exists.
+     */
+    ALREADY_EXISTS,
+
+    /**
      * @brief Unknown error.
      */
     UNKNOWN,

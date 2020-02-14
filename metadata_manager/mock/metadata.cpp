@@ -40,22 +40,19 @@ ErrorCode Metadata::load(
     __attribute__((unused)) std::string_view database, std::string_view tablename,
     boost::property_tree::ptree& pt, __attribute__((unused)) const uint64_t generation)
 {
-    ErrorCode error = ErrorCode::UNKNOWN;
-    std::string filename{tablename};
-    
-    pt.clear();
+    std::string filename = std::string{tablename} + ".json";
 
     try {
         read_json(filename, pt);
-        error = ErrorCode::OK;
     } catch (boost::property_tree::json_parser_error& e) {
         std::wcout << "read_json() error. " << e.what() << std::endl;
+        return ErrorCode::UNKNOWN;
     } catch (...) {
         std::cout << "read_json() error." << std::endl;
-        return error;
+        return ErrorCode::UNKNOWN;
     }
 
-    return error;
+    return ErrorCode::OK;
 }
 
 /**
@@ -69,22 +66,21 @@ ErrorCode Metadata::save(
     __attribute__((unused)) std::string_view database, std::string_view tablename, 
     boost::property_tree::ptree& pt, __attribute__((unused)) uint64_t* generation)
 {
-    ErrorCode error = ErrorCode::UNKNOWN;
-    std::string filename{tablename};
+    std::string filename = std::string{tablename} + ".json";
 
     try {
         write_json(filename, pt);
-        error = ErrorCode::OK;
     } 
     catch (...) {
         std::cout << "write_json() error." << std::endl;
+        return ErrorCode::UNKNOWN;
     }
 
     if (generation != nullptr) {
         *generation = 1;
     }
 
-    return error;
+    return ErrorCode::OK;
 }
 
 /**
@@ -159,7 +155,7 @@ ErrorCode Metadata::add(boost::property_tree::ptree& object, uint64_t* object_id
  *  @param  (object)    [out] metadata-object with the specified ID.
  *  @return ErrorCode::OK if success, otherwise an error code.
  */
-ErrorCode Metadata::get(const ObjectId object_id, boost::property_tree::ptree& object) const
+ErrorCode Metadata::get(const ObjectIdType object_id, boost::property_tree::ptree& object) const
 {
     assert(object_id > 0);
 
@@ -171,7 +167,7 @@ ErrorCode Metadata::get(const ObjectId object_id, boost::property_tree::ptree& o
     BOOST_FOREACH (const ptree::value_type& child, metadata_.get_child(root_node())) {
         const ptree& temp_obj = child.second;
         
-        boost::optional<ObjectId> id = temp_obj.get_optional<ObjectId>(ID_KEY);
+        boost::optional<ObjectIdType> id = temp_obj.get_optional<ObjectIdType>(ID_KEY);
         if (!id) {
             return ErrorCode::NOT_FOUND;
         }

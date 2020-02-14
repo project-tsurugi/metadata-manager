@@ -1,7 +1,7 @@
 /*
  * Copyright 2020 tsurugi project.
  *
- * Licensed under the Apache License, generation 2.0 (the "License");
+ * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
@@ -26,8 +26,8 @@
 
 namespace manager::metadata_manager {
 
-using Generation = uint64_t;
-using ObjectId = uint64_t;
+using GenerationType = uint64_t;
+using ObjectIdType = uint64_t;
 
 class Metadata {
     public:
@@ -47,7 +47,7 @@ class Metadata {
 
         std::string_view database() const { return database_; }
         std::string_view component() const { return component_; }
-        Generation generation() const { return generation_; }
+        GenerationType generation() const { return generation_; }
         uint64_t format_version() const { return format_version_; }
 
         /**
@@ -76,7 +76,7 @@ class Metadata {
          *  @param  (object_id)   [out] ID of the added metadata-object.
          *  @return ErrorCode::OK if success, otherwise an error code.
          */
-        ErrorCode add(boost::property_tree::ptree& object, ObjectId* object_id);
+        ErrorCode add(boost::property_tree::ptree& object, ObjectIdType* object_id);
 
         /**
          *  @brief  Get metadata-object.
@@ -84,7 +84,7 @@ class Metadata {
          *  @param  (object)    [out] metadata-object with the specified ID.
          *  @return ErrorCode::OK if success, otherwise an error code.
          */
-        virtual ErrorCode get(const ObjectId object_id, boost::property_tree::ptree& object) const;
+        virtual ErrorCode get(const ObjectIdType object_id, boost::property_tree::ptree& object) const;
 
         /**
          *  @brief  Get metadata-object.
@@ -148,7 +148,7 @@ class Metadata {
          */
         static ErrorCode load(
             std::string_view database, std::string_view tablename,
-            boost::property_tree::ptree& pt, const uint64_t generation = LATEST_GENERATION);
+            boost::property_tree::ptree& pt, const GenerationType generation = LATEST_GENERATION);
 
         /**
          *  @brief  Save the metadata to metadata-table.
@@ -159,19 +159,19 @@ class Metadata {
          */
         static ErrorCode save(
             std::string_view database, std::string_view tablename, boost::property_tree::ptree& pt, 
-            uint64_t* generation = nullptr);
+            GenerationType* generation = nullptr);
 
         // functions for template-method.
         virtual std::string_view tablename() const = 0;
         virtual const std::string root_node() const = 0;
-        virtual ObjectId generate_object_id() const = 0;
+        virtual ObjectIdType generate_object_id() const = 0;
         virtual ErrorCode fill_parameters(boost::property_tree::ptree& object) = 0;
 
     private:
         boost::property_tree::ptree metadata_;
         std::string database_;
         std::string component_;
-        Generation generation_ = 1;
+        GenerationType generation_ = 1;
         static constexpr uint64_t format_version_ = 1;
         boost::property_tree::ptree object_queue_;
 };

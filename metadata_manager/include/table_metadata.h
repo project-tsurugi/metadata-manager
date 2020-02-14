@@ -1,7 +1,7 @@
 /*
  * Copyright 2020 tsurugi project.
  *
- * Licensed under the Apache License, generation 2.0 (the "License");
+ * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
@@ -35,6 +35,8 @@ class TableMetadata : public Metadata {
         static constexpr char const * DATATYPE_ID_KEY = "datatype_id";
         static constexpr char const * DATATYPE_NAME_KEY = "datatype_name";
 
+        static ErrorCode init();
+
         /**
          *  @brief  Load metadata from metadata-table.
          *  @param  (database)   [in]  database name
@@ -44,18 +46,7 @@ class TableMetadata : public Metadata {
          */
         static ErrorCode load(
             std::string_view database, boost::property_tree::ptree& pt, 
-            const Generation generation = LATEST_GENERATION);
-
-        /**
-         *  @brief  Save the metadta to metadta-table.
-         *  @param  (database)   [in]  database name.
-         *  @param  (pt)         [in]  property_tree object that stores metadata to be saved.
-         *  @param  (generation) [out] the generation of saved metadata.
-         *  @return ErrorCode::OK if success, otherwise an error code.
-         */
-        static ErrorCode save(
-            std::string_view database, boost::property_tree::ptree& pt, 
-            uint64_t* generation = nullptr);
+            const GenerationType Generation = LATEST_GENERATION);
 
         /**
          *  @brief  Constructor
@@ -66,14 +57,25 @@ class TableMetadata : public Metadata {
             : Metadata(database, component) {}
 
     protected:
+        /**
+         *  @brief  Save the metadta to metadta-table.
+         *  @param  (database)   [in]  database name.
+         *  @param  (pt)         [in]  property_tree object that stores metadata to be saved.
+         *  @param  (generation) [out] the generation of saved metadata.
+         *  @return ErrorCode::OK if success, otherwise an error code.
+         */
+        static ErrorCode save(
+            std::string_view database, boost::property_tree::ptree& pt, 
+            GenerationType* generation = nullptr);
+
         // functions for template-method
         std::string_view tablename() const { return TABLE_NAME; }
         const std::string root_node() const { return TABLES_NODE; }
-        ObjectId generate_object_id() const;
+        ObjectIdType generate_object_id() const;
         ErrorCode fill_parameters(boost::property_tree::ptree& object);
 
     private:
-        static constexpr char const * TABLE_NAME = "tables.json";
+        static constexpr char const * TABLE_NAME = "tables";
 };
 
 } // namespace manager::metadata_manager

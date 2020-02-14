@@ -1,7 +1,7 @@
 /*
  * Copyright 2020 tsurugi project.
  *
- * Licensed under the Apache License, generation 2.0 (the "License");
+ * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
@@ -13,12 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#include <fstream>
+
 #include <boost/optional.hpp>
 #include <boost/foreach.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
 
 #include "error_code.h"
+#include "object_id.h"
 #include "metadata.h"
 #include "table_metadata.h"
 #include "datatype_metadata.h"
@@ -26,6 +29,32 @@
 using namespace boost::property_tree;
 
 namespace manager::metadata_manager {
+
+ErrorCode TableMetadata::init()
+{
+    ErrorCode error = ErrorCode::UNKNOWN;
+
+    try {
+        std::string filename = std::string{TableMetadata::TABLE_NAME} + ".json";
+        std::ifstream file(filename);
+
+        if (!file.is_open()) {
+            // create metadata-table
+            ptree root;
+            root.put(TableMetadata::TABLES_NODE, "");
+            error = TableMetadata::save("", root);
+            if (error != ErrorCode::OK) {
+                return error;
+            }
+        }    
+    } catch (...) {
+        return error;
+    }
+
+    error = ErrorCode::OK;
+
+    return error;
+}
 
 /**
  *  @brief  Load metadata from metadata-table.
@@ -57,33 +86,27 @@ ErrorCode TableMetadata::save(
  *  @brief  Generate the object ID of table-metadata.
  *  @return new object ID.
  */
-ObjectId TableMetadata::generate_object_id() const
+ObjectIdType TableMetadata::generate_object_id() const
 {
-    static ObjectId table_id = 0;
-
-    return ++table_id;
+    return ObjectId::generate(TABLE_NAME);
 }
 
 /**
  *  @brief  Generate the object ID of column-metadata.
  *  @return new object ID.
  */
-static ObjectId generate_column_id()
+static ObjectIdType generate_column_id()
 {
-    static ObjectId column_id = 0;
-
-    return ++column_id;
+    return ObjectId::generate("column");
 }
 
 /**
  *  @brief  Generate the object ID of constraint-metadata.
  *  @return new object ID.
  */
-static ObjectId generate_constraint_id()
+static ObjectIdType generate_constraint_id()
 {
-    static ObjectId constraint_id = 0;
-
-    return ++constraint_id;
+    return ObjectId::generate("constraint");
 }
 
 ErrorCode TableMetadata::fill_parameters(boost::property_tree::ptree& object)
@@ -99,7 +122,7 @@ ErrorCode TableMetadata::fill_parameters(boost::property_tree::ptree& object)
         column.put(ID_KEY, generate_column_id());
 
         // table ID
-        column.put(TABLE_ID_KEY, object.get<ObjectId>(ID_KEY));
+        column.put(TABLE_ID_KEY, object.get<ObjectIdType>(ID_KEY));
 
         // data-type ID.
         boost::optional<std::string> datatype_name 
@@ -117,7 +140,7 @@ ErrorCode TableMetadata::fill_parameters(boost::property_tree::ptree& object)
         if (error != ErrorCode::OK) {
             return error;
         }        
-        object.put(DATATYPE_ID_KEY, type_obj.get<ObjectId>(ID_KEY));
+        column.put(DATATYPE_ID_KEY, type_obj.get<ObjectIdType>(ID_KEY));
     }
 
     //
@@ -129,7 +152,7 @@ ErrorCode TableMetadata::fill_parameters(boost::property_tree::ptree& object)
         constraint.put(ID_KEY, generate_constraint_id());
 
         // constraint table ID
-        constraint.put(TABLE_ID_KEY, object.get<ObjectId>(ID_KEY));
+        constraint.put(TABLE_ID_KEY, object.get<ObjectIdType>(ID_KEY));
     }
 
     error = ErrorCode::OK;
