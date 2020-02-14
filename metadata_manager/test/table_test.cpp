@@ -234,7 +234,7 @@ ErrorCode class_object_test()
     //
     //  add table-metadata object and save
     //
-    std::unique_ptr<Metadata> tables(new TableMetadata(TEST_DB));
+    std::unique_ptr<Metadata> tables(new TableMetadata(TEST_DB));   // use Template-Method.
 
     error = tables->load();
     if (error != ErrorCode::OK) {
@@ -261,6 +261,18 @@ ErrorCode class_object_test()
         column.put<uint64_t>("ordinal_position", 2);
         column.put("datatype_name", "TEXT");
         column.put<bool>("nullable", true);
+        ptree constraint;
+        {
+            ptree column_keys;
+            {
+                ptree column_key;
+                column_key.put("", 2);   // column ordinal_position
+                column_keys.push_back(std::make_pair("", column_key));
+            }
+            constraint.add_child("column_key", column_keys);
+            constraint.put("type", "p");
+            column.push_back(std::make_pair("constraints", constraint));
+        }
         columns.push_back(std::make_pair("", column));
     }
     new_table.add_child("columns", columns);
