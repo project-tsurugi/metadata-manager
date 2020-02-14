@@ -26,6 +26,7 @@ namespace manager::metadata_manager {
 class ObjectId {
     public:
         static ErrorCode init();
+        static ObjectIdType current(const std::string table_name);
         static ObjectIdType generate(const std::string table_name);
 
     private:

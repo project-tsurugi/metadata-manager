@@ -31,8 +31,8 @@ void print_error(ErrorCode error, uint64_t line)
  */
 const std::string get_tablename()
 {
-    static uint64_t sequential = 0;
-    std::string name = "table_" + std::to_string(++sequential);
+    ObjectIdType number = ObjectId::current("tables") + 1;
+    std::string name = "table_" + std::to_string(number);
 
     return name;
 }
@@ -251,13 +251,13 @@ ErrorCode class_object_test()
     ptree columns;
     {
         ptree column;
-        column.put("name", "new_column21");
+        column.put("name", "new_column11");
         column.put<uint64_t>("ordinal_position", 1);
         column.put("datatype_name", "FLOAT32");
         column.put<bool>("nullable", false);
         columns.push_back(std::make_pair("", column));
 
-        column.put("name", "new_column22");
+        column.put("name", "new_column12");
         column.put<uint64_t>("ordinal_position", 2);
         column.put("datatype_name", "TEXT");
         column.put<bool>("nullable", true);
@@ -271,9 +271,11 @@ ErrorCode class_object_test()
         ptree constraint;
         ptree column_keys;
         {
-            ptree column_key[1];
-            column_key[0].put("", 1);
+            ptree column_key[2];
+            column_key[0].put("", 1);   // column ordinal_position
             column_keys.push_back(std::make_pair("", column_key[0]));
+            column_key[1].put("", 2);   // column ordinal_position
+            column_keys.push_back(std::make_pair("", column_key[1]));
         }
         constraint.add_child("column_key", column_keys);
         constraint.put("type", "p");
@@ -314,13 +316,21 @@ ErrorCode class_object_test()
     //
     //  load table-metadata
     //
-    std::cout << "--- table-metadata parameters to read. ---" << std::endl;
+    std::cout << "--- table-metadata to read. ---" << std::endl;
 
-    ptree root;
-    while (tables->next(root) == ErrorCode::OK) {
+    ptree table;
+    while (tables->next(table) == ErrorCode::OK) {
         // table metadata
         std::cout << "--- tables ---" << std::endl;
-        boost::optional<std::string> name = root.get_optional<std::string>("name");
+        boost::optional<ObjectIdType> table_id = table.get_optional<ObjectIdType>("id");
+        if (!table_id) {
+            error = ErrorCode::NOT_FOUND;
+            print_error(error, __LINE__);
+            return error;
+        }
+        std::cout << "table ID : " << table_id.get() << std::endl;
+
+        boost::optional<std::string> name = table.get_optional<std::string>("name");
         if (!name) {
             error = ErrorCode::NOT_FOUND;
             print_error(error, __LINE__);
@@ -330,7 +340,7 @@ ErrorCode class_object_test()
 
         // column metadata
         std::cout << "--- columns ---" << std::endl;
-        BOOST_FOREACH (const ptree::value_type& e, root.get_child("columns")) {
+        BOOST_FOREACH (const ptree::value_type& e, table.get_child("columns")) {
             const ptree& column = e.second;
 
             boost::optional<std::string> name = column.get_optional<std::string>("name");
@@ -370,7 +380,7 @@ ErrorCode class_object_test()
 
         // constraint metadata
         std::cout << "--- constraints ---" << std::endl;
-        BOOST_FOREACH (const ptree::value_type& child, root.get_child("constraints")) {
+        BOOST_FOREACH (const ptree::value_type& child, table.get_child("constraints")) {
             const ptree& constraint = child.second;
 
             ptree column_keys = constraint.get_child("column_key");
@@ -389,7 +399,7 @@ ErrorCode class_object_test()
 
         // primary index
         std::cout << "--- primary index ---" << std::endl;
-        const ptree& primary_index = root.get_child("primary_index");
+        const ptree& primary_index = table.get_child("primary_index");
         boost::optional<std::string> index_name = primary_index.get_optional<std::string>("name");
         if (!index_name) {
             error = ErrorCode::NOT_FOUND;
@@ -417,7 +427,7 @@ ErrorCode class_object_test()
 
         // secondary indices
         std::cout << "--- secondary indices ---" << std::endl;
-        BOOST_FOREACH (const ptree::value_type& child, root.get_child("secondary_indices")) {
+        BOOST_FOREACH (const ptree::value_type& child, table.get_child("secondary_indices")) {
             const ptree& secondary_index = child.second;
 
             boost::optional<std::string> index_name = secondary_index.get_optional<std::string>("name");
@@ -445,6 +455,7 @@ ErrorCode class_object_test()
             }
             std::cout << "direction : " << direction.get() << std::endl;
         }
+        std::cout << std::endl;
     }
 
     return ErrorCode::OK;
@@ -459,7 +470,8 @@ int main(void)
 
     if (!initialize()) {
         std::cout << "initialization of test environment failed." << std::endl;
-        std::cout << "*** TableMetadta test done. ***" << std::endl;      
+        std::cout << "*** TableMetadta test interrupted. ***" << std::endl;
+        return 1; 
     }
 
     std::cout << "=== class object test start. ===" << std::endl;

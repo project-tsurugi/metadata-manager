@@ -13,7 +13,7 @@ using namespace boost::property_tree;
 
 namespace manager::metadata_manager {
 
-static constexpr uint64_t INVALID_OID = 0;
+static ObjectIdType INVALID_OID = 0;
 
 /**
  *  @brief  initialize object-ID metadata-table.
@@ -33,6 +33,34 @@ ErrorCode ObjectId::init()
     }
 
     return ErrorCode::OK;
+}
+
+/**
+ *  @brief  current object-ID.
+ *  @return ErrorCode::OK if success, otherwise an error code.
+ */
+ObjectIdType ObjectId::current(const std::string table_name)
+{
+    boost::property_tree::ptree pt;
+
+    try {
+        read_ini(ObjectId::TABLE_NAME, pt);
+    } catch (boost::property_tree::ini_parser_error& e) {
+        std::wcout << "read_ini() error. " << e.what() << std::endl;
+        return INVALID_OID;
+    } catch (...) {
+        std::cout << "read_ini() error." << std::endl;
+        return INVALID_OID;
+    }
+
+    boost::optional<ObjectIdType> oid = pt.get_optional<ObjectIdType>(table_name);
+    if (!oid) {
+        // create OID key for specified metadata.
+        pt.put(table_name, 0);
+        oid = pt.get_optional<ObjectIdType>(table_name);
+    }
+
+    return oid.get();
 }
 
 /**
