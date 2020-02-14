@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 tsurugi project.
+ * Copyright 2020 tsurugi project.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,14 +30,24 @@ enum class ErrorCode {
     NOT_FOUND,
 
     /**
-     *  @brief ID of metadata-record not found from metadata-table.
+     *  @brief ID of the metadata-object not found from metadata-table.
      */
     ID_NOT_FOUND,
+
+    /**
+     *  @brief name of the metadata-object not found from metadata-table.
+     */
+    NAME_NOT_FOUND,
 
     /**
      *  @brief Current in the Metadata stepped over the last row (a result of successful processing).
      */
     END_OF_ROW,
+
+    /**
+     *  @brief the object with same parameter exists.
+     */
+    ALREADY_EXISTS,
 
     /**
      * @brief Unknown error.

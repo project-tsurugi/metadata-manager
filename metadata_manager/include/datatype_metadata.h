@@ -1,7 +1,7 @@
 /*
- * Copyright 2019-2020 tsurugi project.
+ * Copyright 2020 tsurugi project.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
+ * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
@@ -29,26 +29,28 @@ class DatatypeMetadata : public Metadata {
     public:
         static constexpr char const * DATATYPES_NODE = "datatypes";
 
+        static ErrorCode init();
+
         /**
          *  @brief  Load metadata from metadata-table.
-         *  @param  (database) [in]  database name
-         *  @param  (pt)       [out] property_tree object to populating metadata.
-         *  @param  (version)  [in]  metadata version to load. load latest version if NOT provided.
+         *  @param  (database)   [in]  database name
+         *  @param  (pt)         [out] property_tree object to populating metadata.
+         *  @param  (generation) [in]  metadata generation to load. load latest generation if NOT provided.
          *  @return ErrorCode::OK if success, otherwise an error code.
          */
         static ErrorCode load(
             std::string_view database, boost::property_tree::ptree& pt, 
-            const uint64_t version = LATEST_VERSION);
+            const GenerationType generation = LATEST_GENERATION);
 
         /**
          *  @brief  Save the metadta to metadta-table.
-         *  @param  (database) [in]  database name.
-         *  @param  (pt)       [in]  property_tree object that stores metadata to be saved.
-         *  @param  (version)  [out] the version of saved metadata.
+         *  @param  (database)   [in]  database name.
+         *  @param  (pt)         [in]  property_tree object that stores metadata to be saved.
+         *  @param  (generation) [out] the generation of saved metadata.
          */
         static ErrorCode save(
             std::string_view database, boost::property_tree::ptree& pt, 
-            uint64_t* version = nullptr);
+            GenerationType* generation = nullptr);
 
         /**
          *  @brief  Constructor
@@ -62,9 +64,16 @@ class DatatypeMetadata : public Metadata {
         // functions for template-method
         std::string_view tablename() const { return TABLE_NAME; }
         const std::string root_node() const { return DATATYPES_NODE; }
+        uint64_t generate_object_id() const { 
+            static ObjectIdType datatype_id = 0; 
+            return ++datatype_id; 
+        }
+        ErrorCode fill_parameters( __attribute__((unused)) boost::property_tree::ptree& object) { 
+            return ErrorCode::OK; 
+        }
 
     private:
-        static constexpr char const * TABLE_NAME = "datatypes.json";
+        static constexpr char const * TABLE_NAME = "datatypes";
 };
 
 }
