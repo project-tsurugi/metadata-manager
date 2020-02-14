@@ -1,7 +1,7 @@
 
-# V1 テーブルメタデータ データ形式(rev.0.3)
+# V1 テーブルメタデータ データ形式(rev.0.4)
 
-2020.02.10 NEC
+2020.02.14 NEC
 
 * '*'　:　メタデータ登録時に必須の項目
 * '+'　:　メタデータ登録時に入力可能な項目
@@ -10,7 +10,7 @@
 ```
 // Table情報メタデータ(root)
 {
-    "format_version" : number,          [-] // データ形式フォーマットバージョン ※V1は"1"固定
+    "formatVersion"  : number,          [-] // データ形式フォーマットバージョン ※V1は"1"固定
     "generation"     : number,          [-] // メタデータの世代 ※V1は"1"固定
     "tables"         : array[object]    [*] // Tableメタデータオブジェクト
 }
@@ -21,18 +21,18 @@
     "name"              : string,           [*] // テーブル名
     "namespace"         : string,           [*] // 名前空間（テーブル名を除く）
     "columns"           : array[object],    [*] // カラムメタデータオブジェクト
-    "primary_idnex"     : object,           [*] // Indexメタデータオブジェクト（Primary Index）
-    "secondary_indices" : array[object],    [*] // Indexメタデータオブジェクト（Secondary Indices）
+    "primaryIdnex"      : object,           [*] // Indexメタデータオブジェクト（Primary Index）
+    "secondaryIndices"  : array[object],    [*] // Indexメタデータオブジェクト（Secondary Indices）
     "constraints"       : array[object]     [+] // Constraintメタデータオブジェクト（テーブル制約）
 }
 
 // Columnメタデータオブジェクト
 {
     "id"                : number,           [-] // カラムID
-    "table_id"          : number,           [-] // カラムが属するテーブルのID
+    "tableId"           : number,           [-] // カラムが属するテーブルのID
     "name"              : string,           [*] // カラム名
-    "ordinal_position"  : number,           [*] // カラム番号(1 origin)
-    "datatype_id"       : number,           [*] // カラムのデータ型のID
+    "ordinalPosition"   : number,           [*] // カラム番号(1 origin)
+    "datatypeId"        : number,           [*] // カラムのデータ型のID
                                                 // データタイプメタデータを参照(別途)
     "datatype_name"     : string,           [*] // カラムのデータ型名
                                                 // "datatype_id" と "datatype_name" は選択必須
@@ -45,9 +45,9 @@
 // Constraintメタデータオブジェクト（カラム制約、テーブル制約共通）
 {
     "id"            : number,           [-] // 制約ID
-    "table_id"      : number,           [-] // 制約が属するテーブルのID
+    "tableId"       : number,           [-] // 制約が属するテーブルのID
                                             // カラム制約の場合は"0"
-    "column_key"    : array[number],    [*] // 制約が属するカラムの"ordinal_position"
+    "columnKey"     : array[number],    [*] // 制約が属するカラムの"ordinal_position"
     "name"          : string,           [+] // 制約名
     "type"          : string,           [*] // 制約の種類
                                             // PostgreSQLのメタデータに合わせる
@@ -70,7 +70,7 @@
 ```JSON
 // DataType情報メタデータ(root)   ※検討中
 {
-    "format_version"    : number,       // データ形式フォーマットバージョン
+    "formatVersion"    : number,       // データ形式フォーマットバージョン
     "generation"        : number,       // メタデータの世代
     "datatypes"        : array[object] // DataTypeメタデータオブジェクト
 }
@@ -79,6 +79,6 @@
 {
     "id"            : number,   // データ型ID
     "name"          : string,   // データ型名
-    "pg_datatype"   : number    // 対応するPostgreSQLのデータ型のOID
+    "pg_atatype"   : number    // 対応するPostgreSQLのデータ型のOID
 }
 ```
