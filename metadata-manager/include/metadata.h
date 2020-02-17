@@ -31,10 +31,10 @@ using ObjectIdType = uint64_t;
 
 class Metadata {
     public:
-        static constexpr char const * FORMAT_VERSION_KEY = "format_version";
-        static constexpr char const * GENERATION_KEY = "generation";
-        static constexpr char const * ID_KEY = "id";
-        static constexpr char const * NAME_KEY = "name";
+        static constexpr char const * FORMAT_VERSION    = "format_version";
+        static constexpr char const * GENERATION        = "generation";
+        static constexpr char const * ID                = "id";
+        static constexpr char const * NAME              = "name";
 
         /**
          *  @brief  Constructor
@@ -162,7 +162,7 @@ class Metadata {
             GenerationType* generation = nullptr);
 
         // functions for template-method.
-        virtual std::string_view tablename() const = 0;
+        virtual std::string_view table_name() const = 0;
         virtual const std::string root_node() const = 0;
         virtual ObjectIdType generate_object_id() const = 0;
         virtual ErrorCode fill_parameters(boost::property_tree::ptree& object) = 0;

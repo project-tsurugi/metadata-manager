@@ -27,13 +27,56 @@ namespace manager::metadata_manager {
 
 class TableMetadata : public Metadata {
     public:
+        // root object.
         static constexpr char const * TABLES_NODE = "tables";
-        static constexpr char const * COLUMNS_NODE = "columns";
-        static constexpr char const * CONSTRAINTS_NODE = "constraints";
 
-        static constexpr char const * TABLE_ID_KEY = "table_id";
-        static constexpr char const * DATATYPE_ID_KEY = "datatype_id";
-        static constexpr char const * DATATYPE_NAME_KEY = "datatype_name";
+        // table metadata-object.
+        // ID is defined in base class.
+        // NAME is defined in base class.
+        static constexpr char const * NAMESPACE                 = "namespace";
+        static constexpr char const * COLUMNS_NODE              = "columns";
+        static constexpr char const * PRIMARY_INDEX_OBJECT      = "primaryIndex";
+        static constexpr char const * SECONDARY_INDICES_NODDE   = "secondaryIndices";
+        static constexpr char const * CONSTRAINTS_NODE          = "constraints";
+      
+        // column metadata-object.
+        struct Column {
+            static constexpr char const * ID                 = "id";
+            static constexpr char const * TABLE_ID           = "tableId";
+            static constexpr char const * NAME               = "name";
+            static constexpr char const * ORDINAL_POSITION   = "ordinalPosition";
+            static constexpr char const * DATA_TYPE_ID       = "dataTypeId";
+            static constexpr char const * DATA_LENGTH        = "dataLength";
+            static constexpr char const * NULLABLE           = "nullable";
+            static constexpr char const * CONSTRAINS_NODE    = "constraints";
+        };
+
+        // constraint metadata-object.
+        struct Constraint {
+            static constexpr char const * ID                 = "id";
+            static constexpr char const * TABLE_ID           = "tableId";
+            static constexpr char const * COLUMN_KEY_NODE    = "columnKey";
+            static constexpr char const * NAME               = "name";
+            static constexpr char const * TYPE               = "type";       
+            static constexpr char const * CONTENTS           = "contents";
+            struct Type {
+                static constexpr char const * CHECK         = "C";
+                static constexpr char const * FOREIGN_KEY   = "F";
+                static constexpr char const * PRIMARY_KEY   = "P";
+                static constexpr char const * UNIQUE        = "U";
+            };
+        };
+
+        // Index metadata-object.
+        struct Index {
+            static constexpr char const * NAME            = "name";
+            static constexpr char const * COLUMN_OBJECT   = "column";
+            // Index-Column metadata-object.
+            struct Column {
+                static constexpr char const * NAME         = "name";
+                static constexpr char const * DIRECTION     = "direction";
+            };
+        };
 
         static ErrorCode init();
 
@@ -69,7 +112,7 @@ class TableMetadata : public Metadata {
             GenerationType* generation = nullptr);
 
         // functions for template-method
-        std::string_view tablename() const { return TABLE_NAME; }
+        std::string_view table_name() const { return TABLE_NAME; }
         const std::string root_node() const { return TABLES_NODE; }
         ObjectIdType generate_object_id() const;
         ErrorCode fill_parameters(boost::property_tree::ptree& object);

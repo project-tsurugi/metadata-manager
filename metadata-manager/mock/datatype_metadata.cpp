@@ -26,64 +26,64 @@ using namespace boost::property_tree;
 namespace manager::metadata_manager {
 
 /*
- *  @biref  initialization of DatatypeMetadata.
+ *  @biref  initialization of DataTypeMetadata.
  */
-ErrorCode DatatypeMetadata::init()
+ErrorCode DataTypeMetadata::init()
 {
     ErrorCode error = ErrorCode::UNKNOWN;
 
     ptree root;
-    root.put("format_version", 1);
-    root.put("generation", 1);
+    root.put(Metadata::FORMAT_VERSION, 1);
+    root.put(Metadata::GENERATION, 1);
     
     ptree datatypes;
     {
         ptree datatype;
         // NULL_VALUE
-        datatype.put("id", 1);
-        datatype.put("name", "NULL_VALUE");
-        datatype.put("pg_datatype", 0);
+        datatype.put(DataTypeMetadata::ID, 1);
+        datatype.put(DataTypeMetadata::NAME, "NULL_VALUE");
+        datatype.put(DataTypeMetadata::PG_DATA_TYPE, 0);
         datatypes.push_back(std::make_pair("", datatype));
 
         // INT16
-        datatype.put("id", 1);
-        datatype.put("name", "INT16");
-        datatype.put("pg_datatype", 0);
+        datatype.put(DataTypeMetadata::ID, 1);
+        datatype.put(DataTypeMetadata::NAME, "INT16");
+        datatype.put(DataTypeMetadata::PG_DATA_TYPE, 0);
         datatypes.push_back(std::make_pair("", datatype));
 
         // INT32
-        datatype.put("id", 2);
-        datatype.put("name", "INT32");
-        datatype.put("pg_datatype", 0);
+        datatype.put(DataTypeMetadata::ID, 2);
+        datatype.put(DataTypeMetadata::NAME, "INT32");
+        datatype.put(DataTypeMetadata::PG_DATA_TYPE, 0);
         datatypes.push_back(std::make_pair("", datatype));
 
         // INT64
-        datatype.put("id", 3);
-        datatype.put("name", "INT64");
-        datatype.put("pg_datatype", 0);
+        datatype.put(DataTypeMetadata::ID, 3);
+        datatype.put(DataTypeMetadata::NAME, "INT64");
+        datatype.put(DataTypeMetadata::PG_DATA_TYPE, 0);
         datatypes.push_back(std::make_pair("", datatype));
 
         // FLOAT32
-        datatype.put("id", 4);
-        datatype.put("name", "FLOAT32");
-        datatype.put("pg_datatype", 0);
+        datatype.put(DataTypeMetadata::ID, 4);
+        datatype.put(DataTypeMetadata::NAME, "FLOAT32");
+        datatype.put(DataTypeMetadata::PG_DATA_TYPE, 0);
         datatypes.push_back(std::make_pair("", datatype));
 
         // FLOAT64
-        datatype.put("id", 5);
-        datatype.put("name", "FLOAT64");
-        datatype.put("pg_datatype", 0);
+        datatype.put(DataTypeMetadata::ID, 5);
+        datatype.put(DataTypeMetadata::NAME, "FLOAT64");
+        datatype.put(DataTypeMetadata::PG_DATA_TYPE, 0);
         datatypes.push_back(std::make_pair("", datatype));
 
         // TEXT
-        datatype.put("id", 6);
-        datatype.put("name", "TEXT");
-        datatype.put("pg_datatype", 0);
+        datatype.put(DataTypeMetadata::ID, 6);
+        datatype.put(DataTypeMetadata::NAME, "TEXT");
+        datatype.put(DataTypeMetadata::PG_DATA_TYPE, 0);
         datatypes.push_back(std::make_pair("", datatype));
     }
-    root.add_child(DatatypeMetadata::DATATYPES_NODE, datatypes);
+    root.add_child(DataTypeMetadata::DATATYPES_NODE, datatypes);
 
-    error = DatatypeMetadata::save("", root);
+    error = DataTypeMetadata::save("", root);
     if (error != ErrorCode::OK) {
         return error;
     }
@@ -100,10 +100,10 @@ ErrorCode DatatypeMetadata::init()
  *  @param  (generation) [in]  metadata generation to load. load latest generation if NOT provided.
  *  @return ErrorCode::OK if success, otherwise an error code.
  */
-ErrorCode DatatypeMetadata::load(
+ErrorCode DataTypeMetadata::load(
     std::string_view database, boost::property_tree::ptree& pt, const GenerationType generation)
 {
-    return Metadata::load(database, DatatypeMetadata::TABLE_NAME, pt, generation);
+    return Metadata::load(database, DataTypeMetadata::TABLE_NAME, pt, generation);
 }
 
 /**
@@ -112,10 +112,10 @@ ErrorCode DatatypeMetadata::load(
  *  @param  (pt)         [in]  property_tree object that stores metadata to be saved.
  *  @param  (generation) [out] the generation of saved metadata.
  */
-ErrorCode DatatypeMetadata::save(
+ErrorCode DataTypeMetadata::save(
     std::string_view database, boost::property_tree::ptree& pt, GenerationType* generation)
 {
-    return Metadata::save(database, DatatypeMetadata::TABLE_NAME, pt, generation);
+    return Metadata::save(database, DataTypeMetadata::TABLE_NAME, pt, generation);
 }
 
 } // namespace manager::metadata_manager

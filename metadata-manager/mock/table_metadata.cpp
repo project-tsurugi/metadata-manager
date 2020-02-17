@@ -24,7 +24,6 @@
 #include "object_id.h"
 #include "metadata.h"
 #include "table_metadata.h"
-#include "datatype_metadata.h"
 
 using namespace boost::property_tree;
 
@@ -119,28 +118,18 @@ ErrorCode TableMetadata::fill_parameters(boost::property_tree::ptree& object)
     BOOST_FOREACH (ptree::value_type& node, object.get_child(COLUMNS_NODE)) {
         ptree& column = node.second;
         // column ID
-        column.put(ID_KEY, generate_column_id());
+        column.put(Column::ID, generate_column_id());
 
         // table ID
-        column.put(TABLE_ID_KEY, object.get<ObjectIdType>(ID_KEY));
+        column.put(Column::TABLE_ID, object.get<ObjectIdType>(ID));
 
         // data-type ID.
-        boost::optional<std::string> datatype_name 
-            = column.get_optional<std::string>(DATATYPE_NAME_KEY);
-        if (!datatype_name) {
+        boost::optional<ObjectIdType> data_type_id 
+            = column.get_optional<ObjectIdType>(Column::DATA_TYPE_ID);
+        if (!data_type_id) {
             return ErrorCode::NOT_FOUND;
         }
-        std::unique_ptr<Metadata> datatype(new DatatypeMetadata(database()));
-        error = datatype->load();
-        if (error != ErrorCode::OK) {
-            return error;
-        }
-        ptree type_obj;
-        error = datatype->get(datatype_name.get(), type_obj);
-        if (error != ErrorCode::OK) {
-            return error;
-        }        
-        column.put(DATATYPE_ID_KEY, type_obj.get<ObjectIdType>(ID_KEY));
+        column.put(Column::DATA_TYPE_ID, data_type_id);
     }
 
     //
@@ -149,10 +138,10 @@ ErrorCode TableMetadata::fill_parameters(boost::property_tree::ptree& object)
     BOOST_FOREACH (ptree::value_type& node, object.get_child(CONSTRAINTS_NODE)) {
         ptree& constraint = node.second;
         // constraint ID
-        constraint.put(ID_KEY, generate_constraint_id());
+        constraint.put(ID, generate_constraint_id());
 
         // constraint table ID
-        constraint.put(TABLE_ID_KEY, object.get<ObjectIdType>(ID_KEY));
+        constraint.put(Constraint::TABLE_ID, object.get<ObjectIdType>(ID));
     }
 
     error = ErrorCode::OK;

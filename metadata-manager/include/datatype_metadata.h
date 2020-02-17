@@ -25,9 +25,15 @@
 
 namespace manager::metadata_manager {
 
-class DatatypeMetadata : public Metadata {
+class DataTypeMetadata : public Metadata {
     public:
-        static constexpr char const * DATATYPES_NODE = "datatypes";
+        // root object.
+        static constexpr char const * DATATYPES_NODE = "dataTypes";
+
+        // data type metadata-object.
+        // ID is defined in base class.
+        // NAME is defined in base class.
+        static constexpr char const * PG_DATA_TYPE  = "pg_dataType";
 
         static ErrorCode init();
 
@@ -57,12 +63,12 @@ class DatatypeMetadata : public Metadata {
          *  @param  (database) [in]  database name.
          *  @return none.
          */
-        DatatypeMetadata(std::string_view database, std::string_view component = "visitor") 
+        DataTypeMetadata(std::string_view database, std::string_view component = "visitor") 
             : Metadata(database, component) {}
 
     protected:
         // functions for template-method
-        std::string_view tablename() const { return TABLE_NAME; }
+        std::string_view table_name() const { return TABLE_NAME; }
         const std::string root_node() const { return DATATYPES_NODE; }
         uint64_t generate_object_id() const { 
             static ObjectIdType datatype_id = 0; 
