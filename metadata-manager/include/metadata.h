@@ -20,7 +20,6 @@
 #include <string_view>
 
 #include <boost/property_tree/ptree.hpp>
-#include <boost/iterator_adaptors.hpp>
 
 #include "error_code.h"
 
@@ -31,10 +30,10 @@ using ObjectIdType = uint64_t;
 
 class Metadata {
     public:
-        static constexpr char const * FORMAT_VERSION    = "format_version";
-        static constexpr char const * GENERATION        = "generation";
-        static constexpr char const * ID                = "id";
-        static constexpr char const * NAME              = "name";
+        static const char * FORMAT_VERSION;
+        static const char * GENERATION;
+        static const char * ID;
+        static const char * NAME;
 
         /**
          *  @brief  Constructor

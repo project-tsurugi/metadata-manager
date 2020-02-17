@@ -28,6 +28,11 @@ using namespace boost::property_tree;
 
 namespace manager::metadata_manager {
 
+const char * Metadata::FORMAT_VERSION   = "formatVersion";
+const char * Metadata::GENERATION       = "generation";
+const char * Metadata::ID               = "id";
+const char * Metadata::NAME             = "name";
+
 /**
  *  @brief  Load metadata from metadata-table.
  *  @param  (database)   [in]  database name.

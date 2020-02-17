@@ -30,7 +30,7 @@ class ObjectId {
         static ObjectIdType generate(const std::string table_name);
 
     private:
-        static constexpr char const * TABLE_NAME = "object_id.ini";
+        static const char * TABLE_NAME;
 };
 
 }

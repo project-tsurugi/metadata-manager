@@ -15,6 +15,8 @@ namespace manager::metadata_manager {
 
 static ObjectIdType INVALID_OID = 0;
 
+const char * ObjectId::TABLE_NAME = "object_id.ini";
+
 /**
  *  @brief  initialize object-ID metadata-table.
  */

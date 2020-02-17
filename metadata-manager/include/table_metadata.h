@@ -28,53 +28,53 @@ namespace manager::metadata_manager {
 class TableMetadata : public Metadata {
     public:
         // root object.
-        static constexpr char const * TABLES_NODE = "tables";
+        static const char * TABLES_NODE;
 
         // table metadata-object.
         // ID is defined in base class.
         // NAME is defined in base class.
-        static constexpr char const * NAMESPACE                 = "namespace";
-        static constexpr char const * COLUMNS_NODE              = "columns";
-        static constexpr char const * PRIMARY_INDEX_OBJECT      = "primaryIndex";
-        static constexpr char const * SECONDARY_INDICES_NODDE   = "secondaryIndices";
-        static constexpr char const * CONSTRAINTS_NODE          = "constraints";
+        static const char * NAMESPACE;
+        static const char * COLUMNS_NODE;
+        static const char * PRIMARY_INDEX_OBJECT;
+        static const char * SECONDARY_INDICES_NODDE;
+        static const char * CONSTRAINTS_NODE;
       
         // column metadata-object.
         struct Column {
-            static constexpr char const * ID                 = "id";
-            static constexpr char const * TABLE_ID           = "tableId";
-            static constexpr char const * NAME               = "name";
-            static constexpr char const * ORDINAL_POSITION   = "ordinalPosition";
-            static constexpr char const * DATA_TYPE_ID       = "dataTypeId";
-            static constexpr char const * DATA_LENGTH        = "dataLength";
-            static constexpr char const * NULLABLE           = "nullable";
-            static constexpr char const * CONSTRAINS_NODE    = "constraints";
+            static const char * ID;
+            static const char * TABLE_ID;
+            static const char * NAME;
+            static const char * ORDINAL_POSITION;
+            static const char * DATA_TYPE_ID;
+            static const char * DATA_LENGTH;
+            static const char * NULLABLE;
+            static const char * CONSTRAINS_NODE;
         };
 
         // constraint metadata-object.
         struct Constraint {
-            static constexpr char const * ID                 = "id";
-            static constexpr char const * TABLE_ID           = "tableId";
-            static constexpr char const * COLUMN_KEY_NODE    = "columnKey";
-            static constexpr char const * NAME               = "name";
-            static constexpr char const * TYPE               = "type";       
-            static constexpr char const * CONTENTS           = "contents";
+            static const char * ID;
+            static const char * TABLE_ID;
+            static const char * COLUMN_KEY_NODE;
+            static const char * NAME;
+            static const char * TYPE;       
+            static const char * CONTENTS;
             struct Type {
-                static constexpr char const * CHECK         = "C";
-                static constexpr char const * FOREIGN_KEY   = "F";
-                static constexpr char const * PRIMARY_KEY   = "P";
-                static constexpr char const * UNIQUE        = "U";
+                static const char * CHECK;
+                static const char * FOREIGN_KEY;
+                static const char * PRIMARY_KEY;
+                static const char * UNIQUE;
             };
         };
 
         // Index metadata-object.
         struct Index {
-            static constexpr char const * NAME            = "name";
-            static constexpr char const * COLUMN_OBJECT   = "column";
+            static const char * NAME;
+            static const char * COLUMN_OBJECT;
             // Index-Column metadata-object.
             struct Column {
-                static constexpr char const * NAME         = "name";
-                static constexpr char const * DIRECTION     = "direction";
+                static const char * NAME;
+                static const char * DIRECTION;
             };
         };
 
@@ -118,7 +118,7 @@ class TableMetadata : public Metadata {
         ErrorCode fill_parameters(boost::property_tree::ptree& object);
 
     private:
-        static constexpr char const * TABLE_NAME = "tables";
+        static const char * TABLE_NAME;
 };
 
 } // namespace manager::metadata_manager

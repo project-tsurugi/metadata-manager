@@ -29,6 +29,51 @@ using namespace boost::property_tree;
 
 namespace manager::metadata_manager {
 
+// root object.
+const char * TableMetadata::TABLES_NODE = "tables";
+
+// table metadata-object.
+// ID is defined in base class.
+// NAME is defined in base class.
+const char * TableMetadata::NAMESPACE                 = "namespace";
+const char * TableMetadata::COLUMNS_NODE              = "columns";
+const char * TableMetadata::PRIMARY_INDEX_OBJECT      = "primaryIndex";
+const char * TableMetadata::SECONDARY_INDICES_NODDE   = "secondaryIndices";
+const char * TableMetadata::CONSTRAINTS_NODE          = "constraints";
+
+// column metadata-object.
+const char * TableMetadata::Column::ID                = "id";
+const char * TableMetadata::Column::TABLE_ID          = "tableId";
+const char * TableMetadata::Column::NAME              = "name";
+const char * TableMetadata::Column::ORDINAL_POSITION  = "ordinalPosition";
+const char * TableMetadata::Column::DATA_TYPE_ID      = "dataTypeId";
+const char * TableMetadata::Column::DATA_LENGTH       = "dataLength";
+const char * TableMetadata::Column::NULLABLE          = "nullable";
+const char * TableMetadata::Column::CONSTRAINS_NODE   = "constraints";
+
+// constraint metadata-object.
+const char * TableMetadata::Constraint::ID                = "id";
+const char * TableMetadata::Constraint::TABLE_ID          = "tableId";
+const char * TableMetadata::Constraint::COLUMN_KEY_NODE   = "columnKey";
+const char * TableMetadata::Constraint::NAME              = "name";
+const char * TableMetadata::Constraint::TYPE              = "type";       
+const char * TableMetadata::Constraint::CONTENTS          = "contents";
+// constraint-type
+const char * TableMetadata::Constraint::Type::CHECK       = "C";
+const char * TableMetadata::Constraint::Type::FOREIGN_KEY = "F";
+const char * TableMetadata::Constraint::Type::PRIMARY_KEY = "P";
+const char * TableMetadata::Constraint::Type::UNIQUE      = "U";
+
+// Index metadata-object.
+const char * TableMetadata::Index::NAME           = "name";
+const char * TableMetadata::Index::COLUMN_OBJECT  = "column";
+
+// Index-Column metadata-object.
+const char * TableMetadata::Index::Column::NAME       = "name";
+const char * TableMetadata::Index::Column::DIRECTION  = "direction";
+
+const char * TableMetadata::TABLE_NAME = "tables";
+
 ErrorCode TableMetadata::init()
 {
     ErrorCode error = ErrorCode::UNKNOWN;
@@ -94,7 +139,7 @@ ObjectIdType TableMetadata::generate_object_id() const
  *  @brief  Generate the object ID of column-metadata.
  *  @return new object ID.
  */
-static ObjectIdType generate_column_id()
+ObjectIdType generate_column_id()
 {
     return ObjectId::generate("column");
 }
@@ -103,7 +148,7 @@ static ObjectIdType generate_column_id()
  *  @brief  Generate the object ID of constraint-metadata.
  *  @return new object ID.
  */
-static ObjectIdType generate_constraint_id()
+ObjectIdType generate_constraint_id()
 {
     return ObjectId::generate("constraint");
 }
