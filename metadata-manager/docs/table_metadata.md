@@ -23,7 +23,7 @@
     "columns"           : array[object],    [*] // カラムメタデータオブジェクト
     "primaryIndex"      : object,           [*] // Indexメタデータオブジェクト（Primary Index）
     "secondaryIndices"  : array[object],    [*] // Indexメタデータオブジェクト（Secondary Indices）
-    "constraints"       : array[object]     [+] // Constraintメタデータオブジェクト（テーブル制約）
+    "tableConstraints"  : array[object]     [+] // Constraintメタデータオブジェクト（テーブル制約）
 }
 
 // Columnメタデータオブジェクト
@@ -35,11 +35,12 @@
     "dataTypeId"        : number,           [*] // カラムのデータ型のID
                                                 // データタイプメタデータを参照(別途)
     "dataTypeName"      : string,           [*] // カラムのデータ型名
-                                                // "dataTypeId" と "dataTypeName" は選択必須
     "dataLength"        : array[number],    [+] // データ長(配列長)
                                                 // varchar(20)など ※V1では未使用
+                                                // NUMERIC(precision,scale)を考慮してarray[number] にしている。
+                                                // array[number] か number かは継続して検討。
     "nullable"          : bool,             [*] // NOT NULL制約の有無
-    "constraints"       : array             [+] // Constraintメタデータオブジェクト（カラム制約）
+    "columnConstraints" : array[object]     [+] // Constraintメタデータオブジェクト（カラム制約）
 }
 
 // Constraintメタデータオブジェクト（カラム制約、テーブル制約共通）
@@ -68,10 +69,10 @@
 ```
 
 ```
-// DataType情報メタデータ(root)   ※検討中
+// DataType情報メタデータ(root)
 {
     "formatVersion"    : number,       // データ形式フォーマットバージョン
-    "generation"        : number,       // メタデータの世代
+    "generation"       : number,       // メタデータの世代
     "dataTypes"        : array[object] // DataTypeメタデータオブジェクト
 }
 
@@ -79,6 +80,6 @@
 {
     "id"            : number,   // データ型ID
     "name"          : string,   // データ型名
-    "pg_datatype"   : number    // 対応するPostgreSQLのデータ型のOID
+    "pg_dataType"   : number    // 対応するPostgreSQLのデータ型のOID
 }
 ```

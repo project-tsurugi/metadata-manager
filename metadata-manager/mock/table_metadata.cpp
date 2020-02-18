@@ -24,11 +24,55 @@
 #include "object_id.h"
 #include "metadata.h"
 #include "table_metadata.h"
-#include "datatype_metadata.h"
 
 using namespace boost::property_tree;
 
 namespace manager::metadata_manager {
+
+// root object.
+const char * TableMetadata::TABLES_NODE = "tables";
+
+// table metadata-object.
+// ID is defined in base class.
+// NAME is defined in base class.
+const char * TableMetadata::NAMESPACE                 = "namespace";
+const char * TableMetadata::COLUMNS_NODE              = "columns";
+const char * TableMetadata::PRIMARY_INDEX_OBJECT      = "primaryIndex";
+const char * TableMetadata::SECONDARY_INDICES_NODDE   = "secondaryIndices";
+const char * TableMetadata::CONSTRAINTS_NODE          = "constraints";
+
+// column metadata-object.
+const char * TableMetadata::Column::ID                = "id";
+const char * TableMetadata::Column::TABLE_ID          = "tableId";
+const char * TableMetadata::Column::NAME              = "name";
+const char * TableMetadata::Column::ORDINAL_POSITION  = "ordinalPosition";
+const char * TableMetadata::Column::DATA_TYPE_ID      = "dataTypeId";
+const char * TableMetadata::Column::DATA_LENGTH       = "dataLength";
+const char * TableMetadata::Column::NULLABLE          = "nullable";
+const char * TableMetadata::Column::CONSTRAINS_NODE   = "constraints";
+
+// constraint metadata-object.
+const char * TableMetadata::Constraint::ID                = "id";
+const char * TableMetadata::Constraint::TABLE_ID          = "tableId";
+const char * TableMetadata::Constraint::COLUMN_KEY_NODE   = "columnKey";
+const char * TableMetadata::Constraint::NAME              = "name";
+const char * TableMetadata::Constraint::TYPE              = "type";       
+const char * TableMetadata::Constraint::CONTENTS          = "contents";
+// constraint-type
+const char * TableMetadata::Constraint::Type::CHECK       = "C";
+const char * TableMetadata::Constraint::Type::FOREIGN_KEY = "F";
+const char * TableMetadata::Constraint::Type::PRIMARY_KEY = "P";
+const char * TableMetadata::Constraint::Type::UNIQUE      = "U";
+
+// Index metadata-object.
+const char * TableMetadata::Index::NAME           = "name";
+const char * TableMetadata::Index::COLUMN_OBJECT  = "column";
+
+// Index-Column metadata-object.
+const char * TableMetadata::Index::Column::NAME       = "name";
+const char * TableMetadata::Index::Column::DIRECTION  = "direction";
+
+const char * TableMetadata::TABLE_NAME = "tables";
 
 ErrorCode TableMetadata::init()
 {
@@ -95,7 +139,7 @@ ObjectIdType TableMetadata::generate_object_id() const
  *  @brief  Generate the object ID of column-metadata.
  *  @return new object ID.
  */
-static ObjectIdType generate_column_id()
+ObjectIdType generate_column_id()
 {
     return ObjectId::generate("column");
 }
@@ -104,7 +148,7 @@ static ObjectIdType generate_column_id()
  *  @brief  Generate the object ID of constraint-metadata.
  *  @return new object ID.
  */
-static ObjectIdType generate_constraint_id()
+ObjectIdType generate_constraint_id()
 {
     return ObjectId::generate("constraint");
 }
@@ -119,28 +163,18 @@ ErrorCode TableMetadata::fill_parameters(boost::property_tree::ptree& object)
     BOOST_FOREACH (ptree::value_type& node, object.get_child(COLUMNS_NODE)) {
         ptree& column = node.second;
         // column ID
-        column.put(ID_KEY, generate_column_id());
+        column.put(Column::ID, generate_column_id());
 
         // table ID
-        column.put(TABLE_ID_KEY, object.get<ObjectIdType>(ID_KEY));
+        column.put(Column::TABLE_ID, object.get<ObjectIdType>(ID));
 
         // data-type ID.
-        boost::optional<std::string> datatype_name 
-            = column.get_optional<std::string>(DATATYPE_NAME_KEY);
-        if (!datatype_name) {
+        boost::optional<ObjectIdType> data_type_id 
+            = column.get_optional<ObjectIdType>(Column::DATA_TYPE_ID);
+        if (!data_type_id) {
             return ErrorCode::NOT_FOUND;
         }
-        std::unique_ptr<Metadata> datatype(new DatatypeMetadata(database()));
-        error = datatype->load();
-        if (error != ErrorCode::OK) {
-            return error;
-        }
-        ptree type_obj;
-        error = datatype->get(datatype_name.get(), type_obj);
-        if (error != ErrorCode::OK) {
-            return error;
-        }        
-        column.put(DATATYPE_ID_KEY, type_obj.get<ObjectIdType>(ID_KEY));
+        column.put(Column::DATA_TYPE_ID, data_type_id);
     }
 
     //
@@ -149,10 +183,10 @@ ErrorCode TableMetadata::fill_parameters(boost::property_tree::ptree& object)
     BOOST_FOREACH (ptree::value_type& node, object.get_child(CONSTRAINTS_NODE)) {
         ptree& constraint = node.second;
         // constraint ID
-        constraint.put(ID_KEY, generate_constraint_id());
+        constraint.put(ID, generate_constraint_id());
 
         // constraint table ID
-        constraint.put(TABLE_ID_KEY, object.get<ObjectIdType>(ID_KEY));
+        constraint.put(Constraint::TABLE_ID, object.get<ObjectIdType>(ID));
     }
 
     error = ErrorCode::OK;

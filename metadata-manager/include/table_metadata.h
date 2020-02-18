@@ -27,13 +27,56 @@ namespace manager::metadata_manager {
 
 class TableMetadata : public Metadata {
     public:
-        static constexpr char const * TABLES_NODE = "tables";
-        static constexpr char const * COLUMNS_NODE = "columns";
-        static constexpr char const * CONSTRAINTS_NODE = "constraints";
+        // root object.
+        static const char * TABLES_NODE;
 
-        static constexpr char const * TABLE_ID_KEY = "table_id";
-        static constexpr char const * DATATYPE_ID_KEY = "datatype_id";
-        static constexpr char const * DATATYPE_NAME_KEY = "datatype_name";
+        // table metadata-object.
+        // ID is defined in base class.
+        // NAME is defined in base class.
+        static const char * NAMESPACE;
+        static const char * COLUMNS_NODE;
+        static const char * PRIMARY_INDEX_OBJECT;
+        static const char * SECONDARY_INDICES_NODDE;
+        static const char * CONSTRAINTS_NODE;
+      
+        // column metadata-object.
+        struct Column {
+            static const char * ID;
+            static const char * TABLE_ID;
+            static const char * NAME;
+            static const char * ORDINAL_POSITION;
+            static const char * DATA_TYPE_ID;
+            static const char * DATA_LENGTH;
+            static const char * NULLABLE;
+            static const char * CONSTRAINS_NODE;
+        };
+
+        // constraint metadata-object.
+        struct Constraint {
+            static const char * ID;
+            static const char * TABLE_ID;
+            static const char * COLUMN_KEY_NODE;
+            static const char * NAME;
+            static const char * TYPE;       
+            static const char * CONTENTS;
+            struct Type {
+                static const char * CHECK;
+                static const char * FOREIGN_KEY;
+                static const char * PRIMARY_KEY;
+                static const char * UNIQUE;
+            };
+        };
+
+        // Index metadata-object.
+        struct Index {
+            static const char * NAME;
+            static const char * COLUMN_OBJECT;
+            // Index-Column metadata-object.
+            struct Column {
+                static const char * NAME;
+                static const char * DIRECTION;
+            };
+        };
 
         static ErrorCode init();
 
@@ -69,13 +112,13 @@ class TableMetadata : public Metadata {
             GenerationType* generation = nullptr);
 
         // functions for template-method
-        std::string_view tablename() const { return TABLE_NAME; }
+        std::string_view table_name() const { return TABLE_NAME; }
         const std::string root_node() const { return TABLES_NODE; }
         ObjectIdType generate_object_id() const;
         ErrorCode fill_parameters(boost::property_tree::ptree& object);
 
     private:
-        static constexpr char const * TABLE_NAME = "tables";
+        static const char * TABLE_NAME;
 };
 
 } // namespace manager::metadata_manager

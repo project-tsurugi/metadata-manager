@@ -28,6 +28,11 @@ using namespace boost::property_tree;
 
 namespace manager::metadata_manager {
 
+const char * Metadata::FORMAT_VERSION   = "formatVersion";
+const char * Metadata::GENERATION       = "generation";
+const char * Metadata::ID               = "id";
+const char * Metadata::NAME             = "name";
+
 /**
  *  @brief  Load metadata from metadata-table.
  *  @param  (database)   [in]  database name.
@@ -99,7 +104,7 @@ ErrorCode Metadata::load()
  */
 ErrorCode Metadata::load(const uint64_t generation)
 {
-    return Metadata::load(database(), tablename(), metadata_, generation);
+    return Metadata::load(database(), table_name(), metadata_, generation);
 }
 
 /**
@@ -123,11 +128,11 @@ ErrorCode Metadata::add(boost::property_tree::ptree& object, uint64_t* object_id
     ErrorCode error = ErrorCode::UNKNOWN;
 
     // format_version
-    object.put(FORMAT_VERSION_KEY, format_version_);
+    object.put(FORMAT_VERSION, format_version_);
 
     // generate the object ID of the added metadata-object.
     uint64_t new_id = generate_object_id();
-    object.put(ID_KEY, new_id);
+    object.put(ID, new_id);
     if (object_id != nullptr) {
         *object_id = new_id;
     }  
@@ -142,7 +147,7 @@ ErrorCode Metadata::add(boost::property_tree::ptree& object, uint64_t* object_id
     node.push_back(std::make_pair("", object));
     metadata_.put_child(root_node(), node);
 
-    Metadata::save(database(), tablename(), metadata_);
+    Metadata::save(database(), table_name(), metadata_);
 
     error = ErrorCode::OK;
 
@@ -161,13 +166,13 @@ ErrorCode Metadata::get(const ObjectIdType object_id, boost::property_tree::ptre
 
     ErrorCode error = ErrorCode::UNKNOWN;
 
-        object.clear();
+    object.clear();
 
     error = ErrorCode::ID_NOT_FOUND;
-    BOOST_FOREACH (const ptree::value_type& child, metadata_.get_child(root_node())) {
-        const ptree& temp_obj = child.second;
+    BOOST_FOREACH (const ptree::value_type& node, metadata_.get_child(root_node())) {
+        const ptree& temp_obj = node.second;
         
-        boost::optional<ObjectIdType> id = temp_obj.get_optional<ObjectIdType>(ID_KEY);
+        boost::optional<ObjectIdType> id = temp_obj.get_optional<ObjectIdType>(ID);
         if (!id) {
             return ErrorCode::NOT_FOUND;
         }
@@ -195,10 +200,10 @@ ErrorCode Metadata::get(
     ErrorCode error = ErrorCode::UNKNOWN;
 
     error = ErrorCode::NAME_NOT_FOUND;
-    BOOST_FOREACH (const ptree::value_type& child, metadata_.get_child(root_node())) {
-        const ptree& temp_obj = child.second;
+    BOOST_FOREACH (const ptree::value_type& node, metadata_.get_child(root_node())) {
+        const ptree& temp_obj = node.second;
         
-        boost::optional<std::string> name = temp_obj.get_optional<std::string>(NAME_KEY);
+        boost::optional<std::string> name = temp_obj.get_optional<std::string>(NAME);
         if (!name) {
             return ErrorCode::NOT_FOUND;
         }
