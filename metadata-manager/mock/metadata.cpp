@@ -88,6 +88,16 @@ ErrorCode Metadata::save(
     return ErrorCode::OK;
 }
 
+/*
+ *  @biref  initialization of Metadata.
+ */
+void Metadata::init(ptree& root)
+{
+    root.put(Metadata::FORMAT_VERSION, 1);
+    root.put(Metadata::GENERATION, 1);
+
+}
+
 /**
  *  @brief  Read latest table-metadata from metadata-table.
  *  @return ErrorCode::OK if success, otherwise an error code.
@@ -126,9 +136,6 @@ ErrorCode Metadata::add(boost::property_tree::ptree& object)
 ErrorCode Metadata::add(boost::property_tree::ptree& object, uint64_t* object_id)
 {
     ErrorCode error = ErrorCode::UNKNOWN;
-
-    // format_version
-    object.put(FORMAT_VERSION, format_version_);
 
     // generate the object ID of the added metadata-object.
     uint64_t new_id = generate_object_id();
@@ -230,8 +237,7 @@ ErrorCode Metadata::next(boost::property_tree::ptree& object)
     if (!object_queue_.empty()) {
         object_queue_.pop_front();
     } else{
-        ptree::value_type& node = metadata_.front();
-        object_queue_ = node.second;
+        object_queue_ = metadata_.get_child(root_node());
     }
 
     if (!object_queue_.empty()) {

@@ -66,6 +66,9 @@ class DataTypeMetadata : public Metadata {
         DataTypeMetadata(std::string_view database, std::string_view component = "visitor") 
             : Metadata(database, component) {}
 
+        DataTypeMetadata(const DataTypeMetadata&) = delete;
+        DataTypeMetadata& operator=(const DataTypeMetadata&) = delete;
+
     protected:
         // functions for template-method
         std::string_view table_name() const { return TABLE_NAME; }
