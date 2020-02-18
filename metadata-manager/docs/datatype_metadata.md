@@ -9,12 +9,12 @@ NEDO DBで使用するデータ型に関するメタデータを管理する。
 ### メソッド一覧
 |メソッド名|説明|
 |:---------|:---|
-|load()|data_typeメタデータテーブルの内容をすべて読み込む。|
-|add()|data_typeメタデータオブジェクトを追加する。|
-|get()|指定したIDまたは名前を持つdata_typeメタデータオブジェクトを取得する。|
-|set()|指定したIDまたは名前を持つdata_typeメタデータオブジェクトを更新する。|
-|remove()|指定したIDまたは名前を持つdata_typeメタデータオブジェクトを削除する。|
-|next()|次のdata_typeメタデータオブジェクトを取得する。|
+|load()|DataTypeメタデータテーブルの内容をすべて読み込む。|
+|add()|DataTypeメタデータオブジェクトを追加する。|
+|get()|指定したIDまたは名前を持つDataTypeメタデータオブジェクトを取得する。|
+|set()|指定したIDまたは名前を持つDataTypeメタデータオブジェクトを更新する。|
+|remove()|指定したIDまたは名前を持つDataTypeメタデータオブジェクトを削除する。|
+|next()|次のDataTypeメタデータオブジェクトを取得する。|
 
 ### メタデータフォーマット
 
@@ -25,7 +25,7 @@ boost::property_tree::ptreeに格納されるメタデータのフォーマッ�
 {
     "formatVersion"    : number,       // データ形式フォーマットバージョン
     "generation"       : number,       // メタデータの世代
-    "dataTypes"        : array[object] // data_typeメタデータオブジェクト
+    "dataTypes"        : array[object] // DataTypeメタデータオブジェクト
 }
 
 // DataTypeメタデータオブジェクト
