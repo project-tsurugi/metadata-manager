@@ -1,7 +1,26 @@
 
-# V1 テーブルメタデータ データ形式(rev.0.4)
+# Table Metadata (rev.0.4)
 
-2020.02.14 NEC
+2020.02.18 NEC
+
+## TableMetadataクラス
+テーブル、カラム、制約に関するメタデータを管理する。
+
+### メソッド一覧
+|メソッド名|説明|
+|:---------|:---|
+|load()|tableメタデータテーブルの内容をすべて読み込む。|
+|add()|tableメタデータオブジェクトを追加する。|
+|get()|指定したIDまたは名前を持つtableメタデータオブジェクトを取得する。|
+|set()|指定したIDまたは名前を持つtableメタデータオブジェクトを更新する。|
+|remove()|指定したIDまたは名前を持つtableメタデータオブジェクトを削除する。|
+|next()|次のtableメタデータオブジェクトを取得する。|
+
+### メタデータフォーマット
+
+boost::property_tree::ptreeに格納されるメタデータのフォーマット。
+
+※フォーマットはJSON Schemaに置換予定。
 
 * '*'　:　メタデータ登録時に必須の項目
 * '+'　:　メタデータ登録時に入力可能な項目
@@ -68,18 +87,4 @@
 }
 ```
 
-```
-// DataType情報メタデータ(root)
-{
-    "formatVersion"    : number,       // データ形式フォーマットバージョン
-    "generation"       : number,       // メタデータの世代
-    "dataTypes"        : array[object] // DataTypeメタデータオブジェクト
-}
-
-// DataTypeメタデータオブジェクト
-{
-    "id"            : number,   // データ型ID
-    "name"          : string,   // データ型名
-    "pg_dataType"   : number    // 対応するPostgreSQLのデータ型のOID
-}
-```
+以上
