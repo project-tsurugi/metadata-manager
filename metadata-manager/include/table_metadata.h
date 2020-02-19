@@ -36,7 +36,7 @@ class TableMetadata : public Metadata {
         static const char * NAMESPACE;
         static const char * COLUMNS_NODE;
         static const char * PRIMARY_INDEX_OBJECT;
-        static const char * SECONDARY_INDICES_NODDE;
+        static const char * SECONDARY_INDICES_NODE;
         static const char * CONSTRAINTS_NODE;
       
         // column metadata-object.
@@ -123,7 +123,10 @@ class TableMetadata : public Metadata {
     private:
         static const char * TABLE_NAME;
 
-        void fill_constraint(boost::property_tree::ptree& constraint, const boost::property_tree::ptree& table);
+        void fill_constraint(
+            boost::property_tree::ptree& constraint, 
+            bool column_constraint, 
+            const boost::property_tree::ptree& table = boost::property_tree::ptree());
 };
 
 } // namespace manager::metadata_manager

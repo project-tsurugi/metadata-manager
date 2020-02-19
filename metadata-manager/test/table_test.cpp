@@ -281,7 +281,8 @@ ErrorCode display_table_metadata_object(const ptree& table)
                         return error;
                     }
                 }
-        }        
+        }
+        std::cout << "---------------" << std::endl;
     }
 
     // table constraint metadata
@@ -303,9 +304,10 @@ ErrorCode display_table_metadata_object(const ptree& table)
 
     // secondary indices
     std::cout << "--- secondary indices ---" << std::endl;
-    BOOST_FOREACH (const ptree::value_type& node, table.get_child(TableMetadata::SECONDARY_INDICES_NODDE)) {
+    BOOST_FOREACH (const ptree::value_type& node, table.get_child(TableMetadata::SECONDARY_INDICES_NODE)) {
         const ptree& secondary_index = node.second;
         display_index_metadata_object(secondary_index);
+        std::cout << "---------------" << std::endl;
     }
 
     return ErrorCode::OK;;
@@ -348,22 +350,14 @@ ErrorCode add_table_metadata()
     {
         ptree column;
         // column #1
+        column.clear();
         column.put(TableMetadata::Column::NAME, "column_1");
         column.put<uint64_t>(TableMetadata::Column::ORDINAL_POSITION, 1);
         datatypes->get("FLOAT32", datatype);
         ObjectIdType data_type_id = datatype.get<ObjectIdType>(DataTypeMetadata::ID);
+        if (!data_type_id) return ErrorCode::NOT_FOUND;
         column.put<ObjectIdType>(TableMetadata::Column::DATA_TYPE_ID, data_type_id);
         column.put<bool>(TableMetadata::Column::NULLABLE, false);
-        columns.push_back(std::make_pair("", column));
-
-        // column #2
-        column.put(TableMetadata::Column::NAME, "column_2");
-        column.put<uint64_t>(TableMetadata::Column::ORDINAL_POSITION, 2);
-        datatypes->get("TEXT", datatype);
-        data_type_id = datatype.get<ObjectIdType>(DataTypeMetadata::ID);
-        column.put(TableMetadata::Column::DATA_TYPE_ID, data_type_id);
-        column.put<bool>(TableMetadata::Column::NULLABLE, true);
-
         // column-constraints
         ptree constraints;
         ptree constraint;
@@ -371,15 +365,38 @@ ErrorCode add_table_metadata()
             ptree column_keys;
             {
                 ptree column_key;
-                column_key.put("", 2);   // column ordinal_position
+                column_key.put("", 1);   // column ordinal_position
                 column_keys.push_back(std::make_pair("", column_key));
             }
             constraint.add_child(TableMetadata::Constraint::COLUMN_KEY_NODE, column_keys);
             constraint.put(TableMetadata::Constraint::TYPE, 
                 TableMetadata::Constraint::Type::PRIMARY_KEY);
             constraints.push_back(std::make_pair("", constraint));
-            column.add_child(TableMetadata::Column::CONSTRAINTS_NODE, constraints);
+            column.push_back(
+                std::make_pair(TableMetadata::Column::CONSTRAINTS_NODE, constraints));
         }
+        columns.push_back(std::make_pair("", column));
+
+        // column #2
+        column.clear();
+        column.put(TableMetadata::Column::NAME, "column_2");
+        column.put<uint64_t>(TableMetadata::Column::ORDINAL_POSITION, 2);
+        datatypes->get("TEXT", datatype);
+        data_type_id = datatype.get<ObjectIdType>(DataTypeMetadata::ID);
+        if (!data_type_id) return ErrorCode::NOT_FOUND;
+        column.put(TableMetadata::Column::DATA_TYPE_ID, data_type_id);
+        column.put<bool>(TableMetadata::Column::NULLABLE, true);
+        columns.push_back(std::make_pair("", column));
+
+        // column #3
+        column.clear();
+        column.put(TableMetadata::Column::NAME, "column_3");
+        column.put<uint64_t>(TableMetadata::Column::ORDINAL_POSITION, 3);
+        datatypes->get("INT64", datatype);
+        data_type_id = datatype.get<ObjectIdType>(DataTypeMetadata::ID);
+        if (!data_type_id) return ErrorCode::NOT_FOUND;
+        column.put(TableMetadata::Column::DATA_TYPE_ID, data_type_id);
+        column.put<bool>(TableMetadata::Column::NULLABLE, true);
         columns.push_back(std::make_pair("", column));
     }
     new_table.add_child(TableMetadata::COLUMNS_NODE, columns);
@@ -394,9 +411,11 @@ ErrorCode add_table_metadata()
         ptree column_keys;
         {
             ptree column_key[2];
-            column_key[0].put("", 1);   // column ordinal_position
+            // key#1
+            column_key[0].put("", 2);   // column ordinal_position
             column_keys.push_back(std::make_pair("", column_key[0]));
-            column_key[1].put("", 2);   // column ordinal_position
+            // key#2
+            column_key[1].put("", 3);   // column ordinal_position
             column_keys.push_back(std::make_pair("", column_key[1]));
         }
         constraint.add_child(TableMetadata::Constraint::COLUMN_KEY_NODE, column_keys);
@@ -426,13 +445,24 @@ ErrorCode add_table_metadata()
     ptree secondary_indices;
     ptree index;
     {
+        // Index#1
+        index.clear();
+        column_info.clear();
         index.put(TableMetadata::Index::NAME, "secondary_index_1");
         column_info.put(TableMetadata::Index::Column::NAME, "column_2" );
         column_info.put(TableMetadata::Index::Column::DIRECTION, 0);
+        index.push_back(std::make_pair(TableMetadata::Index::COLUMN_OBJECT, column_info));
+        secondary_indices.push_back(std::make_pair("", index));
+        // Index#2
+        index.clear();
+        column_info.clear();
+        index.put(TableMetadata::Index::NAME, "secondary_index_2");
+        column_info.put(TableMetadata::Index::Column::NAME, "column_3" );
+        column_info.put(TableMetadata::Index::Column::DIRECTION, 1);
+        index.push_back(std::make_pair(TableMetadata::Index::COLUMN_OBJECT, column_info));
+        secondary_indices.push_back(std::make_pair("", index));
     }    
-    index.push_back(std::make_pair(TableMetadata::Index::COLUMN_OBJECT, column_info));
-    secondary_indices.push_back(std::make_pair("", index));
-    new_table.add_child(TableMetadata::SECONDARY_INDICES_NODDE, secondary_indices);
+    new_table.add_child(TableMetadata::SECONDARY_INDICES_NODE, secondary_indices);
 
     //
     // add table-metadata object

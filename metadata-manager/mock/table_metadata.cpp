@@ -13,8 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <fstream>
-
 #include <boost/optional.hpp>
 #include <boost/foreach.hpp>
 #include <boost/property_tree/ptree.hpp>
@@ -38,7 +36,7 @@ const char * TableMetadata::TABLES_NODE = "tables";
 const char * TableMetadata::NAMESPACE                 = "namespace";
 const char * TableMetadata::COLUMNS_NODE              = "columns";
 const char * TableMetadata::PRIMARY_INDEX_OBJECT      = "primaryIndex";
-const char * TableMetadata::SECONDARY_INDICES_NODDE   = "secondaryIndices";
+const char * TableMetadata::SECONDARY_INDICES_NODE   = "secondaryIndices";
 const char * TableMetadata::CONSTRAINTS_NODE          = "tableConstraints";
 
 // column metadata-object.
@@ -154,13 +152,17 @@ ObjectIdType generate_constraint_id()
     return ObjectId::generate("constraint");
 }
 
-void TableMetadata::fill_constraint(ptree& constraint, const ptree& table)
+void TableMetadata::fill_constraint(ptree& constraint, bool column_constraint, const ptree& table)
 {
     // constraint ID
     constraint.put(Constraint::ID, generate_constraint_id());
 
     // constraint table ID
-    constraint.put(Constraint::TABLE_ID, table.get<ObjectIdType>(Constraint::ID));
+    if (column_constraint) {
+        constraint.put(Constraint::TABLE_ID, 0);    
+    } else {
+        constraint.put(Constraint::TABLE_ID, table.get<ObjectIdType>(Constraint::ID));
+    }
 
     // constraint name
     boost::optional<std::string> name 
@@ -200,7 +202,7 @@ ErrorCode TableMetadata::fill_parameters(boost::property_tree::ptree& table)
         if (constraints) {
             BOOST_FOREACH (ptree::value_type& node, column.get_child(Column::CONSTRAINTS_NODE)) {
                 ptree& constraint = node.second;
-                fill_constraint(constraint, table);
+                fill_constraint(constraint, true);
             }
         }
     }
@@ -208,12 +210,11 @@ ErrorCode TableMetadata::fill_parameters(boost::property_tree::ptree& table)
     //
     // table-constraint metadata
     // 
-    boost::optional<ptree&> constraints 
-        = table.get_child_optional(CONSTRAINTS_NODE);
+    boost::optional<ptree&> constraints = table.get_child_optional(CONSTRAINTS_NODE);
     if (constraints) {
         BOOST_FOREACH (ptree::value_type& node, table.get_child(CONSTRAINTS_NODE)) {
             ptree& constraint = node.second;
-            fill_constraint(constraint, table);
+            fill_constraint(constraint, false, table);
         }
     }
 
