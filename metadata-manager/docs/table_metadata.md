@@ -1,20 +1,19 @@
 
-# Table Metadata (rev.0.4)
+# Table Metadata (rev.0.5)
 
-2020.02.18 NEC
+2020.02.19 NEC
 
 ## TableMetadataクラス
 テーブル、カラム、制約に関するメタデータを管理する。
 
-### メソッド一覧
-|メソッド名|説明|
-|:---------|:---|
-|load()|tableメタデータテーブルの内容をすべて読み込む。|
-|add()|Tableメタデータオブジェクトを追加する。|
-|get()|指定したIDまたは名前を持つTableメタデータオブジェクトを取得する。|
-|set()|指定したIDまたは名前を持つTableメタデータオブジェクトを更新する。|
-|remove()|指定したIDまたは名前を持つTableメタデータオブジェクトを削除する。|
-|next()|次のTableメタデータオブジェクトを取得する。|
+### メソッド
+* static load()
+* load()
+* add()
+* get()
+* set()
+* remove()
+* next()
 
 ### メタデータフォーマット
 
@@ -27,7 +26,7 @@ boost::property_tree::ptreeに格納されるメタデータのフォーマッ�
 * '-'　:　統合メタデータ管理基盤が値を付与する項目
 
 ```
-// Table情報メタデータ(root)
+// Tableメタデータ(root)
 {
     "formatVersion"  : number,          [-] // データ形式フォーマットバージョン ※V1は"1"固定
     "generation"     : number,          [-] // メタデータの世代 ※V1は"1"固定

@@ -6,22 +6,25 @@
 ## DataTypeMetadataクラス
 NEDO DBで使用するデータ型に関するメタデータを管理する。
 
-### メソッド一覧
-|メソッド名|説明|
-|:---------|:---|
-|load()|DataTypeメタデータテーブルの内容をすべて読み込む。|
-|add()|DataTypeメタデータオブジェクトを追加する。|
-|get()|指定したIDまたは名前を持つDataTypeメタデータオブジェクトを取得する。|
-|set()|指定したIDまたは名前を持つDataTypeメタデータオブジェクトを更新する。|
-|remove()|指定したIDまたは名前を持つDataTypeメタデータオブジェクトを削除する。|
-|next()|次のDataTypeメタデータオブジェクトを取得する。|
+### メソッド
+* static load()
+* load()
+* add()
+* get()
+* set()
+* remove()
+* next()
 
 ### メタデータフォーマット
 
-boost::property_tree::ptreeに格納されるメタデータのフォーマット。
+※フォーマットはJSON Schemaに置換予定。
+
+* '*'　:　メタデータ登録時に必須の項目
+* '+'　:　メタデータ登録時に入力可能な項目
+* '-'　:　統合メタデータ管理基盤が値を付与する項目
 
 ```
-// DataType情報メタデータ(root)
+// DataTypeメタデータ(root)
 {
     "formatVersion"    : number,       // データ形式フォーマットバージョン
     "generation"       : number,       // メタデータの世代
