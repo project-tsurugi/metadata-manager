@@ -36,7 +36,7 @@ class TableMetadata : public Metadata {
         static const char * NAMESPACE;
         static const char * COLUMNS_NODE;
         static const char * PRIMARY_INDEX_OBJECT;
-        static const char * SECONDARY_INDICES_NODDE;
+        static const char * SECONDARY_INDICES_NODE;
         static const char * CONSTRAINTS_NODE;
       
         // column metadata-object.
@@ -48,7 +48,7 @@ class TableMetadata : public Metadata {
             static const char * DATA_TYPE_ID;
             static const char * DATA_LENGTH;
             static const char * NULLABLE;
-            static const char * CONSTRAINS_NODE;
+            static const char * CONSTRAINTS_NODE;
         };
 
         // constraint metadata-object.
@@ -99,6 +99,9 @@ class TableMetadata : public Metadata {
         TableMetadata(std::string_view database, std::string_view component = "visitor") 
             : Metadata(database, component) {}
 
+        TableMetadata(const TableMetadata&) = delete;
+        TableMetadata& operator=(const TableMetadata&) = delete;
+
     protected:
         /**
          *  @brief  Save the metadta to metadta-table.
@@ -119,6 +122,11 @@ class TableMetadata : public Metadata {
 
     private:
         static const char * TABLE_NAME;
+
+        void fill_constraint(
+            boost::property_tree::ptree& constraint, 
+            bool column_constraint, 
+            const boost::property_tree::ptree& table = boost::property_tree::ptree());
 };
 
 } // namespace manager::metadata_manager

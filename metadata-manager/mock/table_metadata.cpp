@@ -13,8 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <fstream>
-
 #include <boost/optional.hpp>
 #include <boost/foreach.hpp>
 #include <boost/property_tree/ptree.hpp>
@@ -38,8 +36,8 @@ const char * TableMetadata::TABLES_NODE = "tables";
 const char * TableMetadata::NAMESPACE                 = "namespace";
 const char * TableMetadata::COLUMNS_NODE              = "columns";
 const char * TableMetadata::PRIMARY_INDEX_OBJECT      = "primaryIndex";
-const char * TableMetadata::SECONDARY_INDICES_NODDE   = "secondaryIndices";
-const char * TableMetadata::CONSTRAINTS_NODE          = "constraints";
+const char * TableMetadata::SECONDARY_INDICES_NODE   = "secondaryIndices";
+const char * TableMetadata::CONSTRAINTS_NODE          = "tableConstraints";
 
 // column metadata-object.
 const char * TableMetadata::Column::ID                = "id";
@@ -49,7 +47,7 @@ const char * TableMetadata::Column::ORDINAL_POSITION  = "ordinalPosition";
 const char * TableMetadata::Column::DATA_TYPE_ID      = "dataTypeId";
 const char * TableMetadata::Column::DATA_LENGTH       = "dataLength";
 const char * TableMetadata::Column::NULLABLE          = "nullable";
-const char * TableMetadata::Column::CONSTRAINS_NODE   = "constraints";
+const char * TableMetadata::Column::CONSTRAINTS_NODE  = "columnConstraints";
 
 // constraint metadata-object.
 const char * TableMetadata::Constraint::ID                = "id";
@@ -85,6 +83,7 @@ ErrorCode TableMetadata::init()
         if (!file.is_open()) {
             // create metadata-table
             ptree root;
+            Metadata::init(root);
             root.put(TableMetadata::TABLES_NODE, "");
             error = TableMetadata::save("", root);
             if (error != ErrorCode::OK) {
@@ -153,20 +152,41 @@ ObjectIdType generate_constraint_id()
     return ObjectId::generate("constraint");
 }
 
-ErrorCode TableMetadata::fill_parameters(boost::property_tree::ptree& object)
+void TableMetadata::fill_constraint(ptree& constraint, bool column_constraint, const ptree& table)
+{
+    // constraint ID
+    constraint.put(Constraint::ID, generate_constraint_id());
+
+    // constraint table ID
+    if (column_constraint) {
+        constraint.put(Constraint::TABLE_ID, 0);    
+    } else {
+        constraint.put(Constraint::TABLE_ID, table.get<ObjectIdType>(Constraint::ID));
+    }
+
+    // constraint name
+    boost::optional<std::string> name 
+        = constraint.get_optional<std::string>(TableMetadata::Constraint::NAME);
+    if (!name) {
+        constraint.put(Constraint::NAME, "default_constraint_name");
+    }
+
+}
+
+ErrorCode TableMetadata::fill_parameters(boost::property_tree::ptree& table)
 {
     ErrorCode error = ErrorCode::UNKNOWN;
 
     //
-    // column-metdata
+    // column metdata
     // 
-    BOOST_FOREACH (ptree::value_type& node, object.get_child(COLUMNS_NODE)) {
+    BOOST_FOREACH (ptree::value_type& node, table.get_child(COLUMNS_NODE)) {
         ptree& column = node.second;
         // column ID
         column.put(Column::ID, generate_column_id());
 
         // table ID
-        column.put(Column::TABLE_ID, object.get<ObjectIdType>(ID));
+        column.put(Column::TABLE_ID, table.get<ObjectIdType>(ID));
 
         // data-type ID.
         boost::optional<ObjectIdType> data_type_id 
@@ -175,18 +195,27 @@ ErrorCode TableMetadata::fill_parameters(boost::property_tree::ptree& object)
             return ErrorCode::NOT_FOUND;
         }
         column.put(Column::DATA_TYPE_ID, data_type_id);
+
+        // column-constraint
+        boost::optional<ptree&> constraints 
+            = column.get_child_optional(Column::CONSTRAINTS_NODE);
+        if (constraints) {
+            BOOST_FOREACH (ptree::value_type& node, column.get_child(Column::CONSTRAINTS_NODE)) {
+                ptree& constraint = node.second;
+                fill_constraint(constraint, true);
+            }
+        }
     }
 
     //
-    // constraint metadata
+    // table-constraint metadata
     // 
-    BOOST_FOREACH (ptree::value_type& node, object.get_child(CONSTRAINTS_NODE)) {
-        ptree& constraint = node.second;
-        // constraint ID
-        constraint.put(ID, generate_constraint_id());
-
-        // constraint table ID
-        constraint.put(Constraint::TABLE_ID, object.get<ObjectIdType>(ID));
+    boost::optional<ptree&> constraints = table.get_child_optional(CONSTRAINTS_NODE);
+    if (constraints) {
+        BOOST_FOREACH (ptree::value_type& node, table.get_child(CONSTRAINTS_NODE)) {
+            ptree& constraint = node.second;
+            fill_constraint(constraint, false, table);
+        }
     }
 
     error = ErrorCode::OK;

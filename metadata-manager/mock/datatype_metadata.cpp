@@ -33,13 +33,12 @@ const char * DataTypeMetadata::TABLE_NAME = "datatypes";
 /*
  *  @biref  initialization of DataTypeMetadata.
  */
-ErrorCode DataTypeMetadata::init()
+ErrorCode DataTypeMetadata::init() 
 {
     ErrorCode error = ErrorCode::UNKNOWN;
 
     ptree root;
-    root.put(Metadata::FORMAT_VERSION, 1);
-    root.put(Metadata::GENERATION, 1);
+    Metadata::init(root);
     
     ptree datatypes;
     {

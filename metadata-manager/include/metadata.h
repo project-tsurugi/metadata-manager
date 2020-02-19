@@ -134,8 +134,13 @@ class Metadata {
          */
         ErrorCode next(boost::property_tree::ptree& object);
        
+        Metadata(const Metadata&) = delete;
+        Metadata& operator=(const Metadata&) = delete;
+
     protected:
         static const uint64_t LATEST_GENERATION = 0;
+
+        static void init(boost::property_tree::ptree& root);
 
         /**
          *  @brief  Load metadata from metadata-table.
