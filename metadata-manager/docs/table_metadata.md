@@ -53,7 +53,6 @@ boost::property_tree::ptreeに格納されるメタデータのフォーマッ�
     "ordinalPosition"   : number,           [*] // カラム番号(1 origin)
     "dataTypeId"        : number,           [*] // カラムのデータ型のID
                                                 // データタイプメタデータを参照(別途)
-    "dataTypeName"      : string,           [*] // カラムのデータ型名
     "dataLength"        : array[number],    [+] // データ長(配列長)
                                                 // varchar(20)など ※V1では未使用
                                                 // NUMERIC(precision,scale)を考慮してarray[number] にしている。
@@ -73,7 +72,7 @@ boost::property_tree::ptreeに格納されるメタデータのフォーマッ�
                                             // PostgreSQLのメタデータに合わせる
                                             //  c = 検査制約, f = 外部キー制約,
                                             //  p = 主キー制約, u = 一意性制約,
-                                            //  t = 制約トリガ, x = 排他制約
+                                            //  t = 制約トリガ
     "contents"      : string            [+] // 制約の補足情報（式など）
 }
 
