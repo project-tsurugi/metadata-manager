@@ -1,7 +1,7 @@
 
-# Table Metadata (rev.0.5)
+# Table Metadata (rev.0.6)
 
-2020.02.19 NEC
+2020.02.28 NEC
 
 ## TableMetadataクラス
 テーブル、カラム、制約に関するメタデータを管理する。
@@ -37,11 +37,9 @@ boost::property_tree::ptreeに格納されるメタデータのフォーマッ�
 {
     "id"                : number,           [-] // テーブルID
     "name"              : string,           [*] // テーブル名
-    "namespace"         : string,           [*] // 名前空間（テーブル名を除く）
+    "namespace"         : string,           [+] // 名前空間（テーブル名を除く）
     "columns"           : array[object],    [*] // カラムメタデータオブジェクト
-    "primaryIndex"      : object,           [*] // Indexメタデータオブジェクト（Primary Index）
-    "secondaryIndices"  : array[object],    [*] // Indexメタデータオブジェクト（Secondary Indices）
-    "tableConstraints"  : array[object]     [+] // Constraintメタデータオブジェクト（テーブル制約）
+    "primaryKey"        : array[number]     [*] // primaryKeyカラムの"ordinal_position"
 }
 
 // Columnメタデータオブジェクト
@@ -57,31 +55,8 @@ boost::property_tree::ptreeに格納されるメタデータのフォーマッ�
                                                 // NUMERIC(precision,scale)を考慮してarray[number] にしている。
                                                 // array[number] か number かは継続して検討。
     "nullable"          : bool,             [*] // NOT NULL制約の有無
-    "columnConstraints" : array[object]     [+] // Constraintメタデータオブジェクト（カラム制約）
-}
-
-// Constraintメタデータオブジェクト（カラム制約、テーブル制約共通）
-{
-    "id"            : number,           [-] // 制約ID
-    "tableId"       : number,           [-] // 制約が属するテーブルのID
-                                            // カラム制約の場合は"0"
-    "columnKey"     : array[number],    [*] // 制約が属するカラムの"ordinal_position"
-    "name"          : string,           [+] // 制約名
-    "type"          : string,           [*] // 制約の種類
-                                            // PostgreSQLのメタデータに合わせる
-                                            //  c = 検査制約, f = 外部キー制約,
-                                            //  p = 主キー制約, u = 一意性制約,
-                                            //  t = 制約トリガ
-    "contents"      : string            [+] // 制約の補足情報（式など）
-}
-
-// Indexメタデータオブジェクト
-{
-    "name"          : string,       [*] // Index名
-    "column" : {
-        "name"      : string,       [*] // カラム名
-        "direction" : number        [*] // 方向（0: ASCENDANT, 1: DESCENDANT）
-    }
+    "default"           : string            [+] // デフォルト式
+    "direction"         : number            [+] // 方向（0: DEFAULT, 1: ASCENDANT, 2: DESCENDANT）
 }
 ```
 
