@@ -1,7 +1,7 @@
 
-# Table Metadata (rev.0.5a)
+# Table Metadata (rev.0.6)
 
-2020.02.27 NEC
+2020.02.28 NEC
 
 ## TableMetadataクラス
 テーブル、カラム、制約に関するメタデータを管理する。
@@ -37,11 +37,9 @@ boost::property_tree::ptreeに格納されるメタデータのフォーマッ�
 {
     "id"                : number,           [-] // テーブルID
     "name"              : string,           [*] // テーブル名
-    "namespace"         : string,           [*] // 名前空間（テーブル名を除く）
+    "namespace"         : string,           [+] // 名前空間（テーブル名を除く）
     "columns"           : array[object],    [*] // カラムメタデータオブジェクト
-    "primaryIndex"      : object,           [*] // Indexメタデータオブジェクト（Primary Index）
-    "secondaryIndices"  : array[object],    [*] // Indexメタデータオブジェクト（Secondary Indices）
-    "tableConstraints"  : array[object]     [+] // Constraintメタデータオブジェクト（テーブル制約）
+    "primaryKey"        : array[number]     [*] // primaryKeyカラムの"ordinal_position"
 }
 
 // Columnメタデータオブジェクト
@@ -58,25 +56,7 @@ boost::property_tree::ptreeに格納されるメタデータのフォーマッ�
                                                 // array[number] か number かは継続して検討。
     "nullable"          : bool,             [*] // NOT NULL制約の有無
     "default"           : string            [+] // デフォルト式
-}
-
-// Constraintメタデータオブジェクト
-{
-    "id"            : number,           [-] // 制約ID
-    "tableId"       : number,           [-] // 制約が属するテーブルのID
-    "columnKey"     : array[number],    [*] // 制約が属するカラムの"ordinal_position"
-    "name"          : string,           [+] // 制約名
-    "type"          : string,           [*] // 制約の種類
-                                                "PRIMARY KEY" : 主キー制約
-}
-
-// Indexメタデータオブジェクト
-{
-    "name"          : string,       [*] // Index名
-    "column" : {
-        "name"      : string,       [*] // カラム名
-        "direction" : number        [*] // 方向（0: ASCENDANT, 1: DESCENDANT）
-    }
+    "direction"         : number            [+] // 方向（0: DEFAULT, 1: ASCENDANT, 2: DESCENDANT）
 }
 ```
 
