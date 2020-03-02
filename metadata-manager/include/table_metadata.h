@@ -35,9 +35,7 @@ class TableMetadata : public Metadata {
         // NAME is defined in base class.
         static const char * NAMESPACE;
         static const char * COLUMNS_NODE;
-        static const char * PRIMARY_INDEX_OBJECT;
-        static const char * SECONDARY_INDICES_NODE;
-        static const char * CONSTRAINTS_NODE;
+        static const char * PRIMARY_KEY_NODE;
       
         // column metadata-object.
         struct Column {
@@ -48,34 +46,8 @@ class TableMetadata : public Metadata {
             static const char * DATA_TYPE_ID;
             static const char * DATA_LENGTH;
             static const char * NULLABLE;
-            static const char * CONSTRAINTS_NODE;
-        };
-
-        // constraint metadata-object.
-        struct Constraint {
-            static const char * ID;
-            static const char * TABLE_ID;
-            static const char * COLUMN_KEY_NODE;
-            static const char * NAME;
-            static const char * TYPE;       
-            static const char * CONTENTS;
-            struct Type {
-                static const char * CHECK;
-                static const char * FOREIGN_KEY;
-                static const char * PRIMARY_KEY;
-                static const char * UNIQUE;
-            };
-        };
-
-        // Index metadata-object.
-        struct Index {
-            static const char * NAME;
-            static const char * COLUMN_OBJECT;
-            // Index-Column metadata-object.
-            struct Column {
-                static const char * NAME;
-                static const char * DIRECTION;
-            };
+            static const char * DEFAULT;
+            static const char * DIRECTION;
         };
 
         static ErrorCode init();
