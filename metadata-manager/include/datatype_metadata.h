@@ -64,7 +64,7 @@ class DataTypeMetadata : public Metadata {
          *  @return none.
          */
         DataTypeMetadata(std::string_view database, std::string_view component = "visitor") 
-            : Metadata(database, component) {}
+            : Metadata(database, component) { init(); }
 
         DataTypeMetadata(const DataTypeMetadata&) = delete;
         DataTypeMetadata& operator=(const DataTypeMetadata&) = delete;

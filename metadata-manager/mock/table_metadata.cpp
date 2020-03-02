@@ -35,9 +35,7 @@ const char * TableMetadata::TABLES_NODE = "tables";
 // NAME is defined in base class.
 const char * TableMetadata::NAMESPACE                 = "namespace";
 const char * TableMetadata::COLUMNS_NODE              = "columns";
-const char * TableMetadata::PRIMARY_INDEX_OBJECT      = "primaryIndex";
-const char * TableMetadata::SECONDARY_INDICES_NODE   = "secondaryIndices";
-const char * TableMetadata::CONSTRAINTS_NODE          = "tableConstraints";
+const char * TableMetadata::PRIMARY_KEY_NODE          = "primaryKey";
 
 // column metadata-object.
 const char * TableMetadata::Column::ID                = "id";
@@ -47,28 +45,8 @@ const char * TableMetadata::Column::ORDINAL_POSITION  = "ordinalPosition";
 const char * TableMetadata::Column::DATA_TYPE_ID      = "dataTypeId";
 const char * TableMetadata::Column::DATA_LENGTH       = "dataLength";
 const char * TableMetadata::Column::NULLABLE          = "nullable";
-const char * TableMetadata::Column::CONSTRAINTS_NODE  = "columnConstraints";
-
-// constraint metadata-object.
-const char * TableMetadata::Constraint::ID                = "id";
-const char * TableMetadata::Constraint::TABLE_ID          = "tableId";
-const char * TableMetadata::Constraint::COLUMN_KEY_NODE   = "columnKey";
-const char * TableMetadata::Constraint::NAME              = "name";
-const char * TableMetadata::Constraint::TYPE              = "type";       
-const char * TableMetadata::Constraint::CONTENTS          = "contents";
-// constraint-type
-const char * TableMetadata::Constraint::Type::CHECK       = "C";
-const char * TableMetadata::Constraint::Type::FOREIGN_KEY = "F";
-const char * TableMetadata::Constraint::Type::PRIMARY_KEY = "P";
-const char * TableMetadata::Constraint::Type::UNIQUE      = "U";
-
-// Index metadata-object.
-const char * TableMetadata::Index::NAME           = "name";
-const char * TableMetadata::Index::COLUMN_OBJECT  = "column";
-
-// Index-Column metadata-object.
-const char * TableMetadata::Index::Column::NAME       = "name";
-const char * TableMetadata::Index::Column::DIRECTION  = "direction";
+const char * TableMetadata::Column::DEFAULT           = "default";
+const char * TableMetadata::Column::DIRECTION         = "direction";
 
 const char * TableMetadata::TABLE_NAME = "tables";
 
@@ -152,27 +130,6 @@ ObjectIdType generate_constraint_id()
     return ObjectId::generate("constraint");
 }
 
-void TableMetadata::fill_constraint(ptree& constraint, bool column_constraint, const ptree& table)
-{
-    // constraint ID
-    constraint.put(Constraint::ID, generate_constraint_id());
-
-    // constraint table ID
-    if (column_constraint) {
-        constraint.put(Constraint::TABLE_ID, 0);    
-    } else {
-        constraint.put(Constraint::TABLE_ID, table.get<ObjectIdType>(Constraint::ID));
-    }
-
-    // constraint name
-    boost::optional<std::string> name 
-        = constraint.get_optional<std::string>(TableMetadata::Constraint::NAME);
-    if (!name) {
-        constraint.put(Constraint::NAME, "default_constraint_name");
-    }
-
-}
-
 ErrorCode TableMetadata::fill_parameters(boost::property_tree::ptree& table)
 {
     ErrorCode error = ErrorCode::UNKNOWN;
@@ -195,27 +152,6 @@ ErrorCode TableMetadata::fill_parameters(boost::property_tree::ptree& table)
             return ErrorCode::NOT_FOUND;
         }
         column.put(Column::DATA_TYPE_ID, data_type_id);
-
-        // column-constraint
-        boost::optional<ptree&> constraints 
-            = column.get_child_optional(Column::CONSTRAINTS_NODE);
-        if (constraints) {
-            BOOST_FOREACH (ptree::value_type& node, column.get_child(Column::CONSTRAINTS_NODE)) {
-                ptree& constraint = node.second;
-                fill_constraint(constraint, true);
-            }
-        }
-    }
-
-    //
-    // table-constraint metadata
-    // 
-    boost::optional<ptree&> constraints = table.get_child_optional(CONSTRAINTS_NODE);
-    if (constraints) {
-        BOOST_FOREACH (ptree::value_type& node, table.get_child(CONSTRAINTS_NODE)) {
-            ptree& constraint = node.second;
-            fill_constraint(constraint, false, table);
-        }
     }
 
     error = ErrorCode::OK;

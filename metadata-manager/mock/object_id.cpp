@@ -45,6 +45,8 @@ ObjectIdType ObjectId::current(const std::string table_name)
 {
     boost::property_tree::ptree pt;
 
+    init();
+
     try {
         read_ini(ObjectId::TABLE_NAME, pt);
     } catch (boost::property_tree::ini_parser_error& e) {
@@ -72,6 +74,8 @@ ObjectIdType ObjectId::current(const std::string table_name)
 ObjectIdType ObjectId::generate(const std::string table_name) 
 {
     boost::property_tree::ptree pt;
+
+    init();
 
     try {
         read_ini(ObjectId::TABLE_NAME, pt);

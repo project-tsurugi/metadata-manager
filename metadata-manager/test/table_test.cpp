@@ -68,99 +68,6 @@ bool initialize()
 }
 
 /*
- *  @brief  display constraint-metadata-object.
- */
-ErrorCode display_constraint_metadata_object(const ptree& constraint)
-{
-    ErrorCode error = ErrorCode::UNKNOWN;
-
-    boost::optional<ObjectIdType> id 
-        = constraint.get_optional<ObjectIdType>(TableMetadata::Constraint::ID);
-    if (!id) {
-        error = ErrorCode::NOT_FOUND;
-        print_error(error, __LINE__);
-        return error;
-    }
-    std::cout << "id : " << id << std::endl;
-
-    boost::optional<ObjectIdType> table_id 
-        = constraint.get_optional<ObjectIdType>(TableMetadata::Constraint::TABLE_ID);
-    if (!table_id) {
-        error = ErrorCode::NOT_FOUND;
-        print_error(error, __LINE__);
-        return error;
-    }
-    std::cout << "table id : " << table_id << std::endl;
-
-    ptree column_keys = constraint.get_child(TableMetadata::Constraint::COLUMN_KEY_NODE);
-    BOOST_FOREACH (const ptree::value_type& e, column_keys) {
-        std::cout << "column_key : " << e.second.data() << std::endl;
-    }
-
-    boost::optional<std::string> name 
-        = constraint.get_optional<std::string>(TableMetadata::Constraint::NAME);
-    if (!name) {
-        error = ErrorCode::NOT_FOUND;
-        print_error(error, __LINE__);
-        return error;
-    }
-    std::cout << "name : " << name.get() << std::endl;
-
-    boost::optional<std::string> type 
-        = constraint.get_optional<std::string>(TableMetadata::Constraint::TYPE);
-    if (!type) {
-        error = ErrorCode::NOT_FOUND;
-        print_error(error, __LINE__);
-        return error;
-    }
-    std::cout << "constraint type : " << type.get() << std::endl;
-
-    error = ErrorCode::OK;
-
-    return error;
-}
-
-/*
- *  @biref  display index-metadata-object.
- */
-ErrorCode display_index_metadata_object(const ptree& index)
-{
-    ErrorCode error = ErrorCode::UNKNOWN;
-
-    boost::optional<std::string> index_name
-        = index.get_optional<std::string>(TableMetadata::Index::NAME);
-    if (!index_name) {
-        error = ErrorCode::NOT_FOUND;
-        print_error(error, __LINE__);
-        return error;
-    }
-    std::cout << "name : " << index_name.get() << std::endl;      
-
-    const ptree& column = index.get_child(TableMetadata::Index::COLUMN_OBJECT);
-    boost::optional<std::string> column_name 
-        = column.get_optional<std::string>(TableMetadata::Index::Column::NAME);
-    if (!column_name) {
-        error = ErrorCode::NOT_FOUND;
-        print_error(error, __LINE__);
-        return error;
-    }
-    std::cout << "column name : " << column_name.get() << std::endl;      
-
-    boost::optional<uint16_t> direction 
-        = column.get_optional<uint16_t>(TableMetadata::Index::Column::DIRECTION);
-    if (!direction) {
-        error = ErrorCode::NOT_FOUND;
-        print_error(error, __LINE__);
-        return error;
-    }
-    std::cout << "column direction : " << direction.get() << std::endl;
-
-    error = ErrorCode::OK;
-
-    return error;
-}
-
-/*
  *  @biref  display talbe-metadata-object.
  */
 ErrorCode display_table_metadata_object(const ptree& table)
@@ -178,8 +85,8 @@ ErrorCode display_table_metadata_object(const ptree& table)
 
     // table metadata
     std::cout << "--- table ---" << std::endl;
-    boost::optional<ObjectIdType> id 
-        = table.get_optional<ObjectIdType>(TableMetadata::ID);
+    boost::optional<ObjectIdType> id = 
+        table.get_optional<ObjectIdType>(TableMetadata::ID);
     if (!id) {
         error = ErrorCode::NOT_FOUND;
         print_error(error, __LINE__);
@@ -187,8 +94,8 @@ ErrorCode display_table_metadata_object(const ptree& table)
     }
     std::cout << "id : " << id.get() << std::endl;
 
-    boost::optional<std::string> name 
-        = table.get_optional<std::string>(TableMetadata::NAME);
+    boost::optional<std::string> name = 
+        table.get_optional<std::string>(TableMetadata::NAME);
     if (!name) {
         error = ErrorCode::NOT_FOUND;
         print_error(error, __LINE__);
@@ -196,8 +103,8 @@ ErrorCode display_table_metadata_object(const ptree& table)
     }
     std::cout << "name : " << name << std::endl;
 
-    boost::optional<std::string> table_namespace 
-        = table.get_optional<std::string>(TableMetadata::NAMESPACE);
+    boost::optional<std::string> table_namespace = 
+        table.get_optional<std::string>(TableMetadata::NAMESPACE);
     if (!table_namespace) {
         error = ErrorCode::NOT_FOUND;
         print_error(error, __LINE__);
@@ -205,13 +112,18 @@ ErrorCode display_table_metadata_object(const ptree& table)
     }
     std::cout << "namespace : " << table_namespace.get() << std::endl;
 
+    ptree primary_keys = table.get_child(TableMetadata::PRIMARY_KEY_NODE);
+    BOOST_FOREACH (const ptree::value_type& node, primary_keys) {
+        std::cout << "primary_key : " << node.second.data() << std::endl;
+    }
+
     // column metadata
     std::cout << "--- columns ---" << std::endl;
     BOOST_FOREACH (const ptree::value_type& node, table.get_child(TableMetadata::COLUMNS_NODE)) {
         const ptree& column = node.second;
 
-        boost::optional<ObjectIdType> id 
-            = column.get_optional<ObjectIdType>(TableMetadata::Column::ID);
+        boost::optional<ObjectIdType> id = 
+            column.get_optional<ObjectIdType>(TableMetadata::Column::ID);
         if (!id) {
             error = ErrorCode::NOT_FOUND;
             print_error(error, __LINE__);
@@ -219,8 +131,8 @@ ErrorCode display_table_metadata_object(const ptree& table)
         }
         std::cout << "id : " << id << std::endl;
 
-        boost::optional<ObjectIdType> table_id 
-            = column.get_optional<ObjectIdType>(TableMetadata::Column::TABLE_ID);
+        boost::optional<ObjectIdType> table_id = 
+            column.get_optional<ObjectIdType>(TableMetadata::Column::TABLE_ID);
         if (!table_id) {
             error = ErrorCode::NOT_FOUND;
             print_error(error, __LINE__);
@@ -228,8 +140,8 @@ ErrorCode display_table_metadata_object(const ptree& table)
         }
         std::cout << "table id : " << table_id << std::endl;
 
-        boost::optional<std::string> name 
-            = column.get_optional<std::string>(TableMetadata::Column::NAME);
+        boost::optional<std::string> name = 
+            column.get_optional<std::string>(TableMetadata::Column::NAME);
         if (!name) {
             error = ErrorCode::NOT_FOUND;
             print_error(error, __LINE__);
@@ -237,8 +149,8 @@ ErrorCode display_table_metadata_object(const ptree& table)
         }
         std::cout << "name : " << name << std::endl;
 
-        boost::optional<uint64_t> ordinal_position 
-            = column.get_optional<uint64_t>(TableMetadata::Column::ORDINAL_POSITION);
+        boost::optional<uint64_t> ordinal_position = 
+            column.get_optional<uint64_t>(TableMetadata::Column::ORDINAL_POSITION);
         if (!ordinal_position) {
             error = ErrorCode::NOT_FOUND;
             print_error(error, __LINE__);
@@ -246,8 +158,8 @@ ErrorCode display_table_metadata_object(const ptree& table)
         }
         std::cout << "ordinal position : " << ordinal_position << std::endl;
 
-        boost::optional<ObjectIdType> data_type_id 
-            = column.get_optional<ObjectIdType>(TableMetadata::Column::DATA_TYPE_ID);
+        boost::optional<ObjectIdType> data_type_id = 
+            column.get_optional<ObjectIdType>(TableMetadata::Column::DATA_TYPE_ID);
         if (!data_type_id) {
             error = ErrorCode::NOT_FOUND;
             print_error(error, __LINE__);
@@ -258,8 +170,8 @@ ErrorCode display_table_metadata_object(const ptree& table)
         std::cout << "datatype name : " 
             << datatype.get<std::string>(DataTypeMetadata::NAME) << std::endl;
 
-        boost::optional<bool> nullable 
-            = column.get_optional<bool>(TableMetadata::Column::NULLABLE);
+        boost::optional<bool> nullable = 
+            column.get_optional<bool>(TableMetadata::Column::NULLABLE);
         if (!nullable) {
             error = ErrorCode::NOT_FOUND;
             print_error(error, __LINE__);
@@ -267,46 +179,18 @@ ErrorCode display_table_metadata_object(const ptree& table)
         }
         std::cout << "nullable : " << nullable << std::endl;
 
-        // column constraint metadata
-        boost::optional<const ptree&> constraints_node
-            = column.get_child_optional(TableMetadata::Column::CONSTRAINTS_NODE);
-        if (constraints_node) {
-            std::cout << "--- column-constraints ---" << std::endl;
-            BOOST_FOREACH (const ptree::value_type& node, 
-                column.get_child(TableMetadata::Column::CONSTRAINTS_NODE)) {
-                    const ptree& constraint = node.second;
-                    error = display_constraint_metadata_object(constraint);
-                    if (error != ErrorCode::OK) {
-                        print_error(error, __LINE__);
-                        return error;
-                    }
-                }
-        }
-        std::cout << "---------------" << std::endl;
-    }
-
-    // table constraint metadata
-    std::cout << "--- table-constraints ---" << std::endl;
-    BOOST_FOREACH (const ptree::value_type& node, 
-        table.get_child(TableMetadata::CONSTRAINTS_NODE)) {
-            const ptree& constraint = node.second;
-            error = display_constraint_metadata_object(constraint);
-            if (error != ErrorCode::OK) {
-                print_error(error, __LINE__);
-                return error;
-            }
+        boost::optional<std::string> default_expr =
+            column.get_optional<std::string>(TableMetadata::Column::DEFAULT);
+        if (default_expr) {
+            std::cout << "default : " << default_expr << std::endl;
         }
 
-    // primary index
-    std::cout << "--- primary index ---" << std::endl;
-    const ptree& primary_index = table.get_child(TableMetadata::PRIMARY_INDEX_OBJECT);
-    display_index_metadata_object(primary_index);
+        boost::optional<uint64_t> direction =
+            column.get_optional<uint64_t>(TableMetadata::Column::DIRECTION);
+        if (direction) {
+            std::cout << "direction : " << direction << std::endl;
+        }
 
-    // secondary indices
-    std::cout << "--- secondary indices ---" << std::endl;
-    BOOST_FOREACH (const ptree::value_type& node, table.get_child(TableMetadata::SECONDARY_INDICES_NODE)) {
-        const ptree& secondary_index = node.second;
-        display_index_metadata_object(secondary_index);
         std::cout << "---------------" << std::endl;
     }
 
@@ -342,7 +226,14 @@ ErrorCode add_table_metadata()
     //
     new_table.put(TableMetadata::NAME, get_tablename());
     new_table.put(TableMetadata::NAMESPACE, "public");
-    
+
+    ptree primary_key;
+    ptree primary_keys;
+    primary_key.put<uint64_t>("", 1);
+    primary_keys.push_back(std::make_pair("", primary_key));
+    primary_key.put<uint64_t>("", 2);
+    primary_keys.push_back(std::make_pair("", primary_key));
+    new_table.add_child(TableMetadata::PRIMARY_KEY_NODE, primary_keys);
     //
     // column-metadata
     //
@@ -358,23 +249,8 @@ ErrorCode add_table_metadata()
         if (!data_type_id) return ErrorCode::NOT_FOUND;
         column.put<ObjectIdType>(TableMetadata::Column::DATA_TYPE_ID, data_type_id);
         column.put<bool>(TableMetadata::Column::NULLABLE, false);
-        // column-constraints
-        ptree constraints;
-        ptree constraint;
-        {           
-            ptree column_keys;
-            {
-                ptree column_key;
-                column_key.put("", 1);   // column ordinal_position
-                column_keys.push_back(std::make_pair("", column_key));
-            }
-            constraint.add_child(TableMetadata::Constraint::COLUMN_KEY_NODE, column_keys);
-            constraint.put(TableMetadata::Constraint::TYPE, 
-                TableMetadata::Constraint::Type::PRIMARY_KEY);
-            constraints.push_back(std::make_pair("", constraint));
-            column.push_back(
-                std::make_pair(TableMetadata::Column::CONSTRAINTS_NODE, constraints));
-        }
+        column.put(TableMetadata::Column::DEFAULT, "default_expr1");
+        column.put<uint64_t>(TableMetadata::Column::DIRECTION, 1);
         columns.push_back(std::make_pair("", column));
 
         // column #2
@@ -386,6 +262,7 @@ ErrorCode add_table_metadata()
         if (!data_type_id) return ErrorCode::NOT_FOUND;
         column.put(TableMetadata::Column::DATA_TYPE_ID, data_type_id);
         column.put<bool>(TableMetadata::Column::NULLABLE, true);
+        column.put<uint64_t>(TableMetadata::Column::DIRECTION, 2);
         columns.push_back(std::make_pair("", column));
 
         // column #3
@@ -397,72 +274,10 @@ ErrorCode add_table_metadata()
         if (!data_type_id) return ErrorCode::NOT_FOUND;
         column.put(TableMetadata::Column::DATA_TYPE_ID, data_type_id);
         column.put<bool>(TableMetadata::Column::NULLABLE, true);
+        column.put(TableMetadata::Column::DEFAULT, "default_expr2");
         columns.push_back(std::make_pair("", column));
     }
     new_table.add_child(TableMetadata::COLUMNS_NODE, columns);
-
-    //
-    // constraint-metadata
-    //
-    ptree constraints;
-    {
-        ptree constraint;
-        // colum key
-        ptree column_keys;
-        {
-            ptree column_key[2];
-            // key#1
-            column_key[0].put("", 2);   // column ordinal_position
-            column_keys.push_back(std::make_pair("", column_key[0]));
-            // key#2
-            column_key[1].put("", 3);   // column ordinal_position
-            column_keys.push_back(std::make_pair("", column_key[1]));
-        }
-        constraint.add_child(TableMetadata::Constraint::COLUMN_KEY_NODE, column_keys);
-        // type
-        constraint.put(TableMetadata::Constraint::TYPE, 
-            TableMetadata::Constraint::Type::PRIMARY_KEY);
-        constraints.push_back(std::make_pair("", constraint));
-    }
-    new_table.add_child(TableMetadata::CONSTRAINTS_NODE, constraints);
-
-    //
-    // primary_index-metadata
-    //
-    ptree primary_index;
-    ptree column_info;
-    {
-        primary_index.put(TableMetadata::Index::NAME, "primary_index_1");
-        column_info.put(TableMetadata::Index::Column::NAME, "column_1");
-        column_info.put(TableMetadata::Index::Column::DIRECTION, 1);
-    }
-    primary_index.push_back(std::make_pair(TableMetadata::Index::COLUMN_OBJECT, column_info));
-    new_table.add_child(TableMetadata::PRIMARY_INDEX_OBJECT, primary_index);
-
-    //
-    // secondary_indices-metadata
-    //
-    ptree secondary_indices;
-    ptree index;
-    {
-        // Index#1
-        index.clear();
-        column_info.clear();
-        index.put(TableMetadata::Index::NAME, "secondary_index_1");
-        column_info.put(TableMetadata::Index::Column::NAME, "column_2" );
-        column_info.put(TableMetadata::Index::Column::DIRECTION, 0);
-        index.push_back(std::make_pair(TableMetadata::Index::COLUMN_OBJECT, column_info));
-        secondary_indices.push_back(std::make_pair("", index));
-        // Index#2
-        index.clear();
-        column_info.clear();
-        index.put(TableMetadata::Index::NAME, "secondary_index_2");
-        column_info.put(TableMetadata::Index::Column::NAME, "column_3" );
-        column_info.put(TableMetadata::Index::Column::DIRECTION, 1);
-        index.push_back(std::make_pair(TableMetadata::Index::COLUMN_OBJECT, column_info));
-        secondary_indices.push_back(std::make_pair("", index));
-    }    
-    new_table.add_child(TableMetadata::SECONDARY_INDICES_NODE, secondary_indices);
 
     //
     // add table-metadata object
@@ -592,13 +407,13 @@ ErrorCode static_functions_test()
 int main(void) 
 {
     std::cout << "*** TableMetadta test start. ***" << std::endl << std::endl;
-
+#if 0
     if (!initialize()) {
         std::cout << "initialization of test environment failed." << std::endl;
         std::cout << "*** TableMetadta test interrupted. ***" << std::endl;
         return 1; 
     }
-
+#endif
     std::cout << "=== class object test start. ===" << std::endl;
     ErrorCode class_object_test_error = class_object_test();
     std::cout << "=== class object test done. ===" << std::endl;
