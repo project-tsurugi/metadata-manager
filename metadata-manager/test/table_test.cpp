@@ -407,13 +407,13 @@ ErrorCode static_functions_test()
 int main(void) 
 {
     std::cout << "*** TableMetadta test start. ***" << std::endl << std::endl;
-
+#if 0
     if (!initialize()) {
         std::cout << "initialization of test environment failed." << std::endl;
         std::cout << "*** TableMetadta test interrupted. ***" << std::endl;
         return 1; 
     }
-
+#endif
     std::cout << "=== class object test start. ===" << std::endl;
     ErrorCode class_object_test_error = class_object_test();
     std::cout << "=== class object test done. ===" << std::endl;

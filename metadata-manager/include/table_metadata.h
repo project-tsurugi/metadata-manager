@@ -69,7 +69,7 @@ class TableMetadata : public Metadata {
          *  @return none.
          */
         TableMetadata(std::string_view database, std::string_view component = "visitor") 
-            : Metadata(database, component) {}
+            : Metadata(database, component) { init(); }
 
         TableMetadata(const TableMetadata&) = delete;
         TableMetadata& operator=(const TableMetadata&) = delete;
