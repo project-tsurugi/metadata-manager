@@ -151,7 +151,6 @@ ErrorCode TableMetadata::fill_parameters(boost::property_tree::ptree& table)
         if (!data_type_id) {
             return ErrorCode::NOT_FOUND;
         }
-        column.put(Column::DATA_TYPE_ID, data_type_id);
     }
 
     error = ErrorCode::OK;
