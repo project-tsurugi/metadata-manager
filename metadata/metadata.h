@@ -21,9 +21,9 @@
 
 #include <boost/property_tree/ptree.hpp>
 
-#include "error_code.h"
+#include "manager/metadata/error_code.h"
 
-namespace manager::metadata_manager {
+namespace manager::metadata {
 
 using GenerationType = uint64_t;
 using ObjectIdType = uint64_t;

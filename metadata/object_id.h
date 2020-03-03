@@ -18,10 +18,10 @@
 
 #include <string>
 
-#include "error_code.h"
-#include "metadata.h"
+#include "manager/metadata/error_code.h"
+#include "manager/metadata/metadata.h"
 
-namespace manager::metadata_manager {
+namespace manager::metadata {
 
 class ObjectId {
     public:

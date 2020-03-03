@@ -18,14 +18,14 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
 
-#include "error_code.h"
-#include "object_id.h"
-#include "metadata.h"
-#include "table_metadata.h"
+#include "manager/metadata/error_code.h"
+#include "manager/metadata/object_id.h"
+#include "manager/metadata/metadata.h"
+#include "manager/metadata/table_metadata.h"
 
 using namespace boost::property_tree;
 
-namespace manager::metadata_manager {
+namespace manager::metadata {
 
 // root object.
 const char * TableMetadata::TABLES_NODE = "tables";

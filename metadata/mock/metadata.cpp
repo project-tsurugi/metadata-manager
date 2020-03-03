@@ -21,12 +21,12 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
 
-#include "error_code.h"
-#include "metadata.h"
+#include "manager/metadata/error_code.h"
+#include "manager/metadata/metadata.h"
 
 using namespace boost::property_tree;
 
-namespace manager::metadata_manager {
+namespace manager::metadata {
 
 const char * Metadata::FORMAT_VERSION   = "formatVersion";
 const char * Metadata::GENERATION       = "generation";

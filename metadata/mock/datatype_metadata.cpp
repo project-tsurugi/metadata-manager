@@ -17,13 +17,13 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
 
-#include "error_code.h"
-#include "metadata.h"
-#include "datatype_metadata.h"
+#include "manager/metadata/error_code.h"
+#include "manager/metadata/metadata.h"
+#include "manager/metadata/datatype_metadata.h"
 
 using namespace boost::property_tree;
 
-namespace manager::metadata_manager {
+namespace manager::metadata {
 
 const char * DataTypeMetadata::DATATYPES_NODE   = "dataTypes";
 const char * DataTypeMetadata::PG_DATA_TYPE     = "pg_dataType";
