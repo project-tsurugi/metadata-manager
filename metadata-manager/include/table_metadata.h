@@ -64,6 +64,17 @@ class TableMetadata : public Metadata {
             const GenerationType Generation = LATEST_GENERATION);
 
         /**
+         *  @brief  Save the metadta to metadta-table.
+         *  @param  (database)   [in]  database name.
+         *  @param  (pt)         [in]  property_tree object that stores metadata to be saved.
+         *  @param  (generation) [out] the generation of saved metadata.
+         *  @return ErrorCode::OK if success, otherwise an error code.
+         */
+        static ErrorCode save(
+            std::string_view database, boost::property_tree::ptree& pt, 
+            GenerationType* generation = nullptr);
+
+        /**
          *  @brief  Constructor
          *  @param  (database) [in]  database name.
          *  @return none.
@@ -75,17 +86,6 @@ class TableMetadata : public Metadata {
         TableMetadata& operator=(const TableMetadata&) = delete;
 
     protected:
-        /**
-         *  @brief  Save the metadta to metadta-table.
-         *  @param  (database)   [in]  database name.
-         *  @param  (pt)         [in]  property_tree object that stores metadata to be saved.
-         *  @param  (generation) [out] the generation of saved metadata.
-         *  @return ErrorCode::OK if success, otherwise an error code.
-         */
-        static ErrorCode save(
-            std::string_view database, boost::property_tree::ptree& pt, 
-            GenerationType* generation = nullptr);
-
         // functions for template-method
         std::string_view table_name() const { return TABLE_NAME; }
         const std::string root_node() const { return TABLES_NODE; }
