@@ -21,7 +21,7 @@
 #include "manager/metadata/error_code.h"
 #include "manager/metadata/metadata.h"
 
-namespace manager::metadata {
+namespace manager::metadata_manager {
 
 class ObjectId {
     public:

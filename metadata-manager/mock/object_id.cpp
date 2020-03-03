@@ -11,7 +11,7 @@
 
 using namespace boost::property_tree;
 
-namespace manager::metadata {
+namespace manager::metadata_manager {
 
 static ObjectIdType INVALID_OID = 0;
 

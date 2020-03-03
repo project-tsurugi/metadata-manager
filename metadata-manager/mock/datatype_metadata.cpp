@@ -23,7 +23,7 @@
 
 using namespace boost::property_tree;
 
-namespace manager::metadata {
+namespace manager::metadata_manager {
 
 const char * DataTypeMetadata::DATATYPES_NODE   = "dataTypes";
 const char * DataTypeMetadata::PG_DATA_TYPE     = "pg_dataType";

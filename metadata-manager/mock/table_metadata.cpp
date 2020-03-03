@@ -25,7 +25,7 @@
 
 using namespace boost::property_tree;
 
-namespace manager::metadata {
+namespace manager::metadata_manager {
 
 // root object.
 const char * TableMetadata::TABLES_NODE = "tables";

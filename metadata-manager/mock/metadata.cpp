@@ -26,7 +26,7 @@
 
 using namespace boost::property_tree;
 
-namespace manager::metadata {
+namespace manager::metadata_manager {
 
 const char * Metadata::FORMAT_VERSION   = "formatVersion";
 const char * Metadata::GENERATION       = "generation";

@@ -23,7 +23,7 @@
 
 #include "manager/metadata/error_code.h"
 
-namespace manager::metadata {
+namespace manager::metadata_manager {
 
 using GenerationType = uint64_t;
 using ObjectIdType = uint64_t;

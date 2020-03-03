@@ -14,7 +14,7 @@
 #include "manager/metadata/datatype_metadata.h"
 #include "manager/metadata/table_metadata.h"
 
-using namespace manager::metadata;
+using namespace manager::metadata_manager;
 using namespace boost::property_tree;
 
 const char * const TEST_DB = "test_DB";
