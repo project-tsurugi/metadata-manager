@@ -69,6 +69,7 @@ dataTypeIdの取得方法
     if (!data_type_id) {
         エラー処理
     }
+    column.put<ObjectIdType>(TableMetadata::Column::DATA_TYPE_ID, data_type_id);
 ```
 
 rootオブジェクトにtableメタデータオブジェクトを追加する
