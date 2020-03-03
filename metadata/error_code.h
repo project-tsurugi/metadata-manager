@@ -16,7 +16,7 @@
 #ifndef MANAGER_ERROR_CODE_H_
 #define MANAGER_ERROR_CODE_H_
 
-namespace manager::metadata_manager {
+namespace manager::metadata {
 
 enum class ErrorCode {
     /**

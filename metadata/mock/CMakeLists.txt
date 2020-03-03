@@ -4,7 +4,7 @@ add_library(metadata
 )
 
 target_include_directories(metadata
-    PUBLIC ${PROJECT_SOURCE_DIR}/include
+    PUBLIC ${PROJECT_SOURCE_DIR}/../..
 )
 
 set_target_properties(metadata

@@ -5,13 +5,13 @@
 #include <boost/property_tree/ini_parser.hpp>
 #include <boost/optional.hpp>
 
-#include "error_code.h"
-#include "metadata.h"
-#include "object_id.h"
+#include "manager/metadata/error_code.h"
+#include "manager/metadata/object_id.h"
+#include "manager/metadata/object_id.h"
 
 using namespace boost::property_tree;
 
-namespace manager::metadata_manager {
+namespace manager::metadata {
 
 static ObjectIdType INVALID_OID = 0;
 

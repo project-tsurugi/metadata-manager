@@ -8,13 +8,13 @@
 #include <boost/foreach.hpp>
 #include <boost/optional.hpp>
 
-#include "error_code.h"
-#include "object_id.h"
-#include "metadata.h"
-#include "datatype_metadata.h"
-#include "table_metadata.h"
+#include "manager/metadata/error_code.h"
+#include "manager/metadata/object_id.h"
+#include "manager/metadata/metadata.h"
+#include "manager/metadata/datatype_metadata.h"
+#include "manager/metadata/table_metadata.h"
 
-using namespace manager::metadata_manager;
+using namespace manager::metadata;
 using namespace boost::property_tree;
 
 const char * const TEST_DB = "test_DB";
