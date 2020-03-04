@@ -44,6 +44,7 @@ const char * TableMetadata::Column::NAME              = "name";
 const char * TableMetadata::Column::ORDINAL_POSITION  = "ordinalPosition";
 const char * TableMetadata::Column::DATA_TYPE_ID      = "dataTypeId";
 const char * TableMetadata::Column::DATA_LENGTH       = "dataLength";
+const char * TableMetadata::Column::VARYING           = "varying";
 const char * TableMetadata::Column::NULLABLE          = "nullable";
 const char * TableMetadata::Column::DEFAULT           = "default";
 const char * TableMetadata::Column::DIRECTION         = "direction";

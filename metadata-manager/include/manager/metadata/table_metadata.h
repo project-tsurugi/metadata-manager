@@ -45,6 +45,7 @@ class TableMetadata : public Metadata {
             static const char * ORDINAL_POSITION;
             static const char * DATA_TYPE_ID;
             static const char * DATA_LENGTH;
+            static const char * VARYING;
             static const char * NULLABLE;
             static const char * DEFAULT;
             static const char * DIRECTION;
