@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef MANAGER_DATATYPE_METADATA
-#define MANAGER_DATATYPE_METADATA
+#ifndef MANAGER_TABLE_METADATA_H_
+#define MANAGER_TABLE_METADATA_H_
 
 #include <string>
 #include <string_view>
@@ -23,17 +23,33 @@
 #include "manager/metadata/error_code.h"
 #include "manager/metadata/metadata.h"
 
-namespace manager::metadata {
+namespace manager::metadata_manager {
 
-class DataTypeMetadata : public Metadata {
+class TableMetadata : public Metadata {
     public:
         // root object.
-        static const char * DATATYPES_NODE;
+        static const char * TABLES_NODE;
 
-        // data type metadata-object.
+        // table metadata-object.
         // ID is defined in base class.
         // NAME is defined in base class.
-        static const char * PG_DATA_TYPE;
+        static const char * NAMESPACE;
+        static const char * COLUMNS_NODE;
+        static const char * PRIMARY_KEY_NODE;
+      
+        // column metadata-object.
+        struct Column {
+            static const char * ID;
+            static const char * TABLE_ID;
+            static const char * NAME;
+            static const char * ORDINAL_POSITION;
+            static const char * DATA_TYPE_ID;
+            static const char * DATA_LENGTH;
+            static const char * VARYING;
+            static const char * NULLABLE;
+            static const char * DEFAULT;
+            static const char * DIRECTION;
+        };
 
         static ErrorCode init();
 
@@ -46,13 +62,14 @@ class DataTypeMetadata : public Metadata {
          */
         static ErrorCode load(
             std::string_view database, boost::property_tree::ptree& pt, 
-            const GenerationType generation = LATEST_GENERATION);
+            const GenerationType Generation = LATEST_GENERATION);
 
         /**
          *  @brief  Save the metadta to metadta-table.
          *  @param  (database)   [in]  database name.
          *  @param  (pt)         [in]  property_tree object that stores metadata to be saved.
          *  @param  (generation) [out] the generation of saved metadata.
+         *  @return ErrorCode::OK if success, otherwise an error code.
          */
         static ErrorCode save(
             std::string_view database, boost::property_tree::ptree& pt, 
@@ -63,28 +80,28 @@ class DataTypeMetadata : public Metadata {
          *  @param  (database) [in]  database name.
          *  @return none.
          */
-        DataTypeMetadata(std::string_view database, std::string_view component = "visitor") 
+        TableMetadata(std::string_view database, std::string_view component = "visitor") 
             : Metadata(database, component) { init(); }
 
-        DataTypeMetadata(const DataTypeMetadata&) = delete;
-        DataTypeMetadata& operator=(const DataTypeMetadata&) = delete;
+        TableMetadata(const TableMetadata&) = delete;
+        TableMetadata& operator=(const TableMetadata&) = delete;
 
     protected:
         // functions for template-method
         std::string_view table_name() const { return TABLE_NAME; }
-        const std::string root_node() const { return DATATYPES_NODE; }
-        uint64_t generate_object_id() const { 
-            static ObjectIdType datatype_id = 0; 
-            return ++datatype_id; 
-        }
-        ErrorCode fill_parameters( __attribute__((unused)) boost::property_tree::ptree& object) { 
-            return ErrorCode::OK; 
-        }
+        const std::string root_node() const { return TABLES_NODE; }
+        ObjectIdType generate_object_id() const;
+        ErrorCode fill_parameters(boost::property_tree::ptree& object);
 
     private:
         static const char * TABLE_NAME;
+
+        void fill_constraint(
+            boost::property_tree::ptree& constraint, 
+            bool column_constraint, 
+            const boost::property_tree::ptree& table = boost::property_tree::ptree());
 };
 
-}
+} // namespace manager::metadata_manager
 
-#endif // MANAGER_DATATYPE_METADATA
+#endif // MANAGER_TABLE_METADATA_H_

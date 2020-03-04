@@ -25,7 +25,7 @@
 
 using namespace boost::property_tree;
 
-namespace manager::metadata {
+namespace manager::metadata_manager {
 
 // root object.
 const char * TableMetadata::TABLES_NODE = "tables";
@@ -44,6 +44,7 @@ const char * TableMetadata::Column::NAME              = "name";
 const char * TableMetadata::Column::ORDINAL_POSITION  = "ordinalPosition";
 const char * TableMetadata::Column::DATA_TYPE_ID      = "dataTypeId";
 const char * TableMetadata::Column::DATA_LENGTH       = "dataLength";
+const char * TableMetadata::Column::VARYING           = "varying";
 const char * TableMetadata::Column::NULLABLE          = "nullable";
 const char * TableMetadata::Column::DEFAULT           = "default";
 const char * TableMetadata::Column::DIRECTION         = "direction";

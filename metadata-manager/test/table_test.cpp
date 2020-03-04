@@ -14,7 +14,7 @@
 #include "manager/metadata/datatype_metadata.h"
 #include "manager/metadata/table_metadata.h"
 
-using namespace manager::metadata;
+using namespace manager::metadata_manager;
 using namespace boost::property_tree;
 
 const char * const TEST_DB = "test_DB";
@@ -170,6 +170,24 @@ ErrorCode display_table_metadata_object(const ptree& table)
         std::cout << "datatype name : " 
             << datatype.get<std::string>(DataTypeMetadata::NAME) << std::endl;
 
+        boost::optional<uint64_t> data_length = 
+            column.get_optional<uint64_t>(TableMetadata::Column::DATA_LENGTH);
+        if (!data_length) {
+            error = ErrorCode::NOT_FOUND;
+            print_error(error, __LINE__);
+            return error;
+        }
+        std::cout << "data length : " << data_length << std::endl;
+
+        boost::optional<bool> varying = 
+            column.get_optional<bool>(TableMetadata::Column::VARYING);
+        if (!varying) {
+            error = ErrorCode::NOT_FOUND;
+            print_error(error, __LINE__);
+            return error;
+        }
+        std::cout << "varying : " << varying << std::endl;
+
         boost::optional<bool> nullable = 
             column.get_optional<bool>(TableMetadata::Column::NULLABLE);
         if (!nullable) {
@@ -248,6 +266,8 @@ ErrorCode add_table_metadata()
         ObjectIdType data_type_id = datatype.get<ObjectIdType>(DataTypeMetadata::ID);
         if (!data_type_id) return ErrorCode::NOT_FOUND;
         column.put<ObjectIdType>(TableMetadata::Column::DATA_TYPE_ID, data_type_id);
+        column.put<uint64_t>(TableMetadata::Column::DATA_LENGTH, 1);
+        column.put<bool>(TableMetadata::Column::VARYING, false);
         column.put<bool>(TableMetadata::Column::NULLABLE, false);
         column.put(TableMetadata::Column::DEFAULT, "default_expr1");
         column.put<uint64_t>(TableMetadata::Column::DIRECTION, 1);
@@ -261,6 +281,8 @@ ErrorCode add_table_metadata()
         data_type_id = datatype.get<ObjectIdType>(DataTypeMetadata::ID);
         if (!data_type_id) return ErrorCode::NOT_FOUND;
         column.put(TableMetadata::Column::DATA_TYPE_ID, data_type_id);
+        column.put<uint64_t>(TableMetadata::Column::DATA_LENGTH, 8);
+        column.put<bool>(TableMetadata::Column::VARYING, true);
         column.put<bool>(TableMetadata::Column::NULLABLE, true);
         column.put<uint64_t>(TableMetadata::Column::DIRECTION, 2);
         columns.push_back(std::make_pair("", column));
@@ -273,6 +295,8 @@ ErrorCode add_table_metadata()
         data_type_id = datatype.get<ObjectIdType>(DataTypeMetadata::ID);
         if (!data_type_id) return ErrorCode::NOT_FOUND;
         column.put(TableMetadata::Column::DATA_TYPE_ID, data_type_id);
+        column.put<uint64_t>(TableMetadata::Column::DATA_LENGTH, 1);
+        column.put<bool>(TableMetadata::Column::VARYING, false);
         column.put<bool>(TableMetadata::Column::NULLABLE, true);
         column.put(TableMetadata::Column::DEFAULT, "default_expr2");
         columns.push_back(std::make_pair("", column));
