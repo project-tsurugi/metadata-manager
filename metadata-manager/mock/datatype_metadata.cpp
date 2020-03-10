@@ -24,12 +24,6 @@
 using namespace boost::property_tree;
 
 namespace manager::metadata_manager {
-
-const char * DataTypeMetadata::DATATYPES_NODE   = "dataTypes";
-const char * DataTypeMetadata::PG_DATA_TYPE     = "pg_dataType";
-
-const char * DataTypeMetadata::TABLE_NAME = "datatypes";
-
 /*
  *  @biref  initialization of DataTypeMetadata.
  */
@@ -43,47 +37,62 @@ ErrorCode DataTypeMetadata::init()
     ptree datatypes;
     {
         ptree datatype;
-        // NULL_VALUE
-        datatype.put(DataTypeMetadata::ID, 1);
-        datatype.put(DataTypeMetadata::NAME, "NULL_VALUE");
-        datatype.put(DataTypeMetadata::PG_DATA_TYPE, 0);
-        datatypes.push_back(std::make_pair("", datatype));
-
-        // INT16
-        datatype.put(DataTypeMetadata::ID, 1);
-        datatype.put(DataTypeMetadata::NAME, "INT16");
-        datatype.put(DataTypeMetadata::PG_DATA_TYPE, 0);
-        datatypes.push_back(std::make_pair("", datatype));
-
-        // INT32
+        // INT : smallint
         datatype.put(DataTypeMetadata::ID, 2);
-        datatype.put(DataTypeMetadata::NAME, "INT32");
+        datatype.put(DataTypeMetadata::NAME, "INT");
         datatype.put(DataTypeMetadata::PG_DATA_TYPE, 0);
+        datatype.put(DataTypeMetadata::PG_DATA_TYPE_NAME, "smallint");
         datatypes.push_back(std::make_pair("", datatype));
 
-        // INT64
+        // INT : integer
         datatype.put(DataTypeMetadata::ID, 3);
-        datatype.put(DataTypeMetadata::NAME, "INT64");
+        datatype.put(DataTypeMetadata::NAME, "INT");
         datatype.put(DataTypeMetadata::PG_DATA_TYPE, 0);
+        datatype.put(DataTypeMetadata::PG_DATA_TYPE_NAME, "integer");
         datatypes.push_back(std::make_pair("", datatype));
 
-        // FLOAT32
+        // BIGINT: bigint
         datatype.put(DataTypeMetadata::ID, 4);
-        datatype.put(DataTypeMetadata::NAME, "FLOAT32");
+        datatype.put(DataTypeMetadata::NAME, "BIGINT");
         datatype.put(DataTypeMetadata::PG_DATA_TYPE, 0);
+        datatype.put(DataTypeMetadata::PG_DATA_TYPE_NAME, "bigint");
         datatypes.push_back(std::make_pair("", datatype));
 
-        // FLOAT64
+        // FLOAT : real 
         datatype.put(DataTypeMetadata::ID, 5);
-        datatype.put(DataTypeMetadata::NAME, "FLOAT64");
+        datatype.put(DataTypeMetadata::NAME, "FLOAT");
         datatype.put(DataTypeMetadata::PG_DATA_TYPE, 0);
+        datatype.put(DataTypeMetadata::PG_DATA_TYPE_NAME, "real");
         datatypes.push_back(std::make_pair("", datatype));
 
-        // TEXT
+        // DOUBLE : double precision 
         datatype.put(DataTypeMetadata::ID, 6);
-        datatype.put(DataTypeMetadata::NAME, "TEXT");
+        datatype.put(DataTypeMetadata::NAME, "DOUBLE");
         datatype.put(DataTypeMetadata::PG_DATA_TYPE, 0);
+        datatype.put(DataTypeMetadata::PG_DATA_TYPE_NAME, "double precision ");
         datatypes.push_back(std::make_pair("", datatype));
+
+        // CHAR : character, char
+        datatype.put(DataTypeMetadata::ID, 7);
+        datatype.put(DataTypeMetadata::NAME, "CHAR");
+        datatype.put(DataTypeMetadata::PG_DATA_TYPE, 0);
+        datatype.put(DataTypeMetadata::PG_DATA_TYPE_NAME, "char");
+        datatypes.push_back(std::make_pair("", datatype));
+
+        // VARCHAR : character varying, varchar
+        datatype.put(DataTypeMetadata::ID, 7);
+        datatype.put(DataTypeMetadata::NAME, "VARCHAR");
+        datatype.put(DataTypeMetadata::PG_DATA_TYPE, 0);
+        datatype.put(DataTypeMetadata::PG_DATA_TYPE_NAME, "varchar");
+        datatypes.push_back(std::make_pair("", datatype));
+
+        // STRING : text
+        datatype.put(DataTypeMetadata::ID, 7);
+        datatype.put(DataTypeMetadata::NAME, "STRING");
+        datatype.put(DataTypeMetadata::PG_DATA_TYPE, 0);
+        datatype.put(DataTypeMetadata::PG_DATA_TYPE_NAME, "text");
+        datatypes.push_back(std::make_pair("", datatype));
+
     }
     root.add_child(DataTypeMetadata::DATATYPES_NODE, datatypes);
 
