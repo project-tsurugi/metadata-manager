@@ -39,18 +39,18 @@ ErrorCode DataTypeMetadata::init()
         ptree datatype;
         uint64_t id = 0;
 
-        // INT16 : smallint
+        // INT : smallint
+        datatype.put(DataTypeMetadata::ID, ++id);
+        datatype.put(DataTypeMetadata::NAME, "INT");
+        datatype.put(DataTypeMetadata::PG_DATA_TYPE, 0);
+        datatype.put(DataTypeMetadata::PG_DATA_TYPE_NAME, "smallint");
+        datatypes.push_back(std::make_pair("", datatype));
+
+        // INT16
         datatype.put(DataTypeMetadata::ID, ++id);
         datatype.put(DataTypeMetadata::NAME, "INT16");
         datatype.put(DataTypeMetadata::PG_DATA_TYPE, 0);
-        datatype.put(DataTypeMetadata::PG_DATA_TYPE_NAME, "integer");
-        datatypes.push_back(std::make_pair("", datatype));
-
-        // INT32 : integer
-        datatype.put(DataTypeMetadata::ID, ++id);
-        datatype.put(DataTypeMetadata::NAME, "INT32");
-        datatype.put(DataTypeMetadata::PG_DATA_TYPE, 0);
-        datatype.put(DataTypeMetadata::PG_DATA_TYPE_NAME, "integer");
+        datatype.put(DataTypeMetadata::PG_DATA_TYPE_NAME, "");
         datatypes.push_back(std::make_pair("", datatype));
 
         // INT : integer
@@ -60,11 +60,11 @@ ErrorCode DataTypeMetadata::init()
         datatype.put(DataTypeMetadata::PG_DATA_TYPE_NAME, "integer");
         datatypes.push_back(std::make_pair("", datatype));
 
-        // INT64: bigint
+        // INT32 : 
         datatype.put(DataTypeMetadata::ID, ++id);
-        datatype.put(DataTypeMetadata::NAME, "INT64");
+        datatype.put(DataTypeMetadata::NAME, "INT32");
         datatype.put(DataTypeMetadata::PG_DATA_TYPE, 0);
-        datatype.put(DataTypeMetadata::PG_DATA_TYPE_NAME, "bigint");
+        datatype.put(DataTypeMetadata::PG_DATA_TYPE_NAME, "");
         datatypes.push_back(std::make_pair("", datatype));
 
         // BIGINT: bigint
@@ -74,11 +74,11 @@ ErrorCode DataTypeMetadata::init()
         datatype.put(DataTypeMetadata::PG_DATA_TYPE_NAME, "bigint");
         datatypes.push_back(std::make_pair("", datatype));
 
-        // FLOAT16 : real 
+        // INT64 :
         datatype.put(DataTypeMetadata::ID, ++id);
-        datatype.put(DataTypeMetadata::NAME, "FLOAT16");
+        datatype.put(DataTypeMetadata::NAME, "INT64");
         datatype.put(DataTypeMetadata::PG_DATA_TYPE, 0);
-        datatype.put(DataTypeMetadata::PG_DATA_TYPE_NAME, "real");
+        datatype.put(DataTypeMetadata::PG_DATA_TYPE_NAME, "");
         datatypes.push_back(std::make_pair("", datatype));
 
         // FLOAT : real 
@@ -88,11 +88,18 @@ ErrorCode DataTypeMetadata::init()
         datatype.put(DataTypeMetadata::PG_DATA_TYPE_NAME, "real");
         datatypes.push_back(std::make_pair("", datatype));
 
-        // FLOAT32 : double precision 
+        // FLOAT32 : 
         datatype.put(DataTypeMetadata::ID, ++id);
         datatype.put(DataTypeMetadata::NAME, "FLOAT32");
         datatype.put(DataTypeMetadata::PG_DATA_TYPE, 0);
-        datatype.put(DataTypeMetadata::PG_DATA_TYPE_NAME, "double precision ");
+        datatype.put(DataTypeMetadata::PG_DATA_TYPE_NAME, "");
+        datatypes.push_back(std::make_pair("", datatype));
+
+        // FLOAT64 :  
+        datatype.put(DataTypeMetadata::ID, ++id);
+        datatype.put(DataTypeMetadata::NAME, "FLOAT64");
+        datatype.put(DataTypeMetadata::PG_DATA_TYPE, 0);
+        datatype.put(DataTypeMetadata::PG_DATA_TYPE_NAME, "");
         datatypes.push_back(std::make_pair("", datatype));
 
         // DOUBLE : double precision 
@@ -102,11 +109,11 @@ ErrorCode DataTypeMetadata::init()
         datatype.put(DataTypeMetadata::PG_DATA_TYPE_NAME, "double precision ");
         datatypes.push_back(std::make_pair("", datatype));
 
-        // TEXT : text
+        // TEXT : 
         datatype.put(DataTypeMetadata::ID, ++id);
         datatype.put(DataTypeMetadata::NAME, "TEXT");
         datatype.put(DataTypeMetadata::PG_DATA_TYPE, 0);
-        datatype.put(DataTypeMetadata::PG_DATA_TYPE_NAME, "text");
+        datatype.put(DataTypeMetadata::PG_DATA_TYPE_NAME, "");
         datatypes.push_back(std::make_pair("", datatype));
 
         // STRING : text
