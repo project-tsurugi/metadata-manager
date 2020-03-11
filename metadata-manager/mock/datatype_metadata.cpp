@@ -37,62 +37,98 @@ ErrorCode DataTypeMetadata::init()
     ptree datatypes;
     {
         ptree datatype;
-        // INT : smallint
-        datatype.put(DataTypeMetadata::ID, 2);
-        datatype.put(DataTypeMetadata::NAME, "INT");
+        uint64_t id = 0;
+
+        // INT16 : smallint
+        datatype.put(DataTypeMetadata::ID, ++id);
+        datatype.put(DataTypeMetadata::NAME, "INT16");
         datatype.put(DataTypeMetadata::PG_DATA_TYPE, 0);
-        datatype.put(DataTypeMetadata::PG_DATA_TYPE_NAME, "smallint");
+        datatype.put(DataTypeMetadata::PG_DATA_TYPE_NAME, "integer");
+        datatypes.push_back(std::make_pair("", datatype));
+
+        // INT32 : integer
+        datatype.put(DataTypeMetadata::ID, ++id);
+        datatype.put(DataTypeMetadata::NAME, "INT32");
+        datatype.put(DataTypeMetadata::PG_DATA_TYPE, 0);
+        datatype.put(DataTypeMetadata::PG_DATA_TYPE_NAME, "integer");
         datatypes.push_back(std::make_pair("", datatype));
 
         // INT : integer
-        datatype.put(DataTypeMetadata::ID, 3);
+        datatype.put(DataTypeMetadata::ID, ++id);
         datatype.put(DataTypeMetadata::NAME, "INT");
         datatype.put(DataTypeMetadata::PG_DATA_TYPE, 0);
         datatype.put(DataTypeMetadata::PG_DATA_TYPE_NAME, "integer");
         datatypes.push_back(std::make_pair("", datatype));
 
+        // INT64: bigint
+        datatype.put(DataTypeMetadata::ID, ++id);
+        datatype.put(DataTypeMetadata::NAME, "INT64");
+        datatype.put(DataTypeMetadata::PG_DATA_TYPE, 0);
+        datatype.put(DataTypeMetadata::PG_DATA_TYPE_NAME, "bigint");
+        datatypes.push_back(std::make_pair("", datatype));
+
         // BIGINT: bigint
-        datatype.put(DataTypeMetadata::ID, 4);
+        datatype.put(DataTypeMetadata::ID, ++id);
         datatype.put(DataTypeMetadata::NAME, "BIGINT");
         datatype.put(DataTypeMetadata::PG_DATA_TYPE, 0);
         datatype.put(DataTypeMetadata::PG_DATA_TYPE_NAME, "bigint");
         datatypes.push_back(std::make_pair("", datatype));
 
+        // FLOAT16 : real 
+        datatype.put(DataTypeMetadata::ID, ++id);
+        datatype.put(DataTypeMetadata::NAME, "FLOAT16");
+        datatype.put(DataTypeMetadata::PG_DATA_TYPE, 0);
+        datatype.put(DataTypeMetadata::PG_DATA_TYPE_NAME, "real");
+        datatypes.push_back(std::make_pair("", datatype));
+
         // FLOAT : real 
-        datatype.put(DataTypeMetadata::ID, 5);
+        datatype.put(DataTypeMetadata::ID, ++id);
         datatype.put(DataTypeMetadata::NAME, "FLOAT");
         datatype.put(DataTypeMetadata::PG_DATA_TYPE, 0);
         datatype.put(DataTypeMetadata::PG_DATA_TYPE_NAME, "real");
         datatypes.push_back(std::make_pair("", datatype));
 
+        // FLOAT32 : double precision 
+        datatype.put(DataTypeMetadata::ID, ++id);
+        datatype.put(DataTypeMetadata::NAME, "FLOAT32");
+        datatype.put(DataTypeMetadata::PG_DATA_TYPE, 0);
+        datatype.put(DataTypeMetadata::PG_DATA_TYPE_NAME, "double precision ");
+        datatypes.push_back(std::make_pair("", datatype));
+
         // DOUBLE : double precision 
-        datatype.put(DataTypeMetadata::ID, 6);
+        datatype.put(DataTypeMetadata::ID, ++id);
         datatype.put(DataTypeMetadata::NAME, "DOUBLE");
         datatype.put(DataTypeMetadata::PG_DATA_TYPE, 0);
         datatype.put(DataTypeMetadata::PG_DATA_TYPE_NAME, "double precision ");
         datatypes.push_back(std::make_pair("", datatype));
 
+        // TEXT : text
+        datatype.put(DataTypeMetadata::ID, ++id);
+        datatype.put(DataTypeMetadata::NAME, "TEXT");
+        datatype.put(DataTypeMetadata::PG_DATA_TYPE, 0);
+        datatype.put(DataTypeMetadata::PG_DATA_TYPE_NAME, "text");
+        datatypes.push_back(std::make_pair("", datatype));
+
+        // STRING : text
+        datatype.put(DataTypeMetadata::ID, ++id);
+        datatype.put(DataTypeMetadata::NAME, "STRING");
+        datatype.put(DataTypeMetadata::PG_DATA_TYPE, 0);
+        datatype.put(DataTypeMetadata::PG_DATA_TYPE_NAME, "text");
+        datatypes.push_back(std::make_pair("", datatype));
+
         // CHAR : character, char
-        datatype.put(DataTypeMetadata::ID, 7);
+        datatype.put(DataTypeMetadata::ID, ++id);
         datatype.put(DataTypeMetadata::NAME, "CHAR");
         datatype.put(DataTypeMetadata::PG_DATA_TYPE, 0);
         datatype.put(DataTypeMetadata::PG_DATA_TYPE_NAME, "char");
         datatypes.push_back(std::make_pair("", datatype));
 
         // VARCHAR : character varying, varchar
-        datatype.put(DataTypeMetadata::ID, 7);
+        datatype.put(DataTypeMetadata::ID, ++id);
         datatype.put(DataTypeMetadata::NAME, "VARCHAR");
         datatype.put(DataTypeMetadata::PG_DATA_TYPE, 0);
         datatype.put(DataTypeMetadata::PG_DATA_TYPE_NAME, "varchar");
         datatypes.push_back(std::make_pair("", datatype));
-
-        // STRING : text
-        datatype.put(DataTypeMetadata::ID, 7);
-        datatype.put(DataTypeMetadata::NAME, "STRING");
-        datatype.put(DataTypeMetadata::PG_DATA_TYPE, 0);
-        datatype.put(DataTypeMetadata::PG_DATA_TYPE_NAME, "text");
-        datatypes.push_back(std::make_pair("", datatype));
-
     }
     root.add_child(DataTypeMetadata::DATATYPES_NODE, datatypes);
 
