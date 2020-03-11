@@ -28,12 +28,13 @@ namespace manager::metadata_manager {
 class DataTypeMetadata : public Metadata {
     public:
         // root object.
-        static const char * DATATYPES_NODE;
+        static constexpr const char* const DATATYPES_NODE = "dataTypes";
 
         // data type metadata-object.
         // ID is defined in base class.
         // NAME is defined in base class.
-        static const char * PG_DATA_TYPE;
+        static constexpr const char* const PG_DATA_TYPE       = "pg_dataType";
+        static constexpr const char* const PG_DATA_TYPE_NAME  = "pg_dataTypeName";
 
         static ErrorCode init();
 
@@ -82,7 +83,7 @@ class DataTypeMetadata : public Metadata {
         }
 
     private:
-        static const char * TABLE_NAME;
+        static constexpr const char* const TABLE_NAME = "datatypes";
 };
 
 }
