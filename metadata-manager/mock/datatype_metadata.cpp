@@ -106,7 +106,7 @@ ErrorCode DataTypeMetadata::init()
         datatype.put(DataTypeMetadata::ID, ++id);
         datatype.put(DataTypeMetadata::NAME, "DOUBLE");
         datatype.put(DataTypeMetadata::PG_DATA_TYPE, 0);
-        datatype.put(DataTypeMetadata::PG_DATA_TYPE_NAME, "double precision ");
+        datatype.put(DataTypeMetadata::PG_DATA_TYPE_NAME, "double precision");
         datatypes.push_back(std::make_pair("", datatype));
 
         // TEXT : 
