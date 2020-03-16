@@ -25,6 +25,119 @@
 
 using namespace boost::property_tree;
 
+namespace manager::metadata {
+
+ErrorCode Tables::init()
+{
+    ErrorCode error = ErrorCode::UNKNOWN;
+
+    try {
+        std::string filename = std::string{Tables::TABLE_NAME} + ".json";
+        std::ifstream file(filename);
+
+        if (!file.is_open()) {
+            // create metadata-table
+            ptree root;
+            Metadata::init(root);
+            root.put(Tables::TABLES_NODE, "");
+            error = Tables::save("", root);
+            if (error != ErrorCode::OK) {
+                return error;
+            }
+        }    
+    } catch (...) {
+        return error;
+    }
+
+    error = ErrorCode::OK;
+
+    return error;
+}
+
+/**
+ *  @brief  Load metadata from metadata-table.
+ *  @param  (database)   [in]  database name
+ *  @param  (pt)         [out] property_tree object to populating metadata.
+ *  @param  (generation) [in]  metadata generation to load. load latest generation if NOT provided.
+ *  @return ErrorCode::OK if success, otherwise an error code.
+ */
+ErrorCode Tables::load(
+    std::string_view database, boost::property_tree::ptree& pt, const uint64_t generation)
+{
+    return Metadata::load(database, Tables::TABLE_NAME, pt, generation);
+}
+
+/**
+ *  @brief  Save the metadta to metadta-table.
+ *  @param  (database)   [in]  database name.
+ *  @param  (pt)         [in]  property_tree object that stores metadata to be saved.
+ *  @param  (generation) [out] the generation of saved metadata.
+ *  @return ErrorCode::OK if success, otherwise an error code.
+ */
+ErrorCode Tables::save(
+    std::string_view database, boost::property_tree::ptree& pt, uint64_t* generation)
+{
+    return Metadata::save(database, Tables::TABLE_NAME, pt, generation);
+}
+
+/**
+ *  @brief  Generate the object ID of table-metadata.
+ *  @return new object ID.
+ */
+ObjectIdType Tables::generate_object_id() const
+{
+    return ObjectId::generate(TABLE_NAME);
+}
+
+/**
+ *  @brief  Generate the object ID of column-metadata.
+ *  @return new object ID.
+ */
+ObjectIdType generate_column_id()
+{
+    return ObjectId::generate("column");
+}
+
+/**
+ *  @brief  Generate the object ID of constraint-metadata.
+ *  @return new object ID.
+ */
+ObjectIdType generate_constraint_id()
+{
+    return ObjectId::generate("constraint");
+}
+
+ErrorCode Tables::fill_parameters(boost::property_tree::ptree& table)
+{
+    ErrorCode error = ErrorCode::UNKNOWN;
+
+    //
+    // column metdata
+    // 
+    BOOST_FOREACH (ptree::value_type& node, table.get_child(COLUMNS_NODE)) {
+        ptree& column = node.second;
+        // column ID
+        column.put(Column::ID, generate_column_id());
+
+        // table ID
+        column.put(Column::TABLE_ID, table.get<ObjectIdType>(ID));
+
+        // data-type ID.
+        boost::optional<ObjectIdType> data_type_id 
+            = column.get_optional<ObjectIdType>(Column::DATA_TYPE_ID);
+        if (!data_type_id) {
+            return ErrorCode::NOT_FOUND;
+        }
+    }
+
+    error = ErrorCode::OK;
+
+    return error;
+}
+
+} // namespace manager::metadata
+
+/* ============================================================================================= */
 namespace manager::metadata_manager {
 
 // root object.
