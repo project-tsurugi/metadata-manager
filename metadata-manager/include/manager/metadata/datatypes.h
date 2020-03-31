@@ -13,8 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef MANAGER_DATATYPE_METADATA
-#define MANAGER_DATATYPE_METADATA
+#pragma once
 
 #include <string>
 #include <string_view>
@@ -23,9 +22,9 @@
 #include "manager/metadata/error_code.h"
 #include "manager/metadata/metadata.h"
 
-namespace manager::metadata_manager {
+namespace manager::metadata {
 
-class DataTypeMetadata : public Metadata {
+class DataTypes : public Metadata {
     public:
         // root object.
         static constexpr const char* const DATATYPES_NODE = "dataTypes";
@@ -47,7 +46,7 @@ class DataTypeMetadata : public Metadata {
          */
         static ErrorCode load(
             std::string_view database, boost::property_tree::ptree& pt, 
-            const GenerationType generation = LATEST_GENERATION);
+            const GenerationType generation = Metadata::LATEST_VERSION);
 
         /**
          *  @brief  Save the metadta to metadta-table.
@@ -64,11 +63,11 @@ class DataTypeMetadata : public Metadata {
          *  @param  (database) [in]  database name.
          *  @return none.
          */
-        DataTypeMetadata(std::string_view database, std::string_view component = "visitor") 
+        DataTypes(std::string_view database, std::string_view component = "visitor") 
             : Metadata(database, component) { init(); }
 
-        DataTypeMetadata(const DataTypeMetadata&) = delete;
-        DataTypeMetadata& operator=(const DataTypeMetadata&) = delete;
+        DataTypes(const DataTypes&) = delete;
+        DataTypes& operator=(const DataTypes&) = delete;
 
     protected:
         // functions for template-method
@@ -86,6 +85,4 @@ class DataTypeMetadata : public Metadata {
         static constexpr const char* const TABLE_NAME = "datatypes";
 };
 
-} 
-
-#endif // MANAGER_DATATYPE_METADATA
+} // namespace manager::metadata
