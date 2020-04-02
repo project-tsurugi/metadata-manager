@@ -21,6 +21,21 @@
 #include "manager/metadata/error_code.h"
 #include "manager/metadata/metadata.h"
 
+namespace manager::metadata {
+
+class ObjectId {
+    public:
+        static ErrorCode init();
+        static ObjectIdType current(const std::string table_name);
+        static ObjectIdType generate(const std::string table_name);
+
+    private:
+        static constexpr const char* const TABLE_NAME = "oid";
+};
+
+} // namespace manager::metadata
+
+/* ============================================================================================= */
 namespace manager::metadata_manager {
 
 class ObjectId {

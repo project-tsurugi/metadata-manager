@@ -22,7 +22,6 @@
 
 #include "manager/metadata/error_code.h"
 #include "manager/metadata/metadata.h"
-
 namespace manager::metadata_manager {
 
 class TableMetadata : public Metadata {
@@ -62,7 +61,7 @@ class TableMetadata : public Metadata {
          */
         static ErrorCode load(
             std::string_view database, boost::property_tree::ptree& pt, 
-            const GenerationType Generation = LATEST_GENERATION);
+            const GenerationType generation = LATEST_GENERATION);
 
         /**
          *  @brief  Save the metadta to metadta-table.
@@ -102,6 +101,6 @@ class TableMetadata : public Metadata {
             const boost::property_tree::ptree& table = boost::property_tree::ptree());
 };
 
-} // namespace manager::metadata_manager
+} // namespace manager::metadata-manager
 
 #endif // MANAGER_TABLE_METADATA_H_

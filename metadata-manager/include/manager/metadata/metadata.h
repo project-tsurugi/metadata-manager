@@ -23,6 +23,169 @@
 
 #include "manager/metadata/error_code.h"
 
+namespace manager::metadata {
+
+using GenerationType = uint64_t;
+using ObjectIdType = uint64_t;
+
+class Metadata {
+    public:
+        static constexpr const char* const FORMAT_VERSION   = "formatVersion";
+        static constexpr const char* const GENERATION       = "generation";
+        static constexpr const char* const ID               = "id";
+        static constexpr const char* const NAME             = "name";
+
+        /**
+         *  @brief  Constructor
+         *  @param  (database)  [in]  database name.
+         *  @param  (component) [in]  your component name.
+         *  @return none.
+         */
+        Metadata(std::string_view& database, std::string_view& component) {}
+
+        std::string_view database() const { return database_; }
+        std::string_view component() const { return component_; }
+        GenerationType generation() const { return generation_; }
+        uint64_t format_version() const { return format_version_; }
+
+        /**
+         *  @brief  Load the latest metadata from metadata-table.
+         *  @param  (database)  [in]  database name.
+         *  @param  (component) [in]  component name.
+         *  @return ErrorCode::OK if success, otherwise an error code.
+         */
+        ErrorCode load();
+
+        /**
+         *  @brief  Loads the metadata which specific generation from metadata-table.
+         *  @param  (database)  [in]  database name.
+         *  @param  (component) [in]  component name.
+         *  @param  (generation) [in]  metadata generation to load. 
+         *  @return ErrorCode::OK if success, otherwise an error code.
+         */
+        ErrorCode load(uint64_t generation);
+
+        /**
+         *  @brief  Add metadata-object to metadata-table.
+         *  @param  (object) [in]  metadata-object to add.
+         *  @return ErrorCode::OK if success, otherwise an error code.
+         */
+        ErrorCode add(boost::property_tree::ptree& object);
+
+        /**
+         *  @brief  Add metadata-object to metadata-table.
+         *  @param  (object)      [in]  metadata-object to add.
+         *  @param  (object_id)   [out] ID of the added metadata-object.
+         *  @return ErrorCode::OK if success, otherwise an error code.
+         */
+        ErrorCode add(boost::property_tree::ptree& object, ObjectIdType* object_id);
+
+        /**
+         *  @brief  Get metadata-object.
+         *  @param  (object_id) [in]  metadata-object ID.
+         *  @param  (object)    [out] metadata-object with the specified ID.
+         *  @return ErrorCode::OK if success, otherwise an error code.
+         */
+        virtual ErrorCode get(const ObjectIdType object_id, boost::property_tree::ptree& object) const;
+
+        /**
+         *  @brief  Get metadata-object.
+         *  @param  (object_name)   [in]  metadata-object name. (Value of "name" key.)
+         *  @param  (object)        [out] metadata-object with the specified name.
+         *  @return ErrorCode::OK if success, otherwise an error code.
+         */
+        virtual ErrorCode get(
+            std::string_view object_name, boost::property_tree::ptree& object) const;
+#if 0
+        /**
+         *  @brief  Set metadata-object to metadata-table.
+         *  @param  (object_id)   [in]  metadata-object ID.
+         *  @param  (object)      [in]  property_tree object containing metadata.
+         *  @return ErrorCode::OK if success, otherwise an error code.
+         *  @note   Return ErrorCode::ID_NOT_FOUND, if table_id NOT found.
+         */
+        virtual ErrorCode set(const uint64_t object_id, boost::property_tree::ptree& object) = 0;
+
+        /**
+         *  @brief  Set metadata-object to metadata-table.
+         *  @param  (name)   [in]  name of metadata-object. (Value of "name" key.)
+         *  @param  (object) [in]  property_tree object containing metadata.
+         *  @return ErrorCode::OK if success, otherwise an error code.
+         *  @note   Return ErrorCode::ID_NOT_FOUND, if name NOT found.
+         */
+        virtual ErrorCode set(const std::string_view name, boost::property_tree::ptree& object) = 0;
+
+        /**
+         *  @brief  Remove metadata-object from metadata-table.
+         *  @param  [in] metadata-object ID.
+         *  @return ErrorCode::OK if success, otherwise an error code.
+         */
+        virtual ErrorCode remove(const uint64_t object_id) = 0;
+
+        /**
+         *  @brief  Remove metadata-object from metadata-table.
+         *  @param  [in] name of metadata-object. (Value of "name" key.)
+         *  @return ErrorCode::OK if success, otherwise an error code.
+         */
+        virtual ErrorCode remove(std::string_view name) = 0;
+#endif
+        /**
+         *  @brief  Get next metadata-object.
+         *  @param  (object) [out] property_tree object to populating metadata.
+         *  @return ErrorCode::OK if success, otherwise an error code.
+         *  @note   Return ErrorCode::END_OF_ROW if there is no more data to read.
+         */
+        ErrorCode next(boost::property_tree::ptree& object);
+       
+        Metadata(const Metadata&) = delete;
+        Metadata& operator=(const Metadata&) = delete;
+
+    protected:
+        static const uint64_t LATEST_VERSION = 0;
+
+        static void init(boost::property_tree::ptree& root);
+
+        /**
+         *  @brief  Load metadata from metadata-table.
+         *  @param  (database)   [in]  database name.
+         *  @param  (tablename)  [in]  metadata-table name.
+         *  @param  (pt)         [out] property_tree object to populating metadata.
+         *  @param  (generation) [in]  metadata generation to load. load latest generation if NOT provided.
+         *  @return ErrorCode::OK if success, otherwise an error code.
+         */
+        static ErrorCode load(
+            std::string_view database, std::string_view tablename,
+            boost::property_tree::ptree& pt, const GenerationType generation = LATEST_VERSION);
+
+        /**
+         *  @brief  Save the metadata to metadata-table.
+         *  @param  (database)   [in]  database name.
+         *  @param  (tablename)  [in]  metadata-table name.
+         *  @param  (pt)         [in]  property_tree object that stores metadata to be saved.
+         *  @param  (generation) [out] the generation of saved metadata.
+         */
+        static ErrorCode save(
+            std::string_view database, std::string_view tablename, boost::property_tree::ptree& pt, 
+            GenerationType* generation = nullptr);
+
+        // functions for template-method.
+        virtual std::string_view table_name() const = 0;
+        virtual const std::string root_node() const = 0;
+        virtual ObjectIdType generate_object_id() const = 0;
+        virtual ErrorCode fill_parameters(boost::property_tree::ptree& object) = 0;
+
+    private:
+        boost::property_tree::ptree metadata_;
+        std::string database_;
+        std::string component_;
+        GenerationType generation_ = 1;
+        static constexpr uint64_t format_version_ = 1;
+        boost::property_tree::ptree object_queue_;
+};
+
+} // namespace manager::metadata
+
+/* ============================================================================================= */
 namespace manager::metadata_manager {
 
 using GenerationType = uint64_t;
