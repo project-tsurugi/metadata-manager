@@ -1,10 +1,13 @@
 
-# DataType Metadata (rev.0.1)
+# DataType Metadata (rev.0.2)
 
-2020.02.18 NEC
+2020.04.03 NEC
 
-## DataTypeMetadataクラス
+## Metadata::DataTypesクラス
 NEDO DBで使用するデータ型に関するメタデータを管理する。
+
+### includeファイル
+* include/manager/metadata/Datatypes.h
 
 ### メソッド
 * static load()

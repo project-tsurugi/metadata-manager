@@ -57,6 +57,5 @@ target_include_directories(metadata-interface
 
 install_custom(metadata-interface ${export_name})
 
-#add_subdirectory(src)
-add_subdirectory(mock)
+add_subdirectory(src)
 add_subdirectory(test)

@@ -1,10 +1,13 @@
 
-# Table Metadata (rev.0.6)
+# Table Metadata (rev.0.7)
 
-2020.02.28 NEC
+2020.04.03 NEC
 
-## TableMetadataクラス
+## Metadata::Tablesクラス
 テーブル、カラム、制約に関するメタデータを管理する。
+
+### includeファイル
+* include/manager/metadata/Tables.h
 
 ### メソッド
 * static load()
