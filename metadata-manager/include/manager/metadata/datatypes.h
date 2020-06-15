@@ -32,8 +32,9 @@ class DataTypes : public Metadata {
         // data type metadata-object.
         // ID is defined in base class.
         // NAME is defined in base class.
-        static constexpr const char* const PG_DATA_TYPE       = "pg_dataType";
-        static constexpr const char* const PG_DATA_TYPE_NAME  = "pg_dataTypeName";
+        static constexpr const char* const PG_DATA_TYPE                     = "pg_dataType";
+        static constexpr const char* const PG_DATA_TYPE_NAME                = "pg_dataTypeName";
+        static constexpr const char* const PG_DATA_TYPE_NAME_QUALIFIED_NAME = "pg_dataTypeQualifiedName";
 
         static ErrorCode init();
 
@@ -45,7 +46,7 @@ class DataTypes : public Metadata {
          *  @return ErrorCode::OK if success, otherwise an error code.
          */
         static ErrorCode load(
-            std::string_view database, boost::property_tree::ptree& pt, 
+            std::string_view database, boost::property_tree::ptree& pt,
             const GenerationType generation = Metadata::LATEST_VERSION);
 
         /**
@@ -55,7 +56,7 @@ class DataTypes : public Metadata {
          *  @param  (generation) [out] the generation of saved metadata.
          */
         static ErrorCode save(
-            std::string_view database, boost::property_tree::ptree& pt, 
+            std::string_view database, boost::property_tree::ptree& pt,
             GenerationType* generation = nullptr);
 
         /**
@@ -63,7 +64,7 @@ class DataTypes : public Metadata {
          *  @param  (database) [in]  database name.
          *  @return none.
          */
-        DataTypes(std::string_view database, std::string_view component = "visitor") 
+        DataTypes(std::string_view database, std::string_view component = "visitor")
             : Metadata(database, component) { init(); }
 
         DataTypes(const DataTypes&) = delete;
@@ -73,12 +74,12 @@ class DataTypes : public Metadata {
         // functions for template-method
         std::string_view table_name() const { return TABLE_NAME; }
         const std::string root_node() const { return DATATYPES_NODE; }
-        uint64_t generate_object_id() const { 
-            static ObjectIdType datatype_id = 0; 
-            return ++datatype_id; 
+        uint64_t generate_object_id() const {
+            static ObjectIdType datatype_id = 0;
+            return ++datatype_id;
         }
-        ErrorCode fill_parameters( __attribute__((unused)) boost::property_tree::ptree& object) { 
-            return ErrorCode::OK; 
+        ErrorCode fill_parameters( __attribute__((unused)) boost::property_tree::ptree& object) {
+            return ErrorCode::OK;
         }
 
     private:
