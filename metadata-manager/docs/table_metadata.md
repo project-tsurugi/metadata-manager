@@ -57,6 +57,7 @@ boost::property_tree::ptreeに格納されるメタデータのフォーマッ�
                                                 // varchar(20)など ※V1では未使用
                                                 // NUMERIC(precision,scale)を考慮してarray[number] にしている。
                                                 // array[number] か number かは継続して検討。
+    "varying"           : bool,             [+] // 文字列長が可変か否か
     "nullable"          : bool,             [*] // NOT NULL制約の有無
     "default"           : string            [+] // デフォルト式
     "direction"         : number            [+] // 方向（0: DEFAULT, 1: ASCENDANT, 2: DESCENDANT）

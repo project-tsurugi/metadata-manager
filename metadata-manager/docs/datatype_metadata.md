@@ -36,10 +36,11 @@ NEDO DBで使用するデータ型に関するメタデータを管理する。
 
 // DataTypeメタデータオブジェクト
 {
-    "id"            : number,   // データ型ID
-    "name"          : string,   // データ型名
-    "pg_dataType"   : number    // 対応するPostgreSQLのデータ型のOID
-    "baseType"      : string    // 基本型 ※draft
+    "id"                       : number, // データ型ID
+    "name"                     : string, // データ型名
+    "pg_dataType"              : number, // 対応するPostgreSQLのデータ型のOID
+    "pg_dataTypeName"          : string, // ユーザーが入力するPostgreSQLの型名
+    "pg_dataTypeQualifiedName" : string  // PostgreSQL内部の修飾型名
 }
 ```
 
