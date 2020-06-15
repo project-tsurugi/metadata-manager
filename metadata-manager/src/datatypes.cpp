@@ -87,7 +87,7 @@ ErrorCode DataTypes::init()
         datatypes.push_back(std::make_pair("", datatype));
 
         // CHAR : character, char
-        datatype.put(DataTypes::ID, 11);
+        datatype.put(DataTypes::ID, 12);
         datatype.put(DataTypes::NAME, "CHAR");
         datatype.put(DataTypes::PG_DATA_TYPE, 0);
         datatype.put(DataTypes::PG_DATA_TYPE_NAME, "char");
@@ -95,7 +95,7 @@ ErrorCode DataTypes::init()
         datatypes.push_back(std::make_pair("", datatype));
 
         // VARCHAR : character varying, varchar
-        datatype.put(DataTypes::ID, 11);
+        datatype.put(DataTypes::ID, 13);
         datatype.put(DataTypes::NAME, "VARCHAR");
         datatype.put(DataTypes::PG_DATA_TYPE, 0);
         datatype.put(DataTypes::PG_DATA_TYPE_NAME, "varchar");
