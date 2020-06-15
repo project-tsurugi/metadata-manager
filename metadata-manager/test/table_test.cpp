@@ -52,13 +52,13 @@ bool initialize()
         std::cout << "initialization of Tables class failed." << std::endl;
         return success;
     }
-    
+
     // create table-metadata-table.
     if (Tables::init() != ErrorCode::OK) {
         std::cout << "initialization of Tables class failed." << std::endl;
         return success;
     }
-       
+
     if (DataTypes::init() != ErrorCode::OK) {
         std::cout << "initialization of DatatypeMetadata failed." << std::endl;
         return success;
@@ -87,7 +87,7 @@ ErrorCode display_table_metadata_object(const ptree& table)
 
     // table metadata
     std::cout << "--- table ---" << std::endl;
-    boost::optional<ObjectIdType> id = 
+    boost::optional<ObjectIdType> id =
         table.get_optional<ObjectIdType>(Tables::ID);
     if (!id) {
         error = ErrorCode::NOT_FOUND;
@@ -96,7 +96,7 @@ ErrorCode display_table_metadata_object(const ptree& table)
     }
     std::cout << "id : " << id.get() << std::endl;
 
-    boost::optional<std::string> name = 
+    boost::optional<std::string> name =
         table.get_optional<std::string>(Tables::NAME);
     if (!name) {
         error = ErrorCode::NOT_FOUND;
@@ -105,7 +105,7 @@ ErrorCode display_table_metadata_object(const ptree& table)
     }
     std::cout << "name : " << name << std::endl;
 
-    boost::optional<std::string> table_namespace = 
+    boost::optional<std::string> table_namespace =
         table.get_optional<std::string>(Tables::NAMESPACE);
     if (!table_namespace) {
         error = ErrorCode::NOT_FOUND;
@@ -124,7 +124,7 @@ ErrorCode display_table_metadata_object(const ptree& table)
     BOOST_FOREACH (const ptree::value_type& node, table.get_child(Tables::COLUMNS_NODE)) {
         const ptree& column = node.second;
 
-        boost::optional<ObjectIdType> id = 
+        boost::optional<ObjectIdType> id =
             column.get_optional<ObjectIdType>(Tables::Column::ID);
         if (!id) {
             error = ErrorCode::NOT_FOUND;
@@ -133,7 +133,7 @@ ErrorCode display_table_metadata_object(const ptree& table)
         }
         std::cout << "id : " << id << std::endl;
 
-        boost::optional<ObjectIdType> table_id = 
+        boost::optional<ObjectIdType> table_id =
             column.get_optional<ObjectIdType>(Tables::Column::TABLE_ID);
         if (!table_id) {
             error = ErrorCode::NOT_FOUND;
@@ -142,7 +142,7 @@ ErrorCode display_table_metadata_object(const ptree& table)
         }
         std::cout << "table id : " << table_id << std::endl;
 
-        boost::optional<std::string> name = 
+        boost::optional<std::string> name =
             column.get_optional<std::string>(Tables::Column::NAME);
         if (!name) {
             error = ErrorCode::NOT_FOUND;
@@ -151,7 +151,7 @@ ErrorCode display_table_metadata_object(const ptree& table)
         }
         std::cout << "name : " << name << std::endl;
 
-        boost::optional<uint64_t> ordinal_position = 
+        boost::optional<uint64_t> ordinal_position =
             column.get_optional<uint64_t>(Tables::Column::ORDINAL_POSITION);
         if (!ordinal_position) {
             error = ErrorCode::NOT_FOUND;
@@ -160,7 +160,7 @@ ErrorCode display_table_metadata_object(const ptree& table)
         }
         std::cout << "ordinal position : " << ordinal_position << std::endl;
 
-        boost::optional<ObjectIdType> data_type_id = 
+        boost::optional<ObjectIdType> data_type_id =
             column.get_optional<ObjectIdType>(Tables::Column::DATA_TYPE_ID);
         if (!data_type_id) {
             error = ErrorCode::NOT_FOUND;
@@ -169,10 +169,10 @@ ErrorCode display_table_metadata_object(const ptree& table)
         }
         std::cout << "datatype id : " << data_type_id << std::endl;
         datatypes->get(data_type_id.get(), datatype);
-        std::cout << "datatype name : " 
+        std::cout << "datatype name : "
             << datatype.get<std::string>(DataTypes::NAME) << std::endl;
 
-        boost::optional<uint64_t> data_length = 
+        boost::optional<uint64_t> data_length =
             column.get_optional<uint64_t>(Tables::Column::DATA_LENGTH);
         if (!data_length) {
             error = ErrorCode::NOT_FOUND;
@@ -181,7 +181,7 @@ ErrorCode display_table_metadata_object(const ptree& table)
         }
         std::cout << "data length : " << data_length << std::endl;
 
-        boost::optional<bool> varying = 
+        boost::optional<bool> varying =
             column.get_optional<bool>(Tables::Column::VARYING);
         if (!varying) {
             error = ErrorCode::NOT_FOUND;
@@ -190,7 +190,7 @@ ErrorCode display_table_metadata_object(const ptree& table)
         }
         std::cout << "varying : " << varying << std::endl;
 
-        boost::optional<bool> nullable = 
+        boost::optional<bool> nullable =
             column.get_optional<bool>(Tables::Column::NULLABLE);
         if (!nullable) {
             error = ErrorCode::NOT_FOUND;
@@ -363,9 +363,9 @@ ErrorCode class_object_test()
 
     try {
         error = add_table_metadata();
-    } 
+    }
     catch (const ptree_error& e) {
-        std::cerr << e.what() << std::endl;   
+        std::cerr << e.what() << std::endl;
         print_error(error, __LINE__);
         return error;
     }
@@ -373,11 +373,11 @@ ErrorCode class_object_test()
         print_error(error, __LINE__);
         return error;
     }
- 
+
     try {
         error = read_table_metadata();
     } catch (const ptree_error& e) {
-        std::cerr << e.what() << std::endl;       
+        std::cerr << e.what() << std::endl;
         print_error(error, __LINE__);
         return error;
     }
@@ -385,7 +385,7 @@ ErrorCode class_object_test()
         print_error(error, __LINE__);
         return error;
     }
- 
+
     error = ErrorCode::OK;
 
     return error;
@@ -410,7 +410,7 @@ ErrorCode static_functions_test()
     }
 
     try {
-        BOOST_FOREACH (const ptree::value_type& node, 
+        BOOST_FOREACH (const ptree::value_type& node,
             root.get_child(Tables::TABLES_NODE)) {
                 const ptree& table = node.second;
                 error = display_table_metadata_object(table);
@@ -430,14 +430,14 @@ ErrorCode static_functions_test()
 /*
  *  @biref  main function.
  */
-int main(void) 
+int main(void)
 {
     std::cout << "*** TableMetadta test start. ***" << std::endl << std::endl;
 #if 0
     if (!initialize()) {
         std::cout << "initialization of test environment failed." << std::endl;
         std::cout << "*** TableMetadta test interrupted. ***" << std::endl;
-        return 1; 
+        return 1;
     }
 #endif
     std::cout << "=== class object test start. ===" << std::endl;
