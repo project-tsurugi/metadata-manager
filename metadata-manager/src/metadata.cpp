@@ -226,9 +226,10 @@ ErrorCode Metadata::get(
  *  @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode Metadata::get(
-    std::string_view object_key, std::string_view object_value, boost::property_tree::ptree& object) const
+    char *object_key, std::string_view object_value,
+    boost::property_tree::ptree& object) const
 {
-    assert(!object_key.empty());
+    assert(object_key != NULL);
     assert(!object_value.empty());
 
     ErrorCode error = ErrorCode::UNKNOWN;
