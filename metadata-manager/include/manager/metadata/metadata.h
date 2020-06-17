@@ -60,7 +60,7 @@ class Metadata {
          *  @brief  Loads the metadata which specific generation from metadata-table.
          *  @param  (database)  [in]  database name.
          *  @param  (component) [in]  component name.
-         *  @param  (generation) [in]  metadata generation to load. 
+         *  @param  (generation) [in]  metadata generation to load.
          *  @return ErrorCode::OK if success, otherwise an error code.
          */
         ErrorCode load(uint64_t generation);
@@ -96,6 +96,17 @@ class Metadata {
          */
         virtual ErrorCode get(
             std::string_view object_name, boost::property_tree::ptree& object) const;
+
+        /**
+         *  @brief  Get metadata-object.
+         *  @param  (key)           [in]  metadata-object key.
+         *  @param  (value)         [in]  metadata-object value.
+         *  @param  (object)        [out] metadata-object with the specified name.
+         *  @return ErrorCode::OK if success, otherwise an error code.
+         */
+        ErrorCode Metadata::get(
+            std::string_view object_key, std::string_view object_value, boost::property_tree::ptree& object) const;
+
 #if 0
         /**
          *  @brief  Set metadata-object to metadata-table.
@@ -136,7 +147,7 @@ class Metadata {
          *  @note   Return ErrorCode::END_OF_ROW if there is no more data to read.
          */
         ErrorCode next(boost::property_tree::ptree& object);
-       
+
         Metadata(const Metadata&) = delete;
         Metadata& operator=(const Metadata&) = delete;
 
@@ -165,7 +176,7 @@ class Metadata {
          *  @param  (generation) [out] the generation of saved metadata.
          */
         static ErrorCode save(
-            std::string_view database, std::string_view tablename, boost::property_tree::ptree& pt, 
+            std::string_view database, std::string_view tablename, boost::property_tree::ptree& pt,
             GenerationType* generation = nullptr);
 
         // functions for template-method.
@@ -204,7 +215,7 @@ class Metadata {
          *  @param  (component) [in]  your component name.
          *  @return none.
          */
-        Metadata(std::string_view database, std::string_view component) 
+        Metadata(std::string_view database, std::string_view component)
             : database_(database), component_(component) {}
 
         std::string_view database() const { return database_; }
@@ -220,7 +231,7 @@ class Metadata {
 
         /**
          *  @brief  Loads the metadata which specific generation from metadata-table.
-         *  @param  (generation) [in]  metadata generation to load. 
+         *  @param  (generation) [in]  metadata generation to load.
          *  @return ErrorCode::OK if success, otherwise an error code.
          */
         ErrorCode load(uint64_t generation);
@@ -296,7 +307,7 @@ class Metadata {
          *  @note   Return ErrorCode::END_OF_ROW if there is no more data to read.
          */
         ErrorCode next(boost::property_tree::ptree& object);
-       
+
         Metadata(const Metadata&) = delete;
         Metadata& operator=(const Metadata&) = delete;
 
@@ -325,7 +336,7 @@ class Metadata {
          *  @param  (generation) [out] the generation of saved metadata.
          */
         static ErrorCode save(
-            std::string_view database, std::string_view tablename, boost::property_tree::ptree& pt, 
+            std::string_view database, std::string_view tablename, boost::property_tree::ptree& pt,
             GenerationType* generation = nullptr);
 
         // functions for template-method.

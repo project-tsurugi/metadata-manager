@@ -62,14 +62,14 @@ ErrorCode Metadata::load(
  *  @param  (generation) [out] the generation of saved metadata.
  */
 ErrorCode Metadata::save(
-    __attribute__((unused)) std::string_view database, std::string_view tablename, 
+    __attribute__((unused)) std::string_view database, std::string_view tablename,
     boost::property_tree::ptree& pt, __attribute__((unused)) uint64_t* generation)
 {
     std::string filename = std::string{tablename} + ".json";
 
     try {
         write_json(filename, pt);
-    } 
+    }
     catch (...) {
         std::cout << "write_json() error." << std::endl;
         return ErrorCode::UNKNOWN;
@@ -103,7 +103,7 @@ ErrorCode Metadata::load()
 
 /**
  *  @brief  Read table-metadata which specific generation from metadata-table.
- *  @param  (generation) [in]  metadata generation to read. 
+ *  @param  (generation) [in]  metadata generation to read.
  *  @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode Metadata::load(const uint64_t generation)
@@ -136,7 +136,7 @@ ErrorCode Metadata::add(boost::property_tree::ptree& object, uint64_t* object_id
     object.put(ID, new_id);
     if (object_id != nullptr) {
         *object_id = new_id;
-    }  
+    }
 
     error = fill_parameters(object);
     if (error != ErrorCode::OK) {
@@ -152,7 +152,7 @@ ErrorCode Metadata::add(boost::property_tree::ptree& object, uint64_t* object_id
 
     error = ErrorCode::OK;
 
-    return error;    
+    return error;
 }
 
 /**
@@ -172,7 +172,7 @@ ErrorCode Metadata::get(const ObjectIdType object_id, boost::property_tree::ptre
     error = ErrorCode::ID_NOT_FOUND;
     BOOST_FOREACH (const ptree::value_type& node, metadata_.get_child(root_node())) {
         const ptree& temp_obj = node.second;
-        
+
         boost::optional<ObjectIdType> id = temp_obj.get_optional<ObjectIdType>(ID);
         if (!id) {
             return ErrorCode::NOT_FOUND;
@@ -203,12 +203,45 @@ ErrorCode Metadata::get(
     error = ErrorCode::NAME_NOT_FOUND;
     BOOST_FOREACH (const ptree::value_type& node, metadata_.get_child(root_node())) {
         const ptree& temp_obj = node.second;
-        
+
         boost::optional<std::string> name = temp_obj.get_optional<std::string>(NAME);
         if (!name) {
             return ErrorCode::NOT_FOUND;
         }
         if (!name.get().compare(object_name)) {
+            object = temp_obj;
+            error = ErrorCode::OK;
+            break;
+        }
+    }
+
+    return error;
+}
+
+/**
+ *  @brief  Get metadata-object.
+ *  @param  (key)           [in]  metadata-object key.
+ *  @param  (value)         [in]  metadata-object value.
+ *  @param  (object)        [out] metadata-object with the specified name.
+ *  @return ErrorCode::OK if success, otherwise an error code.
+ */
+ErrorCode Metadata::get(
+    std::string_view object_key, std::string_view object_value, boost::property_tree::ptree& object) const
+{
+    assert(!object_key.empty());
+    assert(!object_value.empty());
+
+    ErrorCode error = ErrorCode::UNKNOWN;
+
+    error = ErrorCode::NAME_NOT_FOUND;
+    BOOST_FOREACH (const ptree::value_type& node, metadata_.get_child(root_node())) {
+        const ptree& temp_obj = node.second;
+
+        boost::optional<std::string> value = temp_obj.get_optional<std::string>(object_key);
+        if (!value) {
+            return ErrorCode::NOT_FOUND;
+        }
+        if (!value.get().compare(object_value)) {
             object = temp_obj;
             error = ErrorCode::OK;
             break;
@@ -289,14 +322,14 @@ ErrorCode Metadata::load(
  *  @param  (generation) [out] the generation of saved metadata.
  */
 ErrorCode Metadata::save(
-    __attribute__((unused)) std::string_view database, std::string_view tablename, 
+    __attribute__((unused)) std::string_view database, std::string_view tablename,
     boost::property_tree::ptree& pt, __attribute__((unused)) uint64_t* generation)
 {
     std::string filename = std::string{tablename} + ".json";
 
     try {
         write_json(filename, pt);
-    } 
+    }
     catch (...) {
         std::cout << "write_json() error." << std::endl;
         return ErrorCode::UNKNOWN;
@@ -330,7 +363,7 @@ ErrorCode Metadata::load()
 
 /**
  *  @brief  Read table-metadata which specific generation from metadata-table.
- *  @param  (generation) [in]  metadata generation to read. 
+ *  @param  (generation) [in]  metadata generation to read.
  *  @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode Metadata::load(const uint64_t generation)
@@ -363,7 +396,7 @@ ErrorCode Metadata::add(boost::property_tree::ptree& object, uint64_t* object_id
     object.put(ID, new_id);
     if (object_id != nullptr) {
         *object_id = new_id;
-    }  
+    }
 
     error = fill_parameters(object);
     if (error != ErrorCode::OK) {
@@ -379,7 +412,7 @@ ErrorCode Metadata::add(boost::property_tree::ptree& object, uint64_t* object_id
 
     error = ErrorCode::OK;
 
-    return error;    
+    return error;
 }
 
 /**
@@ -399,7 +432,7 @@ ErrorCode Metadata::get(const ObjectIdType object_id, boost::property_tree::ptre
     error = ErrorCode::ID_NOT_FOUND;
     BOOST_FOREACH (const ptree::value_type& node, metadata_.get_child(root_node())) {
         const ptree& temp_obj = node.second;
-        
+
         boost::optional<ObjectIdType> id = temp_obj.get_optional<ObjectIdType>(ID);
         if (!id) {
             return ErrorCode::NOT_FOUND;
@@ -430,7 +463,7 @@ ErrorCode Metadata::get(
     error = ErrorCode::NAME_NOT_FOUND;
     BOOST_FOREACH (const ptree::value_type& node, metadata_.get_child(root_node())) {
         const ptree& temp_obj = node.second;
-        
+
         boost::optional<std::string> name = temp_obj.get_optional<std::string>(NAME);
         if (!name) {
             return ErrorCode::NOT_FOUND;
