@@ -105,7 +105,7 @@ class Metadata {
          *  @return ErrorCode::OK if success, otherwise an error code.
          */
         ErrorCode get(
-            char *object_key, std::string_view object_value, boost::property_tree::ptree& object) const;
+            const char *object_key, std::string_view object_value, boost::property_tree::ptree& object) const;
 
 #if 0
         /**
