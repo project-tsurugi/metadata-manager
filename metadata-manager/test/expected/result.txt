@@ -25,8 +25,8 @@ id :  2
 table id :  1
 name :  column_2
 ordinal position :  2
-datatype id :  11
-datatype name : TEXT
+datatype id :  14
+datatype name : VARCHAR
 data length :  8
 varying :  1
 nullable :  1
@@ -70,8 +70,8 @@ id :  2
 table id :  1
 name :  column_2
 ordinal position :  2
-datatype id :  11
-datatype name : TEXT
+datatype id :  14
+datatype name : VARCHAR
 data length :  8
 varying :  1
 nullable :  1

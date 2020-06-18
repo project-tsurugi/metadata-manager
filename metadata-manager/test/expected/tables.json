@@ -25,7 +25,7 @@
                 {
                     "name": "column_2",
                     "ordinalPosition": "2",
-                    "dataTypeId": "11",
+                    "dataTypeId": "14",
                     "dataLength": "8",
                     "varying": "true",
                     "nullable": "true",

@@ -3,13 +3,6 @@
     "generation": "1",
     "dataTypes": [
         {
-            "id": "2",
-            "name": "INT16",
-            "pg_dataType": "0",
-            "pg_dataTypeName": "smallint",
-            "pg_dataTypeQualifiedName": "int2"
-        },
-        {
             "id": "4",
             "name": "INT32",
             "pg_dataType": "0",
@@ -36,13 +29,6 @@
             "pg_dataType": "0",
             "pg_dataTypeName": "double precision",
             "pg_dataTypeQualifiedName": "float8"
-        },
-        {
-            "id": "11",
-            "name": "TEXT",
-            "pg_dataType": "0",
-            "pg_dataTypeName": "text",
-            "pg_dataTypeQualifiedName": "text"
         },
         {
             "id": "13",

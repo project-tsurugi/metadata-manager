@@ -38,14 +38,6 @@ ErrorCode DataTypes::init()
     {
         ptree datatype;
 
-        // INT16
-        datatype.put(DataTypes::ID, 2);
-        datatype.put(DataTypes::NAME, "INT16");
-        datatype.put(DataTypes::PG_DATA_TYPE, 0);
-        datatype.put(DataTypes::PG_DATA_TYPE_NAME, "smallint");
-        datatype.put(DataTypes::PG_DATA_TYPE_QUALIFIED_NAME, "int2");
-        datatypes.push_back(std::make_pair("", datatype));
-
         // INT32 :
         datatype.put(DataTypes::ID, 4);
         datatype.put(DataTypes::NAME, "INT32");
@@ -76,14 +68,6 @@ ErrorCode DataTypes::init()
         datatype.put(DataTypes::PG_DATA_TYPE, 0);
         datatype.put(DataTypes::PG_DATA_TYPE_NAME, "double precision");
         datatype.put(DataTypes::PG_DATA_TYPE_QUALIFIED_NAME, "float8");
-        datatypes.push_back(std::make_pair("", datatype));
-
-        // TEXT :
-        datatype.put(DataTypes::ID, 11);
-        datatype.put(DataTypes::NAME, "TEXT");
-        datatype.put(DataTypes::PG_DATA_TYPE, 0);
-        datatype.put(DataTypes::PG_DATA_TYPE_NAME, "text");
-        datatype.put(DataTypes::PG_DATA_TYPE_QUALIFIED_NAME, "text");
         datatypes.push_back(std::make_pair("", datatype));
 
         // CHAR : character, char

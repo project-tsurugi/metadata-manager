@@ -279,7 +279,7 @@ ErrorCode add_table_metadata()
         column.clear();
         column.put(Tables::Column::NAME, "column_2");
         column.put<uint64_t>(Tables::Column::ORDINAL_POSITION, 2);
-        datatypes->get("TEXT", datatype);
+        datatypes->get("VARCHAR", datatype);
         data_type_id = datatype.get<ObjectIdType>(DataTypes::ID);
         if (!data_type_id) return ErrorCode::NOT_FOUND;
         column.put(Tables::Column::DATA_TYPE_ID, data_type_id);
