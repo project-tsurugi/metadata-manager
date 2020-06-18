@@ -264,7 +264,7 @@ ErrorCode add_table_metadata()
         column.clear();
         column.put(Tables::Column::NAME, "column_1");
         column.put<uint64_t>(Tables::Column::ORDINAL_POSITION, 1);
-        datatypes->get("FLOAT32", datatype);
+        datatypes->get(DataTypes::PG_DATA_TYPE_QUALIFIED_NAME, "float4", datatype);
         ObjectIdType data_type_id = datatype.get<ObjectIdType>(DataTypes::ID);
         if (!data_type_id) return ErrorCode::NOT_FOUND;
         column.put<ObjectIdType>(Tables::Column::DATA_TYPE_ID, data_type_id);

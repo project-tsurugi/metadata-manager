@@ -32,9 +32,9 @@ class DataTypes : public Metadata {
         // data type metadata-object.
         // ID is defined in base class.
         // NAME is defined in base class.
-        static constexpr const char* const PG_DATA_TYPE                     = "pg_dataType";
-        static constexpr const char* const PG_DATA_TYPE_NAME                = "pg_dataTypeName";
-        static constexpr const char* const PG_DATA_TYPE_NAME_QUALIFIED_NAME = "pg_dataTypeQualifiedName";
+        static constexpr const char* const PG_DATA_TYPE                = "pg_dataType";
+        static constexpr const char* const PG_DATA_TYPE_NAME           = "pg_dataTypeName";
+        static constexpr const char* const PG_DATA_TYPE_QUALIFIED_NAME = "pg_dataTypeQualifiedName";
 
         static ErrorCode init();
 

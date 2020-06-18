@@ -43,7 +43,7 @@ ErrorCode DataTypes::init()
         datatype.put(DataTypes::NAME, "INT16");
         datatype.put(DataTypes::PG_DATA_TYPE, 0);
         datatype.put(DataTypes::PG_DATA_TYPE_NAME, "smallint");
-        datatype.put(DataTypes::PG_DATA_TYPE_NAME_QUALIFIED_NAME, "int2");
+        datatype.put(DataTypes::PG_DATA_TYPE_QUALIFIED_NAME, "int2");
         datatypes.push_back(std::make_pair("", datatype));
 
         // INT32 :
@@ -51,7 +51,7 @@ ErrorCode DataTypes::init()
         datatype.put(DataTypes::NAME, "INT32");
         datatype.put(DataTypes::PG_DATA_TYPE, 0);
         datatype.put(DataTypes::PG_DATA_TYPE_NAME, "integer");
-        datatype.put(DataTypes::PG_DATA_TYPE_NAME_QUALIFIED_NAME, "int4");
+        datatype.put(DataTypes::PG_DATA_TYPE_QUALIFIED_NAME, "int4");
         datatypes.push_back(std::make_pair("", datatype));
 
         // INT64 :
@@ -59,7 +59,7 @@ ErrorCode DataTypes::init()
         datatype.put(DataTypes::NAME, "INT64");
         datatype.put(DataTypes::PG_DATA_TYPE, 0);
         datatype.put(DataTypes::PG_DATA_TYPE_NAME, "bigint");
-        datatype.put(DataTypes::PG_DATA_TYPE_NAME_QUALIFIED_NAME, "int8");
+        datatype.put(DataTypes::PG_DATA_TYPE_QUALIFIED_NAME, "int8");
         datatypes.push_back(std::make_pair("", datatype));
 
         // FLOAT32 :
@@ -67,7 +67,7 @@ ErrorCode DataTypes::init()
         datatype.put(DataTypes::NAME, "FLOAT32");
         datatype.put(DataTypes::PG_DATA_TYPE, 0);
         datatype.put(DataTypes::PG_DATA_TYPE_NAME, "real");
-        datatype.put(DataTypes::PG_DATA_TYPE_NAME_QUALIFIED_NAME, "float4");
+        datatype.put(DataTypes::PG_DATA_TYPE_QUALIFIED_NAME, "float4");
         datatypes.push_back(std::make_pair("", datatype));
 
         // FLOAT64 :
@@ -75,7 +75,7 @@ ErrorCode DataTypes::init()
         datatype.put(DataTypes::NAME, "FLOAT64");
         datatype.put(DataTypes::PG_DATA_TYPE, 0);
         datatype.put(DataTypes::PG_DATA_TYPE_NAME, "double precision");
-        datatype.put(DataTypes::PG_DATA_TYPE_NAME_QUALIFIED_NAME, "float8");
+        datatype.put(DataTypes::PG_DATA_TYPE_QUALIFIED_NAME, "float8");
         datatypes.push_back(std::make_pair("", datatype));
 
         // TEXT :
@@ -83,7 +83,7 @@ ErrorCode DataTypes::init()
         datatype.put(DataTypes::NAME, "TEXT");
         datatype.put(DataTypes::PG_DATA_TYPE, 0);
         datatype.put(DataTypes::PG_DATA_TYPE_NAME, "text");
-        datatype.put(DataTypes::PG_DATA_TYPE_NAME_QUALIFIED_NAME, "text");
+        datatype.put(DataTypes::PG_DATA_TYPE_QUALIFIED_NAME, "text");
         datatypes.push_back(std::make_pair("", datatype));
 
         // CHAR : character, char
@@ -91,7 +91,7 @@ ErrorCode DataTypes::init()
         datatype.put(DataTypes::NAME, "CHAR");
         datatype.put(DataTypes::PG_DATA_TYPE, 0);
         datatype.put(DataTypes::PG_DATA_TYPE_NAME, "char");
-        datatype.put(DataTypes::PG_DATA_TYPE_NAME_QUALIFIED_NAME, "bpchar");
+        datatype.put(DataTypes::PG_DATA_TYPE_QUALIFIED_NAME, "bpchar");
         datatypes.push_back(std::make_pair("", datatype));
 
         // VARCHAR : character varying, varchar
@@ -99,7 +99,7 @@ ErrorCode DataTypes::init()
         datatype.put(DataTypes::NAME, "VARCHAR");
         datatype.put(DataTypes::PG_DATA_TYPE, 0);
         datatype.put(DataTypes::PG_DATA_TYPE_NAME, "varchar");
-        datatype.put(DataTypes::PG_DATA_TYPE_NAME_QUALIFIED_NAME, "varchar");
+        datatype.put(DataTypes::PG_DATA_TYPE_QUALIFIED_NAME, "varchar");
         datatypes.push_back(std::make_pair("", datatype));
     }
     root.add_child(DataTypes::DATATYPES_NODE, datatypes);
