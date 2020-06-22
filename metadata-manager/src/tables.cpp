@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+ #include <iostream> // for debug
 #include <boost/optional.hpp>
 #include <boost/foreach.hpp>
 #include <boost/property_tree/ptree.hpp>
@@ -44,7 +45,7 @@ ErrorCode Tables::init()
             if (error != ErrorCode::OK) {
                 return error;
             }
-        }    
+        }
     } catch (...) {
         return error;
     }
@@ -65,6 +66,51 @@ ErrorCode Tables::load(
     std::string_view database, boost::property_tree::ptree& pt, const uint64_t generation)
 {
     return Metadata::load(database, Tables::TABLE_NAME, pt, generation);
+}
+
+/**
+ *  @brief  Add metadata-object to metadata-table.
+ *  @param  (object)    [in]  metadata-object to add.
+ *  @param  (object_id) [out] ID of the added metadata-object.
+ *  @return ErrorCode::OK if success, otherwise an error code.
+ */
+ErrorCode Tables::add(boost::property_tree::ptree& object, uint64_t* object_id)
+{
+    ErrorCode error = ErrorCode::UNKNOWN;
+
+    ptree table_name_searched;
+
+    boost::optional<std::string> name = object.get_optional<std::string>(NAME);
+
+    if (get(name.get(), table_name_searched) == ErrorCode::OK) {
+        std::cout << "table name \"" << name << "\" already exists" << std::endl;
+        error = ErrorCode::TABLE_NAME_ALREADY_EXISTS;
+        return error;
+    }
+
+    // generate the object ID of the added metadata-object.
+    uint64_t new_id = generate_object_id();
+    object.put(ID, new_id);
+    if (object_id != nullptr) {
+        *object_id = new_id;
+    }
+
+    error = fill_parameters(object);
+    if (error != ErrorCode::OK) {
+        return error;
+    }
+
+    // add new element.
+    ptree node = metadata_.get_child(root_node());
+
+    node.push_back(std::make_pair("", object));
+    metadata_.put_child(root_node(), node);
+
+    Metadata::save(database(), table_name(), metadata_);
+
+    error = ErrorCode::OK;
+
+    return error;
 }
 
 /**
@@ -113,7 +159,7 @@ ErrorCode Tables::fill_parameters(boost::property_tree::ptree& table)
 
     //
     // column metdata
-    // 
+    //
     BOOST_FOREACH (ptree::value_type& node, table.get_child(COLUMNS_NODE)) {
         ptree& column = node.second;
         // column ID
@@ -123,7 +169,7 @@ ErrorCode Tables::fill_parameters(boost::property_tree::ptree& table)
         column.put(Column::TABLE_ID, table.get<ObjectIdType>(ID));
 
         // data-type ID.
-        boost::optional<ObjectIdType> data_type_id 
+        boost::optional<ObjectIdType> data_type_id
             = column.get_optional<ObjectIdType>(Column::DATA_TYPE_ID);
         if (!data_type_id) {
             return ErrorCode::NOT_FOUND;

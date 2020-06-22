@@ -53,6 +53,11 @@ enum class ErrorCode {
      * @brief Unknown error.
      */
     UNKNOWN,
+
+    /**
+     *  @brief table name already exists.
+     */
+    TABLE_NAME_ALREADY_EXISTS,
 };
 
 }   // namespace manager::metadadta

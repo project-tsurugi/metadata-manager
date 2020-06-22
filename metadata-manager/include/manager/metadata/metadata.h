@@ -78,7 +78,7 @@ class Metadata {
          *  @param  (object_id)   [out] ID of the added metadata-object.
          *  @return ErrorCode::OK if success, otherwise an error code.
          */
-        ErrorCode add(boost::property_tree::ptree& object, ObjectIdType* object_id);
+        virtual ErrorCode add(boost::property_tree::ptree& object, ObjectIdType* object_id);
 
         /**
          *  @brief  Get metadata-object.
@@ -154,6 +154,8 @@ class Metadata {
     protected:
         static const uint64_t LATEST_VERSION = 0;
 
+        boost::property_tree::ptree metadata_;
+
         static void init(boost::property_tree::ptree& root);
 
         /**
@@ -186,7 +188,6 @@ class Metadata {
         virtual ErrorCode fill_parameters(boost::property_tree::ptree& object) = 0;
 
     private:
-        boost::property_tree::ptree metadata_;
         std::string database_;
         std::string component_;
         GenerationType generation_ = 1;

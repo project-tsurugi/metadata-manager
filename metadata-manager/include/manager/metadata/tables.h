@@ -59,8 +59,16 @@ class Tables : public Metadata {
          *  @return ErrorCode::OK if success, otherwise an error code.
          */
         static ErrorCode load(
-            std::string_view database, boost::property_tree::ptree& pt, 
+            std::string_view database, boost::property_tree::ptree& pt,
             const GenerationType generation = LATEST_VERSION);
+
+        /**
+         *  @brief  Add metadata-object to metadata-table.
+         *  @param  (object)      [in]  metadata-object to add.
+         *  @param  (object_id)   [out] ID of the added metadata-object.
+         *  @return ErrorCode::OK if success, otherwise an error code.
+         */
+        ErrorCode add(boost::property_tree::ptree& object, ObjectIdType* object_id) override;
 
         /**
          *  @brief  Save the metadta to metadta-table.
@@ -70,7 +78,7 @@ class Tables : public Metadata {
          *  @return ErrorCode::OK if success, otherwise an error code.
          */
         static ErrorCode save(
-            std::string_view database, boost::property_tree::ptree& pt, 
+            std::string_view database, boost::property_tree::ptree& pt,
             GenerationType* generation = nullptr);
 
         /**
@@ -78,7 +86,7 @@ class Tables : public Metadata {
          *  @param  (database) [in]  database name.
          *  @return none.
          */
-        Tables(std::string_view database, std::string_view component = "visitor") 
+        Tables(std::string_view database, std::string_view component = "visitor")
             : Metadata(database, component) { init(); }
 
         Tables(const Tables&) = delete;
