@@ -83,7 +83,6 @@ ErrorCode Tables::add(boost::property_tree::ptree& object, uint64_t* object_id)
     boost::optional<std::string> name = object.get_optional<std::string>(NAME);
 
     if (get(name.get(), table_name_searched) == ErrorCode::OK) {
-        std::cout << "table name \"" << name << "\" already exists" << std::endl;
         error = ErrorCode::TABLE_NAME_ALREADY_EXISTS;
         return error;
     }
