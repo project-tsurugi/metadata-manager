@@ -41,7 +41,7 @@ ErrorCode DataTypes::init()
         // INT32 :
         datatype.put(DataTypes::ID, 4);
         datatype.put(DataTypes::NAME, "INT32");
-        datatype.put(DataTypes::PG_DATA_TYPE, 0);
+        datatype.put(DataTypes::PG_DATA_TYPE, 23);
         datatype.put(DataTypes::PG_DATA_TYPE_NAME, "integer");
         datatype.put(DataTypes::PG_DATA_TYPE_QUALIFIED_NAME, "int4");
         datatypes.push_back(std::make_pair("", datatype));
@@ -49,7 +49,7 @@ ErrorCode DataTypes::init()
         // INT64 :
         datatype.put(DataTypes::ID, 6);
         datatype.put(DataTypes::NAME, "INT64");
-        datatype.put(DataTypes::PG_DATA_TYPE, 0);
+        datatype.put(DataTypes::PG_DATA_TYPE, 20);
         datatype.put(DataTypes::PG_DATA_TYPE_NAME, "bigint");
         datatype.put(DataTypes::PG_DATA_TYPE_QUALIFIED_NAME, "int8");
         datatypes.push_back(std::make_pair("", datatype));
@@ -57,7 +57,7 @@ ErrorCode DataTypes::init()
         // FLOAT32 :
         datatype.put(DataTypes::ID, 8);
         datatype.put(DataTypes::NAME, "FLOAT32");
-        datatype.put(DataTypes::PG_DATA_TYPE, 0);
+        datatype.put(DataTypes::PG_DATA_TYPE, 700);
         datatype.put(DataTypes::PG_DATA_TYPE_NAME, "real");
         datatype.put(DataTypes::PG_DATA_TYPE_QUALIFIED_NAME, "float4");
         datatypes.push_back(std::make_pair("", datatype));
@@ -65,7 +65,7 @@ ErrorCode DataTypes::init()
         // FLOAT64 :
         datatype.put(DataTypes::ID, 9);
         datatype.put(DataTypes::NAME, "FLOAT64");
-        datatype.put(DataTypes::PG_DATA_TYPE, 0);
+        datatype.put(DataTypes::PG_DATA_TYPE, 701);
         datatype.put(DataTypes::PG_DATA_TYPE_NAME, "double precision");
         datatype.put(DataTypes::PG_DATA_TYPE_QUALIFIED_NAME, "float8");
         datatypes.push_back(std::make_pair("", datatype));
@@ -73,7 +73,7 @@ ErrorCode DataTypes::init()
         // CHAR : character, char
         datatype.put(DataTypes::ID, 13);
         datatype.put(DataTypes::NAME, "CHAR");
-        datatype.put(DataTypes::PG_DATA_TYPE, 0);
+        datatype.put(DataTypes::PG_DATA_TYPE, 1042);
         datatype.put(DataTypes::PG_DATA_TYPE_NAME, "char");
         datatype.put(DataTypes::PG_DATA_TYPE_QUALIFIED_NAME, "bpchar");
         datatypes.push_back(std::make_pair("", datatype));
@@ -81,7 +81,7 @@ ErrorCode DataTypes::init()
         // VARCHAR : character varying, varchar
         datatype.put(DataTypes::ID, 14);
         datatype.put(DataTypes::NAME, "VARCHAR");
-        datatype.put(DataTypes::PG_DATA_TYPE, 0);
+        datatype.put(DataTypes::PG_DATA_TYPE, 1043);
         datatype.put(DataTypes::PG_DATA_TYPE_NAME, "varchar");
         datatype.put(DataTypes::PG_DATA_TYPE_QUALIFIED_NAME, "varchar");
         datatypes.push_back(std::make_pair("", datatype));
