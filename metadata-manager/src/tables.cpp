@@ -105,9 +105,7 @@ ErrorCode Tables::add(boost::property_tree::ptree& object, uint64_t* object_id)
     node.push_back(std::make_pair("", object));
     metadata_.put_child(root_node(), node);
 
-    Metadata::save(database(), table_name(), metadata_);
-
-    error = ErrorCode::OK;
+    error = Metadata::save(database(), table_name(), metadata_);
 
     return error;
 }
