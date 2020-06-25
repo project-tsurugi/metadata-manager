@@ -33,7 +33,7 @@ ErrorCode Tables::init()
     ErrorCode error = ErrorCode::UNKNOWN;
 
     try {
-        std::string filename = std::string{Tables::TABLE_NAME} + ".json";
+        std::string filename = std::string{storage_dir_path} + std::string{Tables::TABLE_NAME} + ".json";
         std::ifstream file(filename);
 
         if (!file.is_open()) {

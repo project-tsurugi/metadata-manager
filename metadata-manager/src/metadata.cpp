@@ -39,7 +39,7 @@ ErrorCode Metadata::load(
     __attribute__((unused)) std::string_view database, std::string_view tablename,
     boost::property_tree::ptree& pt, __attribute__((unused)) const uint64_t generation)
 {
-    std::string filename = std::string{tablename} + ".json";
+    std::string filename = std::string(storage_dir_path) + std::string{tablename} + ".json";
 
     try {
         read_json(filename, pt);
@@ -65,7 +65,7 @@ ErrorCode Metadata::save(
     __attribute__((unused)) std::string_view database, std::string_view tablename,
     boost::property_tree::ptree& pt, __attribute__((unused)) uint64_t* generation)
 {
-    std::string filename = std::string{tablename} + ".json";
+    std::string filename = std::string(storage_dir_path) + std::string{tablename} + ".json";
 
     try {
         write_json(filename, pt);
@@ -89,7 +89,6 @@ void Metadata::init(ptree& root)
 {
     root.put(Metadata::FORMAT_VERSION, 1);
     root.put(Metadata::GENERATION, 1);
-
 }
 
 /**

@@ -18,6 +18,7 @@
 
 #include <string>
 #include <string_view>
+#include <sys/stat.h>
 
 #include <boost/property_tree/ptree.hpp>
 
@@ -41,7 +42,9 @@ class Metadata {
          *  @param  (component) [in]  your component name.
          *  @return none.
          */
-        Metadata(std::string_view& database, std::string_view& component) {}
+        Metadata(std::string_view& database, std::string_view& component) {
+            mkdir(storage_dir_path, 0700);
+        }
 
         std::string_view database() const { return database_; }
         std::string_view component() const { return component_; }
@@ -54,7 +57,8 @@ class Metadata {
          *  @param  (component) [in]  component name.
          *  @return ErrorCode::OK if success, otherwise an error code.
          */
-        ErrorCode load();
+        ErrorCode
+            load();
 
         /**
          *  @brief  Loads the metadata which specific generation from metadata-table.
@@ -153,6 +157,7 @@ class Metadata {
 
     protected:
         static const uint64_t LATEST_VERSION = 0;
+        static constexpr const char *storage_dir_path = "tsurugi_metadata/";
 
         boost::property_tree::ptree metadata_;
 

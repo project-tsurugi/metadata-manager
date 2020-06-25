@@ -7,7 +7,6 @@
 
 #include "manager/metadata/error_code.h"
 #include "manager/metadata/object_id.h"
-#include "manager/metadata/object_id.h"
 
 using namespace boost::property_tree;
 
@@ -20,8 +19,9 @@ static ObjectIdType INVALID_OID = 0;
  */
 ErrorCode ObjectId::init()
 {
-    std::ifstream file(ObjectId::TABLE_NAME);
-    
+    std::string filename = ObjectId::TABLE_NAME;
+    std::ifstream file(filename);
+
     try {
         if (!file.is_open()) {
             // create oid-metadata-table.
@@ -69,7 +69,7 @@ ObjectIdType ObjectId::current(const std::string table_name)
  *  @brief  generate new object-ID.
  *  @return ErrorCode::OK if success, otherwise an error code.
  */
-ObjectIdType ObjectId::generate(const std::string table_name) 
+ObjectIdType ObjectId::generate(const std::string table_name)
 {
     boost::property_tree::ptree pt;
 
@@ -120,7 +120,7 @@ const char * ObjectId::TABLE_NAME = "object_id.ini";
 ErrorCode ObjectId::init()
 {
     std::ifstream file(ObjectId::TABLE_NAME);
-    
+
     try {
         if (!file.is_open()) {
             // create oid-metadata-table.
@@ -168,7 +168,7 @@ ObjectIdType ObjectId::current(const std::string table_name)
  *  @brief  generate new object-ID.
  *  @return ErrorCode::OK if success, otherwise an error code.
  */
-ObjectIdType ObjectId::generate(const std::string table_name) 
+ObjectIdType ObjectId::generate(const std::string table_name)
 {
     boost::property_tree::ptree pt;
 

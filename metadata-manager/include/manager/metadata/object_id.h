@@ -17,6 +17,7 @@
 #define MANAGER_OBJECT_ID
 
 #include <string>
+#include <sys/stat.h>
 
 #include "manager/metadata/error_code.h"
 #include "manager/metadata/metadata.h"
@@ -30,7 +31,7 @@ class ObjectId {
         static ObjectIdType generate(const std::string table_name);
 
     private:
-        static constexpr const char* const TABLE_NAME = "oid";
+        static constexpr const char *const TABLE_NAME = "tsurugi_metadata/oid";
 };
 
 } // namespace manager::metadata
