@@ -15,7 +15,8 @@ set(CMAKE_CXX_COMPILER /usr/bin/g++)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
-set(CMAKE_CXX_FLAGS "-O0 -Wall -Wextra")
+set(CMAKE_CXX_FLAGS "-O2")
+set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g -Wall -Wextra")
 
 set(package_name "manager")
 set(export_name "manager")
@@ -30,7 +31,7 @@ write_basic_package_version_file(
     "${CMAKE_CURRENT_BINARY_DIR}/${package_name}-config-version.cmake"
     COMPATIBILITY SameMajorVersion
 )
-  
+
 install(
     FILES
         ${CMAKE_CURRENT_BINARY_DIR}/${package_name}-config.cmake
