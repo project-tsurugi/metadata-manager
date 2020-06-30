@@ -7,6 +7,10 @@ project(metadata-manager
 
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 option(FORCE_INSTALL_RPATH "force add lib dir of custom prefixes to INSTALL_RPATH" OFF)
+option(BUILD_DOCUMENTS "Build documents" ON)
+
+find_package(Doxygen)
+
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
 include(InstallOptions)
@@ -60,3 +64,7 @@ install_custom(metadata-interface ${export_name})
 
 add_subdirectory(src)
 add_subdirectory(test)
+
+if (BUILD_DOCUMENTS)
+    add_subdirectory(doxygen)
+endif()

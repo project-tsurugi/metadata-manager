@@ -18,7 +18,7 @@ endif()
 
 set(TARGET_INCLUDES "")
 foreach (target_name
-        api)
+        metadata-interface)
     get_target_property(
         _includes
         ${target_name} INTERFACE_INCLUDE_DIRECTORIES
