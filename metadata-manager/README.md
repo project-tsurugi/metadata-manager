@@ -6,10 +6,17 @@
 * CMake `>= 3.10`
 * C++ Compiler `>= C++17`
 
+### Dockerfile
+
+```dockerfile
+FROM ubuntu:18.04
+
+RUN apt update -y && apt install -y git build-essential cmake doxygen libboost-system-dev
+```
+
 ## How to build
 
 ```sh
-apt update -y && apt install -y git build-essential cmake doxygen
 mkdir build
 cd build
 cmake -DCMAKE_BUILD_TYPE=Debug ..
