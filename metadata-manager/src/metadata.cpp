@@ -274,8 +274,14 @@ ErrorCode Metadata::remove(const char *object_name)
         if (!name.get().compare(object_name))
         {
             std::cout << "erase:" << object_name << std::endl;
-            node.erase(it);
+            ptree::iterator erased_it = node.erase(it);
             //temp_obj.clear();
+            if (erased_it == node.end())
+            {
+                std::cout << "no such node" << std::endl;
+            } else {
+                std::cout << "erased success" << std::endl;
+            }
             error = ErrorCode::OK;
             break;
         }
