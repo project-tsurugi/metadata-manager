@@ -250,6 +250,58 @@ ErrorCode Metadata::get(
 }
 
 /**
+ *  @brief  Remove metadata-object from metadata-table.
+ *  @param  (object_name)   [in] name of metadata-object. (Value of "name" key.)
+ *  @return ErrorCode::OK if success, otherwise an error code.
+ */
+ErrorCode Metadata::remove(const char *object_name)
+{
+    assert(object_name != nullptr);
+
+    ErrorCode error = ErrorCode::NAME_NOT_FOUND;
+
+    ptree node = metadata_.get_child(root_node());
+
+    for (ptree::iterator it = node.begin(); it != node.end(); ++it)
+    //BOOST_FOREACH (const ptree::value_type& node, metadata_.get_child(root_node())) {
+    {
+        const ptree &temp_obj = it->second;
+        boost::optional<std::string> name = temp_obj.get_optional<std::string>(NAME);
+        if (!name)
+        {
+            return ErrorCode::NOT_FOUND;
+        }
+        if (!name.get().compare(object_name))
+        {
+            std::cout << "erase:" << object_name << std::endl;
+            node.erase(it);
+            //temp_obj.clear();
+            error = ErrorCode::OK;
+            break;
+        }
+    }
+
+    std::cout << "print node start" << std::endl;
+
+    BOOST_FOREACH (const ptree::value_type &node, metadata_.get_child(root_node()))
+    {
+        const ptree &temp_obj = node.second;
+
+        boost::optional<std::string> name = temp_obj.get_optional<std::string>(NAME);
+        if (name)
+        {
+            std::cout << name << std::endl;
+        }
+
+    }
+    std::cout << "print node end" << std::endl;
+
+    error = Metadata::save(database(), table_name(), metadata_);
+
+    return error;
+}
+
+/**
  *  @brief  Get next metadata-object.
  *  @param  (object) [out] property_tree object to populating metadata.
  *  @return ErrorCode::OK if success, otherwise an error code.

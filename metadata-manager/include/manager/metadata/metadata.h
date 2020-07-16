@@ -136,14 +136,14 @@ class Metadata {
          *  @return ErrorCode::OK if success, otherwise an error code.
          */
         virtual ErrorCode remove(const uint64_t object_id) = 0;
-
+#endif
         /**
          *  @brief  Remove metadata-object from metadata-table.
          *  @param  [in] name of metadata-object. (Value of "name" key.)
          *  @return ErrorCode::OK if success, otherwise an error code.
          */
-        virtual ErrorCode remove(std::string_view name) = 0;
-#endif
+        virtual ErrorCode remove(const char *object_name);
+
         /**
          *  @brief  Get next metadata-object.
          *  @param  (object) [out] property_tree object to populating metadata.

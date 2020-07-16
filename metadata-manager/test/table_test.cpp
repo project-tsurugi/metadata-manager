@@ -320,6 +320,47 @@ ErrorCode add_table_metadata()
 }
 
 /*
+ *  @biref  remove a table-metadata to metadata-table.
+ */
+ErrorCode remove_table_metadata()
+{
+    ErrorCode error = ErrorCode::UNKNOWN;
+
+    std::unique_ptr<Metadata> tables(new Tables(TEST_DB)); // use Template-Method.
+    error = tables->load();
+    if (error != ErrorCode::OK)
+    {
+        print_error(error, __LINE__);
+        return error;
+    }
+
+    std::unique_ptr<Metadata> datatypes(new DataTypes(TEST_DB));
+    error = datatypes->load();
+    if (error != ErrorCode::OK)
+    {
+        print_error(error, __LINE__);
+        return error;
+    }
+
+    //
+    // remove table-metadata object
+    //
+    ObjectIdType number = ObjectId::current("tables");
+    std::string name = "table_" + std::to_string(number);
+
+    error = tables->remove(name.c_str());
+    if (error != ErrorCode::OK)
+    {
+        print_error(error, __LINE__);
+        return error;
+    }
+
+    error = ErrorCode::OK;
+
+    return error;
+}
+
+/*
  *  @biref  read table-metadata from metadata-table.
  */
 ErrorCode read_table_metadata()
@@ -450,6 +491,11 @@ int main(void)
     std::cout << "=== static functions test done. ===" << std::endl;;
     std::cout << std::endl;
 
+    std::cout << "=== remove table functions test start. ===" << std::endl;
+    ErrorCode remove_table_test_error = remove_table_metadata();
+    std::cout << "=== remove table functions test done. ===" << std::endl;
+    std::cout << std::endl;
+
     std::cout << "class object test     : ";
     if (class_object_test_error == ErrorCode::OK) {
         std::cout << "Success" << std::endl;
@@ -459,6 +505,13 @@ int main(void)
 
     std::cout << "static functions test : ";
     if (static_functions_test_error == ErrorCode::OK) {
+        std::cout << "Success" << std::endl;
+    } else {
+        std::cout << "*** Failure ***" << std::endl;
+    }
+
+    std::cout << "remove table functions test test     : ";
+    if (remove_table_test_error == ErrorCode::OK) {
         std::cout << "Success" << std::endl;
     } else {
         std::cout << "*** Failure ***" << std::endl;
