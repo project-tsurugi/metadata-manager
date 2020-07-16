@@ -260,31 +260,32 @@ ErrorCode Metadata::remove(const char *object_name)
 
     ErrorCode error = ErrorCode::NAME_NOT_FOUND;
 
-    ptree node = metadata_.get_child(root_node());
+    ptree& node = metadata_.get_child(root_node());
 
-    for (ptree::iterator it = node.begin(); it != node.end(); ++it)
+    for (ptree::iterator it = node.begin(); it != node.end(); )
     //BOOST_FOREACH (const ptree::value_type& node, metadata_.get_child(root_node())) {
     {
         const ptree &temp_obj = it->second;
         boost::optional<std::string> name = temp_obj.get_optional<std::string>(NAME);
-        if (!name)
-        {
-            return ErrorCode::NOT_FOUND;
-        }
-        if (!name.get().compare(object_name))
+        if (name && !name.get().compare(object_name))
         {
             std::cout << "erase:" << object_name << std::endl;
-            ptree::iterator erased_it = node.erase(it);
+            it = node.erase(it);
             //temp_obj.clear();
-            if (erased_it == node.end())
+            if (it == node.end())
             {
                 std::cout << "no such node" << std::endl;
-            } else {
+            }
+            else
+            {
                 std::cout << "erased success" << std::endl;
             }
             error = ErrorCode::OK;
-            break;
+
+        } else {
+            ++it;
         }
+
     }
 
     std::cout << "print node start" << std::endl;
