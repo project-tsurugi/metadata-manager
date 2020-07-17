@@ -496,21 +496,21 @@ int main(void)
     std::cout << "=== remove table functions test done. ===" << std::endl;
     std::cout << std::endl;
 
-    std::cout << "class object test     : ";
+    std::cout << "class object test           : ";
     if (class_object_test_error == ErrorCode::OK) {
         std::cout << "Success" << std::endl;
     } else {
         std::cout << "*** Failure ***" << std::endl;
     }
 
-    std::cout << "static functions test : ";
+    std::cout << "static functions test       : ";
     if (static_functions_test_error == ErrorCode::OK) {
         std::cout << "Success" << std::endl;
     } else {
         std::cout << "*** Failure ***" << std::endl;
     }
 
-    std::cout << "remove table functions test test     : ";
+    std::cout << "remove table functions test : ";
     if (remove_table_test_error == ErrorCode::OK) {
         std::cout << "Success" << std::endl;
     } else {

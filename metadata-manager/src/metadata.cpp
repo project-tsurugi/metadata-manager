@@ -263,47 +263,22 @@ ErrorCode Metadata::remove(const char *object_name)
     ptree& node = metadata_.get_child(root_node());
 
     for (ptree::iterator it = node.begin(); it != node.end(); )
-    //BOOST_FOREACH (const ptree::value_type& node, metadata_.get_child(root_node())) {
     {
         const ptree &temp_obj = it->second;
         boost::optional<std::string> name = temp_obj.get_optional<std::string>(NAME);
         if (name && !name.get().compare(object_name))
         {
-            std::cout << "erase:" << object_name << std::endl;
             it = node.erase(it);
-            //temp_obj.clear();
-            if (it == node.end())
-            {
-                std::cout << "no such node" << std::endl;
-            }
-            else
-            {
-                std::cout << "erased success" << std::endl;
-            }
             error = ErrorCode::OK;
-
         } else {
             ++it;
         }
 
     }
 
-    std::cout << "print node start" << std::endl;
-
-    BOOST_FOREACH (const ptree::value_type &node, metadata_.get_child(root_node()))
-    {
-        const ptree &temp_obj = node.second;
-
-        boost::optional<std::string> name = temp_obj.get_optional<std::string>(NAME);
-        if (name)
-        {
-            std::cout << name << std::endl;
-        }
-
+    if (error == ErrorCode::OK) {
+        error = Metadata::save(database(), table_name(), metadata_);
     }
-    std::cout << "print node end" << std::endl;
-
-    error = Metadata::save(database(), table_name(), metadata_);
 
     return error;
 }
