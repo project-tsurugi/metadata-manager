@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 #include <string_view>
+#include <vector>
 
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
@@ -325,19 +326,19 @@ ErrorCode add_table_metadata()
 ErrorCode remove_table_metadata()
 {
     ErrorCode error = ErrorCode::UNKNOWN;
+    int TABLE_NUM_ADDED = 4;
+
+    for (int num = 0; num < TABLE_NUM_ADDED; num++) {
+        error = add_table_metadata();
+        if (error != ErrorCode::OK) {
+            print_error(error, __LINE__);
+            return error;
+        }
+    }
 
     std::unique_ptr<Metadata> tables(new Tables(TEST_DB)); // use Template-Method.
     error = tables->load();
-    if (error != ErrorCode::OK)
-    {
-        print_error(error, __LINE__);
-        return error;
-    }
-
-    std::unique_ptr<Metadata> datatypes(new DataTypes(TEST_DB));
-    error = datatypes->load();
-    if (error != ErrorCode::OK)
-    {
+    if (error != ErrorCode::OK) {
         print_error(error, __LINE__);
         return error;
     }
@@ -345,17 +346,24 @@ ErrorCode remove_table_metadata()
     //
     // remove table-metadata object
     //
-    ObjectIdType number = ObjectId::current("tables");
-    std::string name = "table_" + std::to_string(number);
+    std::vector<std::string> table_names = {"table_2","table_4","table_1","table_5","table_3"};
 
-    error = tables->remove(name.c_str());
-    if (error != ErrorCode::OK)
-    {
+    for (std::string name : table_names) {
+        uint64_t object_id = 0;
+        error = tables->remove(name.c_str(), &object_id);
+        if (error != ErrorCode::OK) {
+            print_error(error, __LINE__);
+            return error;
+        } else {
+            std::cout << "remove table name :" << name << ", id:" << object_id << std::endl;
+        }
+    }
+
+    error = add_table_metadata();
+    if (error != ErrorCode::OK) {
         print_error(error, __LINE__);
         return error;
     }
-
-    error = ErrorCode::OK;
 
     return error;
 }
