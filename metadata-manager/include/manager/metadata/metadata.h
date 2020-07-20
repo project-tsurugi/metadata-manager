@@ -139,10 +139,11 @@ class Metadata {
 #endif
         /**
          *  @brief  Remove metadata-object from metadata-table.
-         *  @param  [in] name of metadata-object. (Value of "name" key.)
+         *  @param  (object_name) [in] name of metadata-object. (Value of "name" key.)
+         *  @param  (object_id)   [out] ID of the added metadata-object.
          *  @return ErrorCode::OK if success, otherwise an error code.
          */
-        virtual ErrorCode remove(const char *object_name);
+        virtual ErrorCode remove(const char *object_name, uint64_t* object_id);
 
         /**
          *  @brief  Get next metadata-object.

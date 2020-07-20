@@ -252,9 +252,10 @@ ErrorCode Metadata::get(
 /**
  *  @brief  Remove metadata-object from metadata-table.
  *  @param  (object_name)   [in] name of metadata-object. (Value of "name" key.)
+ *  @param  (object_id) [out] ID of the added metadata-object.
  *  @return ErrorCode::OK if success, otherwise an error code.
  */
-ErrorCode Metadata::remove(const char *object_name)
+ErrorCode Metadata::remove(const char *object_name, uint64_t* object_id)
 {
     assert(object_name != nullptr);
 
@@ -262,18 +263,21 @@ ErrorCode Metadata::remove(const char *object_name)
 
     ptree& node = metadata_.get_child(root_node());
 
-    for (ptree::iterator it = node.begin(); it != node.end(); )
-    {
+    for (ptree::iterator it = node.begin(); it != node.end(); ) {
         const ptree &temp_obj = it->second;
         boost::optional<std::string> name = temp_obj.get_optional<std::string>(NAME);
-        if (name && !name.get().compare(object_name))
-        {
+        boost::optional<ObjectIdType> id = temp_obj.get_optional<ObjectIdType>(ID);
+        if (name && !name.get().compare(object_name)) {
+            if (!id) {
+                error = ErrorCode::UNKNOWN;
+                return error;
+            }
+            *object_id = id.get();
             it = node.erase(it);
             error = ErrorCode::OK;
         } else {
             ++it;
         }
-
     }
 
     if (error == ErrorCode::OK) {
