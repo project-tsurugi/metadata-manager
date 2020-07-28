@@ -4,7 +4,7 @@
 2020.04.03 NEC
 
 ## Metadata::DataTypesクラス
-NEDO DBで使用するデータ型に関するメタデータを管理する。
+Tsurugiで使用するデータ型に関するメタデータを管理する。
 
 ### includeファイル
 * include/manager/metadata/Datatypes.h

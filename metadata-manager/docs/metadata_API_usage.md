@@ -92,7 +92,7 @@ Tables::save()で統合メタデータ管理基盤にテーブルメタデータ
 1. Tablesオブジェクトを作成する
 1. Tablesオブジェクトに統合メタデータ管理基盤上のメタデータを読み込む
 1. boost::property_tree::ptreeオブジェクトにテーブルメタデータを入力する
-1. Tables::add()でテーブルメタデータをNEDO DBに追加する（永続化もされる）
+1. Tables::add()でテーブルメタデータをTsurugiに追加する（永続化もされる）
  
 Tablesオブジェクトを作成する
 ```c++
@@ -150,7 +150,7 @@ boost::property_tree::ptreeオブジェクトにテーブルメタデータを�
      new_table.add_child(Tables::COLUMNS_NODE, columns);
 ```
 
-Tables::add()でテーブルメタデータをNEDO DBに追加する（永続化もされる）
+Tables::add()でテーブルメタデータをTsurugiに追加する（永続化もされる）
 ```c++
     if (tables.add(new_table) != metadata::ErrorCode::OK) {
         エラー処理
@@ -224,7 +224,7 @@ Tablesオブジェクトを作成する
     std::unique_ptr<Metadata> tables(new Tables("データベース名"));
 ```
 
-TablesオブジェクトにNEDO DBのメタデータを読み込む
+TablesオブジェクトにTsurugiのメタデータを読み込む
 ```c++
     if ( tables->load() != metadata::ErrorCode::OK) {
         エラー処理
