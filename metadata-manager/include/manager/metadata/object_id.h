@@ -31,7 +31,7 @@ class ObjectId {
         static ObjectIdType generate(const std::string table_name);
 
     private:
-        static constexpr const char *const TABLE_NAME = "tsurugi_metadata/oid";
+        static std::string TABLE_NAME;
 };
 
 } // namespace manager::metadata

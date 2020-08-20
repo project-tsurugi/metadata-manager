@@ -28,6 +28,8 @@ set_target_properties(metadata
 
 target_link_libraries(metadata
     PUBLIC metadata-interface
+    ${Boost_FILESYSTEM_LIBRARY}
+    ${Boost_SYSTEM_LIBRARY}
 )
 
 install_custom(metadata ${export_name})
