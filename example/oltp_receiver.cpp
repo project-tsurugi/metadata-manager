@@ -21,8 +21,6 @@
 
 #include "oltp_receiver.h"
 
-const char * const TEST_DB = "test_DB";
-
 namespace manager::message
 {
 
