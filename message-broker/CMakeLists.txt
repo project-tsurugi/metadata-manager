@@ -12,24 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-add_library(metadata
-    SHARED
-        metadata.cpp object_id.cpp tables.cpp datatypes.cpp
+add_library(message-interface INTERFACE)
+
+target_include_directories(message-interface
+    INTERFACE
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/manager>
 )
 
-target_include_directories(metadata
-    PRIVATE ${PROJECT_SOURCE_DIR}/include/manager/metadata
-)
-
-set_target_properties(metadata
-    PROPERTIES
-        LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/output"
-)
-
-target_link_libraries(metadata
-    PUBLIC metadata-interface
-    ${Boost_FILESYSTEM_LIBRARY}
-    ${Boost_SYSTEM_LIBRARY}
-)
-
-install_custom(metadata ${export_name})
+install_custom(message-interface ${export_name})

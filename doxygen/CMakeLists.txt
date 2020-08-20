@@ -1,4 +1,4 @@
-# Copyright 2020 tusurugi project.
+# Copyright 2019-2020 tsurugi project.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@ endif()
 
 set(TARGET_INCLUDES "")
 foreach (target_name
-        metadata-interface)
+        metadata-interface message-interface)
     get_target_property(
         _includes
         ${target_name} INTERFACE_INCLUDE_DIRECTORIES
