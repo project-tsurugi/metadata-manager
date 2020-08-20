@@ -17,9 +17,9 @@
  *  @brief  sample code main
  */
 
+#include <iostream>
 #include "oltp_receiver.h"
 
-#include "manager/message/olap_receiver.h"
 #include "manager/message/message.h"
 #include "manager/message/message_broker.h"
 
