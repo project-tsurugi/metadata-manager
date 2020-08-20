@@ -24,6 +24,7 @@ option(FORCE_INSTALL_RPATH "force add lib dir of custom prefixes to INSTALL_RPAT
 option(BUILD_DOCUMENTS "Build documents" ON)
 
 find_package(Doxygen)
+find_package(Boost COMPONENTS system filesystem REQUIRED)
 
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)

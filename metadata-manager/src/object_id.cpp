@@ -13,6 +13,7 @@ using namespace boost::property_tree;
 namespace manager::metadata {
 
 static ObjectIdType INVALID_OID = 0;
+std::string ObjectId::TABLE_NAME(std::string(getenv(Metadata::HOME_DIR)) + std::string(Metadata::TSURUGI_METADATA_DIR) + "oid");
 
 /**
  *  @brief  initialize object-ID metadata-table.
