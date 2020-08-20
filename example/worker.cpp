@@ -34,7 +34,7 @@
 using namespace manager::metadata;
 using namespace boost::property_tree;
 
-const char * const TEST_DB = "test_DB";
+const char * const TEST_DB = "Tsurugi";
 
 /*
  *  @brief  print error code and line number.
