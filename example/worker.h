@@ -29,7 +29,7 @@ using namespace boost::property_tree;
 class Worker
 {
     public:
-        ErrorCode read_table_metadata();
+        ErrorCode read_table_metadata(uint64_t object_id);
     private:
         void print_error(ErrorCode error, uint64_t line);
         ErrorCode display_table_metadata_object(const ptree& table);

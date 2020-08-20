@@ -157,7 +157,7 @@ ErrorCode Worker::display_table_metadata_object(const ptree& table)
 /*
  *  @biref  read table-metadata from metadata-table.
  */
-ErrorCode Worker::read_table_metadata()
+ErrorCode Worker::read_table_metadata(uint64_t object_id)
 {
     ErrorCode error = ErrorCode::UNKNOWN;
 
@@ -171,17 +171,12 @@ ErrorCode Worker::read_table_metadata()
     std::cout << "--- table-metadata to read. ---" << std::endl;
 
     ptree table;
-    while ((error = tables->next(table)) == ErrorCode::OK) {
+    if ((error = tables->get(object_id, table)) == ErrorCode::OK) {
         error = display_table_metadata_object(table);
         if (error != ErrorCode::OK) {
             return error;
         }
         std::cout << std::endl;
-    }
-
-    if (error != ErrorCode::END_OF_ROW) {
-        print_error(error, __LINE__);
-        return error;
     }
 
     error = ErrorCode::OK;

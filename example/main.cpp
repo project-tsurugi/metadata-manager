@@ -25,7 +25,7 @@
 
 int main()
 {
-    manager::message::CreateTableMessage ct_msg{0};
+    manager::message::CreateTableMessage ct_msg{1};
     manager::message::MessageBroker broker;
     manager::message::OltpReceiver oltp_receiver;
     ct_msg.set_receiver(&oltp_receiver);
