@@ -35,7 +35,7 @@ Status OltpReceiver::receive_message(Message *message)
             Worker worker;
             manager::metadata::ErrorCode ret_val_read = worker.read_table_metadata(message->get_object_id());
             if (ret_val_read != manager::metadata::ErrorCode::OK){
-                Status failure{ErrorCode::SUCCESS, (int)ret_val_read};
+                Status failure{ErrorCode::FAILURE, (int)ret_val_read};
                 return failure;
             }
             return ret_val;

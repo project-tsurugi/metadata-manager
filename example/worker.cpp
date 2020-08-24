@@ -135,12 +135,6 @@ ErrorCode Worker::display_table_metadata_object(const ptree& table)
             std::cout << "nullable : " << nullable << std::endl;
         }
 
-        boost::optional<std::string> default_expr =
-            column.get_optional<std::string>(Tables::Column::DEFAULT);
-        if (default_expr) {
-            std::cout << "default : " << default_expr << std::endl;
-        }
-
         boost::optional<uint64_t> direction =
             column.get_optional<uint64_t>(Tables::Column::DIRECTION);
         if (direction) {
@@ -171,12 +165,18 @@ ErrorCode Worker::read_table_metadata(uint64_t object_id)
     std::cout << "--- table-metadata to read. ---" << std::endl;
 
     ptree table;
-    if ((error = tables->get(object_id, table)) == ErrorCode::OK) {
+    error = tables->get(object_id, table);
+    if (error == ErrorCode::OK)
+    {
         error = display_table_metadata_object(table);
         if (error != ErrorCode::OK) {
             return error;
         }
         std::cout << std::endl;
+    }
+    else
+    {
+        return error;
     }
 
     error = ErrorCode::OK;

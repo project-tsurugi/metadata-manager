@@ -25,11 +25,31 @@
 
 int main()
 {
-    manager::message::CreateTableMessage ct_msg{1};
+    manager::message::CreateTableMessage ct_msg_0{0};
+    manager::message::CreateTableMessage ct_msg_1{1};
+    manager::message::CreateTableMessage ct_msg_2{2};
+    manager::message::CreateTableMessage ct_msg_3{3};
+
     manager::message::MessageBroker broker;
     manager::message::OltpReceiver oltp_receiver;
-    ct_msg.set_receiver(&oltp_receiver);
-    manager::message::Status status = broker.send_message(&ct_msg);
+    ct_msg_0.set_receiver(&oltp_receiver);
+    ct_msg_1.set_receiver(&oltp_receiver);
+    ct_msg_2.set_receiver(&oltp_receiver);
+    ct_msg_3.set_receiver(&oltp_receiver);
+
+    manager::message::Status status = broker.send_message(&ct_msg_0);
+    std::cout << "primary error code:" << (int)status.get_error_code()
+              << ",secondary error code:" << status.get_sub_error_code() << std::endl;
+
+    status = broker.send_message(&ct_msg_1);
     std::cout << "primary error code:"<< (int)status.get_error_code()
-     << ",secondary error code:" << status.get_sub_error_code() << std::endl;
+              << ",secondary error code:" << status.get_sub_error_code() << std::endl;
+
+    status = broker.send_message(&ct_msg_2);
+    std::cout << "primary error code:" << (int)status.get_error_code()
+              << ",secondary error code:" << status.get_sub_error_code() << std::endl;
+
+    status = broker.send_message(&ct_msg_3);
+    std::cout << "primary error code:" << (int)status.get_error_code()
+              << ",secondary error code:" << status.get_sub_error_code() << std::endl;
 }

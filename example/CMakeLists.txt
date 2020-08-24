@@ -25,4 +25,5 @@ add_executable(manager_example main.cpp oltp_receiver.cpp worker.cpp)
 find_package(manager REQUIRED)
 target_link_libraries(manager_example
     PRIVATE manager-metadata
+    PRIVATE manager-message
 )
