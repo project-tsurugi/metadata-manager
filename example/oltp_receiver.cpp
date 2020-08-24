@@ -26,7 +26,7 @@ namespace manager::message
 
 Status OltpReceiver::receive_message(Message *message)
 {
-    Status ret_val{ErrorCode::SUCCESS, (int)ErrorCode::SUCCESS};
+    Status ret_val{ErrorCode::SUCCESS, (int)manager::metadata::ErrorCode::OK};
 
     switch(message->get_id()){
         case MessageId::CREATE_TABLE:
