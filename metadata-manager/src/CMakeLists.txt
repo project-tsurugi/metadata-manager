@@ -24,6 +24,7 @@ target_include_directories(metadata
 set_target_properties(metadata
     PROPERTIES
         LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/output"
+        LIBRARY_OUTPUT_NAME "manager-metadata"
 )
 
 target_link_libraries(metadata
