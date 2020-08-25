@@ -23,8 +23,8 @@
 #include "manager/metadata/metadata.h"
 
 namespace manager::metadata {
-
-class DataTypes : public Metadata {
+    class DataTypes : public Metadata
+    {
     public:
         // root object.
         static constexpr const char* const DATATYPES_NODE = "dataTypes";
@@ -35,6 +35,19 @@ class DataTypes : public Metadata {
         static constexpr const char* const PG_DATA_TYPE                = "pg_dataType";
         static constexpr const char* const PG_DATA_TYPE_NAME           = "pg_dataTypeName";
         static constexpr const char* const PG_DATA_TYPE_QUALIFIED_NAME = "pg_dataTypeQualifiedName";
+
+        /**
+         * @brief represents data types id.
+         */
+        enum class DataTypesId
+        {
+            INT32 = 4,   //!< @brief INT32.
+            INT64 = 6,   //!< @brief INT64.
+            FLOAT32 = 8, //!< @brief FLOAT32.
+            FLOAT64 = 9, //!< @brief FLOAT64.
+            CHAR = 13,   //!< @brief CHAR.
+            VARCHAR = 14 //!< @brief VARCHAR.
+        };
 
         static ErrorCode init();
 
