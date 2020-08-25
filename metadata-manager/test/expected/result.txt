@@ -5,7 +5,6 @@
 --- table ---
 id : 1
 name :  table_1
-namespace : public
 primary_key : 1
 primary_key : 2
 --- columns ---
@@ -15,10 +14,7 @@ name :  column_1
 ordinal position :  1
 datatype id :  8
 datatype name : FLOAT32
-data length :  1
-varying :  0
 nullable :  0
-default :  default_expr1
 direction :  1
 ---------------
 id :  2
@@ -29,19 +25,19 @@ datatype id :  14
 datatype name : VARCHAR
 data length :  8
 varying :  1
-nullable :  1
-direction :  2
+nullable :  0
+direction :  0
 ---------------
 id :  3
 table id :  1
 name :  column_3
 ordinal position :  3
-datatype id :  6
-datatype name : INT64
+datatype id :  13
+datatype name : CHAR
 data length :  1
 varying :  0
 nullable :  1
-default :  default_expr2
+direction :  0
 ---------------
 
 === class object test done. ===
@@ -50,7 +46,6 @@ default :  default_expr2
 --- table ---
 id : 1
 name :  table_1
-namespace : public
 primary_key : 1
 primary_key : 2
 --- columns ---
@@ -60,10 +55,7 @@ name :  column_1
 ordinal position :  1
 datatype id :  8
 datatype name : FLOAT32
-data length :  1
-varying :  0
 nullable :  0
-default :  default_expr1
 direction :  1
 ---------------
 id :  2
@@ -74,19 +66,19 @@ datatype id :  14
 datatype name : VARCHAR
 data length :  8
 varying :  1
-nullable :  1
-direction :  2
+nullable :  0
+direction :  0
 ---------------
 id :  3
 table id :  1
 name :  column_3
 ordinal position :  3
-datatype id :  6
-datatype name : INT64
+datatype id :  13
+datatype name : CHAR
 data length :  1
 varying :  0
 nullable :  1
-default :  default_expr2
+direction :  0
 ---------------
 
 === static functions test done. ===

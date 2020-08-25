@@ -2,9 +2,10 @@ DATATYPES=datatypes.json
 OID=oid
 RESULT=result.txt
 TABLES=tables.json
-OUTPUT=../../build/output/tsurugi_metadata/
+OUTPUT=~/.local/tsurugi/metadata/
+BUILD=../../../build/
 
 diff $DATATYPES $OUTPUT$DATATYPES
 diff $OID $OUTPUT$OID
-diff $RESULT $OUTPUT$RESULT
+diff $RESULT $BUILD$RESULT
 diff $TABLES $OUTPUT$TABLES

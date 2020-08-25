@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 #include <string_view>
+#include <vector>
 
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
@@ -105,15 +106,6 @@ ErrorCode display_table_metadata_object(const ptree& table)
     }
     std::cout << "name : " << name << std::endl;
 
-    boost::optional<std::string> table_namespace =
-        table.get_optional<std::string>(Tables::NAMESPACE);
-    if (!table_namespace) {
-        error = ErrorCode::NOT_FOUND;
-        print_error(error, __LINE__);
-        return error;
-    }
-    std::cout << "namespace : " << table_namespace.get() << std::endl;
-
     ptree primary_keys = table.get_child(Tables::PRIMARY_KEY_NODE);
     BOOST_FOREACH (const ptree::value_type& node, primary_keys) {
         std::cout << "primary_key : " << node.second.data() << std::endl;
@@ -174,21 +166,15 @@ ErrorCode display_table_metadata_object(const ptree& table)
 
         boost::optional<uint64_t> data_length =
             column.get_optional<uint64_t>(Tables::Column::DATA_LENGTH);
-        if (!data_length) {
-            error = ErrorCode::NOT_FOUND;
-            print_error(error, __LINE__);
-            return error;
+        if (data_length) {
+            std::cout << "data length : " << data_length << std::endl;
         }
-        std::cout << "data length : " << data_length << std::endl;
 
         boost::optional<bool> varying =
             column.get_optional<bool>(Tables::Column::VARYING);
-        if (!varying) {
-            error = ErrorCode::NOT_FOUND;
-            print_error(error, __LINE__);
-            return error;
+        if (varying) {
+            std::cout << "varying : " << varying << std::endl;
         }
-        std::cout << "varying : " << varying << std::endl;
 
         boost::optional<bool> nullable =
             column.get_optional<bool>(Tables::Column::NULLABLE);
@@ -245,13 +231,24 @@ ErrorCode add_table_metadata()
     // table-metadata
     //
     new_table.put(Tables::NAME, get_tablename());
-    new_table.put(Tables::NAMESPACE, "public");
 
     ptree primary_key;
     ptree primary_keys;
-    primary_key.put<uint64_t>("", 1);
+
+    enum class ordinal_position
+    {
+        column_1 = 1,
+        column_2,
+        column_3,
+    };
+
+    std::vector<std::string> column_name = {
+            "column_1", "column_2", "column_3"
+        };
+
+    primary_key.put("", static_cast<int>(ordinal_position::column_1));
     primary_keys.push_back(std::make_pair("", primary_key));
-    primary_key.put<uint64_t>("", 2);
+    primary_key.put("", static_cast<int>(ordinal_position::column_2));
     primary_keys.push_back(std::make_pair("", primary_key));
     new_table.add_child(Tables::PRIMARY_KEY_NODE, primary_keys);
     //
@@ -262,45 +259,69 @@ ErrorCode add_table_metadata()
         ptree column;
         // column #1
         column.clear();
-        column.put(Tables::Column::NAME, "column_1");
-        column.put<uint64_t>(Tables::Column::ORDINAL_POSITION, 1);
+        column.put(Tables::Column::NAME, column_name[0]);
+        column.put(Tables::Column::ORDINAL_POSITION, static_cast<int>(ordinal_position::column_1));
         datatypes->get(DataTypes::PG_DATA_TYPE_QUALIFIED_NAME, "float4", datatype);
         ObjectIdType data_type_id = datatype.get<ObjectIdType>(DataTypes::ID);
-        if (!data_type_id) return ErrorCode::NOT_FOUND;
+        if (!data_type_id)
+        {
+            return ErrorCode::NOT_FOUND;
+        }
+        else
+        {
+            if (static_cast<ObjectIdType>(DataTypes::DataTypesId::FLOAT32) != data_type_id)
+            {
+                return ErrorCode::UNKNOWN;
+            }
+        }
         column.put<ObjectIdType>(Tables::Column::DATA_TYPE_ID, data_type_id);
-        column.put<uint64_t>(Tables::Column::DATA_LENGTH, 1);
-        column.put<bool>(Tables::Column::VARYING, false);
         column.put<bool>(Tables::Column::NULLABLE, false);
-        column.put(Tables::Column::DEFAULT, "default_expr1");
-        column.put<uint64_t>(Tables::Column::DIRECTION, 1);
+        column.put(Tables::Column::DIRECTION, static_cast<int>(Tables::Column::Direction::ASCENDANT));
         columns.push_back(std::make_pair("", column));
 
         // column #2
         column.clear();
-        column.put(Tables::Column::NAME, "column_2");
-        column.put<uint64_t>(Tables::Column::ORDINAL_POSITION, 2);
+        column.put(Tables::Column::NAME, column_name[1]);
+        column.put(Tables::Column::ORDINAL_POSITION, static_cast<int>(ordinal_position::column_2));
         datatypes->get("VARCHAR", datatype);
         data_type_id = datatype.get<ObjectIdType>(DataTypes::ID);
-        if (!data_type_id) return ErrorCode::NOT_FOUND;
+        if (!data_type_id)
+        {
+            return ErrorCode::NOT_FOUND;
+        }
+        else
+        {
+            if (static_cast<ObjectIdType>(DataTypes::DataTypesId::VARCHAR) != data_type_id)
+            {
+                return ErrorCode::UNKNOWN;
+            }
+        }
         column.put(Tables::Column::DATA_TYPE_ID, data_type_id);
         column.put<uint64_t>(Tables::Column::DATA_LENGTH, 8);
         column.put<bool>(Tables::Column::VARYING, true);
-        column.put<bool>(Tables::Column::NULLABLE, true);
-        column.put<uint64_t>(Tables::Column::DIRECTION, 2);
+        column.put<bool>(Tables::Column::NULLABLE, false);
+        column.put(Tables::Column::DIRECTION, static_cast<int>(Tables::Column::Direction::DEFAULT));
         columns.push_back(std::make_pair("", column));
 
         // column #3
         column.clear();
-        column.put(Tables::Column::NAME, "column_3");
-        column.put<uint64_t>(Tables::Column::ORDINAL_POSITION, 3);
-        datatypes->get("INT64", datatype);
+        column.put(Tables::Column::NAME, column_name[2]);
+        column.put(Tables::Column::ORDINAL_POSITION, static_cast<int>(ordinal_position::column_3));
+        datatypes->get("CHAR", datatype);
         data_type_id = datatype.get<ObjectIdType>(DataTypes::ID);
-        if (!data_type_id) return ErrorCode::NOT_FOUND;
+        if (!data_type_id) {
+            return ErrorCode::NOT_FOUND;
+        } else{
+            if (static_cast<ObjectIdType>(DataTypes::DataTypesId::CHAR) != data_type_id)
+            {
+                return ErrorCode::UNKNOWN;
+            }
+        }
         column.put(Tables::Column::DATA_TYPE_ID, data_type_id);
         column.put<uint64_t>(Tables::Column::DATA_LENGTH, 1);
         column.put<bool>(Tables::Column::VARYING, false);
         column.put<bool>(Tables::Column::NULLABLE, true);
-        column.put(Tables::Column::DEFAULT, "default_expr2");
+        column.put(Tables::Column::DIRECTION, static_cast<int>(Tables::Column::Direction::DEFAULT));
         columns.push_back(std::make_pair("", column));
     }
     new_table.add_child(Tables::COLUMNS_NODE, columns);
