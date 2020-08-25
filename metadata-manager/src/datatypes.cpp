@@ -39,7 +39,7 @@ ErrorCode DataTypes::init()
         ptree datatype;
 
         // INT32 :
-        datatype.put(DataTypes::ID, static_cast<int>(DataTypes::DataTypesId::INT32));
+        datatype.put(DataTypes::ID, static_cast<ObjectIdType>(DataTypes::DataTypesId::INT32));
         datatype.put(DataTypes::NAME, "INT32");
         datatype.put(DataTypes::PG_DATA_TYPE, 23);
         datatype.put(DataTypes::PG_DATA_TYPE_NAME, "integer");
@@ -47,7 +47,7 @@ ErrorCode DataTypes::init()
         datatypes.push_back(std::make_pair("", datatype));
 
         // INT64 :
-        datatype.put(DataTypes::ID, static_cast<int>(DataTypes::DataTypesId::INT64));
+        datatype.put(DataTypes::ID, static_cast<ObjectIdType>(DataTypes::DataTypesId::INT64));
         datatype.put(DataTypes::NAME, "INT64");
         datatype.put(DataTypes::PG_DATA_TYPE, 20);
         datatype.put(DataTypes::PG_DATA_TYPE_NAME, "bigint");
@@ -55,7 +55,7 @@ ErrorCode DataTypes::init()
         datatypes.push_back(std::make_pair("", datatype));
 
         // FLOAT32 :
-        datatype.put(DataTypes::ID, static_cast<int>(DataTypes::DataTypesId::FLOAT32));
+        datatype.put(DataTypes::ID, static_cast<ObjectIdType>(DataTypes::DataTypesId::FLOAT32));
         datatype.put(DataTypes::NAME, "FLOAT32");
         datatype.put(DataTypes::PG_DATA_TYPE, 700);
         datatype.put(DataTypes::PG_DATA_TYPE_NAME, "real");
@@ -63,7 +63,7 @@ ErrorCode DataTypes::init()
         datatypes.push_back(std::make_pair("", datatype));
 
         // FLOAT64 :
-        datatype.put(DataTypes::ID, static_cast<int>(DataTypes::DataTypesId::FLOAT64));
+        datatype.put(DataTypes::ID, static_cast<ObjectIdType>(DataTypes::DataTypesId::FLOAT64));
         datatype.put(DataTypes::NAME, "FLOAT64");
         datatype.put(DataTypes::PG_DATA_TYPE, 701);
         datatype.put(DataTypes::PG_DATA_TYPE_NAME, "double precision");
@@ -71,7 +71,7 @@ ErrorCode DataTypes::init()
         datatypes.push_back(std::make_pair("", datatype));
 
         // CHAR : character, char
-        datatype.put(DataTypes::ID, static_cast<int>(DataTypes::DataTypesId::CHAR));
+        datatype.put(DataTypes::ID, static_cast<ObjectIdType>(DataTypes::DataTypesId::CHAR));
         datatype.put(DataTypes::NAME, "CHAR");
         datatype.put(DataTypes::PG_DATA_TYPE, 1042);
         datatype.put(DataTypes::PG_DATA_TYPE_NAME, "char");
@@ -79,7 +79,7 @@ ErrorCode DataTypes::init()
         datatypes.push_back(std::make_pair("", datatype));
 
         // VARCHAR : character varying, varchar
-        datatype.put(DataTypes::ID, static_cast<int>(DataTypes::DataTypesId::VARCHAR));
+        datatype.put(DataTypes::ID, static_cast<ObjectIdType>(DataTypes::DataTypesId::VARCHAR));
         datatype.put(DataTypes::NAME, "VARCHAR");
         datatype.put(DataTypes::PG_DATA_TYPE, 1043);
         datatype.put(DataTypes::PG_DATA_TYPE_NAME, "varchar");

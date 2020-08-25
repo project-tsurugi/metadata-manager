@@ -39,7 +39,7 @@ namespace manager::metadata {
         /**
          * @brief represents data types id.
          */
-        enum class DataTypesId
+        enum class DataTypesId : ObjectIdType
         {
             INT32 = 4,   //!< @brief INT32.
             INT64 = 6,   //!< @brief INT64.
