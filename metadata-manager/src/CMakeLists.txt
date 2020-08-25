@@ -14,7 +14,7 @@
 
 add_library(metadata
     SHARED
-        metadata.cpp object_id.cpp tables.cpp datatypes.cpp
+        metadata.cpp object_id.cpp tables.cpp datatypes.cpp table_metadata.cpp datatype_metadata.cpp
 )
 
 target_include_directories(metadata
