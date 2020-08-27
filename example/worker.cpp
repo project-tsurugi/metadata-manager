@@ -139,6 +139,19 @@ ErrorCode Worker::display_table_metadata_object(const ptree& table)
             column.get_optional<uint64_t>(Tables::Column::DIRECTION);
         if (direction) {
             std::cout << "direction : " << direction << std::endl;
+            switch (static_cast<Tables::Column::Direction>(direction.get())) {
+                case Tables::Column::Direction::DEFAULT:
+                    std::cout << "direction : DEFAULT" << std::endl;
+                    break;
+                case Tables::Column::Direction::DESCENDANT:
+                    std::cout << "direction : DESCENDANT" << std::endl;
+                    break;
+                case Tables::Column::Direction::ASCENDANT:
+                    std::cout << "direction : ASCENDANT" << std::endl;
+                    break;
+                default:
+                    break;
+            }
         }
 
         std::cout << "---------------" << std::endl;
