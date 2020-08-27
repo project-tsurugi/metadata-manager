@@ -16,6 +16,7 @@ datatype id :  8
 datatype name : FLOAT32
 nullable :  0
 direction :  1
+direction : ASCENDANT
 ---------------
 id :  2
 table id :  1
@@ -27,6 +28,7 @@ data length :  8
 varying :  1
 nullable :  0
 direction :  0
+direction : DEFAULT
 ---------------
 id :  3
 table id :  1
@@ -38,6 +40,7 @@ data length :  1
 varying :  0
 nullable :  1
 direction :  0
+direction : DEFAULT
 ---------------
 
 === class object test done. ===
@@ -57,6 +60,7 @@ datatype id :  8
 datatype name : FLOAT32
 nullable :  0
 direction :  1
+direction : ASCENDANT
 ---------------
 id :  2
 table id :  1
@@ -68,6 +72,7 @@ data length :  8
 varying :  1
 nullable :  0
 direction :  0
+direction : DEFAULT
 ---------------
 id :  3
 table id :  1
@@ -79,6 +84,7 @@ data length :  1
 varying :  0
 nullable :  1
 direction :  0
+direction : DEFAULT
 ---------------
 
 === static functions test done. ===

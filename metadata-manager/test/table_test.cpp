@@ -195,6 +195,17 @@ ErrorCode display_table_metadata_object(const ptree& table)
             column.get_optional<uint64_t>(Tables::Column::DIRECTION);
         if (direction) {
             std::cout << "direction : " << direction << std::endl;
+            switch (static_cast<Tables::Column::Direction>(direction.get())) {
+                case Tables::Column::Direction::ASCENDANT:
+                    std::cout << "direction : ASCENDANT" << std::endl;
+                    break;
+                case Tables::Column::Direction::DESCENDANT:
+                    std::cout << "direction : DESCENDANT" << std::endl;
+                    break;
+                case Tables::Column::Direction::DEFAULT:
+                    std::cout << "direction : DEFAULT" << std::endl;
+                    break;
+            }
         }
 
         std::cout << "---------------" << std::endl;
@@ -269,7 +280,8 @@ ErrorCode add_table_metadata()
         }
         else
         {
-            if (static_cast<ObjectIdType>(DataTypes::DataTypesId::FLOAT32) != data_type_id)
+            if (DataTypes::DataTypesId::FLOAT32
+                != static_cast<DataTypes::DataTypesId>(data_type_id))
             {
                 return ErrorCode::UNKNOWN;
             }
@@ -291,7 +303,8 @@ ErrorCode add_table_metadata()
         }
         else
         {
-            if (static_cast<ObjectIdType>(DataTypes::DataTypesId::VARCHAR) != data_type_id)
+            if (DataTypes::DataTypesId::VARCHAR
+                != static_cast<DataTypes::DataTypesId>(data_type_id))
             {
                 return ErrorCode::UNKNOWN;
             }
@@ -312,9 +325,10 @@ ErrorCode add_table_metadata()
         if (!data_type_id) {
             return ErrorCode::NOT_FOUND;
         } else{
-            if (static_cast<ObjectIdType>(DataTypes::DataTypesId::CHAR) != data_type_id)
-            {
-                return ErrorCode::UNKNOWN;
+            if (DataTypes::DataTypesId::CHAR
+                != static_cast<DataTypes::DataTypesId>(data_type_id))
+                {
+                    return ErrorCode::UNKNOWN;
             }
         }
         column.put(Tables::Column::DATA_TYPE_ID, data_type_id);
