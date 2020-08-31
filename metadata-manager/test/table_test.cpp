@@ -380,7 +380,13 @@ ErrorCode remove_table_metadata()
     //
     // remove table-metadata object
     //
-    std::vector<std::string> table_names = {"table_2","table_4","table_1","table_5","table_3"};
+    ObjectIdType number = ObjectId::current("tables");
+    std::vector<std::string> table_names =
+        {"table_" + std::to_string(number - 3),
+         "table_" + std::to_string(number - 1),
+         "table_" + std::to_string(number - 4),
+         "table_" + std::to_string(number - 0),
+         "table_" + std::to_string(number - 2)};
 
     for (std::string name : table_names) {
         uint64_t object_id = 0;
@@ -390,6 +396,48 @@ ErrorCode remove_table_metadata()
             return error;
         } else {
             std::cout << "remove table name :" << name << ", id:" << object_id << std::endl;
+        }
+    }
+
+    for (int num = 0; num < TABLE_NUM_ADDED + 1; num++)
+    {
+        error = add_table_metadata();
+        if (error != ErrorCode::OK)
+        {
+            print_error(error, __LINE__);
+            return error;
+        }
+    }
+
+    error = tables->load();
+    if (error != ErrorCode::OK)
+    {
+        print_error(error, __LINE__);
+        return error;
+    }
+
+    //
+    // remove table-metadata object
+    //
+
+    number = ObjectId::current("tables");
+    std::vector<uint64_t> object_ids = {number - 3,
+                                        number - 1,
+                                        number - 4,
+                                        number - 0,
+                                        number - 2};
+
+    for (uint64_t object_id : object_ids)
+    {
+        error = tables->remove(object_id);
+        if (error != ErrorCode::OK)
+        {
+            print_error(error, __LINE__);
+            return error;
+        }
+        else
+        {
+            std::cout << "remove table id:" << object_id << std::endl;
         }
     }
 
