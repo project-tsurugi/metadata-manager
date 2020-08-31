@@ -13,7 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#pragma once
+#ifndef MANAGER_DATATYPE_METADATA
+#define MANAGER_DATATYPE_METADATA
 
 #include <string>
 #include <string_view>
@@ -22,9 +23,9 @@
 #include "manager/metadata/error_code.h"
 #include "manager/metadata/metadata.h"
 
-namespace manager::metadata {
-    class DataTypes : public Metadata
-    {
+namespace manager::metadata_manager {
+
+class DataTypeMetadata : public Metadata {
     public:
         // root object.
         static constexpr const char* const DATATYPES_NODE = "dataTypes";
@@ -32,22 +33,8 @@ namespace manager::metadata {
         // data type metadata-object.
         // ID is defined in base class.
         // NAME is defined in base class.
-        static constexpr const char* const PG_DATA_TYPE                = "pg_dataType";
-        static constexpr const char* const PG_DATA_TYPE_NAME           = "pg_dataTypeName";
-        static constexpr const char* const PG_DATA_TYPE_QUALIFIED_NAME = "pg_dataTypeQualifiedName";
-
-        /**
-         * @brief represents data types id.
-         */
-        enum class DataTypesId : ObjectIdType
-        {
-            INT32 = 4,   //!< @brief INT32.
-            INT64 = 6,   //!< @brief INT64.
-            FLOAT32 = 8, //!< @brief FLOAT32.
-            FLOAT64 = 9, //!< @brief FLOAT64.
-            CHAR = 13,   //!< @brief CHAR.
-            VARCHAR = 14 //!< @brief VARCHAR.
-        };
+        static constexpr const char* const PG_DATA_TYPE       = "pg_dataType";
+        static constexpr const char* const PG_DATA_TYPE_NAME  = "pg_dataTypeName";
 
         static ErrorCode init();
 
@@ -59,8 +46,8 @@ namespace manager::metadata {
          *  @return ErrorCode::OK if success, otherwise an error code.
          */
         static ErrorCode load(
-            std::string_view database, boost::property_tree::ptree& pt,
-            const GenerationType generation = Metadata::LATEST_VERSION);
+            std::string_view database, boost::property_tree::ptree& pt, 
+            const GenerationType generation = LATEST_GENERATION);
 
         /**
          *  @brief  Save the metadta to metadta-table.
@@ -69,7 +56,7 @@ namespace manager::metadata {
          *  @param  (generation) [out] the generation of saved metadata.
          */
         static ErrorCode save(
-            std::string_view database, boost::property_tree::ptree& pt,
+            std::string_view database, boost::property_tree::ptree& pt, 
             GenerationType* generation = nullptr);
 
         /**
@@ -77,26 +64,28 @@ namespace manager::metadata {
          *  @param  (database) [in]  database name.
          *  @return none.
          */
-        DataTypes(std::string_view database, std::string_view component = "visitor")
+        DataTypeMetadata(std::string_view database, std::string_view component = "visitor") 
             : Metadata(database, component) { init(); }
 
-        DataTypes(const DataTypes&) = delete;
-        DataTypes& operator=(const DataTypes&) = delete;
+        DataTypeMetadata(const DataTypeMetadata&) = delete;
+        DataTypeMetadata& operator=(const DataTypeMetadata&) = delete;
 
     protected:
         // functions for template-method
         std::string_view table_name() const { return TABLE_NAME; }
         const std::string root_node() const { return DATATYPES_NODE; }
-        uint64_t generate_object_id() const {
-            static ObjectIdType datatype_id = 0;
-            return ++datatype_id;
+        uint64_t generate_object_id() const { 
+            static ObjectIdType datatype_id = 0; 
+            return ++datatype_id; 
         }
-        ErrorCode fill_parameters( __attribute__((unused)) boost::property_tree::ptree& object) {
-            return ErrorCode::OK;
+        ErrorCode fill_parameters( __attribute__((unused)) boost::property_tree::ptree& object) { 
+            return ErrorCode::OK; 
         }
 
     private:
         static constexpr const char* const TABLE_NAME = "datatypes";
 };
 
-} // namespace manager::metadata
+} 
+
+#endif // MANAGER_DATATYPE_METADATA

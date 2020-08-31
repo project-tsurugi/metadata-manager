@@ -47,6 +47,28 @@ class Tables : public Metadata {
             static constexpr const char* const NULLABLE          = "nullable";
             static constexpr const char* const DEFAULT           = "default";
             static constexpr const char* const DIRECTION         = "direction";
+
+            /**
+             * @brief represents sort direction of elements.
+             */
+            enum class Direction
+            {
+
+                /**
+                 * @brief default order.
+                 */
+                DEFAULT = 0,
+
+                /**
+                 * @brief ascendant order.
+                 */
+                ASCENDANT,
+
+                /**
+                 * @brief descendant order.
+                 */
+                DESCENDANT,
+            };
         };
 
         static ErrorCode init();

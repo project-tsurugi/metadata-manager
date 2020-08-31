@@ -12,15 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-add_library(metadata-interface INTERFACE)
+add_library(message-interface INTERFACE)
 
-target_include_directories(metadata-interface
+target_include_directories(message-interface
     INTERFACE
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/manager>
 )
 
-install_custom(metadata-interface ${export_name})
+install_custom(message-interface ${export_name})
 
 add_subdirectory(src)
-add_subdirectory(test)

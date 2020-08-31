@@ -27,6 +27,8 @@
 using namespace boost::property_tree;
 
 namespace manager::metadata {
+
+std::string Metadata::storage_dir_path(std::string(getenv(Metadata::HOME_DIR)) + std::string(Metadata::TSURUGI_METADATA_DIR));
 /**
  *  @brief  Load metadata from metadata-table.
  *  @param  (database)   [in]  database name.
@@ -39,7 +41,7 @@ ErrorCode Metadata::load(
     __attribute__((unused)) std::string_view database, std::string_view tablename,
     boost::property_tree::ptree& pt, __attribute__((unused)) const uint64_t generation)
 {
-    std::string filename = std::string(storage_dir_path) + std::string{tablename} + ".json";
+    std::string filename = storage_dir_path + std::string{tablename} + ".json";
 
     try {
         read_json(filename, pt);
@@ -65,7 +67,7 @@ ErrorCode Metadata::save(
     __attribute__((unused)) std::string_view database, std::string_view tablename,
     boost::property_tree::ptree& pt, __attribute__((unused)) uint64_t* generation)
 {
-    std::string filename = std::string(storage_dir_path) + std::string{tablename} + ".json";
+    std::string filename = storage_dir_path + std::string{tablename} + ".json";
 
     try {
         write_json(filename, pt);

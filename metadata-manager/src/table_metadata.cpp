@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- #include <iostream> // for debug
 #include <boost/optional.hpp>
 #include <boost/foreach.hpp>
 #include <boost/property_tree/ptree.hpp>
@@ -22,30 +21,54 @@
 #include "manager/metadata/error_code.h"
 #include "manager/metadata/object_id.h"
 #include "manager/metadata/metadata.h"
-#include "manager/metadata/tables.h"
+#include "manager/metadata/table_metadata.h"
 
 using namespace boost::property_tree;
 
-namespace manager::metadata {
+namespace manager::metadata_manager {
 
-ErrorCode Tables::init()
+// root object.
+const char * TableMetadata::TABLES_NODE = "tables";
+
+// table metadata-object.
+// ID is defined in base class.
+// NAME is defined in base class.
+const char * TableMetadata::NAMESPACE                 = "namespace";
+const char * TableMetadata::COLUMNS_NODE              = "columns";
+const char * TableMetadata::PRIMARY_KEY_NODE          = "primaryKey";
+
+// column metadata-object.
+const char * TableMetadata::Column::ID                = "id";
+const char * TableMetadata::Column::TABLE_ID          = "tableId";
+const char * TableMetadata::Column::NAME              = "name";
+const char * TableMetadata::Column::ORDINAL_POSITION  = "ordinalPosition";
+const char * TableMetadata::Column::DATA_TYPE_ID      = "dataTypeId";
+const char * TableMetadata::Column::DATA_LENGTH       = "dataLength";
+const char * TableMetadata::Column::VARYING           = "varying";
+const char * TableMetadata::Column::NULLABLE          = "nullable";
+const char * TableMetadata::Column::DEFAULT           = "default";
+const char * TableMetadata::Column::DIRECTION         = "direction";
+
+const char * TableMetadata::TABLE_NAME = "tables";
+
+ErrorCode TableMetadata::init()
 {
     ErrorCode error = ErrorCode::UNKNOWN;
 
     try {
-        std::string filename = storage_dir_path + std::string{Tables::TABLE_NAME} + ".json";
+        std::string filename = std::string{TableMetadata::TABLE_NAME} + ".json";
         std::ifstream file(filename);
 
         if (!file.is_open()) {
             // create metadata-table
             ptree root;
             Metadata::init(root);
-            root.put(Tables::TABLES_NODE, "");
-            error = Tables::save("", root);
+            root.put(TableMetadata::TABLES_NODE, "");
+            error = TableMetadata::save("", root);
             if (error != ErrorCode::OK) {
                 return error;
             }
-        }
+        }    
     } catch (...) {
         return error;
     }
@@ -62,52 +85,10 @@ ErrorCode Tables::init()
  *  @param  (generation) [in]  metadata generation to load. load latest generation if NOT provided.
  *  @return ErrorCode::OK if success, otherwise an error code.
  */
-ErrorCode Tables::load(
+ErrorCode TableMetadata::load(
     std::string_view database, boost::property_tree::ptree& pt, const uint64_t generation)
 {
-    return Metadata::load(database, Tables::TABLE_NAME, pt, generation);
-}
-
-/**
- *  @brief  Add metadata-object to metadata-table.
- *  @param  (object)    [in]  metadata-object to add.
- *  @param  (object_id) [out] ID of the added metadata-object.
- *  @return ErrorCode::OK if success, otherwise an error code.
- */
-ErrorCode Tables::add(boost::property_tree::ptree& object, uint64_t* object_id)
-{
-    ErrorCode error = ErrorCode::UNKNOWN;
-
-    ptree table_name_searched;
-
-    boost::optional<std::string> name = object.get_optional<std::string>(NAME);
-
-    if (get(name.get(), table_name_searched) == ErrorCode::OK) {
-        error = ErrorCode::TABLE_NAME_ALREADY_EXISTS;
-        return error;
-    }
-
-    // generate the object ID of the added metadata-object.
-    uint64_t new_id = generate_object_id();
-    object.put(ID, new_id);
-    if (object_id != nullptr) {
-        *object_id = new_id;
-    }
-
-    error = fill_parameters(object);
-    if (error != ErrorCode::OK) {
-        return error;
-    }
-
-    // add new element.
-    ptree node = metadata_.get_child(root_node());
-
-    node.push_back(std::make_pair("", object));
-    metadata_.put_child(root_node(), node);
-
-    error = Metadata::save(database(), table_name(), metadata_);
-
-    return error;
+    return Metadata::load(database, TableMetadata::TABLE_NAME, pt, generation);
 }
 
 /**
@@ -117,17 +98,17 @@ ErrorCode Tables::add(boost::property_tree::ptree& object, uint64_t* object_id)
  *  @param  (generation) [out] the generation of saved metadata.
  *  @return ErrorCode::OK if success, otherwise an error code.
  */
-ErrorCode Tables::save(
+ErrorCode TableMetadata::save(
     std::string_view database, boost::property_tree::ptree& pt, uint64_t* generation)
 {
-    return Metadata::save(database, Tables::TABLE_NAME, pt, generation);
+    return Metadata::save(database, TableMetadata::TABLE_NAME, pt, generation);
 }
 
 /**
  *  @brief  Generate the object ID of table-metadata.
  *  @return new object ID.
  */
-ObjectIdType Tables::generate_object_id() const
+ObjectIdType TableMetadata::generate_object_id() const
 {
     return ObjectId::generate(TABLE_NAME);
 }
@@ -150,13 +131,13 @@ ObjectIdType generate_constraint_id()
     return ObjectId::generate("constraint");
 }
 
-ErrorCode Tables::fill_parameters(boost::property_tree::ptree& table)
+ErrorCode TableMetadata::fill_parameters(boost::property_tree::ptree& table)
 {
     ErrorCode error = ErrorCode::UNKNOWN;
 
     //
     // column metdata
-    //
+    // 
     BOOST_FOREACH (ptree::value_type& node, table.get_child(COLUMNS_NODE)) {
         ptree& column = node.second;
         // column ID
@@ -166,7 +147,7 @@ ErrorCode Tables::fill_parameters(boost::property_tree::ptree& table)
         column.put(Column::TABLE_ID, table.get<ObjectIdType>(ID));
 
         // data-type ID.
-        boost::optional<ObjectIdType> data_type_id
+        boost::optional<ObjectIdType> data_type_id 
             = column.get_optional<ObjectIdType>(Column::DATA_TYPE_ID);
         if (!data_type_id) {
             return ErrorCode::NOT_FOUND;
@@ -178,4 +159,4 @@ ErrorCode Tables::fill_parameters(boost::property_tree::ptree& table)
     return error;
 }
 
-} // namespace manager::metadata
+} // namespace manager::metadata_manager

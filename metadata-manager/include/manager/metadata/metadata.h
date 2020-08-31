@@ -19,6 +19,8 @@
 #include <string>
 #include <string_view>
 #include <sys/stat.h>
+#include <iostream>
+#include <boost/filesystem.hpp>
 
 #include <boost/property_tree/ptree.hpp>
 
@@ -31,10 +33,19 @@ using ObjectIdType = uint64_t;
 
 class Metadata {
     public:
+        /**
+         * @brief key of metadata.
+         */
         static constexpr const char* const FORMAT_VERSION   = "formatVersion";
         static constexpr const char* const GENERATION       = "generation";
         static constexpr const char* const ID               = "id";
         static constexpr const char* const NAME             = "name";
+
+        /**
+         * @brief storage path of metadata
+         */
+        static constexpr const char* const HOME_DIR = "HOME";
+        static constexpr const char* const TSURUGI_METADATA_DIR = "/.local/tsurugi/metadata/";
 
         /**
          *  @brief  Constructor
@@ -43,7 +54,8 @@ class Metadata {
          *  @return none.
          */
         Metadata(std::string_view& database, std::string_view& component) {
-            mkdir(storage_dir_path, 0700);
+            namespace fs = boost::filesystem;
+            fs::create_directories(storage_dir_path);
         }
 
         std::string_view database() const { return database_; }
@@ -158,7 +170,7 @@ class Metadata {
 
     protected:
         static const uint64_t LATEST_VERSION = 0;
-        static constexpr const char *storage_dir_path = "tsurugi_metadata/";
+        static std::string storage_dir_path;
 
         boost::property_tree::ptree metadata_;
 

@@ -12,15 +12,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-add_library(metadata-interface INTERFACE)
-
-target_include_directories(metadata-interface
-    INTERFACE
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/manager>
+add_library(message
+    SHARED
+        message_broker.cpp
 )
 
-install_custom(metadata-interface ${export_name})
+set_target_properties(message
+    PROPERTIES
+        LIBRARY_OUTPUT_NAME "manager-message"
+)
 
-add_subdirectory(src)
-add_subdirectory(test)
+target_include_directories(message
+    PRIVATE ${PROJECT_SOURCE_DIR}/include/manager/message
+)
+
+target_link_libraries(message
+    PUBLIC message-interface
+)
+
+install_custom(message ${export_name})
