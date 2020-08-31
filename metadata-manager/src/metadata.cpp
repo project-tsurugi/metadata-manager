@@ -253,6 +253,42 @@ ErrorCode Metadata::get(
 
 /**
  *  @brief  Remove metadata-object from metadata-table.
+ *  @param  [in] metadata-object ID.
+ *  @return ErrorCode::OK if success, otherwise an error code.
+ */
+ErrorCode Metadata::remove(const uint64_t object_id)
+{
+    assert(object_id != nullptr);
+
+    ErrorCode error = ErrorCode::ID_NOT_FOUND;
+
+    ptree &node = metadata_.get_child(root_node());
+
+    for (ptree::iterator it = node.begin(); it != node.end();)
+    {
+        const ptree &temp_obj = it->second;
+        boost::optional<ObjectIdType> id = temp_obj.get_optional<ObjectIdType>(ID);
+        if (id && id.get() == object_id)
+        {
+            it = node.erase(it);
+            error = ErrorCode::OK;
+        }
+        else
+        {
+            ++it;
+        }
+    }
+
+    if (error == ErrorCode::OK)
+    {
+        error = Metadata::save(database(), table_name(), metadata_);
+    }
+
+    return error;
+}
+
+/**
+ *  @brief  Remove metadata-object from metadata-table.
  *  @param  (object_name)   [in] name of metadata-object. (Value of "name" key.)
  *  @param  (object_id) [out] ID of the added metadata-object.
  *  @return ErrorCode::OK if success, otherwise an error code.

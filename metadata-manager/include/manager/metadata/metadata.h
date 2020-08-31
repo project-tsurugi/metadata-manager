@@ -141,14 +141,14 @@ class Metadata {
          *  @note   Return ErrorCode::ID_NOT_FOUND, if name NOT found.
          */
         virtual ErrorCode set(const std::string_view name, boost::property_tree::ptree& object) = 0;
-
+#endif
         /**
          *  @brief  Remove metadata-object from metadata-table.
          *  @param  [in] metadata-object ID.
          *  @return ErrorCode::OK if success, otherwise an error code.
          */
-        virtual ErrorCode remove(const uint64_t object_id) = 0;
-#endif
+        virtual ErrorCode remove(const uint64_t object_id);
+
         /**
          *  @brief  Remove metadata-object from metadata-table.
          *  @param  (object_name) [in] name of metadata-object. (Value of "name" key.)
