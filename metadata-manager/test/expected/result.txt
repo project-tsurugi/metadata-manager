@@ -95,11 +95,13 @@ remove table name :table_4, id:4
 remove table name :table_1, id:1
 remove table name :table_5, id:5
 remove table name :table_3, id:3
+can't remove table name not exists :table_name_not_exists
 remove table id:7
 remove table id:9
 remove table id:6
 remove table id:10
 remove table id:8
+can't remove table id not exists :0
 === remove table functions test done. ===
 
 class object test           : Success

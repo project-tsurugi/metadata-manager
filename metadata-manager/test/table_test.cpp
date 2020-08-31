@@ -399,6 +399,20 @@ ErrorCode remove_table_metadata()
         }
     }
 
+    const char *const table_name_not_exists = "table_name_not_exists";
+    uint64_t object_id = 0;
+    error = tables->remove(table_name_not_exists, &object_id);
+
+    if (error == ErrorCode::OK)
+    {
+        print_error(error, __LINE__);
+        return error;
+    }
+    else
+    {
+        std::cout << "can't remove table name not exists :" << table_name_not_exists << std::endl;
+    }
+
     for (int num = 0; num < TABLE_NUM_ADDED + 1; num++)
     {
         error = add_table_metadata();
@@ -439,6 +453,19 @@ ErrorCode remove_table_metadata()
         {
             std::cout << "remove table id:" << object_id << std::endl;
         }
+    }
+
+    uint64_t table_id_not_exists = 0;
+    error = tables->remove(table_id_not_exists);
+
+    if (error == ErrorCode::OK)
+    {
+        print_error(error, __LINE__);
+        return error;
+    }
+    else
+    {
+        std::cout << "can't remove table id not exists :" << table_id_not_exists << std::endl;
     }
 
     error = add_table_metadata();
