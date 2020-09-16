@@ -258,7 +258,6 @@ ErrorCode Metadata::get(
  */
 ErrorCode Metadata::remove(const uint64_t object_id)
 {
-    assert(object_id != nullptr);
 
     ErrorCode error = ErrorCode::ID_NOT_FOUND;
 
