@@ -1,0 +1,588 @@
+@startuml
+title 接続処理
+
+actor 利用者 as user
+box #White
+control "metadata-managerのAPIを利用する\nTsurugiのコンポーネント" as ogawayama
+end box
+box "メタデータ管理基盤" #White
+control "Statistics" as Statistics
+control "DBSessionManager" as DBSessionManager
+control "StatisticsDAO" as StatisticsDAO
+end box
+box メタデータ格納先  #White
+entity "PostgreSQL" as metadata_storage
+end box
+box OS  #White
+entity "環境変数" as env_variable
+end box
+
+user -> ogawayama : 起動
+activate ogawayama
+ogawayama -> ogawayama : 起動処理
+activate ogawayama
+create Statistics
+ogawayama -> Statistics : new
+activate Statistics
+create DBSessionManager
+Statistics -> DBSessionManager : new
+activate DBSessionManager
+ogawayama -> Statistics : connect()
+Statistics -> DBSessionManager : getDAO
+DBSessionManager -> DBSessionManager : connect()
+note right
+・メタデータ格納先へのコネクションが
+確立されてない場合connect()を実行する。
+・コネクションが確立済みの場合connect()を実行しない。
+end note
+activate DBSessionManager
+DBSessionManager -> env_variable : 環境変数からConnection Stringsを取得
+DBSessionManager -> metadata_storage : メタデータ格納先への\n接続を確立する。
+activate metadata_storage
+alt メタデータ格納先との接続に失敗
+DBSessionManager <-- metadata_storage : 失敗
+Statistics <-- DBSessionManager : ErrorCode::OPEN_\nCONNECTION_FAILURE
+ogawayama <-- Statistics : ErrorCode::OPEN_\nCONNECTION_FAILURE
+else
+DBSessionManager <-- metadata_storage : 成功
+DBSessionManager -> DBSessionManager : DBSessionManagerのフィールドに、\n確立したメタデータ格納先への\n接続情報を設定する。
+deactivate DBSessionManager
+DBSessionManager -> metadata_storage : サーチパスがセキュアになるように設定
+alt セキュアなサーチパスの設定に失敗
+DBSessionManager <-- metadata_storage : 失敗
+Statistics <-- DBSessionManager : ErrorCode::SET_\nALWAYS_SECURE_\nSEARCH_PATH_FAILURE
+ogawayama <-- Statistics : ErrorCode::SET_\nALWAYS_SECURE_\nSEARCH_PATH_FAILURE
+else
+DBSessionManager <-- metadata_storage : 成功
+create StatisticsDAO
+DBSessionManager -> StatisticsDAO : new StatisticsDAO
+DBSessionManager -> StatisticsDAO : DAOにメタデータ格納先への\n接続情報を設定する。\n接続情報は「DBSessionManagerのフィールドに\n設定されている接続情報」と同じとする。
+activate StatisticsDAO
+DBSessionManager -> StatisticsDAO : prepareStatements()
+StatisticsDAO -> StatisticsDAO : prepare()
+activate StatisticsDAO
+StatisticsDAO -> metadata_storage : プリペアードステートメントを\nメタデータ格納先に送り\nSQL文の前処理を実行する。\n(プリペアードステートメントを\n解析する作業を実行する。)
+
+alt SQLステートメントを解析する作業の実行に失敗
+StatisticsDAO <-- metadata_storage :失敗
+DBSessionManager <-- StatisticsDAO : 失敗
+Statistics <-- DBSessionManager : ErrorCode::PREPARE_\nSTATEMENT_FAILURE
+ogawayama <-- Statistics : ErrorCode::PREPARE_\nSTATEMENT_FAILURE
+else
+StatisticsDAO <-- metadata_storage : 成功
+DBSessionManager <-- StatisticsDAO : 成功
+deactivate StatisticsDAO
+Statistics <-- DBSessionManager : StatisticsDAO\nインスタンス
+Statistics -> Statistics : StatisticsDAO\nインスタンスを保持
+ogawayama <-- Statistics : ErrorCode::OK
+end
+end
+end
+
+@enduml
+
+@startuml
+title 切断処理
+
+actor 利用者 as user
+box #White
+control "metadata-managerのAPIを利用する\nTsurugiのコンポーネント" as ogawayama
+end box
+box "メタデータ管理基盤" #White
+control "Statistics" as Statistics
+control "DBSessionManager" as DBSessionManager
+end box
+box メタデータ格納先  #White
+entity "PostgreSQL" as metadata_storage
+end box
+
+user -> ogawayama : 終了
+activate ogawayama
+ogawayama -> ogawayama : 終了処理
+activate ogawayama
+ogawayama -> Statistics : close()
+activate Statistics
+Statistics -> DBSessionManager : close()
+activate DBSessionManager
+DBSessionManager -> metadata_storage : メタデータ格納先との\nコネクションを切断する。
+activate metadata_storage
+DBSessionManager <-- metadata_storage : 成功 or 失敗
+deactivate metadata_storage
+Statistics <-- DBSessionManager : ErrorCode::OK or\n ErrorCode::CLOSE_\nCONNECTION_FAILURE
+deactivate DBSessionManager
+ogawayama <-- Statistics : ErrorCode::OK or\n ErrorCode::CLOSE_\nCONNECTION_FAILURE
+deactivate Statistics
+deactivate ogawayama
+deactivate DBSessionManager
+user <-- ogawayama : 終了
+deactivate ogawayama
+@enduml
+
+@startuml
+title UPSERT_UPDATE_DELETE_API_共通シーケンス_開始・終了処理
+
+box #White
+control "metadata-managerのAPIを利用する\nTsurugiのコンポーネント" as ogawayama
+end box
+box "メタデータ管理基盤" #White
+control "Statistics" as Statistics
+control "DBSessionManager" as DBSessionManager
+control "StatisticsDAO" as StatisticsDAO
+end box
+box メタデータ格納先  #White
+entity "PostgreSQL" as metadata_storage
+end box
+
+activate ogawayama
+ogawayama -> Statistics : メタデータ格納先に対して\nUPSERT/UPDATE/DELETEを\n発行するAPI実行
+activate Statistics
+Statistics -> DBSessionManager : startTransaction()
+activate DBSessionManager
+DBSessionManager -> metadata_storage : begin transaction
+activate metadata_storage
+alt begin transaction失敗
+DBSessionManager <-- metadata_storage : 失敗
+Statistics <-- DBSessionManager : 失敗
+ogawayama <-- Statistics : ErrorCode::BEGIN_TRANSACTION_FAILURE
+else
+DBSessionManager <-- metadata_storage : 成功
+deactivate metadata_storage
+Statistics <-- DBSessionManager : 成功
+deactivate DBSessionManager
+Statistics -> StatisticsDAO : UPSERT or UPDATE or DELETE
+activate StatisticsDAO
+StatisticsDAO -> metadata_storage : UPSERT or UPDATE or DELETEの\nプリペアードステートメントを実行
+
+alt UPSERT or UPDATE or DELETE失敗
+activate metadata_storage
+StatisticsDAO <-- metadata_storage : UPSERT or UPDATE or DELETE失敗
+Statistics <-- StatisticsDAO : UPSERT or UPDATE or DELETE失敗
+Statistics -> DBSessionManager : rollback()
+activate DBSessionManager
+DBSessionManager -> metadata_storage : rollback
+alt rollback失敗
+DBSessionManager <-- metadata_storage : rollback失敗
+Statistics <-- DBSessionManager : rollback失敗
+deactivate DBSessionManager
+ogawayama <-- Statistics : ErrorCode::ROLLBACK_FAILURE
+else
+DBSessionManager <-- metadata_storage : rollback成功
+Statistics <-- DBSessionManager : rollback成功
+deactivate DBSessionManager
+ogawayama <-- Statistics : ErrorCode::UPSERT_FAILURE or \nErrorCode::UPDATE_FAILURE or \nErrorCode::DELETE_FAILURE
+end
+else
+StatisticsDAO <-- metadata_storage : UPSERT or UPDATE or DELETE成功
+Statistics <-- StatisticsDAO : UPSERT or UPDATE or DELETE成功
+deactivate StatisticsDAO
+Statistics -> DBSessionManager : commit()
+activate DBSessionManager
+DBSessionManager -> metadata_storage : commit
+alt commit失敗
+DBSessionManager <-- metadata_storage : commit失敗
+Statistics <-- DBSessionManager : commit失敗
+ogawayama <-- Statistics : ErrorCode::COMMIT_FAILURE
+else
+DBSessionManager <-- metadata_storage : commit成功
+deactivate metadata_storage
+Statistics <-- DBSessionManager : commit成功
+deactivate DBSessionManager
+ogawayama <-- Statistics : ErrorCode::OK
+deactivate Statistics
+end
+end
+end
+@enduml
+
+@startuml
+title 1カラムの列統計登録・更新（input：テーブルID・カラム番号）
+
+box #White
+control "metadata-managerのAPIを利用する\nTsurugiのコンポーネント" as ogawayama
+end box
+box "メタデータ管理基盤" #White
+control "Statistics" as Statistics
+control "DBSessionManager" as DBSessionManager
+control "StatisticsDAO" as StatisticsDAO
+end box
+box メタデータ格納先  #White
+entity "PostgreSQL" as metadata_storage
+end box
+
+activate ogawayama
+ogawayama -> ogawayama : 1カラム単位の列統計 計算
+ogawayama -> Statistics : addOneColumnStatistic\n(table_id,\n ordinal_position,\n column_statistic)
+activate Statistics
+Statistics -> DBSessionManager : startTransaction()
+activate DBSessionManager
+DBSessionManager -> metadata_storage : begin transaction
+activate metadata_storage
+DBSessionManager <-- metadata_storage: 成功 or 失敗
+deactivate metadata_storage
+Statistics <-- DBSessionManager : 成功 or 失敗
+deactivate DBSessionManager
+Statistics -> StatisticsDAO : upsert(table_id, ordinal_position, column_statistic)
+note right
+引数column_statisticを基に、
+メタデータ格納先の列統計テーブル
+【tsurugi_statistic】に対して、
+引数テーブルID・カラム番号に
+一致するレコードを新規登録または更新する。
+end note
+activate StatisticsDAO
+StatisticsDAO -> metadata_storage : upsertのプリペアード\nステートメントを実行
+note right
+insert into tsurugi_catalog.tsurugi_statistic 
+(tableId, ordinalPosition, columnStatistic) 
+values (?, ?, ..., ?)
+on conflict (tableId, ordinalPosition) 
+do update set tableId=?, ordinalPosition=?,
+columnStatistic=?;
+end note
+activate metadata_storage
+StatisticsDAO <-- metadata_storage : 成功 or 失敗
+note right
+これ以降のシーケンス
+の詳細は、共通シーケンスを参照
+end note
+deactivate metadata_storage
+Statistics <-- StatisticsDAO : 成功 or 失敗
+deactivate StatisticsDAO
+Statistics -> DBSessionManager : commit() or rollback()
+activate DBSessionManager
+DBSessionManager -> metadata_storage : commit or rollback
+activate metadata_storage
+DBSessionManager <-- metadata_storage : 成功 or 失敗
+deactivate metadata_storage
+Statistics <-- DBSessionManager : 成功 or 失敗
+deactivate DBSessionManager
+ogawayama <-- Statistics : ErrorCode
+deactivate Statistics
+@enduml
+
+@startuml
+title 1テーブルの表統計登録・更新（input：テーブルID・行数）
+
+box #White
+control "metadata-managerのAPIを利用する\nTsurugiのコンポーネント" as ogawayama
+end box
+box "メタデータ管理基盤" #White
+control "Statistics" as Statistics
+control "DBSessionManager" as DBSessionManager
+control "TablesDAO" as TablesDAO
+end box
+box メタデータ格納先  #White
+entity "PostgreSQL" as metadata_storage
+end box
+
+activate ogawayama
+ogawayama -> ogawayama : 1テーブル単位の行数を計算
+ogawayama -> Statistics : addTableStatistic\n(table_id, reltuples)
+activate Statistics
+Statistics -> DBSessionManager : startTransaction()
+activate DBSessionManager
+DBSessionManager -> metadata_storage : begin transaction
+activate metadata_storage
+DBSessionManager <-- metadata_storage: 成功 or 失敗
+deactivate metadata_storage
+Statistics <-- DBSessionManager : 成功 or 失敗
+deactivate DBSessionManager
+Statistics -> TablesDAO : update(table_id, reltuples)
+activate TablesDAO
+note right
+引数reltuplesを基に、
+Tableメタデータテーブル【tsurugi_class】において
+引数table_idに一致するレコードの
+列reltuplesを更新する。
+end note
+TablesDAO -> metadata_storage : updateのプリペアード\nステートメントを実行
+note right
+update tsurugi_catalog.tsurugi_class 
+set reltuples = ? 
+where id = ?;
+end note
+activate metadata_storage
+TablesDAO <-- metadata_storage : 成功 or 失敗
+note right
+これ以降のシーケンスの詳細は、
+共通シーケンスを参照
+end note
+deactivate metadata_storage
+Statistics <-- TablesDAO : 成功 or 失敗
+deactivate TablesDAO
+Statistics -> DBSessionManager : commit() or rollback()
+activate DBSessionManager
+DBSessionManager -> metadata_storage : commit or rollback
+activate metadata_storage
+DBSessionManager <-- metadata_storage : 成功 or 失敗
+deactivate metadata_storage
+Statistics <-- DBSessionManager : 成功 or 失敗
+deactivate DBSessionManager
+ogawayama <-- Statistics : ErrorCode
+deactivate Statistics
+
+@enduml
+
+@startuml
+title 1テーブルの全列統計参照（input：テーブルID）
+
+box #White
+control "metadata-managerのAPIを利用する\nTsurugiのコンポーネント" as ogawayama
+end box
+box "メタデータ管理基盤" #White
+control "Statistics" as Statistics
+control "StatisticsDAO" as StatisticsDAO
+end box
+box メタデータ格納先  #White
+entity "PostgreSQL" as metadata_storage
+end box
+
+activate ogawayama
+ogawayama -> Statistics : getAllColumnTableStatistics\n(table_id, column_statistics)
+activate Statistics
+
+Statistics -> StatisticsDAO : select(table_id)
+note right
+メタデータ格納先の列統計テーブル【tsurugi_statistic】から、
+テーブルIDが、引数テーブルIDに一致する全レコードを取得する。
+end note
+activate StatisticsDAO
+StatisticsDAO -> metadata_storage : selectのプリペアード\nステートメントを実行
+note right
+select * 
+from tsurugi_catalog.tsurugi_statistic
+where tableId = ?;
+end note
+alt select失敗
+activate metadata_storage
+StatisticsDAO <-- metadata_storage : select失敗
+Statistics <-- StatisticsDAO : select失敗
+ogawayama <-- Statistics : ErrorCode::SELECT_FAILURE
+else
+StatisticsDAO <-- metadata_storage : 全カラムのカラム番号と\nその列統計
+deactivate metadata_storage
+Statistics <-- StatisticsDAO : 全カラムのカラム番号と\nその列統計
+deactivate StatisticsDAO
+ogawayama <-- Statistics : ErrorCode::OK、\n全カラムのカラム番号と\nその列統計
+deactivate Statistics
+end
+@enduml
+
+
+@startuml
+title 1カラムの列統計参照（input：テーブルID・カラム番号）
+
+box #White
+control "metadata-managerのAPIを利用する\nTsurugiのコンポーネント" as ogawayama
+end box
+box "メタデータ管理基盤" #White
+control "Statistics" as Statistics
+control "StatisticsDAO" as StatisticsDAO
+end box
+box メタデータ格納先  #White
+entity "PostgreSQL" as metadata_storage
+end box
+
+activate ogawayama
+ogawayama -> Statistics : getOneColumnStatistic\n(table_id,\n ordinal_position,\n column_statistic)
+activate Statistics
+Statistics -> StatisticsDAO : select(table_id, ordinal_position)
+note right
+メタデータ格納先の列統計テーブル
+【tsurugi_statistic】から、
+テーブルID・カラム番号が、
+引数テーブルID・カラム番号それぞれに
+一致するレコードを取得する。
+end note
+activate StatisticsDAO
+StatisticsDAO -> metadata_storage : selectのプリペアード\nステートメントを実行
+note right
+select * from 
+tsurugi_catalog.tsurugi_statistic
+where tableId = ? 
+and ordinalPosition = ?;
+end note
+alt select失敗
+activate metadata_storage
+StatisticsDAO <-- metadata_storage : select失敗
+Statistics <-- StatisticsDAO : select失敗
+ogawayama <-- Statistics : ErrorCode::SELECT_FAILURE
+else
+StatisticsDAO <-- metadata_storage : 1カラムの列統計全項目の値
+deactivate metadata_storage
+Statistics <-- StatisticsDAO : 1カラムの列統計全項目の値
+deactivate StatisticsDAO
+ogawayama <-- Statistics : ErrorCode::OK、\n1カラムの列統計全項目の値
+deactivate Statistics
+end
+@enduml
+
+@startuml
+title 1テーブルの表統計参照（input：テーブルID）
+
+box #White
+control "metadata-managerのAPIを利用する\nTsurugiのコンポーネント" as ogawayama
+end box
+box "メタデータ管理基盤" #White
+control "Statistics" as Statistics
+control "TablesDAO" as TablesDAO
+end box
+box メタデータ格納先  #White
+entity "PostgreSQL" as metadata_storage
+end box
+
+activate ogawayama
+ogawayama -> Statistics : getTableStatistic\n(table_id, table_statistic)
+activate Statistics
+note right
+メタデータ格納先のTableメタデータテーブル【tsurugi_class】から、
+テーブルIDが引数table_idに一致する
+Tableメタデータ全項目の値を取得する。
+end note
+Statistics -> TablesDAO : select(table_id)
+activate TablesDAO
+TablesDAO -> metadata_storage : selectのプリペアード\nステートメントを実行
+note right
+select * from 
+tsurugi_catalog.tsurugi_class
+where id = ?;
+end note
+activate metadata_storage
+alt select失敗
+TablesDAO <-- metadata_storage : select失敗
+Statistics <-- TablesDAO : select失敗
+ogawayama <-- Statistics : ErrorCode::SELECT_FAILURE
+else
+TablesDAO <-- metadata_storage : Tableメタデータ全項目の値
+deactivate metadata_storage
+Statistics <-- TablesDAO : Tableメタデータ全項目の値
+deactivate TablesDAO
+ogawayama <-- Statistics : ErrorCode::OK、\nTableメタデータ全項目の値
+deactivate Statistics
+end
+@enduml
+
+
+@startuml
+title 1テーブルの全列統計削除（input：テーブルID）
+
+box #White
+control "metadata-managerのAPIを利用する\nTsurugiのコンポーネント" as ogawayama
+end box
+box "メタデータ管理基盤" #White
+control "Statistics" as Statistics
+control "DBSessionManager" as DBSessionManager
+control "StatisticsDAO" as StatisticsDAO
+end box
+box メタデータ格納先  #White
+entity "PostgreSQL" as metadata_storage
+end box
+
+activate ogawayama
+ogawayama -> Statistics : removeAllColumnStatistics\n(table_id)
+activate Statistics
+Statistics -> DBSessionManager : startTransaction()
+activate DBSessionManager
+DBSessionManager -> metadata_storage : begin transaction
+activate metadata_storage
+DBSessionManager <-- metadata_storage: 成功 or 失敗
+deactivate metadata_storage
+Statistics <-- DBSessionManager : 成功 or 失敗
+deactivate DBSessionManager
+Statistics -> StatisticsDAO : delete(table_id)
+note right
+メタデータ格納先の列統計テーブル
+【tsurugi_statistic】から、
+テーブルIDが引数table_idに
+一致する全レコードを削除する。
+end note
+activate StatisticsDAO
+StatisticsDAO -> metadata_storage : deleteのプリペアード\nステートメントを実行
+note right
+delete from 
+tsurugi_catalog.tsurugi_statistic
+where tableId = ?;
+end note
+activate metadata_storage
+StatisticsDAO <-- metadata_storage : 成功 or 失敗
+note right
+これ以降のシーケンスの詳細は、
+共通シーケンスを参照
+end note
+deactivate metadata_storage
+Statistics <-- StatisticsDAO : 成功 or 失敗
+deactivate StatisticsDAO
+Statistics -> DBSessionManager : commit() or rollback()
+activate DBSessionManager
+DBSessionManager -> metadata_storage : commit or rollback
+activate metadata_storage
+DBSessionManager <-- metadata_storage : 成功 or 失敗
+deactivate metadata_storage
+Statistics <-- DBSessionManager : 成功 or 失敗
+deactivate DBSessionManager
+ogawayama <-- Statistics : ErrorCode
+deactivate Statistics
+@enduml
+
+@startuml
+title 1カラムの列統計削除（input：テーブルID・カラム番号）
+
+box #White
+control "metadata-managerのAPIを利用する\nTsurugiのコンポーネント" as ogawayama
+end box
+box "メタデータ管理基盤" #White
+control "Statistics" as Statistics
+control "DBSessionManager" as DBSessionManager
+control "StatisticsDAO" as StatisticsDAO
+end box
+box メタデータ格納先  #White
+entity "PostgreSQL" as metadata_storage
+end box
+
+activate ogawayama
+ogawayama -> Statistics : removeOneColumnStatistic\n(table_id, ordinal_position)
+activate Statistics
+Statistics -> DBSessionManager : startTransaction()
+activate DBSessionManager
+DBSessionManager -> metadata_storage : begin transaction
+activate metadata_storage
+DBSessionManager <-- metadata_storage: 成功 or 失敗
+deactivate metadata_storage
+Statistics <-- DBSessionManager : 成功 or 失敗
+deactivate DBSessionManager
+Statistics -> StatisticsDAO : delete(table_id, ordinal_position)
+note right
+メタデータ格納先の列統計テーブル
+【tsurugi_statistic】から、
+テーブルID・カラム番号が
+引数table_id・ordinal_position
+に一致する全レコードを削除する。
+end note
+activate StatisticsDAO
+StatisticsDAO -> metadata_storage : deleteのプリペアード\nステートメントを実行
+note right
+delete from 
+tsurugi_catalog.tsurugi_statistic
+where tableId = ? 
+and ordinalPosition = ?;
+end note
+activate metadata_storage
+StatisticsDAO <-- metadata_storage : 成功 or 失敗
+note right
+これ以降のシーケンスの詳細は、
+共通シーケンスを参照
+end note
+deactivate metadata_storage
+Statistics <-- StatisticsDAO : 成功 or 失敗
+deactivate StatisticsDAO
+Statistics -> DBSessionManager : commit() or rollback()
+activate DBSessionManager
+DBSessionManager -> metadata_storage : commit or rollback
+activate metadata_storage
+DBSessionManager <-- metadata_storage : 成功 or 失敗
+deactivate metadata_storage
+Statistics <-- DBSessionManager : 成功 or 失敗
+deactivate DBSessionManager
+ogawayama <-- Statistics : ErrorCode
+deactivate Statistics
+@enduml

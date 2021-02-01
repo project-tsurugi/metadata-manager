@@ -1,0 +1,348 @@
+@startuml ClassDiagram_overview
+left to right direction
+allowmixing
+
+package "manager/metadata-manager" {
+
+  package manager::metadata as manager_metadata{
+    class "Metadata" as Metadata {
+      {method}+connect()
+      {method}+close()
+    }
+
+    class Statistics {
+      {method}+connect()
+      {method}
+      {method}+addOneColumnStatistic
+      {method}+addTableStatistic
+      {method}+getOneColumnStatistic
+      {method}+getAllColumnStatistics
+      {method}+getTableStatistic
+      {method}+removeOneColumnStatistic
+      {method}+removeAllColumnStatistics
+    }
+    
+    class Tables {
+      
+    }
+    
+  }
+    
+    package manager::metadata::entity as entity{
+      class TableStatistic {
+        {field}+int64_t id
+        {field}+std::string name
+        {field}+std::string namespaceName
+        {field}+boost::property_tree::ptree primaryKey
+        {field}+float reltuples
+      }
+      
+      class ColumnStatistic {
+        {field}+int64_t tableId
+        {field}+int64_t ordinalPosition
+        {field}+boost::property_tree::ptree columnStatistic
+      }
+    }
+
+  Statistics --|> Metadata
+  Tables --|> Metadata
+  Statistics ..> TableStatistic
+  Statistics ..> ColumnStatistic
+  
+  note bottom of manager_metadata
+  サービス層
+  end note
+  
+  note left of entity
+  列統計・表統計エンティティ
+  列統計・表統計の受け渡しに利用
+  end note
+}
+
+component "metadata-managerの\nAPIを利用する\nTsurugiのコンポーネント" as other_components 
+other_components ..> Statistics
+@enduml
+
+@startuml ClassDiagram_overview_connection
+title サービス層のオブジェクトとコネクションのオブジェクト図
+left to right direction
+allowmixing
+
+package "manager/metadata-manager" {
+
+  package manager::metadata as manager_metadata{
+    object Tables
+    object Statistics
+  }
+  
+  package manager::metadata::db as manager_db{
+    object "PGconn" as pg1
+    object "PGconn" as pg2
+  }
+
+  pg1 : con = コネクション1のポインタ
+  pg2 : con = コネクション2のポインタ
+  
+  Tables "1" --> "1" pg2
+  Statistics "1" --> "1" pg1
+    
+  note bottom of manager_metadata
+  サービス層
+  end note
+}
+
+component "メタデータ格納先\n(PostgreSQL)" as metadata_store
+pg1 ..> metadata_store : コネクション1
+pg2 ..> metadata_store : コネクション2
+
+@enduml
+
+@startuml ClassDiagram_overview_dao
+left to right direction
+allowmixing
+
+package "manager/metadata-manager" {
+  package manager::metadata::db as manager_db{
+  
+    class "DBSessionManager" as DBSM {
+    }
+
+    package dao{
+
+      class "StatisticsDAO" as StatisticsDAO{
+      }
+  
+      class "TablesDAO" as TablesDAO{
+      }
+  
+
+    }
+  }
+
+  package manager::metadata as manager_metadata{
+
+    class "Metadata" as Metadata {
+      {field}#DBSessionManager dbsm
+    }
+    
+    class Statistics {
+      {field}-StatisticsDAO statisticsDAO
+      {field}-TablesDAO tablesDAO
+    }
+    
+    class Tables{
+      {field}-TablesDAO tablesDAO
+    }
+
+  }
+  
+  note bottom of manager_metadata
+  サービス層
+  end note
+  
+  note bottom of manager_db
+  DBアクセス層
+  end note
+
+  Metadata "1" *--> "1" DBSM
+  Tables "1" *-->"1" DBSM
+  Statistics "1" *--> "1" DBSM
+  Statistics -|> Metadata
+  Tables -|> Metadata
+  Statistics -> StatisticsDAO
+  Statistics -> TablesDAO
+  Tables -> TablesDAO
+}
+
+component "メタデータ\n格納先" as metadata_store
+
+dao ..> metadata_store : 前処理済みプリペアード\nステートメント発行
+DBSM ..> metadata_store : コネクション管理・\nトランザクション管理・\nクエリの前処理実行
+
+@enduml
+
+@startuml ClassDiagram_detail_dbsm
+left to right direction
+allowmixing
+
+package "manager/metadata-manager" {
+  package manager::metadata as manager_metadata{
+
+    class "Metadata" as Metadata {
+      {field}#DBSessionManager dbsm
+    }
+    
+    class Statistics {
+    }
+    
+    class Tables{
+    }
+
+  }
+  
+  package manager::metadata::db{
+  
+    class "DBSessionManager" as DBSM {
+      {field}-{static}PGconn *sqlSession
+
+      {method}+{static}ErrorCode getDAO(TABLE_NAME tableName, GenericDAO *&gdao)
+      {method}
+      {method}-{static}bool isOpen()
+      {method}+{static}ErrorCode connect()
+      {method}+{static}ErrorCode close()
+      {method}
+      {method}+{static}ErrorCode startTransaction()
+      {method}+{static}ErrorCode commit()
+      {method}+{static}ErrorCode rollback()
+      {method}+{static}ErrorCode setAlwaysSecureSearchPath()
+    }
+  
+    class Config {
+      {field}-{static}std::string CONNECTION_STRING
+      {method}+{static}void initialize()
+      {method}+{static}std::string getConnectionString()
+    }
+  }
+  
+  note bottom of manager_metadata
+  サービス層
+  end note
+
+  Metadata "1" *--> "1" DBSM
+  Tables "1" *--> "1" DBSM
+  Statistics "1" *--> "1" DBSM
+  Statistics -|> Metadata
+  Tables -|> Metadata
+  
+  DBSM .> Config
+
+}
+
+component "OSの環境変数" as os
+Config ..> os
+
+@enduml
+
+@startuml ClassDiagram_detail_dao
+left to right direction
+
+package "manager/metadata-manager" {
+  
+  package manager::metadata::db::dao{
+  
+    abstract class GenericDAO
+    {
+      {field}#TABLE_NAME tableName
+	    {field}#PGconn *sqlSession
+      {method}#bool prepare(const char* &name, const char* &statement)
+	    {method}#bool exec_prepared(const char* &name, std::vector<char const *> &paramValues, PGresult *&res)
+	    {method}+GenericDAO(PGconn *sqlSession, TABLE_NAME tableName)
+	    {method}+virtual ~GenericDAO()
+      {method}+bool prepareStatements()
+      {method}-bool prepare()
+    }
+
+    class "StatisticsDAO" as StatisticsDAO{
+      {method}+upsertOneColumnStatisticByTableIdColumnOrdinalPosition( column_statistic, table_id, ordinal_position)
+      {method}+selectOneColumnStatisticByTableIdColumnOrdinalPosition( column_statistic, table_id, ordinal_position)
+      {method}+selectAllColumnStatisticByTableId( column_statistics, table_id)
+      {method}+deleteAllColumnStatisticByTableId( table_id)
+      {method}+deleteOneColumnStatisticByTableIdColumnOrdinalPosition( table_id, ordinal_position)
+    }
+  
+    class "TablesDAO" as TablesDAO{
+      {method}+updateReltuplesByTableId(reltuples, table_id)
+      {method}+selectTableStatisticByTableId( tables, table_id)
+    }
+  
+  }
+
+  StatisticsDAO -|> GenericDAO
+  TablesDAO -|> GenericDAO
+}
+
+@enduml
+
+@startuml ClassDiagram_detail_dialect
+left to right direction
+
+package "manager/metadata-manager" {
+
+  package manager::metadata::db::dao{
+
+    abstract class GenericDAO
+    {
+    }
+
+    package dialect{
+      class DialectStrategy
+      {
+        -{field}{static}{method}Dialect* instance;
+        +{method}{static}{method}Dialect* getInstance();
+      }
+  
+      abstract class Dialect {
+
+	      {method}virtual ~Dialect(){};
+        {method}
+        {method}// StatisticsDAO
+	      {method}virtual const char *StatisticsDAO_upsertOneColumnStatisticByTableIdColumnOrdinalPosition() = 0;
+	      {method}virtual const char *StatisticsDAO_selectOneColumnStatisticByTableIdColumnOrdinalPosition() = 0;
+	      {method}virtual const char *StatisticsDAO_selectAllColumnStatisticByTableId() = 0;
+        {method}virtual const char *StatisticsDAO_deleteAllColumnStatisticByTableId() = 0;
+        {method}virtual const char *StatisticsDAO_deleteOneColumnStatisticByTableIdColumnOrdinalPosition() = 0;
+        {method}
+        {method}// TablesDAO
+        {method}virtual const char* TablesDAO_updateReltuplesByTableId() = 0;
+        {method}virtual const char* TablesDAO_selectTableStatisticByTableId() = 0;
+      }
+  
+      class PostgreSQLDialect
+      {
+      }
+    }
+  }
+  
+  GenericDAO ..> DialectStrategy
+  
+  PostgreSQLDialect -|> Dialect
+  DialectStrategy -> PostgreSQLDialect
+  
+}
+
+@enduml
+
+@startuml ClassDiagram_detail_dao_enum
+left to right direction
+
+package "manager/metadata-manager" {
+
+  package manager::metadata::db::dao{
+
+    enum TABLE_NAME
+    {
+	    STATISTICS
+      TABLES
+    }
+  
+    enum STATEMENT_NAME{
+      StatisticsDAO_upsertOneColumnStatisticByTableIdColumnOrdinalPosition
+      StatisticsDAO_selectOneColumnStatisticByTableIdColumnOrdinalPosition
+      StatisticsDAO_selectAllColumnStatisticByTableId
+      StatisticsDAO_deleteAllColumnStatisticByTableId
+      StatisticsDAO_deleteOneColumnStatisticByTableIdColumnOrdinalPosition
+      TablesDAO_updateReltuplesByTableId
+      TablesDAO_selectTableStatisticByTableId
+    }
+  
+    abstract class GenericDAO
+    {
+    }
+  }
+  
+  GenericDAO ..> TABLE_NAME
+  GenericDAO ..> STATEMENT_NAME
+  
+}
+
+@enduml
