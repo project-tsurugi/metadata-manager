@@ -113,12 +113,12 @@
 
   ```C++
   std::unique_ptr<Statistics> stats(new Statistics(TEST_DB));
-  
-  // 下記3つの処理を実施し、すべての処理が成功した場合、metadata-managerは、メタデータ格納先とメタデータの受け渡しが可能となる。
-  // それ以外の場合、metadata-managerは、メタデータ格納先とメタデータの受け渡しができない。
+
   // 1. metadata-managerは、メタデータ格納先とのコネクションを確立する。
   // 2. サーチパスがセキュアになるように設定する。
   // 3. metadata-managerは、メタデータ格納先にプリペアードステートメントを送り、SQL文の前処理を実行する。
+  // 上記3つの処理を実施し、すべての処理が成功した場合、metadata-managerは、メタデータ格納先とメタデータの受け渡しが可能となる。
+  // それ以外の場合、metadata-managerは、メタデータ格納先とメタデータの受け渡しができない。
   if (ErrorCode::OK != stats->connect())
   {
     // error handling
