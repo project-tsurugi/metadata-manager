@@ -15,8 +15,10 @@ package "manager/metadata-manager" {
       {method}
       {method}+addOneColumnStatistic
       {method}+addTableStatistic
+      {method}+addTableStatistic
       {method}+getOneColumnStatistic
       {method}+getAllColumnStatistics
+      {method}+getTableStatistic
       {method}+getTableStatistic
       {method}+removeOneColumnStatistic
       {method}+removeAllColumnStatistics
@@ -252,7 +254,9 @@ package "manager/metadata-manager" {
   
     class "TablesDAO" as TablesDAO{
       {method}+updateReltuplesByTableName(reltuples, table_name)
+      {method}+updateReltuplesByTableId(reltuples, table_id)
       {method}+selectTableStatisticByTableName( tables, table_name)
+      {method}+selectTableStatisticByTableId( tables, table_id)
     }
   
   }
@@ -293,7 +297,9 @@ package "manager/metadata-manager" {
         {method}virtual const char *StatisticsDAO_deleteOneColumnStatisticByTableIdColumnOrdinalPosition() = 0;
         {method}
         {method}// TablesDAO
+        {method}virtual const char* TablesDAO_updateReltuplesByTableId() = 0;
         {method}virtual const char* TablesDAO_updateReltuplesByTableName() = 0;
+        {method}virtual const char* TablesDAO_selectTableStatisticByTableId() = 0;
         {method}virtual const char* TablesDAO_selectTableStatisticByTableName() = 0;
       }
   
@@ -332,7 +338,9 @@ package "manager/metadata-manager" {
       StatisticsDAO_deleteAllColumnStatisticByTableId
       StatisticsDAO_deleteOneColumnStatisticByTableIdColumnOrdinalPosition
       TablesDAO_updateReltuplesByTableName
+      TablesDAO_updateReltuplesByTableId
       TablesDAO_selectTableStatisticByTableName
+      TablesDAO_selectTableStatisticByTableId
     }
   
     abstract class GenericDAO
