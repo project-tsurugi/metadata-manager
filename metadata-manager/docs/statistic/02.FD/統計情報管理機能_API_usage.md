@@ -146,7 +146,7 @@
     
     std::unique_ptr<Statistics> stats(new Statistics(TEST_DB));
 
-    //列統計を格納したptreeを作成する。
+    //metada-managerを利用するTsurugiのコンポーネントは、列統計を格納したptreeを作成する。
     boost::property_tree::ptree one_column_statistic;
     one_column_statistic.put("stanullfrac", "0.9981203");
 
