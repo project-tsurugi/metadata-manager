@@ -115,7 +115,7 @@
 * metadata-managerのAPIを利用するTsurugiのコンポーネント起動時
 
   ```C++
-  std::unique_ptr<Statistics> stats(new Statistics(TEST_DB));
+  auto stats = std::make_unique<Statistics>(TEST_DB);
 
   // 1. metadata-managerは、メタデータ格納先とのコネクションを確立する。
   // 2. metadata-managerは、サーチパスがセキュアになるように設定する。
@@ -131,7 +131,7 @@
 * metadata-managerのAPIを利用するTsurugiのコンポーネント終了時
 
   ```C++
-  std::unique_ptr<Statistics> stats(new Statistics(TEST_DB));
+  auto stats = std::make_unique<Statistics>(TEST_DB);
   
   //metadata-managerは、メタデータ格納先とのコネクションを切断する。
   if(ErrorCode::OK != stats->close())
@@ -147,7 +147,7 @@
     int64_t table_id = 1;
     int64_t column_ordinal_position = 1;
     
-    std::unique_ptr<Statistics> stats(new Statistics(TEST_DB));
+    auto stats = std::make_unique<Statistics>(TEST_DB);
 
     //metada-managerを利用するTsurugiのコンポーネントは、列統計を格納したptreeを作成する。
     boost::property_tree::ptree one_column_statistic;
@@ -181,7 +181,7 @@
     int64_t table_id;
     float reltuples = 1000;
     
-    std::unique_ptr<Statistics> stats(new Statistics(TEST_DB));
+    auto stats = std::make_unique<Statistics>(TEST_DB);
     
     //metadata-managerは、メタデータ格納先に対して、テーブル名に紐づく表統計を登録・更新する。
     if (ErrorCode::OK != stats->addTableStatistic(table_name, reltuples, table_id))
@@ -200,7 +200,7 @@
   
     ColumnStatistic column_statistic;
   
-    std::unique_ptr<Statistics> stats(new Statistics(TEST_DB));
+    auto stats = std::make_unique<Statistics>(TEST_DB);
 
     //metadata-managerは、メタデータ格納先から、テーブルID・カラム番号に紐づく列統計を取得する。
     if (ErrorCode::OK == stats->getOneColumnStatistic(table_id, column_ordinal_position, column_statistic))
@@ -220,7 +220,7 @@
     int64_t column_ordinal_position = 1;
     std::unordered_map<int64_t,ColumnStatistic> column_statistics;
     
-    std::unique_ptr<Statistics> stats(new Statistics(TEST_DB));
+    auto stats = std::make_unique<Statistics>(TEST_DB);
     
     //metadata-managerは、メタデータ格納先から、テーブルIDに関するすべての列統計・表統計を一括で取得する。
     if (ErrorCode::OK == stats->getAllColumnStatistics(table_id, column_statistics))
@@ -265,7 +265,7 @@
 
     TableStatistic table_statistic;
   
-    std::unique_ptr<Statistics> stats(new Statistics(TEST_DB));
+    auto stats = std::make_unique<Statistics>(TEST_DB);
   
     //metadata-managerは、メタデータ格納先から、テーブル名に関する表統計・テーブルメタデータを取得する。
     if (ErrorCode::OK == stats->getTableStatistic(table_name, table_statistic))
@@ -286,7 +286,7 @@
     int64_t table_id = 1;
     int64_t column_ordinal_position = 1;
     
-    std::unique_ptr<Statistics> stats(new Statistics(TEST_DB));
+    auto stats = std::make_unique<Statistics>(TEST_DB);
     
     //metadata-managerは、メタデータ格納先に対して、テーブルID・カラム番号に紐づく列統計を削除する。
     if (ErrorCode::OK != stats->removeOneColumnStatistic(table_id, column_ordinal_position))
@@ -300,7 +300,7 @@
     ```C++
     int64_t table_id = 1;
     
-    std::unique_ptr<Statistics> stats(new Statistics(TEST_DB));
+    auto stats = std::make_unique<Statistics>(TEST_DB);
     
     //metadata-managerは、メタデータ格納先に対して、テーブルIDに紐づく全列統計を削除する。
     if (ErrorCode::OK != stats->removeAllColumnStatistics(table_id))
