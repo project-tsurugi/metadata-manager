@@ -147,7 +147,7 @@
 
     //metadata-managerは、列統計を格納したptreeを作成する。
     boost::property_tree::ptree one_column_statistic;
-    column_statistic.put("stanullfrac", "0.9981203");
+    one_column_statistic.put("stanullfrac", "0.9981203");
 
     //metadata-managerは、メタデータ格納先に対して、テーブルID・カラム番号に紐づく1カラム単位の列統計を登録・更新する。
     if (ErrorCode::OK != stats->addOneColumnStatistic(table_id, column_ordinal_position,  one_column_statistic))
