@@ -261,7 +261,7 @@ deactivate Statistics
 @enduml
 
 @startuml
-title 1テーブルの表統計登録・更新（input：テーブルID・行数）
+title 1テーブルの表統計登録・更新（input：テーブル名・行数、output：テーブルID）
 
 box #White
 control "metadata-managerのAPIを利用する\nTsurugiのコンポーネント" as ogawayama
@@ -277,7 +277,7 @@ end box
 
 activate ogawayama
 ogawayama -> ogawayama : 1テーブル単位の行数を計算
-ogawayama -> Statistics : addTableStatistic\n(table_id, reltuples)
+ogawayama -> Statistics : addTableStatistic\n(table_name, reltuples)
 activate Statistics
 Statistics -> DBSessionManager : startTransaction()
 activate DBSessionManager
@@ -287,19 +287,19 @@ DBSessionManager <-- metadata_storage: 成功 or 失敗
 deactivate metadata_storage
 Statistics <-- DBSessionManager : 成功 or 失敗
 deactivate DBSessionManager
-Statistics -> TablesDAO : update(table_id, reltuples)
+Statistics -> TablesDAO : update(table_name, reltuples)
 activate TablesDAO
 note right
-引数reltuplesを基に、
+引数table_name、reltuplesを基に、
 Tableメタデータテーブル【tsurugi_class】において
-引数table_idに一致するレコードの
+引数table_nameに一致するレコードの
 列reltuplesを更新する。
 end note
 TablesDAO -> metadata_storage : updateのプリペアード\nステートメントを実行
 note right
 update tsurugi_catalog.tsurugi_class 
 set reltuples = ? 
-where id = ?;
+where name = ? RETURNING id;
 end note
 activate metadata_storage
 TablesDAO <-- metadata_storage : 成功 or 失敗
@@ -318,7 +318,7 @@ DBSessionManager <-- metadata_storage : 成功 or 失敗
 deactivate metadata_storage
 Statistics <-- DBSessionManager : 成功 or 失敗
 deactivate DBSessionManager
-ogawayama <-- Statistics : ErrorCode
+ogawayama <-- Statistics : ErrorCode、テーブルID
 deactivate Statistics
 
 @enduml
@@ -418,7 +418,7 @@ end
 @enduml
 
 @startuml
-title 1テーブルの表統計参照（input：テーブルID）
+title 1テーブルの表統計参照（input：テーブル名、output：テーブルID・行数）
 
 box #White
 control "metadata-managerのAPIを利用する\nTsurugiのコンポーネント" as ogawayama
@@ -432,20 +432,20 @@ entity "PostgreSQL" as metadata_storage
 end box
 
 activate ogawayama
-ogawayama -> Statistics : getTableStatistic\n(table_id, table_statistic)
+ogawayama -> Statistics : getTableStatistic\n(table_name, table_statistic)
 activate Statistics
 note right
 メタデータ格納先のTableメタデータテーブル【tsurugi_class】から、
-テーブルIDが引数table_idに一致する
+テーブルIDが引数table_nameに一致する
 Tableメタデータ全項目の値を取得する。
 end note
-Statistics -> TablesDAO : select(table_id)
+Statistics -> TablesDAO : select(table_name)
 activate TablesDAO
 TablesDAO -> metadata_storage : selectのプリペアード\nステートメントを実行
 note right
 select * from 
 tsurugi_catalog.tsurugi_class
-where id = ?;
+where name = ?;
 end note
 activate metadata_storage
 alt select失敗

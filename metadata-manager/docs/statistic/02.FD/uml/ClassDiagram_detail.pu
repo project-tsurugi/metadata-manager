@@ -251,8 +251,8 @@ package "manager/metadata-manager" {
     }
   
     class "TablesDAO" as TablesDAO{
-      {method}+updateReltuplesByTableId(reltuples, table_id)
-      {method}+selectTableStatisticByTableId( tables, table_id)
+      {method}+updateReltuplesByTableName(reltuples, table_name)
+      {method}+selectTableStatisticByTableName( tables, table_name)
     }
   
   }
@@ -293,8 +293,8 @@ package "manager/metadata-manager" {
         {method}virtual const char *StatisticsDAO_deleteOneColumnStatisticByTableIdColumnOrdinalPosition() = 0;
         {method}
         {method}// TablesDAO
-        {method}virtual const char* TablesDAO_updateReltuplesByTableId() = 0;
-        {method}virtual const char* TablesDAO_selectTableStatisticByTableId() = 0;
+        {method}virtual const char* TablesDAO_updateReltuplesByTableName() = 0;
+        {method}virtual const char* TablesDAO_selectTableStatisticByTableName() = 0;
       }
   
       class PostgreSQLDialect
@@ -331,8 +331,8 @@ package "manager/metadata-manager" {
       StatisticsDAO_selectAllColumnStatisticByTableId
       StatisticsDAO_deleteAllColumnStatisticByTableId
       StatisticsDAO_deleteOneColumnStatisticByTableIdColumnOrdinalPosition
-      TablesDAO_updateReltuplesByTableId
-      TablesDAO_selectTableStatisticByTableId
+      TablesDAO_updateReltuplesByTableName
+      TablesDAO_selectTableStatisticByTableName
     }
   
     abstract class GenericDAO

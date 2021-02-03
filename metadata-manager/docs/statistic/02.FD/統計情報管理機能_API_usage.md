@@ -65,10 +65,10 @@
 | ----------- | ------------------------------------------------------------ |
 |connect()|親クラスのメソッドをオーバーライドして実装を行う。<br />実装内容は、親クラスのメソッドの説明を参照。|
 | addOneColumnStatistic| 1カラムの列統計登録・更新（input：テーブルID・カラム番号） |
-| addTableStatistic | 1テーブルの表統計登録・更新（input：テーブルID・行数）|
+| addTableStatistic | 1テーブルの表統計登録・更新（input：テーブル名・行数、output：テーブルID）|
 | getOneColumnStatistic | 1カラムの列統計参照（input：テーブルID・カラム番号） |
 | getAllColumnStatistics | 1テーブルの全列統計参照（input：テーブルID） |
-| getTableStatistic       | 1テーブルの表統計参照（input：テーブルID）|
+| getTableStatistic       | 1テーブルの表統計参照（input：テーブル名、output：テーブルID・行数）|
 | removeOneColumnStatistic | 1カラムの列統計削除（input：テーブルID・カラム番号）|
 | removeAllColumnStatistics | 1テーブルの全列統計削除（input：テーブルID）|
 
@@ -159,13 +159,14 @@
 * 表統計の登録・更新
   *  1テーブルの表統計の登録・更新
     ```C++
-    int64_t table_id = 1;
+    std::string table_name = "table_name";
+    int64_t table_id;
     float reltuples = 1000;
     
     std::unique_ptr<Metadata> stats(new Statistics(TEST_DB));
     
-    //metadata-managerは、メタデータ格納先に対して、テーブルIDに紐づく表統計を登録・更新する。
-    if (ErrorCode::OK != stats->addTableStatistic(table_id, reltuples))
+    //metadata-managerは、メタデータ格納先に対して、テーブル名に紐づく表統計を登録・更新する。
+    if (ErrorCode::OK != stats->addTableStatistic(table_name, reltuples, table_id))
     {
     	// error handling
     }
@@ -224,14 +225,14 @@
   * 1テーブルの表統計参照
 
     ```C++
-    int64_t table_id = 1;
+    std::string table_name = "table_name";
 
     TableStatistic table_statistic;
   
     std::unique_ptr<Metadata> stats(new Statistics(TEST_DB));
   
-    //metadata-managerは、メタデータ格納先から、テーブルIDに関する表統計・テーブルメタデータを取得する。
-    if (ErrorCode::OK == stats->getTableStatistic(table_id, table_statistic))
+    //metadata-managerは、メタデータ格納先から、テーブル名に関する表統計・テーブルメタデータを取得する。
+    if (ErrorCode::OK == stats->getTableStatistic(table_name, table_statistic))
     {
       // 行数を取得
       cout << table_statistic.reltuples << endl;
