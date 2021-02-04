@@ -1,5 +1,5 @@
 @startuml
-title 接続処理
+title 初期化処理
 
 actor 利用者 as user
 box #White
@@ -27,7 +27,7 @@ activate Statistics
 create DBSessionManager
 Statistics -> DBSessionManager : new
 activate DBSessionManager
-ogawayama -> Statistics : connect()
+ogawayama -> Statistics : init()
 Statistics -> DBSessionManager : getDAO
 DBSessionManager -> DBSessionManager : connect()
 note right
@@ -82,9 +82,8 @@ end
 @enduml
 
 @startuml
-title 切断処理
+title 終了処理
 
-actor 利用者 as user
 box #White
 control "metadata-managerのAPIを利用する\nTsurugiのコンポーネント" as ogawayama
 end box
@@ -96,11 +95,8 @@ box メタデータ格納先  #White
 entity "PostgreSQL" as metadata_storage
 end box
 
-user -> ogawayama : 終了
 activate ogawayama
-ogawayama -> ogawayama : 終了処理
-activate ogawayama
-ogawayama -> Statistics : close()
+ogawayama -> Statistics : デストラクタを呼ぶ
 activate Statistics
 Statistics -> DBSessionManager : close()
 activate DBSessionManager
@@ -110,12 +106,8 @@ DBSessionManager <-- metadata_storage : 成功 or 失敗
 deactivate metadata_storage
 Statistics <-- DBSessionManager : ErrorCode::OK or\n ErrorCode::CLOSE_\nCONNECTION_FAILURE
 deactivate DBSessionManager
-ogawayama <-- Statistics : ErrorCode::OK or\n ErrorCode::CLOSE_\nCONNECTION_FAILURE
 deactivate Statistics
-deactivate ogawayama
 deactivate DBSessionManager
-user <-- ogawayama : 終了
-deactivate ogawayama
 @enduml
 
 @startuml

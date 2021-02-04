@@ -49,8 +49,7 @@
 
 | メソッド名   | 説明                                                         |
 | ----------- | ------------------------------------------------------------ |
-|connect()|・下記3つの処理を実施し、すべての処理が成功した場合、metadata-managerは、メタデータ格納先とメタデータの受け渡しが可能となる。<br />1. metadata-managerは、メタデータ格納先とのコネクションを確立する。<br/>2. サーチパスがセキュアになるように設定する。<br/>3. metadata-managerは、メタデータ格納先にプリペアードステートメントを送り、SQL文の前処理を実行する。<br/><br>・本クラスのインスタンスごとに1つのコネクションが確立される。<br>・子クラスのメソッドで実装を行う。|
-|close()|metadata-managerは、メタデータ格納先とのコネクションを切断する。|
+|initialize()|・下記3つの処理を実施し、すべての処理が成功した場合、metadata-managerは、メタデータ格納先とメタデータの受け渡しが可能となる。<br />1. metadata-managerは、メタデータ格納先とのコネクションを確立する。<br/>2. サーチパスがセキュアになるように設定する。<br/>3. metadata-managerは、メタデータ格納先にプリペアードステートメントを送り、SQL文の前処理を実行する。<br/><br>・本クラスのインスタンスごとに1つのコネクションが確立される。<br>・子クラスのメソッドで実装を行う。|
 
 ### Statistics
 
@@ -64,7 +63,7 @@
 
 | メソッド名   | 説明                                                         |
 | ----------- | ------------------------------------------------------------ |
-|connect()|親クラスのメソッドをオーバーライドして実装を行う。<br />実装内容は、親クラスのメソッドの説明を参照。|
+|initialize()|親クラスのメソッドをオーバーライドして実装を行う。<br />実装内容は、親クラスのメソッドの説明を参照。|
 | addOneColumnStatistic| 1カラムの列統計登録・更新（input：テーブルID・カラム番号） |
 | addTableStatistic | 1テーブルの表統計登録・更新（input：テーブルID・行数）|
 | addTableStatistic | 1テーブルの表統計登録・更新（input：テーブル名・行数、output：テーブルID）|
@@ -122,21 +121,9 @@
   // 3. metadata-managerは、メタデータ格納先にプリペアードステートメントを送り、SQL文の前処理を実行する。
   // 上記3つの処理を実施し、すべての処理が成功した場合、metadata-managerは、メタデータ格納先とメタデータの受け渡しが可能となる。
   // それ以外の場合、metadata-managerは、メタデータ格納先とメタデータの受け渡しができない。
-  if (ErrorCode::OK != stats->connect())
+  if (ErrorCode::OK != stats->initialize())
   {
     // error handling
-  }
-  ```
-
-* metadata-managerのAPIを利用するTsurugiのコンポーネント終了時
-
-  ```C++
-  auto stats = std::make_unique<Statistics>(TEST_DB);
-  
-  //metadata-managerは、メタデータ格納先とのコネクションを切断する。
-  if(ErrorCode::OK != stats->close())
-  {
-  	// error handling
   }
   ```
 

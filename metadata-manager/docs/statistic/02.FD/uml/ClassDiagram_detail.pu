@@ -6,12 +6,11 @@ package "manager/metadata-manager" {
 
   package manager::metadata as manager_metadata{
     class "Metadata" as Metadata {
-      {method}+connect()
-      {method}+close()
+      {method}+init()
     }
 
     class Statistics {
-      {method}+connect()
+      {method}+init()
       {method}
       {method}+addOneColumnStatistic
       {method}+addTableStatistic
@@ -201,7 +200,7 @@ package "manager/metadata-manager" {
   
     class Config {
       {field}-{static}std::string CONNECTION_STRING
-      {method}+{static}void initialize()
+      {method}+{static}void init()
       {method}+{static}std::string getConnectionString()
     }
   }
