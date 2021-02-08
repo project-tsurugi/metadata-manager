@@ -41,8 +41,8 @@ DBSessionManager -> metadata_storage : メタデータ格納先への\n接続を
 activate metadata_storage
 alt メタデータ格納先との接続に失敗
 DBSessionManager <-- metadata_storage : 失敗
-Statistics <-- DBSessionManager : ErrorCode::OPEN_\nCONNECTION_FAILURE
-ogawayama <-- Statistics : ErrorCode::OPEN_\nCONNECTION_FAILURE
+Statistics <-- DBSessionManager : ErrorCode::DATABASE_ACCESS_FAILURE
+ogawayama <-- Statistics : ErrorCode::DATABASE_ACCESS_FAILURE
 else
 DBSessionManager <-- metadata_storage : 成功
 DBSessionManager -> DBSessionManager : DBSessionManagerのフィールドに、\n確立したメタデータ格納先への\n接続情報を設定する。
@@ -50,8 +50,8 @@ deactivate DBSessionManager
 DBSessionManager -> metadata_storage : サーチパスがセキュアになるように設定
 alt セキュアなサーチパスの設定に失敗
 DBSessionManager <-- metadata_storage : 失敗
-Statistics <-- DBSessionManager : ErrorCode::SET_\nALWAYS_SECURE_\nSEARCH_PATH_FAILURE
-ogawayama <-- Statistics : ErrorCode::SET_\nALWAYS_SECURE_\nSEARCH_PATH_FAILURE
+Statistics <-- DBSessionManager : ErrorCode::DATABASE_ACCESS_FAILURE
+ogawayama <-- Statistics : ErrorCode::DATABASE_ACCESS_FAILURE
 else
 DBSessionManager <-- metadata_storage : 成功
 create StatisticsDAO
@@ -66,8 +66,8 @@ StatisticsDAO -> metadata_storage : プリペアードステートメントを\n
 alt SQLステートメントを解析する作業の実行に失敗
 StatisticsDAO <-- metadata_storage :失敗
 DBSessionManager <-- StatisticsDAO : 失敗
-Statistics <-- DBSessionManager : ErrorCode::PREPARE_\nSTATEMENT_FAILURE
-ogawayama <-- Statistics : ErrorCode::PREPARE_\nSTATEMENT_FAILURE
+Statistics <-- DBSessionManager : ErrorCode::DATABASE_ACCESS_FAILURE
+ogawayama <-- Statistics : ErrorCode::DATABASE_ACCESS_FAILURE
 else
 StatisticsDAO <-- metadata_storage : 成功
 DBSessionManager <-- StatisticsDAO : 成功
@@ -104,7 +104,7 @@ DBSessionManager -> metadata_storage : メタデータ格納先との\nコネク
 activate metadata_storage
 DBSessionManager <-- metadata_storage : 成功 or 失敗
 deactivate metadata_storage
-Statistics <-- DBSessionManager : ErrorCode::OK or\n ErrorCode::CLOSE_\nCONNECTION_FAILURE
+Statistics <-- DBSessionManager : ErrorCode::OK or\n ErrorCode::DATABASE_ACCESS_FAILURE
 deactivate DBSessionManager
 deactivate Statistics
 deactivate DBSessionManager
@@ -135,7 +135,7 @@ activate metadata_storage
 alt begin transaction失敗
 DBSessionManager <-- metadata_storage : 失敗
 Statistics <-- DBSessionManager : 失敗
-ogawayama <-- Statistics : ErrorCode::BEGIN_TRANSACTION_FAILURE
+ogawayama <-- Statistics : ErrorCode::DATABASE_ACCESS_FAILURE
 else
 DBSessionManager <-- metadata_storage : 成功
 deactivate metadata_storage
@@ -156,12 +156,12 @@ alt rollback失敗
 DBSessionManager <-- metadata_storage : rollback失敗
 Statistics <-- DBSessionManager : rollback失敗
 deactivate DBSessionManager
-ogawayama <-- Statistics : ErrorCode::ROLLBACK_FAILURE
+ogawayama <-- Statistics : ErrorCode::DATABASE_ACCESS_FAILURE
 else
 DBSessionManager <-- metadata_storage : rollback成功
 Statistics <-- DBSessionManager : rollback成功
 deactivate DBSessionManager
-ogawayama <-- Statistics : ErrorCode::UPSERT_FAILURE or \nErrorCode::UPDATE_FAILURE or \nErrorCode::DELETE_FAILURE
+ogawayama <-- Statistics : ErrorCode
 end
 else
 StatisticsDAO <-- metadata_storage : UPSERT or UPDATE or DELETE成功
@@ -173,7 +173,7 @@ DBSessionManager -> metadata_storage : commit
 alt commit失敗
 DBSessionManager <-- metadata_storage : commit失敗
 Statistics <-- DBSessionManager : commit失敗
-ogawayama <-- Statistics : ErrorCode::COMMIT_FAILURE
+ogawayama <-- Statistics : ErrorCode::DATABASE_ACCESS_FAILURE
 else
 DBSessionManager <-- metadata_storage : commit成功
 deactivate metadata_storage
@@ -412,7 +412,7 @@ alt select失敗
 activate metadata_storage
 StatisticsDAO <-- metadata_storage : select失敗
 Statistics <-- StatisticsDAO : select失敗
-ogawayama <-- Statistics : ErrorCode::SELECT_FAILURE
+ogawayama <-- Statistics : ErrorCode
 else
 StatisticsDAO <-- metadata_storage : 全カラムのカラム番号と\nその列統計
 deactivate metadata_storage
@@ -461,7 +461,7 @@ alt select失敗
 activate metadata_storage
 StatisticsDAO <-- metadata_storage : select失敗
 Statistics <-- StatisticsDAO : select失敗
-ogawayama <-- Statistics : ErrorCode::SELECT_FAILURE
+ogawayama <-- Statistics : ErrorCode
 else
 StatisticsDAO <-- metadata_storage : 1カラムの列統計全項目の値
 deactivate metadata_storage
@@ -506,7 +506,7 @@ activate metadata_storage
 alt select失敗
 TablesDAO <-- metadata_storage : select失敗
 Statistics <-- TablesDAO : select失敗
-ogawayama <-- Statistics : ErrorCode::SELECT_FAILURE
+ogawayama <-- Statistics : ErrorCode
 else
 TablesDAO <-- metadata_storage : Tableメタデータ全項目の値
 deactivate metadata_storage
@@ -551,7 +551,7 @@ activate metadata_storage
 alt select失敗
 TablesDAO <-- metadata_storage : select失敗
 Statistics <-- TablesDAO : select失敗
-ogawayama <-- Statistics : ErrorCode::SELECT_FAILURE
+ogawayama <-- Statistics : ErrorCode
 else
 TablesDAO <-- metadata_storage : Tableメタデータ全項目の値
 deactivate metadata_storage
