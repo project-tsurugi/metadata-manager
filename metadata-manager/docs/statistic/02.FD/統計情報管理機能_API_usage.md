@@ -111,7 +111,7 @@
 
 ## 列統計・表統計管理機能 API実行例
 
-* metadata-managerのAPIを利用するTsurugiのコンポーネント起動時
+* 初期化処理
 
   ```C++
   auto stats = std::make_unique<Statistics>(TEST_DB);
@@ -138,7 +138,7 @@
 
     //metada-managerを利用するTsurugiのコンポーネントは、列統計を格納したptreeを作成する。
     boost::property_tree::ptree one_column_statistic;
-    one_column_statistic.put("stanullfrac", "0.9981203");
+    one_column_statistic.put("stanullfrac", 0.9981203);
 
     //metadata-managerは、メタデータ格納先に対して、テーブルID・カラム番号に紐づく1カラム単位の列統計を登録・更新する。
     if (ErrorCode::OK != stats->addOneColumnStatistic(table_id, column_ordinal_position,  one_column_statistic))
@@ -154,7 +154,7 @@
     int64_t table_id = 1;
     float reltuples = 1000;
     
-    std::unique_ptr<Metadata> stats(new Statistics(TEST_DB));
+    auto stats = std::make_unique<Statistics>(TEST_DB);
     
     //metadata-managerは、メタデータ格納先に対して、テーブルIDに紐づく表統計を登録・更新する。
     if (ErrorCode::OK != stats->addTableStatistic(table_id, reltuples))
@@ -193,7 +193,7 @@
     if (ErrorCode::OK == stats->getOneColumnStatistic(table_id, column_ordinal_position, column_statistic))
     {
       // あるカラムのNULL率を取得
-      cout << column_statistic.columnStatistic.get<int64_t>("stanullfrac") << endl;
+      cout << column_statistic.columnStatistic.get("stanullfrac") << endl;
     }
     else{
       // error handling
@@ -214,6 +214,8 @@
     {
       // あるカラムのNULL率を取得
       ColumnStatistic one_column_statistic;
+      
+      // key: カラム番号、value:　ColumnStatistic(列統計テーブルのフィールド)
       std::unordered_map<int64_t,ColumnStatistic>::const_iterator got = column_statistics.find(column_ordinal_position);
 
       if ( got == column_statistics.end() )
@@ -234,7 +236,7 @@
 
     TableStatistic table_statistic;
   
-    std::unique_ptr<Metadata> stats(new Statistics(TEST_DB));
+    auto stats = std::make_unique<Statistics>(TEST_DB);
   
     //metadata-managerは、メタデータ格納先から、テーブルIDに関する表統計・テーブルメタデータを取得する。
     if (ErrorCode::OK == stats->getTableStatistic(table_id, table_statistic))
