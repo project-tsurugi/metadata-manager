@@ -34,7 +34,6 @@ package "manager/metadata-manager" {
         {field}+int64_t id
         {field}+std::string name
         {field}+std::string namespaceName
-        {field}+boost::property_tree::ptree primaryKey
         {field}+float reltuples
       }
       
