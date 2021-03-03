@@ -63,15 +63,15 @@
 | メソッド名   | 説明                                                         |
 | ----------- | ------------------------------------------------------------ |
 |init()|親クラスのメソッドをオーバーライドして実装を行う。<br />実装内容は、親クラスのメソッドの説明を参照。|
-| addOneColumnStatistic| 1カラムの列統計登録・更新（input：テーブルID・カラム番号） |
-| addTableStatistic | 1テーブルの表統計登録・更新（input：テーブルID・行数）|
-| addTableStatistic | 1テーブルの表統計登録・更新（input：テーブル名・行数、output：テーブルID）|
-| getOneColumnStatistic | 1カラムの列統計参照（input：テーブルID・カラム番号） |
-| getAllColumnStatistics | 1テーブルの全列統計参照（input：テーブルID） |
-| getTableStatistic       | 1テーブルの表統計参照（input：テーブルID）|
-| getTableStatistic       | 1テーブルの表統計参照（input：テーブル名、output：テーブルID・行数）|
-| removeOneColumnStatistic | 1カラムの列統計削除（input：テーブルID・カラム番号）|
-| removeAllColumnStatistics | 1テーブルの全列統計削除（input：テーブルID）|
+| add_one_column_statistic| 1カラムの列統計登録・更新（input：テーブルID・カラム番号） |
+| add_table_statistic | 1テーブルの表統計登録・更新（input：テーブルID・行数）|
+| add_table_statistic | 1テーブルの表統計登録・更新（input：テーブル名・行数、output：テーブルID）|
+| get_one_column_statistic | 1カラムの列統計参照（input：テーブルID・カラム番号） |
+| get_all_column_statistics | 1テーブルの全列統計参照（input：テーブルID） |
+| get_table_statistic       | 1テーブルの表統計参照（input：テーブルID）|
+| get_table_statistic       | 1テーブルの表統計参照（input：テーブル名、output：テーブルID・行数）|
+| remove_one_column_statistic | 1カラムの列統計削除（input：テーブルID・カラム番号）|
+| remove_all_column_statistics | 1テーブルの全列統計削除（input：テーブルID）|
 
 ### ColumnStatistic
 
@@ -120,7 +120,7 @@
   // 3. metadata-managerは、メタデータ格納先にプリペアードステートメントを送り、SQL文の前処理を実行する。
   // 上記3つの処理を実施し、すべての処理が成功した場合、metadata-managerは、メタデータ格納先とメタデータの受け渡しが可能となる。
   // それ以外の場合、metadata-managerは、メタデータ格納先とメタデータの受け渡しができない。
-  if (ErrorCode::OK != stats->initialize())
+  if (ErrorCode::OK != stats->init())
   {
     // error handling
   }
@@ -140,7 +140,7 @@
     one_column_statistic.put("stanullfrac", 0.9981203);
 
     //metadata-managerは、メタデータ格納先に対して、テーブルID・カラム番号に紐づく1カラム単位の列統計を登録・更新する。
-    if (ErrorCode::OK != stats->addOneColumnStatistic(table_id, column_ordinal_position,  one_column_statistic))
+    if (ErrorCode::OK != stats->add_one_column_statistic(table_id, column_ordinal_position,  one_column_statistic))
     {
     	// error handling
     }
@@ -156,7 +156,7 @@
     auto stats = std::make_unique<Statistics>(TEST_DB);
     
     //metadata-managerは、メタデータ格納先に対して、テーブルIDに紐づく表統計を登録・更新する。
-    if (ErrorCode::OK != stats->addTableStatistic(table_id, reltuples))
+    if (ErrorCode::OK != stats->add_table_statistic(table_id, reltuples))
     {
     	// error handling
     }
@@ -170,7 +170,7 @@
     auto stats = std::make_unique<Statistics>(TEST_DB);
     
     //metadata-managerは、メタデータ格納先に対して、テーブル名に紐づく表統計を登録・更新する。
-    if (ErrorCode::OK != stats->addTableStatistic(table_name, reltuples, table_id))
+    if (ErrorCode::OK != stats->add_table_statistic(table_name, reltuples, table_id))
     {
     	// error handling
     }
@@ -189,10 +189,10 @@
     auto stats = std::make_unique<Statistics>(TEST_DB);
 
     //metadata-managerは、メタデータ格納先から、テーブルID・カラム番号に紐づく列統計を取得する。
-    if (ErrorCode::OK == stats->getOneColumnStatistic(table_id, column_ordinal_position, column_statistic))
+    if (ErrorCode::OK == stats->get_one_column_statistic(table_id, column_ordinal_position, column_statistic))
     {
       // あるカラムのNULL率を取得
-      cout << column_statistic.columnStatistic.get("stanullfrac") << endl;
+      cout << column_statistic.column_statistic.get("stanullfrac") << endl;
     }
     else{
       // error handling
@@ -209,7 +209,7 @@
     auto stats = std::make_unique<Statistics>(TEST_DB);
     
     //metadata-managerは、メタデータ格納先から、テーブルIDに関するすべての列統計・表統計を一括で取得する。
-    if (ErrorCode::OK == stats->getAllColumnStatistics(table_id, column_statistics))
+    if (ErrorCode::OK == stats->get_all_column_statistics(table_id, column_statistics))
     {
       // あるカラムのNULL率を取得
       ColumnStatistic one_column_statistic;
@@ -221,7 +221,7 @@
         std::cout << "not found";
       else
         one_column_statistic = got->second;
-        cout << one_column_statistic.columnStatistic.get<int64_t>("stanullfrac") << endl;
+        cout << one_column_statistic.column_statistic.get<int64_t>("stanullfrac") << endl;
     }
     else{
       // error handling
@@ -238,7 +238,7 @@
     auto stats = std::make_unique<Statistics>(TEST_DB);
   
     //metadata-managerは、メタデータ格納先から、テーブルIDに関する表統計・テーブルメタデータを取得する。
-    if (ErrorCode::OK == stats->getTableStatistic(table_id, table_statistic))
+    if (ErrorCode::OK == stats->get_table_statistic(table_id, table_statistic))
     {
       // 行数を取得
       cout << table_statistic.reltuples << endl;
@@ -256,7 +256,7 @@
     auto stats = std::make_unique<Statistics>(TEST_DB);
   
     //metadata-managerは、メタデータ格納先から、テーブル名に関する表統計・テーブルメタデータを取得する。
-    if (ErrorCode::OK == stats->getTableStatistic(table_name, table_statistic))
+    if (ErrorCode::OK == stats->get_table_statistic(table_name, table_statistic))
     {
       // 行数を取得
       cout << table_statistic.reltuples << endl;
@@ -277,7 +277,7 @@
     auto stats = std::make_unique<Statistics>(TEST_DB);
     
     //metadata-managerは、メタデータ格納先に対して、テーブルID・カラム番号に紐づく列統計を削除する。
-    if (ErrorCode::OK != stats->removeOneColumnStatistic(table_id, column_ordinal_position))
+    if (ErrorCode::OK != stats->remove_one_column_statistic(table_id, column_ordinal_position))
     {
     	// error handling
     }
@@ -291,7 +291,7 @@
     auto stats = std::make_unique<Statistics>(TEST_DB);
     
     //metadata-managerは、メタデータ格納先に対して、テーブルIDに紐づく全列統計を削除する。
-    if (ErrorCode::OK != stats->removeAllColumnStatistics(table_id))
+    if (ErrorCode::OK != stats->remove_all_column_statistics(table_id))
     {
     	// error handling
     }

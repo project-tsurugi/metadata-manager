@@ -12,15 +12,15 @@ package "manager/metadata-manager" {
     class Statistics {
       {method}+init()
       {method}
-      {method}+addOneColumnStatistic
-      {method}+addTableStatistic
-      {method}+addTableStatistic
-      {method}+getOneColumnStatistic
-      {method}+getAllColumnStatistics
-      {method}+getTableStatistic
-      {method}+getTableStatistic
-      {method}+removeOneColumnStatistic
-      {method}+removeAllColumnStatistics
+      {method}+add_one_column_statistic
+      {method}+add_table_statistic
+      {method}+add_table_statistic
+      {method}+get_one_column_statistic
+      {method}+get_all_column_statistics
+      {method}+get_table_statistic
+      {method}+get_table_statistic
+      {method}+remove_one_column_statistic
+      {method}+remove_all_column_statistics
     }
     
     class Tables {
@@ -33,14 +33,14 @@ package "manager/metadata-manager" {
       class TableStatistic {
         {field}+int64_t id
         {field}+std::string name
-        {field}+std::string namespaceName
+        {field}+std::string namespace_name
         {field}+float reltuples
       }
       
       class ColumnStatistic {
-        {field}+int64_t tableId
-        {field}+int64_t ordinalPosition
-        {field}+boost::property_tree::ptree columnStatistic
+        {field}+int64_t table_id
+        {field}+int64_t ordinal_position
+        {field}+boost::property_tree::ptree column_statistic
       }
     }
 
@@ -122,16 +122,16 @@ package "manager/metadata-manager" {
   package manager::metadata as manager_metadata{
 
     class "Metadata" as Metadata {
-      {field}#DBSessionManager dbsm
+      {field}#DBSessionManager db_session_manager
     }
     
     class Statistics {
-      {field}-StatisticsDAO statisticsDAO
-      {field}-TablesDAO tablesDAO
+      {field}-StatisticsDAO sdao
+      {field}-TablesDAO tdao
     }
     
     class Tables{
-      {field}-TablesDAO tablesDAO
+      {field}-TablesDAO tdao
     }
 
   }
@@ -169,7 +169,7 @@ package "manager/metadata-manager" {
   package manager::metadata as manager_metadata{
 
     class "Metadata" as Metadata {
-      {field}#DBSessionManager dbsm
+      {field}#DBSessionManager db_session_manager
     }
     
     class Statistics {
@@ -183,24 +183,24 @@ package "manager/metadata-manager" {
   package manager::metadata::db{
   
     class "DBSessionManager" as DBSM {
-      {field}-{static}PGconn *sqlSession
+      {field}-{static}PGconn *connection
 
-      {method}+{static}ErrorCode getDAO(TABLE_NAME tableName, GenericDAO *&gdao)
+      {method}+{static}ErrorCode get_dao(TableName table_name, GenericDAO *&gdao)
       {method}
-      {method}-{static}bool isOpen()
+      {method}-{static}bool is_open()
       {method}+{static}ErrorCode connect()
       {method}+{static}ErrorCode close()
       {method}
-      {method}+{static}ErrorCode startTransaction()
+      {method}+{static}ErrorCode start_transaction()
       {method}+{static}ErrorCode commit()
       {method}+{static}ErrorCode rollback()
-      {method}+{static}ErrorCode setAlwaysSecureSearchPath()
+      {method}+{static}ErrorCode set_always_secure_search_path()
     }
   
     class Config {
-      {field}-{static}std::string CONNECTION_STRING
+      {field}-{static}std::string connection_string
       {method}+{static}void init()
-      {method}+{static}std::string getConnectionString()
+      {method}+{static}std::string get_connection_string()
     }
   }
   
@@ -232,29 +232,28 @@ package "manager/metadata-manager" {
   
     abstract class GenericDAO
     {
-      {field}#TABLE_NAME tableName
-	    {field}#PGconn *sqlSession
+      {field}#TableName table_name
+	    {field}#PGconn *connection
       {method}#bool prepare(const char* &name, const char* &statement)
 	    {method}#bool exec_prepared(const char* &name, std::vector<char const *> &paramValues, PGresult *&res)
-	    {method}+GenericDAO(PGconn *sqlSession, TABLE_NAME tableName)
+	    {method}+GenericDAO(PGconn *connection, TableName table_name)
 	    {method}+virtual ~GenericDAO()
-      {method}+bool prepareStatements()
       {method}-bool prepare()
     }
 
     class "StatisticsDAO" as StatisticsDAO{
-      {method}+upsertOneColumnStatisticByTableIdColumnOrdinalPosition( column_statistic, table_id, ordinal_position)
-      {method}+selectOneColumnStatisticByTableIdColumnOrdinalPosition( column_statistic, table_id, ordinal_position)
-      {method}+selectAllColumnStatisticByTableId( column_statistics, table_id)
-      {method}+deleteAllColumnStatisticByTableId( table_id)
-      {method}+deleteOneColumnStatisticByTableIdColumnOrdinalPosition( table_id, ordinal_position)
+      {method}+upsert_one_column_statistic_by_table_id_column_ordinal_position( column_statistic, table_id, ordinal_position)
+      {method}+select_one_column_statistic_by_table_id_column_ordinal_position( column_statistic, table_id, ordinal_position)
+      {method}+select_all_column_statistic_by_table_id( column_statistics, table_id)
+      {method}+delete_all_column_statistic_by_table_id( table_id)
+      {method}+delete_one_column_statistic_by_table_id_column_ordinal_position( table_id, ordinal_position)
     }
   
     class "TablesDAO" as TablesDAO{
-      {method}+updateReltuplesByTableName(reltuples, table_name)
-      {method}+updateReltuplesByTableId(reltuples, table_id)
-      {method}+selectTableStatisticByTableName( tables, table_name)
-      {method}+selectTableStatisticByTableId( tables, table_id)
+      {method}+update_reltuples_by_table_name(reltuples, table_name)
+      {method}+update_reltuples_by_table_id(reltuples, table_id)
+      {method}+select_table_statistic_by_table_name( tables, table_name)
+      {method}+select_table_statistic_by_table_id( tables, table_id)
     }
   
   }
@@ -288,17 +287,17 @@ package "manager/metadata-manager" {
 	      {method}virtual ~Dialect(){};
         {method}
         {method}// StatisticsDAO
-	      {method}virtual const char *StatisticsDAO_upsertOneColumnStatisticByTableIdColumnOrdinalPosition() = 0;
-	      {method}virtual const char *StatisticsDAO_selectOneColumnStatisticByTableIdColumnOrdinalPosition() = 0;
-	      {method}virtual const char *StatisticsDAO_selectAllColumnStatisticByTableId() = 0;
-        {method}virtual const char *StatisticsDAO_deleteAllColumnStatisticByTableId() = 0;
-        {method}virtual const char *StatisticsDAO_deleteOneColumnStatisticByTableIdColumnOrdinalPosition() = 0;
+	      {method}virtual const char *statistics_dao_upsert_one_column_statistic_by_table_id_column_ordinal_position() = 0;
+	      {method}virtual const char *statistics_dao_select_one_column_statistic_by_table_id_column_ordinal_position() = 0;
+	      {method}virtual const char *statistics_dao_select_all_column_statistic_by_table_id() = 0;
+        {method}virtual const char *statistics_dao_delete_all_column_statistic_by_table_id() = 0;
+        {method}virtual const char *statistics_dao_delete_one_column_statistic_by_table_id_column_ordinal_position() = 0;
         {method}
         {method}// TablesDAO
-        {method}virtual const char* TablesDAO_updateReltuplesByTableId() = 0;
-        {method}virtual const char* TablesDAO_updateReltuplesByTableName() = 0;
-        {method}virtual const char* TablesDAO_selectTableStatisticByTableId() = 0;
-        {method}virtual const char* TablesDAO_selectTableStatisticByTableName() = 0;
+        {method}virtual const char* tables_dao_update_reltuples_by_table_id() = 0;
+        {method}virtual const char* tables_dao_update_reltuples_by_table_name() = 0;
+        {method}virtual const char* tables_dao_select_table_statistic_by_table_id() = 0;
+        {method}virtual const char* tables_dao_select_table_statistic_by_table_name() = 0;
       }
   
       class PostgreSQLDialect
@@ -323,22 +322,22 @@ package "manager/metadata-manager" {
 
   package manager::metadata::db::dao{
 
-    enum TABLE_NAME
+    enum TableName
     {
 	    STATISTICS
       TABLES
     }
   
-    enum STATEMENT_NAME{
-      StatisticsDAO_upsertOneColumnStatisticByTableIdColumnOrdinalPosition
-      StatisticsDAO_selectOneColumnStatisticByTableIdColumnOrdinalPosition
-      StatisticsDAO_selectAllColumnStatisticByTableId
-      StatisticsDAO_deleteAllColumnStatisticByTableId
-      StatisticsDAO_deleteOneColumnStatisticByTableIdColumnOrdinalPosition
-      TablesDAO_updateReltuplesByTableName
-      TablesDAO_updateReltuplesByTableId
-      TablesDAO_selectTableStatisticByTableName
-      TablesDAO_selectTableStatisticByTableId
+    enum StatementName{
+      STATISTICS_DAO_UPSERT_ONE_COLUMN_STATISTIC_BY_TABLE_ID_COLUMN_ORDINAL_POSITION
+      STATISTICS_DAO_SELECT_ONE_COLUMN_STATISTIC_BY_TABLE_ID_COLUMN_ORDINAL_POSITION
+      STATISTICS_DAO_SELECT_ALL_COLUMN_STATISTIC_BY_TABLE_ID
+      STATISTICS_DAO_DELETE_ALL_COLUMN_STATISTIC_BY_TABLE_ID
+      STATISTICS_DAO_DELETE_ONE_COLUMN_STATISTIC_BY_TABLE_ID_COLUMN_ORDINAL_POSITION
+      TABLES_DAO_UPDATE_RELTUPLES_BY_TABLE_NAME
+      TABLES_DAO_UPDATE_RELTUPLES_BY_TABLE_ID
+      TABLES_DAO_SELECT_TABLE_STATISTIC_BY_TABLE_NAME
+      TABLES_DAO_SELECT_TABLE_STATISTIC_BY_TABLE_ID
     }
   
     abstract class GenericDAO
@@ -346,8 +345,8 @@ package "manager/metadata-manager" {
     }
   }
   
-  GenericDAO ..> TABLE_NAME
-  GenericDAO ..> STATEMENT_NAME
+  GenericDAO ..> TableName
+  GenericDAO ..> StatementName
   
 }
 

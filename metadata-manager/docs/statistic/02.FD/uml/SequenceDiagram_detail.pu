@@ -28,7 +28,7 @@ create DBSessionManager
 Statistics -> DBSessionManager : new
 activate DBSessionManager
 ogawayama -> Statistics : init()
-Statistics -> DBSessionManager : getDAO
+Statistics -> DBSessionManager : get_dao
 DBSessionManager -> DBSessionManager : connect()
 note right
 ・メタデータ格納先へのコネクションが
@@ -128,7 +128,7 @@ end box
 activate ogawayama
 ogawayama -> Statistics : メタデータ格納先に対して\nUPSERT/UPDATE/DELETEを\n発行するAPI実行
 activate Statistics
-Statistics -> DBSessionManager : startTransaction()
+Statistics -> DBSessionManager : start_transaction()
 activate DBSessionManager
 DBSessionManager -> metadata_storage : begin transaction
 activate metadata_storage
@@ -203,9 +203,9 @@ end box
 
 activate ogawayama
 ogawayama -> ogawayama : 1カラム単位の列統計 計算
-ogawayama -> Statistics : addOneColumnStatistic\n(table_id,\n ordinal_position,\n column_statistic)
+ogawayama -> Statistics : add_one_column_statistic\n(table_id,\n ordinal_position,\n column_statistic)
 activate Statistics
-Statistics -> DBSessionManager : startTransaction()
+Statistics -> DBSessionManager : start_transaction()
 activate DBSessionManager
 DBSessionManager -> metadata_storage : begin transaction
 activate metadata_storage
@@ -269,9 +269,9 @@ end box
 
 activate ogawayama
 ogawayama -> ogawayama : 1テーブル単位の行数を計算
-ogawayama -> Statistics : addTableStatistic\n(table_id, reltuples)
+ogawayama -> Statistics : add_table_statistic\n(table_id, reltuples)
 activate Statistics
-Statistics -> DBSessionManager : startTransaction()
+Statistics -> DBSessionManager : start_transaction()
 activate DBSessionManager
 DBSessionManager -> metadata_storage : begin transaction
 activate metadata_storage
@@ -332,9 +332,9 @@ end box
 
 activate ogawayama
 ogawayama -> ogawayama : 1テーブル単位の行数を計算
-ogawayama -> Statistics : addTableStatistic\n(table_name, reltuples)
+ogawayama -> Statistics : add_table_statistic\n(table_name, reltuples)
 activate Statistics
-Statistics -> DBSessionManager : startTransaction()
+Statistics -> DBSessionManager : start_transaction()
 activate DBSessionManager
 DBSessionManager -> metadata_storage : begin transaction
 activate metadata_storage
@@ -393,7 +393,7 @@ entity "PostgreSQL" as metadata_storage
 end box
 
 activate ogawayama
-ogawayama -> Statistics : getAllColumnTableStatistics\n(table_id, column_statistics)
+ogawayama -> Statistics : get_all_column_statistics\n(table_id, column_statistics)
 activate Statistics
 
 Statistics -> StatisticsDAO : select(table_id)
@@ -439,7 +439,7 @@ entity "PostgreSQL" as metadata_storage
 end box
 
 activate ogawayama
-ogawayama -> Statistics : getOneColumnStatistic\n(table_id,\n ordinal_position,\n column_statistic)
+ogawayama -> Statistics : get_one_column_statistic\n(table_id,\n ordinal_position,\n column_statistic)
 activate Statistics
 Statistics -> StatisticsDAO : select(table_id, ordinal_position)
 note right
@@ -487,7 +487,7 @@ entity "PostgreSQL" as metadata_storage
 end box
 
 activate ogawayama
-ogawayama -> Statistics : getTableStatistic\n(table_id, table_statistic)
+ogawayama -> Statistics : get_table_statistic\n(table_id, table_statistic)
 activate Statistics
 note right
 メタデータ格納先のTableメタデータテーブル【tsurugi_class】から、
@@ -532,7 +532,7 @@ entity "PostgreSQL" as metadata_storage
 end box
 
 activate ogawayama
-ogawayama -> Statistics : getTableStatistic\n(table_name, table_statistic)
+ogawayama -> Statistics : get_table_statistic\n(table_name, table_statistic)
 activate Statistics
 note right
 メタデータ格納先のTableメタデータテーブル【tsurugi_class】から、
@@ -579,9 +579,9 @@ entity "PostgreSQL" as metadata_storage
 end box
 
 activate ogawayama
-ogawayama -> Statistics : removeAllColumnStatistics\n(table_id)
+ogawayama -> Statistics : remove_all_column_statistics\n(table_id)
 activate Statistics
-Statistics -> DBSessionManager : startTransaction()
+Statistics -> DBSessionManager : start_transaction()
 activate DBSessionManager
 DBSessionManager -> metadata_storage : begin transaction
 activate metadata_storage
@@ -640,9 +640,9 @@ entity "PostgreSQL" as metadata_storage
 end box
 
 activate ogawayama
-ogawayama -> Statistics : removeOneColumnStatistic\n(table_id, ordinal_position)
+ogawayama -> Statistics : remove_one_column_statistic\n(table_id, ordinal_position)
 activate Statistics
-Statistics -> DBSessionManager : startTransaction()
+Statistics -> DBSessionManager : start_transaction()
 activate DBSessionManager
 DBSessionManager -> metadata_storage : begin transaction
 activate metadata_storage
