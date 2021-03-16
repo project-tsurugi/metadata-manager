@@ -198,8 +198,6 @@ package "manager/metadata-manager" {
     }
   
     class Config {
-      {field}-{static}std::string connection_string
-      {method}+{static}void init()
       {method}+{static}std::string get_connection_string()
     }
   }
