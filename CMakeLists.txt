@@ -20,22 +20,26 @@ project(manager
 )
 
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
+
+option(BUILD_TESTS "Build test programs" ON)
 option(FORCE_INSTALL_RPATH "force add lib dir of custom prefixes to INSTALL_RPATH" OFF)
 option(BUILD_DOCUMENTS "Build documents" ON)
+
+option(ENABLE_SANITIZER "enable sanitizer on debug build" ON)
+option(ENABLE_UB_SANITIZER "enable undefined behavior sanitizer on debug build" OFF)
+option(ENABLE_COVERAGE "enable coverage on debug build" OFF)
 
 find_package(Doxygen)
 find_package(Boost COMPONENTS system filesystem REQUIRED)
 
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
+include(CompileOptions)
 include(InstallOptions)
 
-set(CMAKE_CXX_COMPILER /usr/bin/g++)
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
-set(CMAKE_CXX_FLAGS "-O2")
-set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g -Wall -Wextra")
+if (BUILD_TESTS)
+    enable_testing()
+endif()
 
 set(package_name "manager")
 set(export_name "manager")
@@ -67,8 +71,42 @@ install(
     EXPORT_LINK_INTERFACE_LIBRARIES
 )
 
+function(GET_PG_CONFIG var)
+  set(_temp)
+
+  if(NOT ${var})
+    execute_process(
+      COMMAND ${PG_CONFIG} ${ARGN}
+      OUTPUT_VARIABLE _temp
+      OUTPUT_STRIP_TRAILING_WHITESPACE)
+  endif()
+
+  set(${var} ${_temp} PARENT_SCOPE)
+endfunction()
+
+FIND_PROGRAM(PG_CONFIG pg_config)
+
+IF (PG_CONFIG)
+   SET(PG_CONFIG_FOUND TRUE)
+ENDIF (PG_CONFIG)
+
+IF (PG_CONFIG_FOUND)
+    MESSAGE(STATUS "Found pg_config for PostgreSQL: ${PG_CONFIG}")
+    get_pg_config(PG_INCLUDEDIR --includedir)
+    get_pg_config(PG_LIBDIR --libdir)
+ELSE (NOT DEFINED PKG_CONFIG_FOUND)
+    MESSAGE(FATAL_ERROR "pg_config not found in path")
+    MESSAGE(FATAL_ERROR "cannot build")
+ENDIF (PG_CONFIG_FOUND)
+
+add_custom_target(format
+  COMMAND           git ls-files '*.cpp' '*.h' | xargs clang-format -i --style=file -verbose
+  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+)
+
 add_subdirectory(message-broker)
 add_subdirectory(metadata-manager)
+add_subdirectory(third_party/googletest)
 
 if (BUILD_DOCUMENTS)
     add_subdirectory(doxygen)
