@@ -11,9 +11,10 @@ CREATE TABLE tsurugi_catalog.tsurugi_class
     namespace text,
     primaryKey json,
     reltuples float4,
-    PRIMARY KEY(id),
-    UNIQUE(name)
+    PRIMARY KEY(id)
 );
+
+CREATE INDEX ON tsurugi_catalog.tsurugi_class ( name );
 
 CREATE TABLE tsurugi_catalog.tsurugi_type
 (
