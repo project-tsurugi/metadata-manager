@@ -12,25 +12,32 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-add_library(metadata
-    SHARED
-        metadata.cpp object_id.cpp tables.cpp datatypes.cpp table_metadata.cpp datatype_metadata.cpp
+project(metadata)
+
+file(GLOB_RECURSE SOURCES "*.cpp")
+
+add_library(${PROJECT_NAME}
+    SHARED ${SOURCES}
 )
 
-target_include_directories(metadata
+target_include_directories(${PROJECT_NAME}
     PRIVATE ${PROJECT_SOURCE_DIR}/include/manager/metadata
+    PRIVATE ${PG_INCLUDEDIR}
 )
 
-set_target_properties(metadata
+set_target_properties(${PROJECT_NAME}
     PROPERTIES
         LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/output"
         LIBRARY_OUTPUT_NAME "manager-metadata"
 )
 
-target_link_libraries(metadata
-    PUBLIC metadata-interface
+set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -L${PG_LIBDIR}")
+
+target_link_libraries(${PROJECT_NAME}
+    PUBLIC ${PROJECT_NAME}-interface
     ${Boost_FILESYSTEM_LIBRARY}
     ${Boost_SYSTEM_LIBRARY}
+    pq
 )
 
-install_custom(metadata ${export_name})
+install_custom(${PROJECT_NAME} ${export_name})
