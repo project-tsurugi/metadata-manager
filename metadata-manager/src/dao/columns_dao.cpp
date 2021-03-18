@@ -54,46 +54,6 @@ struct ColumnMetadataTable {
 };
 
 /**
- *  @brief  Constructor
- *  @param  (connection)  [in]  a connection to the metadata repository.
- *  @return none.
- */
-ColumnsDAO::ColumnsDAO(ConnectionSPtr connection)
-    : GenericDAO(connection, TableName::COLUMNS) {
-    // Creates a list of column names
-    // in order to get values based on
-    // one column included in this list
-    // from metadata repository.
-    //
-    // For example,
-    // If column name "tableId" is added to this list,
-    // later defines a prepared statement
-    // "select * from where tableId = ?".
-    column_names.emplace_back(Tables::Column::TABLE_ID);
-
-    // Creates a list of unique name
-    // for the new prepared statement for each column names.
-    for (auto column : column_names) {
-        // Creates unique name
-        // for the new prepared statement.
-        std::string statement_name;
-        statement_name.append(
-            std::to_string(StatementName::DAO_SELECT_EQUAL_TO));
-        statement_name.append("-");
-        statement_name.append(std::to_string(TableName::COLUMNS));
-        statement_name.append("-");
-        statement_name.append(column);
-
-        // Addes this list to unique name
-        // for the new prepared statement
-        //
-        // key : column name
-        // value : unique name for the new prepared statement
-        statement_names_select_equal_to.emplace(column, statement_name);
-    }
-}
-
-/**
  *  @brief  Defines all prepared statements.
  *  @param  none.
  *  @return ErrorCode::OK if success, otherwise an error code.
@@ -103,6 +63,14 @@ ErrorCode ColumnsDAO::prepare() const {
         StatementName::COLUMNS_DAO_INSERT_ONE_COLUMN_METADATA,
         DialectStrategy::get_instance()
             ->columns_dao_insert_one_column_metadata());
+    if (error != ErrorCode::OK) {
+        return error;
+    }
+
+    error = GenericDAO::prepare(
+        StatementName::COLUMNS_DAO_SELECT_ALL_COLUMN_METADATA_BY_TABLE_ID,
+        DialectStrategy::get_instance()
+            ->columns_dao_select_all_column_metadata_by_table_id());
     if (error != ErrorCode::OK) {
         return error;
     }
@@ -334,12 +302,12 @@ ErrorCode ColumnsDAO::get_ptree_from_p_gresult(PGresult *&res,
 /**
  *  @brief  Executes a SELECT statement to get column metadata rows
  *  from the column metadata table,
- *  where the given key equals to the given value.
+ *  where the given key equals the given value.
  *  @param  (object_key)          [in]  key. column name of a column metadata
  * table.
  *  @param  (object_value)        [in]  value to be filtered.
  *  @param  (object)              [out] column metadatas to get,
- *  where the given key equals to the given value.
+ *  where the given key equals the given value.
  *  @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode ColumnsDAO::select_column_metadata(
@@ -349,14 +317,10 @@ ErrorCode ColumnsDAO::select_column_metadata(
 
     param_values.emplace_back(object_value.c_str());
 
-    std::string statement_name_found =
-        statement_names_select_equal_to.at(object_key);
-    if (statement_name_found.empty()) {
-        return ErrorCode::INTERNAL_ERROR;
-    }
-
     PGresult *res;
-    ErrorCode error = exec_prepared(statement_name_found, param_values, res);
+    ErrorCode error = exec_prepared(
+        StatementName::COLUMNS_DAO_SELECT_ALL_COLUMN_METADATA_BY_TABLE_ID,
+        param_values, res);
 
     if (error == ErrorCode::OK) {
         int nrows = PQntuples(res);

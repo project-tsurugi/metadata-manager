@@ -17,22 +17,11 @@
 #define MANAGER_OBJECT_ID
 
 #include <string>
-#include <sys/stat.h>
 
 #include "manager/metadata/error_code.h"
 #include "manager/metadata/metadata.h"
 
 namespace manager::metadata {
-
-class ObjectId {
-    public:
-        static ErrorCode init();
-        static ObjectIdType current(const std::string table_name);
-        static ObjectIdType generate(const std::string table_name);
-
-    private:
-        static std::string TABLE_NAME;
-};
 
 } // namespace manager::metadata
 

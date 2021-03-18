@@ -403,6 +403,9 @@ ErrorCode TablesDAO::get_ptree_from_p_gresult(
 
     ptree primary_keys;
     if (s_primary_keys.empty()) {
+        // NOTICE:
+        // MUST add empty ptree.
+        // ogawayama-server read key Tables::PRIMARY_KEY_NODE.
         table.add_child(Tables::PRIMARY_KEY_NODE, primary_keys);
     } else {
         std::stringstream ss;
@@ -511,12 +514,12 @@ ErrorCode TablesDAO::insert_table_metadata(boost::property_tree::ptree &table,
 /**
  *  @brief  Executes a SELECT statement to get table metadata rows
  *  from the table metadata table,
- *  where the given key equals to the given value.
+ *  where the given key equals the given value.
  *  @param  (object_key)          [in]  key. column name of a table metadata
  * table.
  *  @param  (object_value)        [in]  value to be filtered.
  *  @param  (object)              [out] table metadatas to get,
- *  where the given key equals to the given value.
+ *  where the given key equals the given value.
  *  @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode TablesDAO::select_table_metadata(const std::string &object_key,

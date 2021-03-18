@@ -51,6 +51,7 @@ class PostgreSQLDialect : public Dialect {
 
     // ColumnsDAO
     std::string columns_dao_insert_one_column_metadata() override;
+    std::string columns_dao_select_all_column_metadata_by_table_id() override;
 
     // DAO
     std::string dao_select_equal_to(const std::string &table_name,

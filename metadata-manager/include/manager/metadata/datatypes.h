@@ -15,10 +15,11 @@
  */
 #pragma once
 
-#include <string>
-#include <string_view>
 #include <boost/property_tree/ptree.hpp>
+#include <memory>
+#include <string_view>
 
+#include "manager/metadata/dao/datatypes_dao.h"
 #include "manager/metadata/error_code.h"
 #include "manager/metadata/metadata.h"
 
@@ -49,28 +50,29 @@ namespace manager::metadata {
             VARCHAR = 14 //!< @brief VARCHAR.
         };
 
-        static ErrorCode init();
+        ErrorCode init() override;
 
         /**
-         *  @brief  Load metadata from metadata-table.
-         *  @param  (database)   [in]  database name
-         *  @param  (pt)         [out] property_tree object to populating metadata.
-         *  @param  (generation) [in]  metadata generation to load. load latest generation if NOT provided.
+         *  @brief  Get metadata-object.
+         *  @param  (object_name)   [in]  metadata-object name. (Value of "name"
+         * key.)
+         *  @param  (object)        [out] metadata-object with the specified
+         * name.
          *  @return ErrorCode::OK if success, otherwise an error code.
          */
-        static ErrorCode load(
-            std::string_view database, boost::property_tree::ptree& pt,
-            const GenerationType generation = Metadata::LATEST_VERSION);
+        ErrorCode get(std::string_view object_name,
+                              boost::property_tree::ptree& object) override;
 
         /**
-         *  @brief  Save the metadta to metadta-table.
-         *  @param  (database)   [in]  database name.
-         *  @param  (pt)         [in]  property_tree object that stores metadata to be saved.
-         *  @param  (generation) [out] the generation of saved metadata.
+         *  @brief  Get metadata-object.
+         *  @param  (key)           [in]  metadata-object key.
+         *  @param  (value)         [in]  metadata-object value.
+         *  @param  (object)        [out] metadata-object with the specified
+         * name.
+         *  @return ErrorCode::OK if success, otherwise an error code.
          */
-        static ErrorCode save(
-            std::string_view database, boost::property_tree::ptree& pt,
-            GenerationType* generation = nullptr);
+        ErrorCode get(const char* object_key, std::string_view object_value,
+                      boost::property_tree::ptree& object) override;
 
         /**
          *  @brief  Constructor
@@ -78,25 +80,13 @@ namespace manager::metadata {
          *  @return none.
          */
         DataTypes(std::string_view database, std::string_view component = "visitor")
-            : Metadata(database, component) { init(); }
+            : Metadata(database, component) {}
 
         DataTypes(const DataTypes&) = delete;
         DataTypes& operator=(const DataTypes&) = delete;
 
-    protected:
-        // functions for template-method
-        std::string_view table_name() const { return TABLE_NAME; }
-        const std::string root_node() const { return DATATYPES_NODE; }
-        uint64_t generate_object_id() const {
-            static ObjectIdType datatype_id = 0;
-            return ++datatype_id;
-        }
-        ErrorCode fill_parameters( __attribute__((unused)) boost::property_tree::ptree& object) {
-            return ErrorCode::OK;
-        }
-
     private:
-        static constexpr const char* const TABLE_NAME = "datatypes";
+        std::shared_ptr<manager::metadata::db::DataTypesDAO> ddao;
 };
 
 } // namespace manager::metadata

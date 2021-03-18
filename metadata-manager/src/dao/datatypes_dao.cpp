@@ -172,12 +172,12 @@ ErrorCode DataTypesDAO::get_ptree_from_p_gresult(
 /**
  *  @brief  Executes a SELECT statement to get one data type metadata
  *  from the data types metadata table,,
- *  where the given key equals to the given value.
+ *  where the given key equals the given value.
  *  @param  (object_key)          [in]  key.
  *  column name of the data types metadata table.
  *  @param  (object_value)        [in]  value to be filtered.
  *  @param  (object)              [out] one data type metadata to get,
- *  where the given key equals to the given value.
+ *  where the given key equals the given value.
  *  @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode DataTypesDAO::select_one_data_type_metadata(

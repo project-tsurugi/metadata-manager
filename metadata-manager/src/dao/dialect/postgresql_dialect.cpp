@@ -230,12 +230,28 @@ std::string PostgreSQLDialect::columns_dao_insert_one_column_metadata() {
 }
 
 /**
- *  @brief  Returnes a SELECT stetement for one column metadata.
+ *  @brief  Returnes a SELECT stetement to get all column metadata
+ *  from column metadata table,
+ *  based on table id.
+ *  @return a SELECT stetement to get all column metadata,
+ *  based on table id.
+ */
+std::string
+PostgreSQLDialect::columns_dao_select_all_column_metadata_by_table_id() {
+    std::string query = "select * from " + std::string(SCHEMA_NAME) + "." +
+                        Dialect::TableName::COLUMN_METADATA_TABLE + " where " +
+                        Tables::Column::TABLE_ID + " = $1 order by " +
+                        Tables::Column::ORDINAL_POSITION;
+    return query;
+}
+
+/**
+ *  @brief  Returnes a SELECT stetement to get metadata:
+ *  select * from table_name where column_name = $1.
  *  @param  (table_name)   [in]  metadata-table name.
  *  @param  (column_name)  [in]  column name of metadata-table.
- *  @return a SELECT stetement to get metadata from a table
- *  with the name table_name
- *  based on column with the name column_name.
+ *  @return a SELECT stetement:
+ *  select * from table_name where column_name = $1.
  */
 std::string PostgreSQLDialect::dao_select_equal_to(
     const std::string &table_name, const std::string &column_name) {

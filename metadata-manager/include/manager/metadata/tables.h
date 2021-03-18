@@ -15,114 +15,146 @@
  */
 #pragma once
 
-#include <string>
-#include <string_view>
 #include <boost/property_tree/ptree.hpp>
+#include <memory>
+#include <string_view>
 
+#include "manager/metadata/dao/columns_dao.h"
+#include "manager/metadata/dao/tables_dao.h"
 #include "manager/metadata/error_code.h"
 #include "manager/metadata/metadata.h"
 
 namespace manager::metadata {
 class Tables : public Metadata {
-    public:
-        // root node.
-        static constexpr const char* const TABLES_NODE = "tables";
+   public:
+    // root node.
+    static constexpr const char* const TABLES_NODE = "tables";
 
-        // table metadata-object.
-        // ID is defined in base class.
-        // NAME is defined in base class.
-        static constexpr const char* const NAMESPACE         = "namespace";
-        static constexpr const char* const COLUMNS_NODE      = "columns";
-        static constexpr const char* const PRIMARY_KEY_NODE  = "primaryKey";
+    // table metadata-object.
+    // ID is defined in base class.
+    // NAME is defined in base class.
+    static constexpr const char* const NAMESPACE = "namespace";
+    static constexpr const char* const COLUMNS_NODE = "columns";
+    static constexpr const char* const PRIMARY_KEY_NODE = "primaryKey";
+    static constexpr const char* const RELTUPLES = "reltuples";
 
-        // column metadata-object.
-        struct Column {
-            static constexpr const char* const ID                = "id";
-            static constexpr const char* const TABLE_ID          = "tableId";
-            static constexpr const char* const NAME              = "name";
-            static constexpr const char* const ORDINAL_POSITION  = "ordinalPosition";
-            static constexpr const char* const DATA_TYPE_ID      = "dataTypeId";
-            static constexpr const char* const DATA_LENGTH       = "dataLength";
-            static constexpr const char* const VARYING           = "varying";
-            static constexpr const char* const NULLABLE          = "nullable";
-            static constexpr const char* const DEFAULT           = "default";
-            static constexpr const char* const DIRECTION         = "direction";
+    // column metadata-object.
+    struct Column {
+        static constexpr const char* const ID = "id";
+        static constexpr const char* const TABLE_ID = "tableId";
+        static constexpr const char* const NAME = "name";
+        static constexpr const char* const ORDINAL_POSITION = "ordinalPosition";
+        static constexpr const char* const DATA_TYPE_ID = "dataTypeId";
+        static constexpr const char* const DATA_LENGTH = "dataLength";
+        static constexpr const char* const VARYING = "varying";
+        static constexpr const char* const NULLABLE = "nullable";
+        static constexpr const char* const DEFAULT = "defaultExpr";
+        static constexpr const char* const DIRECTION = "direction";
+
+        /**
+         * @brief represents sort direction of elements.
+         */
+        enum class Direction {
 
             /**
-             * @brief represents sort direction of elements.
+             * @brief default order.
              */
-            enum class Direction
-            {
+            DEFAULT = 0,
 
-                /**
-                 * @brief default order.
-                 */
-                DEFAULT = 0,
+            /**
+             * @brief ascendant order.
+             */
+            ASCENDANT,
 
-                /**
-                 * @brief ascendant order.
-                 */
-                ASCENDANT,
-
-                /**
-                 * @brief descendant order.
-                 */
-                DESCENDANT,
-            };
+            /**
+             * @brief descendant order.
+             */
+            DESCENDANT,
         };
+    };
 
-        static ErrorCode init();
+    ErrorCode init() override;
 
-        /**
-         *  @brief  Load metadata from metadata-table.
-         *  @param  (database)   [in]  database name
-         *  @param  (pt)         [out] property_tree object to populating metadata.
-         *  @param  (generation) [in]  metadata generation to load. load latest generation if NOT provided.
-         *  @return ErrorCode::OK if success, otherwise an error code.
-         */
-        static ErrorCode load(
-            std::string_view database, boost::property_tree::ptree& pt,
-            const GenerationType generation = LATEST_VERSION);
+    /**
+     *  @brief  Add metadata-object to metadata-table.
+     *  @param  (object) [in]  metadata-object to add.
+     *  @return ErrorCode::OK if success, otherwise an error code.
+     */
+    ErrorCode add(boost::property_tree::ptree& object) override;
 
-        /**
-         *  @brief  Add metadata-object to metadata-table.
-         *  @param  (object)      [in]  metadata-object to add.
-         *  @param  (object_id)   [out] ID of the added metadata-object.
-         *  @return ErrorCode::OK if success, otherwise an error code.
-         */
-        ErrorCode add(boost::property_tree::ptree& object, ObjectIdType* object_id) override;
+    /**
+     *  @brief  Add metadata-object to metadata-table.
+     *  @param  (object)      [in]  metadata-object to add.
+     *  @param  (object_id)   [out] ID of the added metadata-object.
+     *  @return ErrorCode::OK if success, otherwise an error code.
+     */
+    ErrorCode add(boost::property_tree::ptree& object,
+                  ObjectIdType* object_id) override;
 
-        /**
-         *  @brief  Save the metadta to metadta-table.
-         *  @param  (database)   [in]  database name.
-         *  @param  (pt)         [in]  property_tree object that stores metadata to be saved.
-         *  @param  (generation) [out] the generation of saved metadata.
-         *  @return ErrorCode::OK if success, otherwise an error code.
-         */
-        static ErrorCode save(
-            std::string_view database, boost::property_tree::ptree& pt,
-            GenerationType* generation = nullptr);
+    /**
+     *  @brief  Get metadata-object.
+     *  @param  (object_id) [in]  metadata-object ID.
+     *  @param  (object)    [out] metadata-object with the specified ID.
+     *  @return ErrorCode::OK if success, otherwise an error code.
+     */
+    ErrorCode get(const ObjectIdType object_id,
+                  boost::property_tree::ptree& object) override;
 
-        /**
-         *  @brief  Constructor
-         *  @param  (database) [in]  database name.
-         *  @return none.
-         */
-        Tables(std::string_view database, std::string_view component = "visitor")
-            : Metadata(database, component) { init(); }
+    /**
+     *  @brief  Get metadata-object.
+     *  @param  (object_name)   [in]  metadata-object name. (Value of "name"
+     * key.)
+     *  @param  (object)        [out] metadata-object with the specified name.
+     *  @return ErrorCode::OK if success, otherwise an error code.
+     */
+    ErrorCode get(std::string_view object_name,
+                  boost::property_tree::ptree& object) override;
 
-        Tables(const Tables&) = delete;
-        Tables& operator=(const Tables&) = delete;
+    /**
+     *  @brief  Remove all metadata-object based on the given table id
+     *  (table metadata, column metadata and column statistics)
+     *  from metadata-table (the table metadata table,
+     *  the column metadata table and the column statistics table).
+     *  @param (table_id) [in] table id.
+     *  @return ErrorCode::OK if success, otherwise an error code.
+     */
+    ErrorCode remove(const ObjectIdType object_id) override;
 
-    protected:
-        // functions for template-method
-        std::string_view table_name() const { return TABLE_NAME; }
-        const std::string root_node() const { return TABLES_NODE; }
-        ObjectIdType generate_object_id() const;
-        ErrorCode fill_parameters(boost::property_tree::ptree& object);
+    /**
+     *  @brief  Remove all metadata-object based on the given table name
+     *  (table metadata, column metadata and column statistics)
+     *  from metadata-table (the table metadata table,
+     *  the column metadata table and the column statistics table).
+     *  @param (table_id) [in] table id.
+     *  @return ErrorCode::OK if success, otherwise an error code.
+     */
+    ErrorCode remove(const char* object_name, ObjectIdType* object_id) override;
 
-    private:
-        static constexpr const char* const TABLE_NAME = "tables";
+    /**
+     *  @brief  Constructor
+     *  @param  (database) [in]  database name.
+     *  @return none.
+     */
+    Tables(std::string_view database, std::string_view component = "visitor")
+        : Metadata(database, component) {}
+
+    Tables(const Tables&) = delete;
+    Tables& operator=(const Tables&) = delete;
+
+   private:
+    std::shared_ptr<manager::metadata::db::TablesDAO> tdao;
+    std::shared_ptr<manager::metadata::db::ColumnsDAO> cdao;
+
+    /**
+     *  @brief  Get column metadata-object based on the given table id.
+     *  @param  (table_id) [in]  table id.
+     *  @param  (tables)   [out] table metadata-object with the specified table
+     * id.
+     *  @return ErrorCode::OK if success, otherwise an error code.
+     */
+    ErrorCode get_all_column_metadatas(const std::string& table_id,
+                                       boost::property_tree::ptree& tables);
+
 };  // class Tables
 
-} // namespace manager::metadata
+}  // namespace manager::metadata

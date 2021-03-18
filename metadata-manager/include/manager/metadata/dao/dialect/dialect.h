@@ -63,6 +63,8 @@ class Dialect {
 
     // ColumnsDAO
     virtual std::string columns_dao_insert_one_column_metadata() = 0;
+    virtual std::string
+    columns_dao_select_all_column_metadata_by_table_id() = 0;
 
     // DAO
     virtual std::string dao_select_equal_to(const std::string &table_name,
