@@ -1,0 +1,343 @@
+/*
+ * Copyright 2020 tsurugi project.
+ *
+ * Licensed under the Apache License, version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+extern "C" {
+#include <libpq-fe.h>
+}
+
+#include <gtest/gtest.h>
+#include <cmath>
+#include <iostream>
+#include <limits>
+#include <tuple>
+#include <vector>
+
+#include "manager/metadata/error_code.h"
+#include "manager/metadata/metadata.h"
+
+#include "manager/metadata/dao/common/config.h"
+#include "manager/metadata/dao/common/dbc_utils.h"
+
+#include "test/utility/ut_utils.h"
+
+namespace manager::metadata::testing {
+
+using namespace manager::metadata::db;
+
+typedef std::tuple<const char*, float> TupleConvertFloatToString;
+class DaoTestCommonStrToFloat
+    : public ::testing::TestWithParam<TupleConvertFloatToString> {};
+
+typedef std::tuple<const char*, uint64_t> TupleConvertStrToUint64_t;
+class DaoTestCommonStrToUint64_t
+    : public ::testing::TestWithParam<TupleConvertStrToUint64_t> {};
+
+typedef std::tuple<const char*, ObjectIdType> TupleConvertStrToInt64_t;
+class DaoTestCommonStrToInt64_t
+    : public ::testing::TestWithParam<TupleConvertStrToInt64_t> {};
+
+class DaoTestCommonStrToFloatUnhappy
+    : public ::testing::TestWithParam<const char*> {};
+class DaoTestCommonStrToUint64_tUnhappy
+    : public ::testing::TestWithParam<const char*> {};
+class DaoTestCommonStrToInt64_tUnhappy
+    : public ::testing::TestWithParam<const char*> {};
+
+class DaoTestCommonIfConnectionOpened : public ::testing::Test {
+    virtual void SetUp() { UTUtils::skip_if_connection_not_opened(); }
+};
+
+class DaoTestCommonIfConnectionNotOpened : public ::testing::Test {
+    virtual void SetUp() { UTUtils::skip_if_connection_opened(); }
+};
+
+class DaoTestCommon : public ::testing::Test {};
+
+INSTANTIATE_TEST_CASE_P(
+    ParamtererizedTest, DaoTestCommonStrToFloat,
+    ::testing::Values(
+        std::make_tuple("0", 0), std::make_tuple("1", 1),
+        std::make_tuple("00", 0), std::make_tuple("01", 1),
+        std::make_tuple("0.", 0), std::make_tuple("1.", 1),
+        std::make_tuple("0.0", 0), std::make_tuple("1.0", 1),
+        std::make_tuple("0.5", .5), std::make_tuple(".5", .5),
+        std::make_tuple(".25", .25), std::make_tuple(".125", .125),
+        std::make_tuple(".0625", .0625), std::make_tuple(".4375", .4375),
+        std::make_tuple("-0", 0), std::make_tuple("-1", -1),
+        std::make_tuple("-00", 0), std::make_tuple("-01", -1),
+        std::make_tuple("-0.", 0), std::make_tuple("-1.", -1),
+        std::make_tuple("-0.0", 0), std::make_tuple("-1.0", -1),
+        std::make_tuple("-0.5", -.5), std::make_tuple("-.5", -.5),
+        std::make_tuple("-.25", -.25), std::make_tuple("-.125", -.125),
+        std::make_tuple("-.0625", -.0625), std::make_tuple("-.4375", -.4375),
+        std::make_tuple("3.1415927410125732421875", 3.1415927410125732421875),
+        std::make_tuple("0000000000000000000000000000000000000."
+                        "0000000000000000000000000000000000000",
+                        0),
+        std::make_tuple("0000000000000000000000000000000000001."
+                        "0000000000000000000000000000000000000",
+                        1),
+        std::make_tuple("3.4028235e+38", FLT_MAX),
+        std::make_tuple("inf", std::numeric_limits<float>::infinity()),
+        std::make_tuple("INF", std::numeric_limits<float>::infinity()),
+        std::make_tuple("infinity", std::numeric_limits<float>::infinity()),
+        std::make_tuple("INFINITY", std::numeric_limits<float>::infinity()),
+        std::make_tuple("-inf", -std::numeric_limits<float>::infinity()),
+        std::make_tuple("-INF", -std::numeric_limits<float>::infinity()),
+        std::make_tuple("-infinity", -std::numeric_limits<float>::infinity()),
+        std::make_tuple("-INFINITY", -std::numeric_limits<float>::infinity()),
+        std::make_tuple("nan", std::numeric_limits<float>::quiet_NaN()),
+        std::make_tuple("NaN", std::numeric_limits<float>::quiet_NaN()),
+        std::make_tuple("NAN", std::numeric_limits<float>::quiet_NaN())));
+
+INSTANTIATE_TEST_CASE_P(
+    ParamtererizedTest, DaoTestCommonStrToUint64_t,
+    ::testing::Values(
+        std::make_tuple("0", 0), std::make_tuple("+0", 0),
+        std::make_tuple("-0", 0), std::make_tuple("00", 0),
+        std::make_tuple("+00", 0), std::make_tuple("-00", 0),
+        std::make_tuple("1", 1), std::make_tuple("+1", 1),
+        std::make_tuple("-1", -1), std::make_tuple("01", 1),
+        std::make_tuple("+01", 1), std::make_tuple("-01", -1),
+        std::make_tuple("-01", -1), std::make_tuple("0000000000000000000", 0),
+        std::make_tuple("+0000000000000000000", 0),
+        std::make_tuple("-0000000000000000000", 0),
+        std::make_tuple("0000000000000000001", 1),
+        std::make_tuple("+0000000000000000001", 1),
+        std::make_tuple("-0000000000000000001", -1),
+        std::make_tuple("18446744073709551615",
+                        std::numeric_limits<uint64_t>::max()),
+        std::make_tuple("+18446744073709551615",
+                        std::numeric_limits<uint64_t>::max()),
+        std::make_tuple("00000000000000000000000000000000000000", 0),
+        std::make_tuple("+00000000000000000000000000000000000000", 0),
+        std::make_tuple("-00000000000000000000000000000000000000", 0),
+        std::make_tuple("00000000000000000000000000000000000001", 1),
+        std::make_tuple("+00000000000000000000000000000000000001", 1),
+        std::make_tuple("-00000000000000000000000000000000000001", -1),
+        std::make_tuple("000000000000000000018446744073709551615",
+                        std::numeric_limits<uint64_t>::max()),
+        std::make_tuple("+000000000000000000018446744073709551615",
+                        std::numeric_limits<uint64_t>::max())));
+
+INSTANTIATE_TEST_CASE_P(
+    ParamtererizedTest, DaoTestCommonStrToInt64_t,
+    ::testing::Values(
+        std::make_tuple("0", 0), std::make_tuple("+0", 0),
+        std::make_tuple("-0", 0), std::make_tuple("00", 0),
+        std::make_tuple("+00", 0), std::make_tuple("-00", 0),
+        std::make_tuple("1", 1), std::make_tuple("+1", 1),
+        std::make_tuple("-1", -1), std::make_tuple("01", 1),
+        std::make_tuple("+01", 1), std::make_tuple("-01", -1),
+        std::make_tuple("-01", -1), std::make_tuple("0000000000000000000", 0),
+        std::make_tuple("+0000000000000000000", 0),
+        std::make_tuple("-0000000000000000000", 0),
+        std::make_tuple("0000000000000000001", 1),
+        std::make_tuple("+0000000000000000001", 1),
+        std::make_tuple("-0000000000000000001", -1),
+        std::make_tuple("9223372036854775807",
+                        std::numeric_limits<ObjectIdType>::max()),
+        std::make_tuple("+9223372036854775807",
+                        std::numeric_limits<ObjectIdType>::max()),
+        std::make_tuple("-9223372036854775808",
+                        std::numeric_limits<ObjectIdType>::min()),
+        std::make_tuple("00000000000000000000000000000000000000", 0),
+        std::make_tuple("+00000000000000000000000000000000000000", 0),
+        std::make_tuple("-00000000000000000000000000000000000000", 0),
+        std::make_tuple("00000000000000000000000000000000000001", 1),
+        std::make_tuple("+00000000000000000000000000000000000001", 1),
+        std::make_tuple("-00000000000000000000000000000000000001", -1),
+        std::make_tuple("00000000000000000009223372036854775807",
+                        std::numeric_limits<ObjectIdType>::max()),
+        std::make_tuple("+00000000000000000009223372036854775807",
+                        std::numeric_limits<ObjectIdType>::max()),
+        std::make_tuple("-00000000000000000009223372036854775808",
+                        std::numeric_limits<ObjectIdType>::min())));
+
+INSTANTIATE_TEST_CASE_P(
+    ParamtererizedTest, DaoTestCommonStrToFloatUnhappy,
+    ::testing::Values("", " ", " 0", " 1", " +0", " +1", " -0", " -1", "+",
+                      "++", "+-", "-", "--", "-+", "++0", "+-0", "--0", "-+0",
+                      "+0+", "+0-", "-0-", "-0+", "0+", "0-", "0 ", "0x", "1 ",
+                      "1e10000", "-1e10000", "1e-10000", "-1e-10000"));
+
+INSTANTIATE_TEST_SUITE_P(
+    ParamtererizedTest, DaoTestCommonStrToUint64_tUnhappy,
+    ::testing::Values("", " ", " 0", " 1", " +0", " +1", " -0", " -1", "+",
+                      "++", "+-", "-", "--", "-+", "++0", "+-0", "--0", "-+0",
+                      "+0+", "+0-", "-0-", "-0+", "0+", "0-", "0 ", "0x", "1 ",
+                      "18446744073709551616", "99999999999999999999",
+                      "99999999999999999999999999999999999999"));
+
+INSTANTIATE_TEST_SUITE_P(
+    ParamtererizedTest, DaoTestCommonStrToInt64_tUnhappy,
+    ::testing::Values("", " ", " 0", " 1", " +0", " +1", " -0", " -1", "+",
+                      "++", "+-", "-", "--", "-+", "++0", "+-0", "--0", "-+0",
+                      "+0+", "+0-", "-0-", "-0+", "0+", "0-", "0 ", "0x", "1 ",
+                      "9223372036854775808", "+9223372036854775808",
+                      "-9223372036854775809", "9999999999999999999",
+                      "+9999999999999999999", "-9999999999999999999",
+                      "99999999999999999999999999999999999999",
+                      "+99999999999999999999999999999999999999",
+                      "-99999999999999999999999999999999999999"));
+
+TEST_F(DaoTestCommonIfConnectionOpened, is_open) {
+    ConnectionSPtr no_connection;
+    EXPECT_EQ(false, DbcUtils::is_open(no_connection));
+
+    ConnectionSPtr connection = DbcUtils::make_connection_sptr(
+        PQconnectdb(Config::get_connection_string().c_str()));
+    EXPECT_EQ(true, DbcUtils::is_open(connection));
+}
+
+TEST_F(DaoTestCommon, get_connection_string) {
+    const char* tmp_cs = std::getenv("TSURUGI_CONNECTION_STRING");
+
+    if (tmp_cs == NULL) {
+        EXPECT_EQ("dbname=tsurugi", Config::get_connection_string());
+        UTUtils::print("Connection Strings:", Config::get_connection_string());
+    } else {
+        EXPECT_EQ(tmp_cs, Config::get_connection_string());
+        UTUtils::print("Connection Strings:", Config::get_connection_string());
+    }
+}
+
+TEST_F(DaoTestCommonIfConnectionNotOpened, is_open) {
+    ConnectionSPtr no_connection;
+    EXPECT_EQ(false, DbcUtils::is_open(no_connection));
+
+    ConnectionSPtr connection = DbcUtils::make_connection_sptr(
+        PQconnectdb(Config::get_connection_string().c_str()));
+    EXPECT_EQ(false, DbcUtils::is_open(connection));
+}
+
+TEST_F(DaoTestCommon, convert_boolean_expression) {
+    EXPECT_EQ("", DbcUtils::convert_boolean_expression(NULL));
+    EXPECT_EQ("true", DbcUtils::convert_boolean_expression("t"));
+    EXPECT_EQ("false", DbcUtils::convert_boolean_expression("f"));
+    EXPECT_EQ("", DbcUtils::convert_boolean_expression(""));
+}
+
+TEST_P(DaoTestCommonStrToFloat, str_to_float) {
+    auto params = GetParam();
+
+    const char* input = std::get<0>(params);
+    float actual = -10;
+
+    ErrorCode error = DbcUtils::str_to_floating_point(input, actual);
+    EXPECT_EQ(ErrorCode::OK, error);
+
+    if (std::isnan(actual)) {
+        EXPECT_TRUE(std::isnan(actual));
+    } else {
+        float expected = std::get<1>(params);
+        EXPECT_FLOAT_EQ(expected, actual);
+    }
+}
+
+TEST_P(DaoTestCommonStrToFloatUnhappy, str_to_float) {
+    const char* input = GetParam();
+
+    float actual = -10;
+    ErrorCode error = DbcUtils::str_to_floating_point(input, actual);
+
+    EXPECT_EQ(ErrorCode::INTERNAL_ERROR, error);
+    EXPECT_EQ(-10, actual);
+}
+
+TEST_F(DaoTestCommonStrToFloatUnhappy, null_to_float) {
+    float actual = -10;
+    ErrorCode error = DbcUtils::str_to_floating_point(NULL, actual);
+
+    EXPECT_EQ(ErrorCode::INTERNAL_ERROR, error);
+    EXPECT_EQ(-10, actual);
+}
+
+TEST_P(DaoTestCommonStrToUint64_t, str_to_integral) {
+    auto params = GetParam();
+    const char* input = std::get<0>(params);
+
+    uint64_t actual = -10;
+    ErrorCode error = DbcUtils::str_to_integral(input, actual);
+
+    EXPECT_EQ(ErrorCode::OK, error);
+
+    uint64_t expected = std::get<1>(params);
+    EXPECT_EQ(expected, actual);
+}
+
+TEST_P(DaoTestCommonStrToUint64_tUnhappy, str_to_integral) {
+    const char* input = GetParam();
+
+    uint64_t actual = -10;
+    ErrorCode error = DbcUtils::str_to_integral(input, actual);
+
+    EXPECT_EQ(ErrorCode::INTERNAL_ERROR, error);
+    EXPECT_EQ(-10, actual);
+}
+
+TEST_F(DaoTestCommonStrToUint64_tUnhappy, null_to_integral) {
+    uint64_t actual = -10;
+    ErrorCode error = DbcUtils::str_to_integral(NULL, actual);
+
+    EXPECT_EQ(ErrorCode::INTERNAL_ERROR, error);
+    EXPECT_EQ(-10, actual);
+}
+
+TEST_P(DaoTestCommonStrToInt64_t, str_to_integral) {
+    auto params = GetParam();
+    const char* input = std::get<0>(params);
+
+    ObjectIdType actual = -10;
+    ErrorCode error = DbcUtils::str_to_integral(input, actual);
+
+    EXPECT_EQ(ErrorCode::OK, error);
+
+    ObjectIdType expected = std::get<1>(params);
+    EXPECT_EQ(expected, actual);
+}
+
+TEST_P(DaoTestCommonStrToInt64_tUnhappy, str_to_integral) {
+    const char* input = GetParam();
+
+    ObjectIdType actual = -10;
+    ErrorCode error = DbcUtils::str_to_integral(input, actual);
+
+    EXPECT_EQ(ErrorCode::INTERNAL_ERROR, error);
+    EXPECT_EQ(-10, actual);
+}
+
+TEST_F(DaoTestCommonStrToInt64_tUnhappy, null_to_integral) {
+    ObjectIdType actual = -10;
+    ErrorCode error = DbcUtils::str_to_integral(NULL, actual);
+
+    EXPECT_EQ(ErrorCode::INTERNAL_ERROR, error);
+    EXPECT_EQ(-10, actual);
+}
+
+TEST_F(DaoTestCommon, make_connection_sptr) {
+    ConnectionSPtr conn_sptr = DbcUtils::make_connection_sptr(NULL);
+    EXPECT_EQ(nullptr, conn_sptr.get());
+    EXPECT_EQ(nullptr, conn_sptr);
+}
+
+TEST_F(DaoTestCommon, make_result_uptr) {
+    ResultUPtr res_uptr = DbcUtils::make_result_uptr(NULL);
+    EXPECT_EQ(nullptr, res_uptr.get());
+    EXPECT_EQ(nullptr, res_uptr);
+}
+
+}  // namespace manager::metadata::testing
