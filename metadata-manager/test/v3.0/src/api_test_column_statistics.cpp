@@ -25,8 +25,8 @@
 #include "manager/metadata/error_code.h"
 #include "manager/metadata/statistics.h"
 
-#include "test/api_test_environment.h"
 #include "test/api_test_table_metadatas.h"
+#include "test/global_test_environment.h"
 #include "test/utility/ut_table_metadata.h"
 #include "test/utility/ut_utils.h"
 
@@ -47,7 +47,7 @@ class ApiTestColumnStatisticsRemoveAllHappy
     : public ::testing::TestWithParam<std::string> {
     void SetUp() override { UTUtils::skip_if_connection_not_opened(); }
 };
-class ApiTestColumnStatisticsAllAPIUnhappy
+class ApiTestColumnStatisticsAllAPIException
     : public ::testing::TestWithParam<std::string> {
     void SetUp() override { UTUtils::skip_if_connection_not_opened(); }
 };
@@ -121,7 +121,7 @@ INSTANTIATE_TEST_CASE_P(ParamtererizedTest,
                         ApiTestColumnStatisticsRemoveAllHappy,
                         ::testing::Values("_ColumnStatistic_3"));
 INSTANTIATE_TEST_CASE_P(ParamtererizedTest,
-                        ApiTestColumnStatisticsAllAPIUnhappy,
+                        ApiTestColumnStatisticsAllAPIException,
                         ::testing::Values("_ColumnStatistic_4"));
 INSTANTIATE_TEST_CASE_P(
     ParamtererizedTest, ApiTestColumnStatisticsAllAPIHappyWithoutInit,
@@ -138,7 +138,7 @@ INSTANTIATE_TEST_CASE_P(
  */
 void ApiTestColumnStatistics::add_column_statistics(
     ObjectIdType table_id, std::vector<ptree> column_statistics) {
-    auto stats = std::make_unique<Statistics>(ApiTestEnvironment::TEST_DB);
+    auto stats = std::make_unique<Statistics>(GlobalTestEnvironment::TEST_DB);
 
     ErrorCode error = stats->init();
     EXPECT_EQ(ErrorCode::OK, error);
@@ -183,7 +183,7 @@ TEST_P(ApiTestColumnStatisticsAllAPIHappy, All_API_happy) {
     auto param = GetParam();
 
     UTTableMetadata *testdata_table_metadata =
-        api_test_env->testdata_table_metadata.get();
+        global->testdata_table_metadata.get();
     std::string table_name = testdata_table_metadata->name + std::get<0>(param);
 
     ObjectIdType ret_table_id;
@@ -197,7 +197,7 @@ TEST_P(ApiTestColumnStatisticsAllAPIHappy, All_API_happy) {
     ApiTestColumnStatistics::add_column_statistics(ret_table_id,
                                                    column_statistics);
 
-    auto stats = std::make_unique<Statistics>(ApiTestEnvironment::TEST_DB);
+    auto stats = std::make_unique<Statistics>(GlobalTestEnvironment::TEST_DB);
 
     ErrorCode error = stats->init();
     EXPECT_EQ(ErrorCode::OK, error);
@@ -377,7 +377,7 @@ TEST_P(ApiTestColumnStatisticsUpdateHappy, update_column_statistics) {
     auto param = GetParam();
 
     UTTableMetadata *testdata_table_metadata =
-        api_test_env->testdata_table_metadata.get();
+        global->testdata_table_metadata.get();
     std::string table_name = testdata_table_metadata->name + std::get<0>(param);
 
     ObjectIdType ret_table_id;
@@ -391,7 +391,7 @@ TEST_P(ApiTestColumnStatisticsUpdateHappy, update_column_statistics) {
     ApiTestColumnStatistics::add_column_statistics(ret_table_id,
                                                    column_statistics);
 
-    auto stats = std::make_unique<Statistics>(ApiTestEnvironment::TEST_DB);
+    auto stats = std::make_unique<Statistics>(GlobalTestEnvironment::TEST_DB);
 
     ErrorCode error = stats->init();
     EXPECT_EQ(ErrorCode::OK, error);
@@ -656,7 +656,7 @@ TEST_P(ApiTestColumnStatisticsRemoveAllHappy, remove_all_column_statistics) {
     auto param = GetParam();
 
     UTTableMetadata *testdata_table_metadata =
-        api_test_env->testdata_table_metadata.get();
+        global->testdata_table_metadata.get();
     std::string table_name = testdata_table_metadata->name + param;
 
     ObjectIdType ret_table_id;
@@ -666,11 +666,11 @@ TEST_P(ApiTestColumnStatisticsRemoveAllHappy, remove_all_column_statistics) {
      * add new column statistics
      * based on both existing table id and column ordinal position.
      */
-    std::vector<ptree> column_statistics = api_test_env->column_statistics;
+    std::vector<ptree> column_statistics = global->column_statistics;
     ApiTestColumnStatistics::add_column_statistics(ret_table_id,
                                                    column_statistics);
 
-    auto stats = std::make_unique<Statistics>(ApiTestEnvironment::TEST_DB);
+    auto stats = std::make_unique<Statistics>(GlobalTestEnvironment::TEST_DB);
 
     ErrorCode error = stats->init();
     EXPECT_EQ(ErrorCode::OK, error);
@@ -758,7 +758,7 @@ TEST_P(ApiTestColumnStatisticsRemoveAllHappy, remove_all_column_statistics) {
 }
 
 /**
- * @brief unhappy test for all API.
+ * @brief Exception path test for all API.
  * 1. add/get/remove one column statistic
  * based on non-existing table id or
  * non-existing column ordinal position.
@@ -776,20 +776,20 @@ TEST_P(ApiTestColumnStatisticsRemoveAllHappy, remove_all_column_statistics) {
  * -  get_all_column_statistics/remove_all_column_statistics:
  *      - based on non-existing table id.
  */
-TEST_P(ApiTestColumnStatisticsAllAPIUnhappy, All_API_unhappy) {
+TEST_P(ApiTestColumnStatisticsAllAPIException, All_API_exception) {
     auto param = GetParam();
     UTTableMetadata *testdata_table_metadata =
-        api_test_env->testdata_table_metadata.get();
+        global->testdata_table_metadata.get();
     std::string table_name = testdata_table_metadata->name + param;
 
     ObjectIdType ret_table_id;
     ApiTestTableMetadata::add_table(table_name, &ret_table_id);
 
-    std::vector<ptree> column_statistics = api_test_env->column_statistics;
+    std::vector<ptree> column_statistics = global->column_statistics;
     ApiTestColumnStatistics::add_column_statistics(ret_table_id,
                                                    column_statistics);
 
-    auto stats = std::make_unique<Statistics>(ApiTestEnvironment::TEST_DB);
+    auto stats = std::make_unique<Statistics>(GlobalTestEnvironment::TEST_DB);
 
     ErrorCode error = stats->init();
     EXPECT_EQ(ErrorCode::OK, error);
@@ -816,14 +816,13 @@ TEST_P(ApiTestColumnStatisticsAllAPIUnhappy, All_API_unhappy) {
      * based on non-existing column ordinal position
      * or non-existing table id.
      */
-    for (ObjectIdType ordinal_position :
-         api_test_env->ordinal_position_not_exists) {
+    for (ObjectIdType ordinal_position : global->ordinal_position_not_exists) {
         // ordinal position only not exists
         error = stats->add_one_column_statistic(ret_table_id, ordinal_position,
                                                 column_statistics[0]);
         EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);
 
-        for (ObjectIdType table_id : api_test_env->table_id_not_exists) {
+        for (ObjectIdType table_id : global->table_id_not_exists) {
             // table id and ordinal position not exists
             error = stats->add_one_column_statistic(table_id, ordinal_position,
                                                     column_statistics[0]);
@@ -832,7 +831,7 @@ TEST_P(ApiTestColumnStatisticsAllAPIUnhappy, All_API_unhappy) {
     }
 
     ObjectIdType ordinal_position_exists = 1;
-    for (ObjectIdType table_id : api_test_env->table_id_not_exists) {
+    for (ObjectIdType table_id : global->table_id_not_exists) {
         // table id only not exists
         error = stats->add_one_column_statistic(
             table_id, ordinal_position_exists, column_statistics[0]);
@@ -843,7 +842,7 @@ TEST_P(ApiTestColumnStatisticsAllAPIUnhappy, All_API_unhappy) {
      * get_all_column_statistics
      * based on non-existing table id.
      */
-    for (ObjectIdType table_id : api_test_env->table_id_not_exists) {
+    for (ObjectIdType table_id : global->table_id_not_exists) {
         // table id only not exists
         std::unordered_map<int64_t, ColumnStatistic> hashmap_cs_returned;
         error = stats->get_all_column_statistics(table_id, hashmap_cs_returned);
@@ -857,14 +856,13 @@ TEST_P(ApiTestColumnStatisticsAllAPIUnhappy, All_API_unhappy) {
      * or non-existing table id.
      */
     ColumnStatistic cs_returned;
-    for (ObjectIdType ordinal_position :
-         api_test_env->ordinal_position_not_exists) {
+    for (ObjectIdType ordinal_position : global->ordinal_position_not_exists) {
         // ordinal position only not exists
         error = stats->get_one_column_statistic(ret_table_id, ordinal_position,
                                                 cs_returned);
         EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);
 
-        for (ObjectIdType table_id : api_test_env->table_id_not_exists) {
+        for (ObjectIdType table_id : global->table_id_not_exists) {
             // table id and ordinal position not exists
             error = stats->get_one_column_statistic(table_id, ordinal_position,
                                                     cs_returned);
@@ -872,7 +870,7 @@ TEST_P(ApiTestColumnStatisticsAllAPIUnhappy, All_API_unhappy) {
         }
     }
 
-    for (ObjectIdType table_id : api_test_env->table_id_not_exists) {
+    for (ObjectIdType table_id : global->table_id_not_exists) {
         // table id only not exists
         error = stats->get_one_column_statistic(
             table_id, ordinal_position_exists, cs_returned);
@@ -884,14 +882,13 @@ TEST_P(ApiTestColumnStatisticsAllAPIUnhappy, All_API_unhappy) {
      * based on non-existing column ordinal position
      * or non-existing table id.
      */
-    for (ObjectIdType ordinal_position :
-         api_test_env->ordinal_position_not_exists) {
+    for (ObjectIdType ordinal_position : global->ordinal_position_not_exists) {
         // ordinal position only not exists
         error =
             stats->remove_one_column_statistic(ret_table_id, ordinal_position);
         EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);
 
-        for (ObjectIdType table_id : api_test_env->table_id_not_exists) {
+        for (ObjectIdType table_id : global->table_id_not_exists) {
             // table id and ordinal position not exists
             error =
                 stats->remove_one_column_statistic(table_id, ordinal_position);
@@ -899,7 +896,7 @@ TEST_P(ApiTestColumnStatisticsAllAPIUnhappy, All_API_unhappy) {
         }
     }
 
-    for (ObjectIdType table_id : api_test_env->table_id_not_exists) {
+    for (ObjectIdType table_id : global->table_id_not_exists) {
         // table id only not exists
         error = stats->remove_one_column_statistic(table_id,
                                                    ordinal_position_exists);
@@ -910,7 +907,7 @@ TEST_P(ApiTestColumnStatisticsAllAPIUnhappy, All_API_unhappy) {
      * remove_all_column_statistics
      * based on non-existing table id.
      */
-    for (ObjectIdType table_id : api_test_env->table_id_not_exists) {
+    for (ObjectIdType table_id : global->table_id_not_exists) {
         // table id not exists
         error = stats->remove_all_column_statistics(table_id);
         EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);
@@ -936,7 +933,7 @@ TEST_P(ApiTestColumnStatisticsAllAPIHappyWithoutInit,
     auto param = GetParam();
 
     UTTableMetadata *testdata_table_metadata =
-        api_test_env->testdata_table_metadata.get();
+        global->testdata_table_metadata.get();
     std::string table_name = testdata_table_metadata->name + std::get<0>(param);
 
     ObjectIdType ret_table_id;
@@ -946,7 +943,8 @@ TEST_P(ApiTestColumnStatisticsAllAPIHappyWithoutInit,
      * add_one_column_statistic without init()
      * based on both existing table id and column ordinal position.
      */
-    auto stats_add = std::make_unique<Statistics>(ApiTestEnvironment::TEST_DB);
+    auto stats_add =
+        std::make_unique<Statistics>(GlobalTestEnvironment::TEST_DB);
 
     UTUtils::print(
         " -- add column statistics by add_one_column_statistic start --");
@@ -976,7 +974,7 @@ TEST_P(ApiTestColumnStatisticsAllAPIHappyWithoutInit,
      * based on both existing table id and column ordinal position.
      */
     auto stats_get_one_cs =
-        std::make_unique<Statistics>(ApiTestEnvironment::TEST_DB);
+        std::make_unique<Statistics>(GlobalTestEnvironment::TEST_DB);
 
     UTUtils::print(
         " -- get column statistics by get_one_column_statistic start --");
@@ -1009,7 +1007,7 @@ TEST_P(ApiTestColumnStatisticsAllAPIHappyWithoutInit,
      * based on existing table id.
      */
     auto stats_get_all_cs =
-        std::make_unique<Statistics>(ApiTestEnvironment::TEST_DB);
+        std::make_unique<Statistics>(GlobalTestEnvironment::TEST_DB);
 
     std::unordered_map<int64_t, ColumnStatistic> hashmap_cs_returned;
     error = stats_get_all_cs->get_all_column_statistics(ret_table_id,
@@ -1043,7 +1041,7 @@ TEST_P(ApiTestColumnStatisticsAllAPIHappyWithoutInit,
      * based on both existing table id and column ordinal position.
      */
     auto stats_remove_one_cs =
-        std::make_unique<Statistics>(ApiTestEnvironment::TEST_DB);
+        std::make_unique<Statistics>(GlobalTestEnvironment::TEST_DB);
 
     ObjectIdType ordinal_position_to_remove = std::get<2>(param);
     error = stats_remove_one_cs->remove_one_column_statistic(
@@ -1123,7 +1121,7 @@ TEST_P(ApiTestColumnStatisticsAllAPIHappyWithoutInit,
      * based on existing table.
      */
     auto stats_remove_all_cs =
-        std::make_unique<Statistics>(ApiTestEnvironment::TEST_DB);
+        std::make_unique<Statistics>(GlobalTestEnvironment::TEST_DB);
 
     error = stats_remove_all_cs->remove_all_column_statistics(ret_table_id);
     EXPECT_EQ(ErrorCode::OK, error);

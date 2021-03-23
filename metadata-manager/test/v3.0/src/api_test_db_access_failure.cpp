@@ -29,7 +29,7 @@
 #include "manager/metadata/statistics.h"
 #include "manager/metadata/tables.h"
 
-#include "test/api_test_environment.h"
+#include "test/global_test_environment.h"
 #include "test/utility/ut_utils.h"
 
 using namespace manager::metadata;
@@ -133,17 +133,20 @@ INSTANTIATE_TEST_CASE_P(
     ::testing::Combine(::testing::ValuesIn(table_id_not_exists_dbaf),
                        ::testing::ValuesIn(ordinal_position_not_exists_dbaf),
                        ::testing::ValuesIn(ptrees_dbaf)));
-
+/**
+ * @brief API to add table metadata
+ * returnes ErrorCode::DATABASE_ACCESS_FAILURE
+ */
 TEST_F(ApiTestDBAccessFailure, add_table_metadata) {
     UTTableMetadata *testdata_table_metadata =
-        api_test_env->testdata_table_metadata.get();
+        global->testdata_table_metadata.get();
     ptree new_table = testdata_table_metadata->tables;
 
     std::string table_name =
         testdata_table_metadata->name + "ApiTestDBAccessFailure_add_table";
     new_table.put(Tables::NAME, table_name);
 
-    auto tables = std::make_unique<Tables>(ApiTestEnvironment::TEST_DB);
+    auto tables = std::make_unique<Tables>(GlobalTestEnvironment::TEST_DB);
 
     ErrorCode error = tables->init();
     EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
@@ -154,10 +157,14 @@ TEST_F(ApiTestDBAccessFailure, add_table_metadata) {
     EXPECT_EQ(ret_table_id, -1);
 }
 
+/**
+ * @brief API to get table metadata based on table id
+ * returnes ErrorCode::DATABASE_ACCESS_FAILURE
+ */
 TEST_F(ApiTestDBAccessFailure, get_table_metadata_by_table_id) {
     ObjectIdType table_id = 1;
 
-    auto tables = std::make_unique<Tables>(ApiTestEnvironment::TEST_DB);
+    auto tables = std::make_unique<Tables>(GlobalTestEnvironment::TEST_DB);
 
     ErrorCode error = tables->init();
     EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
@@ -171,11 +178,15 @@ TEST_F(ApiTestDBAccessFailure, get_table_metadata_by_table_id) {
               UTUtils::get_tree_string(table_metadata_inserted));
 }
 
+/**
+ * @brief API to get table metadata based on table name
+ * returnes ErrorCode::DATABASE_ACCESS_FAILURE
+ */
 TEST_F(ApiTestDBAccessFailure, get_table_metadata_by_table_name) {
     UTTableMetadata testdata_table_metadata =
-        *(api_test_env->testdata_table_metadata.get());
+        *(global->testdata_table_metadata.get());
 
-    auto tables = std::make_unique<Tables>(ApiTestEnvironment::TEST_DB);
+    auto tables = std::make_unique<Tables>(GlobalTestEnvironment::TEST_DB);
 
     ErrorCode error = tables->init();
     EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
@@ -190,8 +201,12 @@ TEST_F(ApiTestDBAccessFailure, get_table_metadata_by_table_name) {
               UTUtils::get_tree_string(table_metadata_inserted));
 }
 
+/**
+ * @brief API to remove table metadata based on table id
+ * returnes ErrorCode::DATABASE_ACCESS_FAILURE
+ */
 TEST_F(ApiTestDBAccessFailure, remove_table_metadata_by_table_id) {
-    auto tables = std::make_unique<Tables>(ApiTestEnvironment::TEST_DB);
+    auto tables = std::make_unique<Tables>(GlobalTestEnvironment::TEST_DB);
 
     ErrorCode error = tables->init();
     EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
@@ -200,8 +215,12 @@ TEST_F(ApiTestDBAccessFailure, remove_table_metadata_by_table_id) {
     EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
 }
 
+/**
+ * @brief API to remove table metadata based on table name
+ * returnes ErrorCode::DATABASE_ACCESS_FAILURE
+ */
 TEST_F(ApiTestDBAccessFailure, remove_table_metadata_by_table_name) {
-    auto tables = std::make_unique<Tables>(ApiTestEnvironment::TEST_DB);
+    auto tables = std::make_unique<Tables>(GlobalTestEnvironment::TEST_DB);
 
     ErrorCode error = tables->init();
     EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
@@ -213,8 +232,13 @@ TEST_F(ApiTestDBAccessFailure, remove_table_metadata_by_table_name) {
     EXPECT_EQ(ret_table_id, -1);
 }
 
+/**
+ * @brief API to get data type metadata based on data type name
+ * returnes ErrorCode::DATABASE_ACCESS_FAILURE
+ */
 TEST_F(ApiTestDBAccessFailure, get_datatypes_by_name) {
-    auto datatypes = std::make_unique<DataTypes>(ApiTestEnvironment::TEST_DB);
+    auto datatypes =
+        std::make_unique<DataTypes>(GlobalTestEnvironment::TEST_DB);
 
     ErrorCode error = datatypes->init();
     EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
@@ -229,8 +253,13 @@ TEST_F(ApiTestDBAccessFailure, get_datatypes_by_name) {
               UTUtils::get_tree_string(datatype));
 }
 
+/**
+ * @brief API to get data type metadata based on key/value
+ * returnes ErrorCode::DATABASE_ACCESS_FAILURE
+ */
 TEST_F(ApiTestDBAccessFailure, get_datatypes_by_key_value) {
-    auto datatypes = std::make_unique<DataTypes>(ApiTestEnvironment::TEST_DB);
+    auto datatypes =
+        std::make_unique<DataTypes>(GlobalTestEnvironment::TEST_DB);
 
     ErrorCode error = datatypes->init();
     EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
@@ -247,9 +276,13 @@ TEST_F(ApiTestDBAccessFailure, get_datatypes_by_key_value) {
               UTUtils::get_tree_string(datatype));
 }
 
+/**
+ * @brief API to add table statistics based on table id
+ * returnes ErrorCode::DATABASE_ACCESS_FAILURE
+ */
 TEST_P(ApiTestDBAccessFailureByTableIdReltuples,
-       add_table_statistics_by_table_id) {
-    auto stats = std::make_unique<Statistics>(ApiTestEnvironment::TEST_DB);
+       add_table_statistic_by_table_id) {
+    auto stats = std::make_unique<Statistics>(GlobalTestEnvironment::TEST_DB);
 
     ErrorCode error = stats->init();
     EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
@@ -261,9 +294,13 @@ TEST_P(ApiTestDBAccessFailureByTableIdReltuples,
     EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
 }
 
+/**
+ * @brief API to add table statistics based on table name
+ * returnes ErrorCode::DATABASE_ACCESS_FAILURE
+ */
 TEST_P(ApiTestDBAccessFailureByTableNameReltuples,
-       add_table_statistics_by_table_name) {
-    auto stats = std::make_unique<Statistics>(ApiTestEnvironment::TEST_DB);
+       add_table_statistic_by_table_name) {
+    auto stats = std::make_unique<Statistics>(GlobalTestEnvironment::TEST_DB);
 
     ErrorCode error = stats->init();
     EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
@@ -278,8 +315,12 @@ TEST_P(ApiTestDBAccessFailureByTableNameReltuples,
     EXPECT_EQ(retval_table_id, -1);
 }
 
-TEST_P(ApiTestDBAccessFailureByTableId, get_table_statistics_by_table_id) {
-    auto stats = std::make_unique<Statistics>(ApiTestEnvironment::TEST_DB);
+/**
+ * @brief API to get table statistics based on table id
+ * returnes ErrorCode::DATABASE_ACCESS_FAILURE
+ */
+TEST_P(ApiTestDBAccessFailureByTableId, get_table_statistic_by_table_id) {
+    auto stats = std::make_unique<Statistics>(GlobalTestEnvironment::TEST_DB);
 
     ErrorCode error = stats->init();
     EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
@@ -298,8 +339,12 @@ TEST_P(ApiTestDBAccessFailureByTableId, get_table_statistics_by_table_id) {
     EXPECT_EQ("", table_stats.namespace_name);
 }
 
+/**
+ * @brief API to get table statistics based on table name
+ * returnes ErrorCode::DATABASE_ACCESS_FAILURE
+ */
 TEST_P(ApiTestDBAccessFailureByTableName, get_table_statistics_by_table_name) {
-    auto stats = std::make_unique<Statistics>(ApiTestEnvironment::TEST_DB);
+    auto stats = std::make_unique<Statistics>(GlobalTestEnvironment::TEST_DB);
 
     ErrorCode error = stats->init();
     EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
@@ -319,8 +364,12 @@ TEST_P(ApiTestDBAccessFailureByTableName, get_table_statistics_by_table_name) {
     EXPECT_EQ("", table_stats.namespace_name);
 }
 
+/**
+ * @brief API to add one column statistic
+ * returnes ErrorCode::DATABASE_ACCESS_FAILURE
+ */
 TEST_P(ApiTestDBAccessFailureByColumnStatistics, add_one_column_statistic) {
-    auto stats = std::make_unique<Statistics>(ApiTestEnvironment::TEST_DB);
+    auto stats = std::make_unique<Statistics>(GlobalTestEnvironment::TEST_DB);
 
     ErrorCode error = stats->init();
     EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
@@ -335,9 +384,13 @@ TEST_P(ApiTestDBAccessFailureByColumnStatistics, add_one_column_statistic) {
     EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
 }
 
+/**
+ * @brief API to get one column statistic
+ * returnes ErrorCode::DATABASE_ACCESS_FAILURE
+ */
 TEST_P(ApiTestDBAccessFailureByTableIdOrdinalPosition,
        get_one_column_statistic) {
-    auto stats = std::make_unique<Statistics>(ApiTestEnvironment::TEST_DB);
+    auto stats = std::make_unique<Statistics>(GlobalTestEnvironment::TEST_DB);
 
     ErrorCode error = stats->init();
     EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
@@ -361,8 +414,12 @@ TEST_P(ApiTestDBAccessFailureByTableIdOrdinalPosition,
               UTUtils::get_tree_string(column_stats.column_statistic));
 }
 
+/**
+ * @brief API to get all column statistic
+ * returnes ErrorCode::DATABASE_ACCESS_FAILURE
+ */
 TEST_P(ApiTestDBAccessFailureByTableId, get_all_column_statistics) {
-    auto stats = std::make_unique<Statistics>(ApiTestEnvironment::TEST_DB);
+    auto stats = std::make_unique<Statistics>(GlobalTestEnvironment::TEST_DB);
 
     ErrorCode error = stats->init();
     EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
@@ -375,9 +432,13 @@ TEST_P(ApiTestDBAccessFailureByTableId, get_all_column_statistics) {
     EXPECT_EQ(0, column_stats.size());
 }
 
+/**
+ * @brief API to remove one column statistic
+ * returnes ErrorCode::DATABASE_ACCESS_FAILURE
+ */
 TEST_P(ApiTestDBAccessFailureByTableIdOrdinalPosition,
        remove_one_column_statistic) {
-    auto stats = std::make_unique<Statistics>(ApiTestEnvironment::TEST_DB);
+    auto stats = std::make_unique<Statistics>(GlobalTestEnvironment::TEST_DB);
 
     ErrorCode error = stats->init();
     EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
@@ -390,8 +451,12 @@ TEST_P(ApiTestDBAccessFailureByTableIdOrdinalPosition,
     EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
 }
 
+/**
+ * @brief API to remove all column statistic
+ * returnes ErrorCode::DATABASE_ACCESS_FAILURE
+ */
 TEST_P(ApiTestDBAccessFailureByTableId, remove_all_column_statistics) {
-    auto stats = std::make_unique<Statistics>(ApiTestEnvironment::TEST_DB);
+    auto stats = std::make_unique<Statistics>(GlobalTestEnvironment::TEST_DB);
 
     ErrorCode error = stats->init();
     EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);

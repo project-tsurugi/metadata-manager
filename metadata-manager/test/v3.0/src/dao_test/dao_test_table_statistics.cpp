@@ -26,9 +26,9 @@
 #include "manager/metadata/dao/tables_dao.h"
 #include "manager/metadata/error_code.h"
 
-#include "test/api_test_environment.h"
 #include "test/api_test_table_statistics.h"
 #include "test/dao_test/dao_test_table_metadatas.h"
+#include "test/global_test_environment.h"
 #include "test/utility/ut_utils.h"
 
 namespace manager::metadata::testing {
@@ -39,33 +39,33 @@ using namespace manager::metadata::db;
 
 typedef std::tuple<std::string, float, float> TupleApiTestTableStatistics;
 
-class DaoTestTableStatisticsByTableIdUnhappy
+class DaoTestTableStatisticsByTableIdException
     : public ::testing::TestWithParam<ObjectIdType> {
-    virtual void SetUp() { UTUtils::skip_if_connection_not_opened(); }
+    void SetUp() override { UTUtils::skip_if_connection_not_opened(); }
 };
-class DaoTestTableStatisticsByTableNameUnhappy
+class DaoTestTableStatisticsByTableNameException
     : public ::testing::TestWithParam<std::string> {
-    virtual void SetUp() { UTUtils::skip_if_connection_not_opened(); }
+    void SetUp() override { UTUtils::skip_if_connection_not_opened(); }
 };
 
 class DaoTestTableStatisticsByTableIdHappy
     : public ::testing::TestWithParam<TupleApiTestTableStatistics> {
-    virtual void SetUp() { UTUtils::skip_if_connection_not_opened(); }
+    void SetUp() override { UTUtils::skip_if_connection_not_opened(); }
 };
 class DaoTestTableStatisticsByTableNameHappy
     : public ::testing::TestWithParam<TupleApiTestTableStatistics> {
-    virtual void SetUp() { UTUtils::skip_if_connection_not_opened(); }
+    void SetUp() override { UTUtils::skip_if_connection_not_opened(); }
 };
 
 INSTANTIATE_TEST_CASE_P(
-    ParamtererizedTest, DaoTestTableStatisticsByTableIdUnhappy,
+    ParamtererizedTest, DaoTestTableStatisticsByTableIdException,
     ::testing::Values(-1, 0, INT64_MAX - 1, INT64_MAX,
                       std::numeric_limits<ObjectIdType>::infinity(),
                       -std::numeric_limits<ObjectIdType>::infinity(),
                       std::numeric_limits<ObjectIdType>::quiet_NaN()));
 
 INSTANTIATE_TEST_CASE_P(ParamtererizedTest,
-                        DaoTestTableStatisticsByTableNameUnhappy,
+                        DaoTestTableStatisticsByTableNameException,
                         ::testing::Values("table_name_not_exists", ""));
 
 INSTANTIATE_TEST_CASE_P(
@@ -79,10 +79,10 @@ INSTANTIATE_TEST_CASE_P(
         ApiTestTableStatistics::make_tuple_table_statistics("4")));
 
 /**
- * @brief unhappy test for add_table_statistic
+ * @brief Exception paths test for add_table_statistic
  * based on non-existing table id.
  */
-TEST_P(DaoTestTableStatisticsByTableIdUnhappy,
+TEST_P(DaoTestTableStatisticsByTableIdException,
        add_table_statistics_by_table_id_if_not_exists) {
     std::shared_ptr<GenericDAO> t_gdao = nullptr;
     DBSessionManager db_session_manager;
@@ -111,10 +111,10 @@ TEST_P(DaoTestTableStatisticsByTableIdUnhappy,
 }
 
 /**
- * @brief unhappy test for add_table_statistic
+ * @brief Exception path test for add_table_statistic
  * based on non-existing table name.
  */
-TEST_P(DaoTestTableStatisticsByTableNameUnhappy,
+TEST_P(DaoTestTableStatisticsByTableNameException,
        add_table_statistics_by_table_name_if_not_exists) {
     std::shared_ptr<GenericDAO> t_gdao = nullptr;
     DBSessionManager db_session_manager;
@@ -147,10 +147,10 @@ TEST_P(DaoTestTableStatisticsByTableNameUnhappy,
 }
 
 /**
- * @brief unhappy test for get_table_statistic
+ * @brief Exception path test for get_table_statistic
  * based on non-existing table id.
  */
-TEST_P(DaoTestTableStatisticsByTableIdUnhappy,
+TEST_P(DaoTestTableStatisticsByTableIdException,
        get_table_statistics_by_table_id_if_not_exists) {
     std::shared_ptr<GenericDAO> t_gdao = nullptr;
     DBSessionManager db_session_manager;
@@ -173,10 +173,10 @@ TEST_P(DaoTestTableStatisticsByTableIdUnhappy,
 }
 
 /**
- * @brief unhappy test for get_table_statistic
+ * @brief Exception path test for get_table_statistic
  * based on non-existing table name.
  */
-TEST_P(DaoTestTableStatisticsByTableNameUnhappy,
+TEST_P(DaoTestTableStatisticsByTableNameException,
        get_table_statistics_by_table_name_if_not_exists) {
     std::shared_ptr<GenericDAO> t_gdao = nullptr;
     DBSessionManager db_session_manager;
@@ -204,7 +204,7 @@ TEST_P(DaoTestTableStatisticsByTableNameUnhappy,
 TEST_P(DaoTestTableStatisticsByTableIdHappy,
        add_and_get_table_statistics_by_table_id) {
     UTTableMetadata *testdata_table_metadata =
-        api_test_env->testdata_table_metadata.get();
+        global->testdata_table_metadata.get();
 
     auto param = GetParam();
     std::string table_name = testdata_table_metadata->name + std::get<0>(param);
@@ -288,7 +288,7 @@ TEST_P(DaoTestTableStatisticsByTableIdHappy,
 TEST_P(DaoTestTableStatisticsByTableNameHappy,
        add_and_get_table_statistics_by_table_name) {
     UTTableMetadata *testdata_table_metadata =
-        api_test_env->testdata_table_metadata.get();
+        global->testdata_table_metadata.get();
 
     auto param = GetParam();
     std::string table_name = testdata_table_metadata->name + std::get<0>(param);

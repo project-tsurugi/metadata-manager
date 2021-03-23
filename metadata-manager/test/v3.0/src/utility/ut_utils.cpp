@@ -23,33 +23,51 @@
 #include <vector>
 
 #include "manager/metadata/datatypes.h"
+#include "manager/metadata/metadata.h"
 #include "manager/metadata/tables.h"
 
-#include "test/api_test_environment.h"
+#include "test/global_test_environment.h"
 
 using namespace manager::metadata;
 using namespace boost::property_tree;
 
 namespace manager::metadata::testing {
 
+/**
+ * @brief Skip tests if a connection to metadata repository is not opened.
+ */
 void UTUtils::skip_if_connection_not_opened() {
-    if (!api_test_env->is_open()) {
+    if (!global->is_open()) {
         GTEST_SKIP_("metadata repository is not started.");
     }
 }
 
+/**
+ * @brief Skip tests if a connection to metadata repository is opened.
+ */
 void UTUtils::skip_if_connection_opened() {
-    if (api_test_env->is_open()) {
+    if (global->is_open()) {
         GTEST_SKIP_("metadata repository is started.");
     }
 }
 
+/**
+ * @brief internal function used in get_tree_string_internal
+ */
 std::string UTUtils::indent(int level) {
     std::string s;
     for (int i = 0; i < level; i++) s += "  ";
     return s;
 }
 
+/**
+ * @brief internal function used in get_tree_string, print_tree.
+ * get string converted from ptree.
+ * @param  (pt)                   [in]  ptree to be converted to string.
+ * @param  (level)                [in]  indent level.
+ * @param  (output_string)        [out] string converted from ptree.
+ * @param  (print_tree_enabled)   [in]  enable/disable to print output_string.
+ */
 void UTUtils::get_tree_string_internal(const ptree &pt, int level,
                                        std::string &output_string,
                                        bool print_tree_enabled) {
@@ -89,6 +107,10 @@ void UTUtils::get_tree_string_internal(const ptree &pt, int level,
     return;
 }
 
+/**
+ * @brief Get string converted from ptree. (not print string)
+ * @param  (pt)                   [in]  ptree to be converted to string.
+ */
 std::string UTUtils::get_tree_string(const ptree &pt) {
     std::string output_string;
     int level = 0;
@@ -96,6 +118,11 @@ std::string UTUtils::get_tree_string(const ptree &pt) {
     return output_string;
 }
 
+/**
+ * @brief Get and print string converted from ptree.
+ * @param  (pt)                   [in]  ptree to be converted to string.
+ * @param  (level)                [in]  indent level.
+ */
 std::string UTUtils::print_tree(const ptree &pt, int level) {
     std::string output_string;
     get_tree_string_internal(pt, level, output_string, true);
@@ -103,6 +130,10 @@ std::string UTUtils::print_tree(const ptree &pt, int level) {
     return output_string;
 }
 
+/**
+ * @brief Print column metadata fields used as test data.
+ * @param  (column_metadata)    [in] column metadata used as test data.
+ */
 void UTUtils::print_column_metadata(const UTColumnMetadata &column_metadata) {
     print("id:", column_metadata.id);
     print("tableId:", column_metadata.table_id);
@@ -116,6 +147,10 @@ void UTUtils::print_column_metadata(const UTColumnMetadata &column_metadata) {
     print("direction:", column_metadata.direction);
 }
 
+/**
+ * @brief Print table statistic fields.
+ * @param  (table_statistics)    [in] table statistics used as test data.
+ */
 void UTUtils::print_table_statistics(const TableStatistic &table_statistics) {
     print("id:", table_statistics.id);
     print("name:", table_statistics.name);
@@ -123,64 +158,70 @@ void UTUtils::print_table_statistics(const TableStatistic &table_statistics) {
     print("reltuples:", table_statistics.reltuples);
 }
 
+/**
+ * @brief Generate table metadata.
+ * @param  (testdata_table_metadata)    [out] table metadata used as test data.
+ */
 void UTUtils::generate_table_metadata(
-    std::unique_ptr<UTTableMetadata> &testdata_table_metadata,
-    bool with_primary_keys) {
-    std::vector<int64_t> ordinal_positions;
-
-    int64_t column_count = 3;
-    for (int64_t op = 1; op <= column_count; op++) {
-        ordinal_positions.push_back(op);
-    }
-
-    std::vector<std::string> col_names;
-    for (int op : ordinal_positions) {
-        std::string col_name = "col" + std::to_string(op);
-        col_names.push_back(col_name);
-    }
-
+    std::unique_ptr<UTTableMetadata> &testdata_table_metadata) {
+    // generate unique table name.
     int s = time(NULL);
-
     std::string table_name = "table_name" + std::to_string(s);
-
     testdata_table_metadata = std::make_unique<UTTableMetadata>(table_name);
 
-    if (with_primary_keys) {
-        testdata_table_metadata->primary_keys.push_back(ordinal_positions[0]);
-        testdata_table_metadata->primary_keys.push_back(ordinal_positions[1]);
-    }
+    // generate namespace.
+    testdata_table_metadata->namespace_name = "namespace";
 
-    testdata_table_metadata->name = table_name;
+    // generate three column metadatas.
+    std::vector<ObjectIdType> ordinal_positions = {1, 2, 3};
+    std::vector<std::string> col_names = {"col1", "col2", "col3"};
 
+    // generate primary keys.
+    testdata_table_metadata->primary_keys.push_back(ordinal_positions[0]);
+    testdata_table_metadata->primary_keys.push_back(ordinal_positions[1]);
+
+    // first column metadata
+    bool is_null = true;
     UTColumnMetadata column1{
         col_names[0], ordinal_positions[0],
-        static_cast<int64_t>(DataTypes::DataTypesId::FLOAT32), false};
+        static_cast<ObjectIdType>(DataTypes::DataTypesId::FLOAT32), !is_null};
     column1.direction =
-        static_cast<int64_t>(Tables::Column::Direction::ASCENDANT);
+        static_cast<ObjectIdType>(Tables::Column::Direction::ASCENDANT);
 
+    // second column metadata
     UTColumnMetadata column2{
         col_names[1], ordinal_positions[1],
-        static_cast<int64_t>(DataTypes::DataTypesId::VARCHAR), false};
+        static_cast<ObjectIdType>(DataTypes::DataTypesId::VARCHAR), !is_null};
     column2.direction =
-        static_cast<int64_t>(Tables::Column::Direction::DEFAULT);
-    column2.data_length = 8;
+        static_cast<ObjectIdType>(Tables::Column::Direction::DEFAULT);
+    ptree data_length;
+    data_length.put("", 8);
+    column2.p_data_lengths.push_back(std::make_pair("", data_length));
+    data_length.put("", 2);
+    column2.p_data_lengths.push_back(std::make_pair("", data_length));
+
     column2.varying = true;
 
-    UTColumnMetadata column3{col_names[2], ordinal_positions[2],
-                             static_cast<int64_t>(DataTypes::DataTypesId::CHAR),
-                             true};
-    column3.direction =
-        static_cast<int64_t>(Tables::Column::Direction::DEFAULT);
+    // third column metadata
+    UTColumnMetadata column3{
+        col_names[2], ordinal_positions[2],
+        static_cast<ObjectIdType>(DataTypes::DataTypesId::CHAR), is_null};
+    column3.default_expr = "default";
     column3.data_length = 1;
     column3.varying = false;
 
-    testdata_table_metadata->columns.push_back(column1);
-    testdata_table_metadata->columns.push_back(column2);
-    testdata_table_metadata->columns.push_back(column3);
+    // set table metadata to three column metadata
+    testdata_table_metadata->columns.emplace_back(column1);
+    testdata_table_metadata->columns.emplace_back(column2);
+    testdata_table_metadata->columns.emplace_back(column3);
 
+    // generate ptree from UTTableMetadata fields.
     testdata_table_metadata->generate_ptree();
 }
 
+/**
+ * @brief Generate one random string.
+ */
 std::string UTUtils::generate_random_string() {
     std::string random_string;
     std::random_device rd;
@@ -195,6 +236,9 @@ std::string UTUtils::generate_random_string() {
     return random_string;
 }
 
+/**
+ * @brief Generate histogram of values used as column statistics test data.
+ */
 ptree UTUtils::generate_histogram() {
     ptree values;
     std::random_device rd;
@@ -202,8 +246,8 @@ ptree UTUtils::generate_histogram() {
 
     int random_number = random_mt();
 
-    // if random number is even, generate random number histogram
-    // if random number is odd, generate random string histogram
+    // If random number is even, generate random number histogram.
+    // If random number is odd, generate random string histogram.
     if (random_number % 2 == 0) {
         for (int i = 0;
              i < static_cast<int>(random_mt() % NUMBER_OF_ITERATIONS + 1);
@@ -227,6 +271,10 @@ ptree UTUtils::generate_histogram() {
     return values;
 }
 
+/**
+ * @brief Generate histogram of array elements used as column statistics test
+ * data.
+ */
 ptree UTUtils::generate_histogram_array() {
     ptree array_of_values;
     std::random_device rd;
@@ -241,9 +289,10 @@ ptree UTUtils::generate_histogram_array() {
     return array_of_values;
 }
 
+/**
+ * @brief Generate one column statistics used as test data.
+ */
 ptree UTUtils::generate_column_statistic() {
-    ptree column;
-
     std::random_device rd;
     std::mt19937 random_mt(rd());
 
@@ -252,20 +301,21 @@ ptree UTUtils::generate_column_statistic() {
     int n_distinct = random_mt() % UPPER_VALUE_100 + 1;
     double correlation = -1 * static_cast<double>(random_mt() / RAND_MAX);
 
-    column.put("null_frac", null_frac);
-    column.put("avg_width", avg_width);
-    column.put("most_common_vals", "mcv");
-    column.put("n_distinct", n_distinct);
-    column.put("most_common_freqs", "mcf");
-    column.put("histogram_bounds", "histogram_bounds");
-    column.add_child("histogram_bounds", UTUtils::generate_histogram());
-    column.put("correlation", correlation);
-    column.put("most_common_elems", "mce");
-    column.put("most_common_elem_freqs", "mcef");
-    column.add_child("elem_count_histogram",
-                     UTUtils::generate_histogram_array());
+    ptree column_statistic;
+    column_statistic.put("null_frac", null_frac);
+    column_statistic.put("avg_width", avg_width);
+    column_statistic.put("most_common_vals", "mcv");
+    column_statistic.put("n_distinct", n_distinct);
+    column_statistic.put("most_common_freqs", "mcf");
+    column_statistic.add_child("histogram_bounds",
+                               UTUtils::generate_histogram());
+    column_statistic.put("correlation", correlation);
+    column_statistic.put("most_common_elems", "mce");
+    column_statistic.put("most_common_elem_freqs", "mcef");
+    column_statistic.add_child("elem_count_histogram",
+                               UTUtils::generate_histogram_array());
 
-    return column;
+    return column_statistic;
 }
 
 }  // namespace manager::metadata::testing

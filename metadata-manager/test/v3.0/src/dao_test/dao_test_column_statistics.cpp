@@ -31,8 +31,8 @@
 #include "manager/metadata/error_code.h"
 
 #include "test/api_test_column_statistics.h"
-#include "test/api_test_environment.h"
 #include "test/dao_test/dao_test_table_metadatas.h"
+#include "test/global_test_environment.h"
 #include "test/utility/ut_utils.h"
 
 namespace manager::metadata::testing {
@@ -53,7 +53,7 @@ class DaoTestColumnStatisticsRemoveAllHappy
     : public ::testing::TestWithParam<std::string> {
     void SetUp() override { UTUtils::skip_if_connection_not_opened(); }
 };
-class DaoTestColumnStatisticsAllAPIUnhappy
+class DaoTestColumnStatisticsAllAPIException
     : public ::testing::TestWithParam<std::string> {
     void SetUp() override { UTUtils::skip_if_connection_not_opened(); }
 };
@@ -72,7 +72,7 @@ INSTANTIATE_TEST_CASE_P(ParamtererizedTest,
                         DaoTestColumnStatisticsRemoveAllHappy,
                         ::testing::Values("_ColumnStatistic_5"));
 INSTANTIATE_TEST_CASE_P(ParamtererizedTest,
-                        DaoTestColumnStatisticsAllAPIUnhappy,
+                        DaoTestColumnStatisticsAllAPIException,
                         ::testing::Values("_ColumnStatistic_6"));
 
 /**
@@ -443,7 +443,7 @@ TEST_P(DaoTestColumnStatisticsAllAPIHappy, All_API_happy) {
     auto param = GetParam();
 
     UTTableMetadata *testdata_table_metadata =
-        api_test_env->testdata_table_metadata.get();
+        global->testdata_table_metadata.get();
     std::string table_name = testdata_table_metadata->name + std::get<0>(param);
 
     ObjectIdType ret_table_id;
@@ -544,7 +544,7 @@ TEST_P(DaoTestColumnStatisticsUpdateHappy, update_column_statistics) {
     auto param = GetParam();
 
     UTTableMetadata *testdata_table_metadata =
-        api_test_env->testdata_table_metadata.get();
+        global->testdata_table_metadata.get();
     std::string table_name = testdata_table_metadata->name + std::get<0>(param);
 
     ObjectIdType ret_table_id;
@@ -703,7 +703,7 @@ TEST_P(DaoTestColumnStatisticsRemoveAllHappy, remove_all_column_statistics) {
     auto param = GetParam();
 
     UTTableMetadata *testdata_table_metadata =
-        api_test_env->testdata_table_metadata.get();
+        global->testdata_table_metadata.get();
     std::string table_name = testdata_table_metadata->name + param;
 
     ObjectIdType ret_table_id;
@@ -713,7 +713,7 @@ TEST_P(DaoTestColumnStatisticsRemoveAllHappy, remove_all_column_statistics) {
      * add new column statistics
      * based on both existing table id and column ordinal position.
      */
-    std::vector<ptree> column_statistics = api_test_env->column_statistics;
+    std::vector<ptree> column_statistics = global->column_statistics;
     DaoTestColumnStatistics::add_column_statistics(ret_table_id,
                                                    column_statistics);
     /**
@@ -759,7 +759,7 @@ TEST_P(DaoTestColumnStatisticsRemoveAllHappy, remove_all_column_statistics) {
 }
 
 /**
- * @brief unhappy test for all API.
+ * @brief Exception path test for all API.
  * 1. add/get/remove one column statistic
  * based on non-existing table id or
  * non-existing column ordinal position.
@@ -777,16 +777,16 @@ TEST_P(DaoTestColumnStatisticsRemoveAllHappy, remove_all_column_statistics) {
  * -  get_all_column_statistics/remove_all_column_statistics:
  *      - based on non-existing table id.
  */
-TEST_P(DaoTestColumnStatisticsAllAPIUnhappy, All_API_unhappy) {
+TEST_P(DaoTestColumnStatisticsAllAPIException, All_API_exception) {
     auto param = GetParam();
     UTTableMetadata *testdata_table_metadata =
-        api_test_env->testdata_table_metadata.get();
+        global->testdata_table_metadata.get();
     std::string table_name = testdata_table_metadata->name + param;
 
     ObjectIdType ret_table_id;
     DaoTestTableMetadata::add_table(table_name, &ret_table_id);
 
-    std::vector<ptree> column_statistics = api_test_env->column_statistics;
+    std::vector<ptree> column_statistics = global->column_statistics;
     DaoTestColumnStatistics::add_column_statistics(ret_table_id,
                                                    column_statistics);
 
@@ -805,14 +805,13 @@ TEST_P(DaoTestColumnStatisticsAllAPIUnhappy, All_API_unhappy) {
      * based on non-existing column ordinal position
      * or non-existing table id.
      */
-    for (ObjectIdType ordinal_position :
-         api_test_env->ordinal_position_not_exists) {
+    for (ObjectIdType ordinal_position : global->ordinal_position_not_exists) {
         // ordinal position only not exists
         error = DaoTestColumnStatistics::add_one_column_statistic(
             ret_table_id, ordinal_position, column_statistics[0]);
         EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);
 
-        for (ObjectIdType table_id : api_test_env->table_id_not_exists) {
+        for (ObjectIdType table_id : global->table_id_not_exists) {
             // table id and ordinal position not exists
             error = DaoTestColumnStatistics::add_one_column_statistic(
                 table_id, ordinal_position, column_statistics[0]);
@@ -821,7 +820,7 @@ TEST_P(DaoTestColumnStatisticsAllAPIUnhappy, All_API_unhappy) {
     }
 
     ObjectIdType ordinal_position_exists = 1;
-    for (ObjectIdType table_id : api_test_env->table_id_not_exists) {
+    for (ObjectIdType table_id : global->table_id_not_exists) {
         // table id only not exists
         error = DaoTestColumnStatistics::add_one_column_statistic(
             table_id, ordinal_position_exists, column_statistics[0]);
@@ -833,7 +832,7 @@ TEST_P(DaoTestColumnStatisticsAllAPIUnhappy, All_API_unhappy) {
      * based on non-existing table id.
      */
     std::vector<ptree> empty_column_statistics;
-    for (ObjectIdType table_id : api_test_env->table_id_not_exists) {
+    for (ObjectIdType table_id : global->table_id_not_exists) {
         // table id only not exists
         error = DaoTestColumnStatistics::get_all_column_statistics(
             table_id, empty_column_statistics);
@@ -846,14 +845,13 @@ TEST_P(DaoTestColumnStatisticsAllAPIUnhappy, All_API_unhappy) {
      * or non-existing table id.
      */
     ptree empty_column_statistic;
-    for (ObjectIdType ordinal_position :
-         api_test_env->ordinal_position_not_exists) {
+    for (ObjectIdType ordinal_position : global->ordinal_position_not_exists) {
         // ordinal position only not exists
         error = DaoTestColumnStatistics::get_one_column_statistic(
             ret_table_id, ordinal_position, empty_column_statistic);
         EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);
 
-        for (ObjectIdType table_id : api_test_env->table_id_not_exists) {
+        for (ObjectIdType table_id : global->table_id_not_exists) {
             // table id and ordinal position not exists
             error = DaoTestColumnStatistics::get_one_column_statistic(
                 table_id, ordinal_position, empty_column_statistic);
@@ -861,7 +859,7 @@ TEST_P(DaoTestColumnStatisticsAllAPIUnhappy, All_API_unhappy) {
         }
     }
 
-    for (ObjectIdType table_id : api_test_env->table_id_not_exists) {
+    for (ObjectIdType table_id : global->table_id_not_exists) {
         // table id only not exists
         error = DaoTestColumnStatistics::get_one_column_statistic(
             table_id, ordinal_position_exists, empty_column_statistic);
@@ -873,14 +871,13 @@ TEST_P(DaoTestColumnStatisticsAllAPIUnhappy, All_API_unhappy) {
      * based on non-existing column ordinal position
      * or non-existing table id.
      */
-    for (ObjectIdType ordinal_position :
-         api_test_env->ordinal_position_not_exists) {
+    for (ObjectIdType ordinal_position : global->ordinal_position_not_exists) {
         // ordinal position only not exists
         error = DaoTestColumnStatistics::remove_one_column_statistic(
             ret_table_id, ordinal_position);
         EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);
 
-        for (ObjectIdType table_id : api_test_env->table_id_not_exists) {
+        for (ObjectIdType table_id : global->table_id_not_exists) {
             // table id and ordinal position not exists
             error = DaoTestColumnStatistics::remove_one_column_statistic(
                 table_id, ordinal_position);
@@ -888,7 +885,7 @@ TEST_P(DaoTestColumnStatisticsAllAPIUnhappy, All_API_unhappy) {
         }
     }
 
-    for (ObjectIdType table_id : api_test_env->table_id_not_exists) {
+    for (ObjectIdType table_id : global->table_id_not_exists) {
         // table id only not exists
         error = DaoTestColumnStatistics::remove_one_column_statistic(
             table_id, ordinal_position_exists);
@@ -899,19 +896,19 @@ TEST_P(DaoTestColumnStatisticsAllAPIUnhappy, All_API_unhappy) {
      * remove_all_column_statistics
      * based on non-existing table id.
      */
-    for (ObjectIdType table_id : api_test_env->table_id_not_exists) {
+    for (ObjectIdType table_id : global->table_id_not_exists) {
         // table id not exists
         error = DaoTestColumnStatistics::remove_all_column_statistics(table_id);
         EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);
     }
 }
 
-TEST_F(DaoTestColumnStatisticsAllAPIUnhappy,
+TEST_F(DaoTestColumnStatisticsAllAPIException,
        upsert_one_column_statistics_in_non_json_format) {
     ErrorCode error = ErrorCode::INTERNAL_ERROR;
 
     UTTableMetadata *testdata_table_metadata =
-        api_test_env->testdata_table_metadata.get();
+        global->testdata_table_metadata.get();
     std::string s_column_statistic = "{not_json";
     std::string table_name = testdata_table_metadata->name + s_column_statistic;
 

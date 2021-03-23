@@ -13,27 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#ifndef API_TEST_TABLE_METADATAS_EXTRA_H_
+#define API_TEST_TABLE_METADATAS_EXTRA_H_
 
 #include <gtest/gtest.h>
-#include <boost/filesystem.hpp>
-#include <iostream>
+#include <boost/property_tree/ptree.hpp>
+#include <vector>
+
+#include "manager/metadata/metadata.h"
 
 #include "test/global_test_environment.h"
 
 namespace manager::metadata::testing {
 
-GlobalTestEnvironment *const global = reinterpret_cast<GlobalTestEnvironment *>(
-    ::testing::AddGlobalTestEnvironment(new GlobalTestEnvironment));
+class ApiTestTableMetadataExtra
+    : public ::testing::TestWithParam<boost::property_tree::ptree> {
+   public:
+    void SetUp() override;
+
+    static std::vector<boost::property_tree::ptree>
+    make_valid_table_metadatas();
+
+   protected:
+    std::vector<boost::property_tree::ptree> table_metadatas;
+};
 
 }  // namespace manager::metadata::testing
 
-int main(int argc, char **argv) {
-    printf("Running main() from %s\n", __FILE__);
-    ::testing::InitGoogleTest(&argc, argv);
-
-    if (argc == 2 && boost::filesystem::exists(argv[1])) {
-        manager::metadata::testing::global->set_json_schema_file_name(argv[1]);
-    }
-
-    return RUN_ALL_TESTS();
-}
+#endif  // API_TEST_TABLE_METADATAS_EXTRA_H_

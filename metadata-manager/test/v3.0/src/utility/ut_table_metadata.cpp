@@ -24,9 +24,21 @@ using namespace boost::property_tree;
 
 namespace manager::metadata::testing {
 
+/**
+ *  @brief  Generate ptree type table metadata
+ * from UTTableMetadata fields.
+ *  @return none.
+ */
 void UTTableMetadata::generate_ptree() {
+    // name
     tables.put(Tables::NAME, name);
 
+    // namespace
+    if (!namespace_name.empty()) {
+        tables.put(Tables::NAMESPACE, namespace_name);
+    }
+
+    // primary keys
     if (primary_keys.size() > 0) {
         ptree p_primary_key;
         ptree p_primary_keys;
@@ -39,32 +51,53 @@ void UTTableMetadata::generate_ptree() {
         tables.add_child(Tables::PRIMARY_KEY_NODE, p_primary_keys);
     }
 
+    // columns
     ptree ptree_columns;
     for (UTColumnMetadata column : columns) {
         ptree ptree_column;
 
+        // column name
         ptree_column.put(Tables::Column::NAME, column.name);
+
+        // column ordinal position
         ptree_column.put(Tables::Column::ORDINAL_POSITION,
                          column.ordinal_position);
 
+        // column data type id
         ptree_column.put<ObjectIdType>(Tables::Column::DATA_TYPE_ID,
                                        column.data_type_id);
 
+        // column nullable
         ptree_column.put<bool>(Tables::Column::NULLABLE, column.nullable);
 
+        // add column data length to ptree
+        // if UTTableMetadata data length is initialized
         if (column.data_length >= 0) {
             ptree_column.put(Tables::Column::DATA_LENGTH, column.data_length);
         }
 
+        // add column data length array to ptree
+        // if UTTableMetadata data length array is initialized
+        if (!column.p_data_lengths.empty()) {
+            ptree_column.add_child(Tables::Column::DATA_LENGTH,
+                                   column.p_data_lengths);
+        }
+
+        // add column varying to ptree
+        // if UTTableMetadata varying is initialized
         if (column.varying >= 0) {
             ptree_column.put<bool>(Tables::Column::VARYING,
                                    static_cast<bool>(column.varying));
         }
 
+        // add column default expression to ptree
+        // if UTTableMetadata default expression is initialized
         if (!column.default_expr.empty()) {
             ptree_column.put(Tables::Column::DEFAULT, column.default_expr);
         }
 
+        // add column direction to ptree
+        // if UTTableMetadata direction is initialized
         if (column.direction >=
             static_cast<int>(Tables::Column::Direction::DEFAULT)) {
             ptree_column.put(Tables::Column::DIRECTION, column.direction);

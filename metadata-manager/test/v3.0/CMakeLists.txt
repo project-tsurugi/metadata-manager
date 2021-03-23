@@ -24,4 +24,4 @@ target_link_libraries(${PROJECT_NAME}
     pq
 )
 
-add_test(NAME test COMMAND ${PROJECT_NAME})
+add_test(NAME test COMMAND ${PROJECT_NAME} "${CMAKE_CURRENT_SOURCE_DIR}/src/schema/tables.json")

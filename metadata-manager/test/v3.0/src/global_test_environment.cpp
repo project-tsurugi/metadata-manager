@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "test/api_test_environment.h"
+#include "test/global_test_environment.h"
 
 extern "C" {
 #include <libpq-fe.h>
@@ -31,21 +31,16 @@ namespace manager::metadata::testing {
 using namespace manager::metadata::db;
 using namespace manager::metadata;
 
-void ApiTestEnvironment::SetUp() {
-    UTUtils::generate_table_metadata(testdata_table_metadata, true);
-    UTUtils::generate_table_metadata(
-        testdata_table_metadata_without_primary_keys, false);
+void GlobalTestEnvironment::SetUp() {
+    // generate table metadata as test data.
+    UTUtils::generate_table_metadata(testdata_table_metadata);
 
+    // generate column statistics as test data.
     for (auto column : testdata_table_metadata->columns) {
         column_statistics.push_back(UTUtils::generate_column_statistic());
     }
 
-    boost::property_tree::ptree empty_column;
-
-    for (auto column : testdata_table_metadata->columns) {
-        empty_columns.push_back(empty_column);
-    }
-
+    // initialize non-existing table id.
     table_id_not_exists = {-1,
                            0,
                            INT64_MAX - 1,
@@ -53,6 +48,8 @@ void ApiTestEnvironment::SetUp() {
                            std::numeric_limits<ObjectIdType>::infinity(),
                            -std::numeric_limits<ObjectIdType>::infinity(),
                            std::numeric_limits<ObjectIdType>::quiet_NaN()};
+
+    // initialize non-existing ordinal positions.
     ordinal_position_not_exists = {
         -1,
         0,
@@ -63,6 +60,7 @@ void ApiTestEnvironment::SetUp() {
         -std::numeric_limits<ObjectIdType>::infinity(),
         std::numeric_limits<ObjectIdType>::quiet_NaN()};
 
+    // check if a connection to the metadata repository is opened or not.
     ConnectionSPtr connection = DbcUtils::make_connection_sptr(
         PQconnectdb(Config::get_connection_string().c_str()));
 
@@ -71,10 +69,8 @@ void ApiTestEnvironment::SetUp() {
     } else {
         is_open_ = false;
     }
-
-    UTUtils::print("global Setup()");
 }
 
-void ApiTestEnvironment::TearDown() { UTUtils::print("global TearDown()"); }
+void GlobalTestEnvironment::TearDown() {}
 
 }  // namespace manager::metadata::testing

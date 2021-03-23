@@ -49,19 +49,19 @@ typedef std::tuple<const char*, ObjectIdType> TupleConvertStrToInt64_t;
 class DaoTestCommonStrToInt64_t
     : public ::testing::TestWithParam<TupleConvertStrToInt64_t> {};
 
-class DaoTestCommonStrToFloatUnhappy
+class DaoTestCommonStrToFloatException
     : public ::testing::TestWithParam<const char*> {};
-class DaoTestCommonStrToUint64_tUnhappy
+class DaoTestCommonStrToUint64_tException
     : public ::testing::TestWithParam<const char*> {};
-class DaoTestCommonStrToInt64_tUnhappy
+class DaoTestCommonStrToInt64_tException
     : public ::testing::TestWithParam<const char*> {};
 
 class DaoTestCommonIfConnectionOpened : public ::testing::Test {
-    virtual void SetUp() { UTUtils::skip_if_connection_not_opened(); }
+    void SetUp() override { UTUtils::skip_if_connection_not_opened(); }
 };
 
 class DaoTestCommonIfConnectionNotOpened : public ::testing::Test {
-    virtual void SetUp() { UTUtils::skip_if_connection_opened(); }
+    void SetUp() override { UTUtils::skip_if_connection_opened(); }
 };
 
 class DaoTestCommon : public ::testing::Test {};
@@ -168,14 +168,14 @@ INSTANTIATE_TEST_CASE_P(
                         std::numeric_limits<ObjectIdType>::min())));
 
 INSTANTIATE_TEST_CASE_P(
-    ParamtererizedTest, DaoTestCommonStrToFloatUnhappy,
+    ParamtererizedTest, DaoTestCommonStrToFloatException,
     ::testing::Values("", " ", " 0", " 1", " +0", " +1", " -0", " -1", "+",
                       "++", "+-", "-", "--", "-+", "++0", "+-0", "--0", "-+0",
                       "+0+", "+0-", "-0-", "-0+", "0+", "0-", "0 ", "0x", "1 ",
                       "1e10000", "-1e10000", "1e-10000", "-1e-10000"));
 
 INSTANTIATE_TEST_SUITE_P(
-    ParamtererizedTest, DaoTestCommonStrToUint64_tUnhappy,
+    ParamtererizedTest, DaoTestCommonStrToUint64_tException,
     ::testing::Values("", " ", " 0", " 1", " +0", " +1", " -0", " -1", "+",
                       "++", "+-", "-", "--", "-+", "++0", "+-0", "--0", "-+0",
                       "+0+", "+0-", "-0-", "-0+", "0+", "0-", "0 ", "0x", "1 ",
@@ -183,7 +183,7 @@ INSTANTIATE_TEST_SUITE_P(
                       "99999999999999999999999999999999999999"));
 
 INSTANTIATE_TEST_SUITE_P(
-    ParamtererizedTest, DaoTestCommonStrToInt64_tUnhappy,
+    ParamtererizedTest, DaoTestCommonStrToInt64_tException,
     ::testing::Values("", " ", " 0", " 1", " +0", " +1", " -0", " -1", "+",
                       "++", "+-", "-", "--", "-+", "++0", "+-0", "--0", "-+0",
                       "+0+", "+0-", "-0-", "-0+", "0+", "0-", "0 ", "0x", "1 ",
@@ -194,19 +194,13 @@ INSTANTIATE_TEST_SUITE_P(
                       "+99999999999999999999999999999999999999",
                       "-99999999999999999999999999999999999999"));
 
-TEST_F(DaoTestCommonIfConnectionOpened, is_open) {
-    ConnectionSPtr no_connection;
-    EXPECT_EQ(false, DbcUtils::is_open(no_connection));
-
-    ConnectionSPtr connection = DbcUtils::make_connection_sptr(
-        PQconnectdb(Config::get_connection_string().c_str()));
-    EXPECT_EQ(true, DbcUtils::is_open(connection));
-}
-
+/**
+ * @brief Gets Connection Strings from OS environment variable.
+ */
 TEST_F(DaoTestCommon, get_connection_string) {
     const char* tmp_cs = std::getenv("TSURUGI_CONNECTION_STRING");
 
-    if (tmp_cs == NULL) {
+    if (tmp_cs == nullptr) {
         EXPECT_EQ("dbname=tsurugi", Config::get_connection_string());
         UTUtils::print("Connection Strings:", Config::get_connection_string());
     } else {
@@ -215,22 +209,50 @@ TEST_F(DaoTestCommon, get_connection_string) {
     }
 }
 
-TEST_F(DaoTestCommonIfConnectionNotOpened, is_open) {
+/**
+ * @brief Verifies that a connection is opened or not
+ * if a connection to metadata repository is opened.
+ */
+TEST_F(DaoTestCommonIfConnectionOpened, is_open) {
     ConnectionSPtr no_connection;
+    // If input nullptr, returned false
     EXPECT_EQ(false, DbcUtils::is_open(no_connection));
 
+    // Verifies that a connection is opened if it is opened.
+    ConnectionSPtr connection = DbcUtils::make_connection_sptr(
+        PQconnectdb(Config::get_connection_string().c_str()));
+    EXPECT_EQ(true, DbcUtils::is_open(connection));
+}
+
+/**
+ * @brief Verifies that a connection is closed
+ * if a connection to metadata repository is closed.
+ */
+TEST_F(DaoTestCommonIfConnectionNotOpened, is_open) {
+    ConnectionSPtr no_connection;
+    // If input nullptr, returns false
+    EXPECT_EQ(false, DbcUtils::is_open(no_connection));
+
+    // Verifies that a connection is closed if it is closed.
     ConnectionSPtr connection = DbcUtils::make_connection_sptr(
         PQconnectdb(Config::get_connection_string().c_str()));
     EXPECT_EQ(false, DbcUtils::is_open(connection));
 }
 
+/**
+ * @brief Converts boolean expression ("t" or "f") in metadata repository
+ * to "true" or "false" in application.
+ */
 TEST_F(DaoTestCommon, convert_boolean_expression) {
-    EXPECT_EQ("", DbcUtils::convert_boolean_expression(NULL));
+    EXPECT_EQ("", DbcUtils::convert_boolean_expression(nullptr));
     EXPECT_EQ("true", DbcUtils::convert_boolean_expression("t"));
     EXPECT_EQ("false", DbcUtils::convert_boolean_expression("f"));
     EXPECT_EQ("", DbcUtils::convert_boolean_expression(""));
 }
 
+/**
+ * @brief Happy test for converting string to floating point.
+ */
 TEST_P(DaoTestCommonStrToFloat, str_to_float) {
     auto params = GetParam();
 
@@ -248,7 +270,10 @@ TEST_P(DaoTestCommonStrToFloat, str_to_float) {
     }
 }
 
-TEST_P(DaoTestCommonStrToFloatUnhappy, str_to_float) {
+/**
+ * @brief Exception path test for converting string to floating point.
+ */
+TEST_P(DaoTestCommonStrToFloatException, str_to_float) {
     const char* input = GetParam();
 
     float actual = -10;
@@ -258,14 +283,20 @@ TEST_P(DaoTestCommonStrToFloatUnhappy, str_to_float) {
     EXPECT_EQ(-10, actual);
 }
 
-TEST_F(DaoTestCommonStrToFloatUnhappy, null_to_float) {
+/**
+ * @brief Converts nullptr to floating point.
+ */
+TEST_F(DaoTestCommonStrToFloatException, null_to_float) {
     float actual = -10;
-    ErrorCode error = DbcUtils::str_to_floating_point(NULL, actual);
+    ErrorCode error = DbcUtils::str_to_floating_point(nullptr, actual);
 
     EXPECT_EQ(ErrorCode::INTERNAL_ERROR, error);
     EXPECT_EQ(-10, actual);
 }
 
+/**
+ * @brief Happy path test for converting string to uint64_t.
+ */
 TEST_P(DaoTestCommonStrToUint64_t, str_to_integral) {
     auto params = GetParam();
     const char* input = std::get<0>(params);
@@ -279,7 +310,10 @@ TEST_P(DaoTestCommonStrToUint64_t, str_to_integral) {
     EXPECT_EQ(expected, actual);
 }
 
-TEST_P(DaoTestCommonStrToUint64_tUnhappy, str_to_integral) {
+/**
+ * @brief Exception path test for converting string to uint64_t.
+ */
+TEST_P(DaoTestCommonStrToUint64_tException, str_to_integral) {
     const char* input = GetParam();
 
     uint64_t actual = -10;
@@ -289,14 +323,20 @@ TEST_P(DaoTestCommonStrToUint64_tUnhappy, str_to_integral) {
     EXPECT_EQ(-10, actual);
 }
 
-TEST_F(DaoTestCommonStrToUint64_tUnhappy, null_to_integral) {
+/**
+ * @brief Exception path test for converting nullptr to uint64_t.
+ */
+TEST_F(DaoTestCommonStrToUint64_tException, null_to_integral) {
     uint64_t actual = -10;
-    ErrorCode error = DbcUtils::str_to_integral(NULL, actual);
+    ErrorCode error = DbcUtils::str_to_integral(nullptr, actual);
 
     EXPECT_EQ(ErrorCode::INTERNAL_ERROR, error);
     EXPECT_EQ(-10, actual);
 }
 
+/**
+ * @brief Happy path test for converting string to int64_t.
+ */
 TEST_P(DaoTestCommonStrToInt64_t, str_to_integral) {
     auto params = GetParam();
     const char* input = std::get<0>(params);
@@ -310,7 +350,10 @@ TEST_P(DaoTestCommonStrToInt64_t, str_to_integral) {
     EXPECT_EQ(expected, actual);
 }
 
-TEST_P(DaoTestCommonStrToInt64_tUnhappy, str_to_integral) {
+/**
+ * @brief Exception path test for converting string to int64_t.
+ */
+TEST_P(DaoTestCommonStrToInt64_tException, str_to_integral) {
     const char* input = GetParam();
 
     ObjectIdType actual = -10;
@@ -320,22 +363,31 @@ TEST_P(DaoTestCommonStrToInt64_tUnhappy, str_to_integral) {
     EXPECT_EQ(-10, actual);
 }
 
-TEST_F(DaoTestCommonStrToInt64_tUnhappy, null_to_integral) {
+/**
+ * @brief Converts nullptr to int64_t.
+ */
+TEST_F(DaoTestCommonStrToInt64_tException, null_to_integral) {
     ObjectIdType actual = -10;
-    ErrorCode error = DbcUtils::str_to_integral(NULL, actual);
+    ErrorCode error = DbcUtils::str_to_integral(nullptr, actual);
 
     EXPECT_EQ(ErrorCode::INTERNAL_ERROR, error);
     EXPECT_EQ(-10, actual);
 }
 
+/**
+ * @brief By inputting nullptr, make ConnectionSPtr.
+ */
 TEST_F(DaoTestCommon, make_connection_sptr) {
-    ConnectionSPtr conn_sptr = DbcUtils::make_connection_sptr(NULL);
+    ConnectionSPtr conn_sptr = DbcUtils::make_connection_sptr(nullptr);
     EXPECT_EQ(nullptr, conn_sptr.get());
     EXPECT_EQ(nullptr, conn_sptr);
 }
 
+/**
+ * @brief By inputting nullptr, make ResultUPtr.
+ */
 TEST_F(DaoTestCommon, make_result_uptr) {
-    ResultUPtr res_uptr = DbcUtils::make_result_uptr(NULL);
+    ResultUPtr res_uptr = DbcUtils::make_result_uptr(nullptr);
     EXPECT_EQ(nullptr, res_uptr.get());
     EXPECT_EQ(nullptr, res_uptr);
 }

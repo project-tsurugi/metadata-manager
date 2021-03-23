@@ -33,15 +33,13 @@ class UTUtils {
    public:
     static void skip_if_connection_not_opened();
     static void skip_if_connection_opened();
-    static std::string indent(int level);
     static std::string get_tree_string(const boost::property_tree::ptree &pt);
     static std::string print_tree(const boost::property_tree::ptree &pt,
                                   int level);
     static void print_column_metadata(const UTColumnMetadata &column_metadata);
     static void print_table_statistics(const TableStatistic &table_statistics);
     static void generate_table_metadata(
-        std::unique_ptr<UTTableMetadata> &testdata_table_metadata,
-        bool with_primary_keys);
+        std::unique_ptr<UTTableMetadata> &testdata_table_metadata);
     static std::string generate_random_string();
     static boost::property_tree::ptree generate_histogram();
     static boost::property_tree::ptree generate_histogram_array();
@@ -70,6 +68,7 @@ class UTUtils {
     }
 
    private:
+    static std::string indent(int level);
     static void get_tree_string_internal(const boost::property_tree::ptree &pt,
                                          int level, std::string &output_string,
                                          bool print_tree_enabled);

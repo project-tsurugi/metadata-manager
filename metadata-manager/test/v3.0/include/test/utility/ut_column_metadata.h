@@ -17,6 +17,7 @@
 #ifndef UT_COLUMN_METADATA_H_
 #define UT_COLUMN_METADATA_H_
 
+#include <boost/property_tree/ptree.hpp>
 #include <string>
 #include <string_view>
 
@@ -29,7 +30,10 @@ class UTColumnMetadata {
     std::string name;
     int64_t ordinal_position = NOT_INITIALIZED;
     int64_t data_type_id = NOT_INITIALIZED;
-    int64_t data_length = NOT_INITIALIZED;
+    int64_t data_length =
+        NOT_INITIALIZED;  //!< @brief single value of data length
+    boost::property_tree::ptree
+        p_data_lengths;  //!< @brief array of data length
     int varying = NOT_INITIALIZED;
     bool nullable;
     std::string default_expr;

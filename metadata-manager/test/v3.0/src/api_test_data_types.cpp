@@ -25,14 +25,15 @@
 #include "manager/metadata/datatypes.h"
 #include "manager/metadata/error_code.h"
 
-#include "test/api_test_environment.h"
+#include "test/api_test_data_types.h"
+#include "test/global_test_environment.h"
 #include "test/utility/ut_utils.h"
 
 using namespace manager::metadata;
 using namespace boost::property_tree;
 
 namespace manager::metadata::testing {
-
+// tsurugi data type name
 struct DataTypesName {
     static constexpr char INT32[] = "INT32";
     static constexpr char INT64[] = "INT64";
@@ -41,7 +42,7 @@ struct DataTypesName {
     static constexpr char CHAR[] = "CHAR";
     static constexpr char VARCHAR[] = "VARCHAR";
 };
-
+// PostgreSQL data type oid
 struct PgDataType {
     static constexpr char INT32[] = "23";
     static constexpr char INT64[] = "20";
@@ -50,7 +51,7 @@ struct PgDataType {
     static constexpr char CHAR[] = "1042";
     static constexpr char VARCHAR[] = "1043";
 };
-
+// PostgreSQL data type name
 struct PgDataTypeName {
     static constexpr char INT32[] = "integer";
     static constexpr char INT64[] = "bigint";
@@ -59,7 +60,7 @@ struct PgDataTypeName {
     static constexpr char CHAR[] = "char";
     static constexpr char VARCHAR[] = "varchar";
 };
-
+// PostgreSQL internal qualified data type name
 struct PgDataTypeQualifiedName {
     static constexpr char INT32[] = "int4";
     static constexpr char INT64[] = "int8";
@@ -69,8 +70,7 @@ struct PgDataTypeQualifiedName {
     static constexpr char VARCHAR[] = "varchar";
 };
 
-typedef std::tuple<std::string, std::string> TupleApiTestDataTypes;
-
+// a list of tsurugi data type id
 std::vector<std::string> DataTypesIdList = {
     std::to_string(static_cast<ObjectIdType>(DataTypes::DataTypesId::INT32)),
     std::to_string(static_cast<ObjectIdType>(DataTypes::DataTypesId::INT64)),
@@ -79,28 +79,46 @@ std::vector<std::string> DataTypesIdList = {
     std::to_string(static_cast<ObjectIdType>(DataTypes::DataTypesId::CHAR)),
     std::to_string(static_cast<ObjectIdType>(DataTypes::DataTypesId::VARCHAR)),
 };
+// a list of tsurugi data type name
 std::vector<std::string> DataTypesNameList = {
     DataTypesName::INT32,   DataTypesName::INT64, DataTypesName::FLOAT32,
     DataTypesName::FLOAT64, DataTypesName::CHAR,  DataTypesName::VARCHAR};
+// a list of PostgreSQL data type oid
 std::vector<std::string> PgDataTypeList = {
     PgDataType::INT32,   PgDataType::INT64, PgDataType::FLOAT32,
     PgDataType::FLOAT64, PgDataType::CHAR,  PgDataType::VARCHAR};
+// a list of PostgreSQL data type name
 std::vector<std::string> PgDataTypeNameList = {
     PgDataTypeName::INT32,   PgDataTypeName::INT64, PgDataTypeName::FLOAT32,
     PgDataTypeName::FLOAT64, PgDataTypeName::CHAR,  PgDataTypeName::VARCHAR};
+// a list of PostgreSQL qualified data type name
 std::vector<std::string> PgDataTypeQualifiedNameList = {
     PgDataTypeQualifiedName::INT32,   PgDataTypeQualifiedName::INT64,
     PgDataTypeQualifiedName::FLOAT32, PgDataTypeQualifiedName::FLOAT64,
     PgDataTypeQualifiedName::CHAR,    PgDataTypeQualifiedName::VARCHAR};
 
-void make_datatypes_tuple(std::string key, std::vector<std::string> values,
-                          ::std::vector<TupleApiTestDataTypes>& v) {
+/**
+ * @brief  internal function of make_datatypes_tuple.
+ * @param  (key)      [in]  a data types key.
+ * @param  (values)   [in]  data types values.
+ * @param  (v)        [out] a list of key/value pair about data types metadata.
+ * @return none.
+ */
+void ApiTestDataTypes::make_datatypes_tuple(
+    std::string key, std::vector<std::string> values,
+    ::std::vector<TupleApiTestDataTypes>& v) {
     for (auto value : values) {
         v.emplace_back(key, value);
     }
 }
 
-::std::vector<TupleApiTestDataTypes> make_datatypes_tuple() {
+/**
+ * @brief Make a list of key/value pair about data types metadata.
+ * @return a list of key/value pair about data types metadata.
+ * For example, if key = DataTypes::NAME, values are "INT32", "INT64", and
+ * "FLOAT32" etc.
+ */
+std::vector<TupleApiTestDataTypes> ApiTestDataTypes::make_datatypes_tuple() {
     ::std::vector<TupleApiTestDataTypes> v;
     make_datatypes_tuple(DataTypes::ID, DataTypesIdList, v);
     make_datatypes_tuple(DataTypes::NAME, DataTypesNameList, v);
@@ -118,17 +136,31 @@ class ApiTestDataTypesByKeyValue
 class ApiTestDataTypesByName : public ::testing::TestWithParam<std::string> {
     void SetUp() override { UTUtils::skip_if_connection_not_opened(); }
 };
+class ApiTestDataTypesException
+    : public ::testing::TestWithParam<std::tuple<std::string, std::string>> {
+    void SetUp() override { UTUtils::skip_if_connection_not_opened(); }
+};
 
-void check_datatype_metadata_expected(const ptree& datatype) {
+/**
+ * @brief Verifies that returned data type metadata equals expected one.
+ * @param (datatype)  [in] data type metadata returned from api to get
+ * data type metadata
+ */
+void ApiTestDataTypes::check_datatype_metadata_expected(const ptree& datatype) {
+    // tsurugi data type id
     auto data_type_id = datatype.get<ObjectIdType>(DataTypes::ID);
 
+    // tsurugi data type name
     auto datatype_name_got = datatype.get<std::string>(DataTypes::NAME);
 
+    // PostgreSQL data type oid
     auto pg_data_type = datatype.get<std::string>(DataTypes::PG_DATA_TYPE);
 
+    // PostgreSQL data type name
     auto pg_data_type_name =
         datatype.get<std::string>(DataTypes::PG_DATA_TYPE_NAME);
 
+    // PostgreSQL data type qualified name
     auto pg_data_type_qualified_name =
         datatype.get<std::string>(DataTypes::PG_DATA_TYPE_QUALIFIED_NAME);
 
@@ -182,8 +214,13 @@ void check_datatype_metadata_expected(const ptree& datatype) {
     }
 }
 
+/**
+ * @brief Happy test for getting all data type metadatas based on data type
+ * name.
+ */
 TEST_P(ApiTestDataTypesByName, get_datatypes_by_name) {
-    auto datatypes = std::make_unique<DataTypes>(ApiTestEnvironment::TEST_DB);
+    auto datatypes =
+        std::make_unique<DataTypes>(GlobalTestEnvironment::TEST_DB);
 
     auto param = GetParam();
     ptree datatype;
@@ -191,13 +228,20 @@ TEST_P(ApiTestDataTypesByName, get_datatypes_by_name) {
     ErrorCode error = datatypes->get(param, datatype);
     EXPECT_EQ(ErrorCode::OK, error);
 
+    UTUtils::print("-- get data type metadata --");
     UTUtils::print(UTUtils::get_tree_string(datatype));
 
-    check_datatype_metadata_expected(datatype);
+    // Verifies that returned data type metadata equals expected one.
+    ApiTestDataTypes::check_datatype_metadata_expected(datatype);
 }
 
+/**
+ * @brief Happy test for getting all data type metadatas based on data type
+ * key/value pair.
+ */
 TEST_P(ApiTestDataTypesByKeyValue, get_datatypes_by_key_value) {
-    auto datatypes = std::make_unique<DataTypes>(ApiTestEnvironment::TEST_DB);
+    auto datatypes =
+        std::make_unique<DataTypes>(GlobalTestEnvironment::TEST_DB);
 
     auto param = GetParam();
     std::string key = std::get<0>(param);
@@ -207,14 +251,65 @@ TEST_P(ApiTestDataTypesByKeyValue, get_datatypes_by_key_value) {
     ErrorCode error = datatypes->get(key.c_str(), value, datatype);
     EXPECT_EQ(ErrorCode::OK, error);
 
+    UTUtils::print("-- get data type metadata --");
     UTUtils::print(UTUtils::get_tree_string(datatype));
 
-    check_datatype_metadata_expected(datatype);
+    // Verifies that returned data type metadata equals expected one.
+    ApiTestDataTypes::check_datatype_metadata_expected(datatype);
+}
+
+/**
+ * @brief Exception path test for getting non-existing data type metadatas
+ * based on invalid data type name.
+ */
+TEST_P(ApiTestDataTypesException, get_non_existing_datatypes_by_name) {
+    auto datatypes =
+        std::make_unique<DataTypes>(GlobalTestEnvironment::TEST_DB);
+
+    std::string value = std::get<0>(GetParam());
+    ptree datatype;
+
+    ErrorCode error = datatypes->get(value, datatype);
+    EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);
+
+    // Verifies that returned data type metadata equals expected one.
+    ptree empty_ptree;
+    EXPECT_EQ(UTUtils::get_tree_string(empty_ptree),
+              UTUtils::get_tree_string(datatype));
+}
+
+/**
+ * @brief Exception path test for getting non-existing data type metadatas
+ * based on invalid data type key/value pair.
+ */
+TEST_P(ApiTestDataTypesException, get_non_existing_datatypes_by_key_value) {
+    auto datatypes =
+        std::make_unique<DataTypes>(GlobalTestEnvironment::TEST_DB);
+
+    std::string key = std::get<0>(GetParam());
+    std::string value = std::get<1>(GetParam());
+
+    ptree datatype;
+    ErrorCode error = datatypes->get(key.c_str(), value, datatype);
+    EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);
+
+    // Verifies that returned data type metadata equals expected one.
+    ptree empty_ptree;
+    EXPECT_EQ(UTUtils::get_tree_string(empty_ptree),
+              UTUtils::get_tree_string(datatype));
 }
 
 INSTANTIATE_TEST_CASE_P(ParamtererizedTest, ApiTestDataTypesByName,
                         ::testing::ValuesIn(DataTypesNameList));
-INSTANTIATE_TEST_CASE_P(ParamtererizedTest, ApiTestDataTypesByKeyValue,
-                        ::testing::ValuesIn(make_datatypes_tuple()));
+INSTANTIATE_TEST_CASE_P(
+    ParamtererizedTest, ApiTestDataTypesByKeyValue,
+    ::testing::ValuesIn(ApiTestDataTypes::make_datatypes_tuple()));
+
+INSTANTIATE_TEST_CASE_P(ParamtererizedTest, ApiTestDataTypesException,
+                        ::testing::Values(std::make_tuple("", ""),
+                                          std::make_tuple("", "invalid_value"),
+                                          std::make_tuple("invalid_key", ""),
+                                          std::make_tuple("invalid_key",
+                                                          "invalid_value")));
 
 }  // namespace manager::metadata::testing

@@ -28,7 +28,7 @@ namespace manager::metadata::testing {
 using namespace manager::metadata::db;
 
 class DaoTestDBAccessFailure : public ::testing::Test {
-    virtual void SetUp() { UTUtils::skip_if_connection_opened(); }
+    void SetUp() override { UTUtils::skip_if_connection_opened(); }
 };
 
 TEST_F(DaoTestDBAccessFailure, all) {
