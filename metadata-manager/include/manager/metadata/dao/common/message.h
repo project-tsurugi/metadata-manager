@@ -46,6 +46,8 @@ struct Message {
         "Failed to convert a string to a floating point. ";
     static constexpr const char* const CONVERT_STRING_TO_INT_FAILURE =
         "Failed to convert a string to an integer. ";
+    static constexpr const char* const METADATA_KEY_NOT_FOUND =
+        "Could not find such column name of metadata.: ";
 };
 }  // namespace manager::metadata::db
 

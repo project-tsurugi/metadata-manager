@@ -16,6 +16,7 @@
 
 #include "manager/metadata/dao/datatypes_dao.h"
 
+#include <iostream>
 #include <string>
 #include <utility>
 #include <vector>
@@ -187,10 +188,15 @@ ErrorCode DataTypesDAO::select_one_data_type_metadata(
 
     param_values.emplace_back(object_value.c_str());
 
-    std::string statement_name_found =
-        statement_names_select_equal_to.at(object_key);
-    if (statement_name_found.empty()) {
-        return ErrorCode::INTERNAL_ERROR;
+    std::string statement_name_found;
+    try {
+        statement_name_found = statement_names_select_equal_to.at(object_key);
+    } catch (std::out_of_range &e) {
+        std::cerr << Message::METADATA_KEY_NOT_FOUND << e.what() << std::endl;
+        return ErrorCode::INVALID_PARAMETER;
+    } catch (...) {
+        std::cerr << Message::METADATA_KEY_NOT_FOUND << std::endl;
+        return ErrorCode::INVALID_PARAMETER;
     }
 
     PGresult *res;
