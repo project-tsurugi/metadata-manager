@@ -75,59 +75,14 @@ class Tables : public Metadata {
 
     ErrorCode init() override;
 
-    /**
-     *  @brief  Add metadata-object to metadata-table.
-     *  @param  (object) [in]  metadata-object to add.
-     *  @return ErrorCode::OK if success, otherwise an error code.
-     */
     ErrorCode add(boost::property_tree::ptree& object) override;
-
-    /**
-     *  @brief  Add metadata-object to metadata-table.
-     *  @param  (object)      [in]  metadata-object to add.
-     *  @param  (object_id)   [out] ID of the added metadata-object.
-     *  @return ErrorCode::OK if success, otherwise an error code.
-     */
     ErrorCode add(boost::property_tree::ptree& object,
                   ObjectIdType* object_id) override;
-
-    /**
-     *  @brief  Get metadata-object.
-     *  @param  (object_id) [in]  metadata-object ID.
-     *  @param  (object)    [out] metadata-object with the specified ID.
-     *  @return ErrorCode::OK if success, otherwise an error code.
-     */
     ErrorCode get(const ObjectIdType object_id,
                   boost::property_tree::ptree& object) override;
-
-    /**
-     *  @brief  Get metadata-object.
-     *  @param  (object_name)   [in]  metadata-object name. (Value of "name"
-     * key.)
-     *  @param  (object)        [out] metadata-object with the specified name.
-     *  @return ErrorCode::OK if success, otherwise an error code.
-     */
     ErrorCode get(std::string_view object_name,
                   boost::property_tree::ptree& object) override;
-
-    /**
-     *  @brief  Remove all metadata-object based on the given table id
-     *  (table metadata, column metadata and column statistics)
-     *  from metadata-table (the table metadata table,
-     *  the column metadata table and the column statistics table).
-     *  @param (table_id) [in] table id.
-     *  @return ErrorCode::OK if success, otherwise an error code.
-     */
     ErrorCode remove(const ObjectIdType object_id) override;
-
-    /**
-     *  @brief  Remove all metadata-object based on the given table name
-     *  (table metadata, column metadata and column statistics)
-     *  from metadata-table (the table metadata table,
-     *  the column metadata table and the column statistics table).
-     *  @param (table_id) [in] table id.
-     *  @return ErrorCode::OK if success, otherwise an error code.
-     */
     ErrorCode remove(const char* object_name, ObjectIdType* object_id) override;
 
     /**
@@ -145,13 +100,6 @@ class Tables : public Metadata {
     std::shared_ptr<manager::metadata::db::TablesDAO> tdao;
     std::shared_ptr<manager::metadata::db::ColumnsDAO> cdao;
 
-    /**
-     *  @brief  Get column metadata-object based on the given table id.
-     *  @param  (table_id) [in]  table id.
-     *  @param  (tables)   [out] table metadata-object with the specified table
-     * id.
-     *  @return ErrorCode::OK if success, otherwise an error code.
-     */
     ErrorCode get_all_column_metadatas(const std::string& table_id,
                                        boost::property_tree::ptree& tables);
 

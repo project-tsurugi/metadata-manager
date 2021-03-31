@@ -18,7 +18,6 @@
 
 #include "manager/metadata/dao/generic_dao.h"
 
-
 using namespace boost::property_tree;
 using namespace manager::metadata::db;
 
@@ -57,7 +56,7 @@ ErrorCode DataTypes::init() {
  *  @brief  Gets one data type metadata object
  *  from the data types metadata table
  *  based on the given object_name.
- *  @param  (object_name)   [in]  metadata-object name. (Value of "name"
+ *  @param  (object_name)   [in]  data type metadata name. (Value of "name"
  * key.)
  *  @param  (object)        [out] one data type metadata object to get
  *  based on the given object_name.
