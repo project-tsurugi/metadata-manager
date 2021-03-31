@@ -1,0 +1,17 @@
+@startuml
+left to right direction
+actor "メタデータ管理基盤" as metadata_manager << System >>
+actor "OLTP・OLAP" as Tsurugi_engine << System >>
+rectangle "メタデータ管理基盤" as metadata_manager {
+  usecase "列統計・表統計を新規登録" as UC5
+  usecase "列統計・表統計を更新" as UC6
+  usecase "列統計・表統計を参照" as UC7
+  usecase "列統計・表統計を削除" as UC8
+}
+
+Tsurugi_engine --> UC5
+Tsurugi_engine --> UC6
+Tsurugi_engine --> UC7
+Tsurugi_engine --> UC8
+
+@enduml
