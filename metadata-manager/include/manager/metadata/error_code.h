@@ -58,6 +58,29 @@ enum class ErrorCode {
      *  @brief table name already exists.
      */
     TABLE_NAME_ALREADY_EXISTS,
+    
+    /**
+     * @brief Invalid parameter input.
+     */
+    INVALID_PARAMETER,
+
+    /**
+     * @brief Failed to access metadata repository.
+     */
+    DATABASE_ACCESS_FAILURE,
+
+    /**
+     * @brief Service class instance is not initialized.
+     * Connection is not established,
+     * Failed to send prepared statement query to metadata store or
+     * Failed to set always-secure search path.
+     */
+    NOT_INITIALIZED,
+
+    /**
+     * @brief internal error.
+     */
+    INTERNAL_ERROR
 };
 
 }   // namespace manager::metadadta

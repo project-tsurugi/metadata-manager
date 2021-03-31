@@ -3,15 +3,15 @@
 #include <string_view>
 #include <vector>
 
-#include <boost/property_tree/ptree.hpp>
-#include <boost/property_tree/json_parser.hpp>
-#include <boost/property_tree/exceptions.hpp>
 #include <boost/foreach.hpp>
 #include <boost/optional.hpp>
+#include <boost/property_tree/exceptions.hpp>
+#include <boost/property_tree/json_parser.hpp>
+#include <boost/property_tree/ptree.hpp>
 
 #include "manager/metadata/error_code.h"
-#include "manager/metadata/object_id.h"
 #include "manager/metadata/metadata.h"
+#include "manager/metadata/object_id.h"
 //#include "manager/metadata/datatype_metadata.h"
 //#include "manager/metadata/table_metadata.h"
 #include "manager/metadata/datatypes.h"
@@ -20,21 +20,21 @@
 using namespace manager::metadata;
 using namespace boost::property_tree;
 
-const char * const TEST_DB = "test_DB";
+const char* const TEST_DB = "test_DB";
 
 /*
  *  @brief  print error code and line number.
  */
-void print_error(ErrorCode error, uint64_t line)
-{
-    std::cout << std::endl << "error occurred at line " << line << ", errorno: " << (uint64_t) error << std::endl;
+void print_error(ErrorCode error, uint64_t line) {
+    std::cout << std::endl
+              << "error occurred at line " << line
+              << ", errorno: " << (uint64_t)error << std::endl;
 }
 
 /*
  *  @brief  generate new table name.
  */
-const std::string get_tablename()
-{
+const std::string get_tablename() {
     ObjectIdType number = ObjectId::current("tables") + 1;
     std::string name = "table_" + std::to_string(number);
 
@@ -73,8 +73,7 @@ bool initialize()
 /*
  *  @biref  display talbe-metadata-object.
  */
-ErrorCode display_table_metadata_object(const ptree& table)
-{
+ErrorCode display_table_metadata_object(const ptree& table) {
     ErrorCode error = ErrorCode::OK;
 
     std::unique_ptr<Metadata> datatypes(new DataTypes(TEST_DB));
@@ -113,7 +112,8 @@ ErrorCode display_table_metadata_object(const ptree& table)
 
     // column metadata
     std::cout << "--- columns ---" << std::endl;
-    BOOST_FOREACH (const ptree::value_type& node, table.get_child(Tables::COLUMNS_NODE)) {
+    BOOST_FOREACH (const ptree::value_type& node,
+                   table.get_child(Tables::COLUMNS_NODE)) {
         const ptree& column = node.second;
 
         boost::optional<ObjectIdType> id =
@@ -162,7 +162,7 @@ ErrorCode display_table_metadata_object(const ptree& table)
         std::cout << "datatype id : " << data_type_id << std::endl;
         datatypes->get(data_type_id.get(), datatype);
         std::cout << "datatype name : "
-            << datatype.get<std::string>(DataTypes::NAME) << std::endl;
+                  << datatype.get<std::string>(DataTypes::NAME) << std::endl;
 
         boost::optional<uint64_t> data_length =
             column.get_optional<uint64_t>(Tables::Column::DATA_LENGTH);
@@ -211,17 +211,18 @@ ErrorCode display_table_metadata_object(const ptree& table)
         std::cout << "---------------" << std::endl;
     }
 
-    return ErrorCode::OK;;
+    return ErrorCode::OK;
+    ;
 }
 
 /*
  *  @biref  add a table-metadata to metadata-table.
  */
-ErrorCode add_table_metadata()
-{
+ErrorCode add_table_metadata() {
     ErrorCode error = ErrorCode::UNKNOWN;
 
-    std::unique_ptr<Metadata> tables(new Tables(TEST_DB));   // use Template-Method.
+    std::unique_ptr<Metadata> tables(
+        new Tables(TEST_DB));  // use Template-Method.
     error = tables->load();
     if (error != ErrorCode::OK) {
         print_error(error, __LINE__);
@@ -246,16 +247,13 @@ ErrorCode add_table_metadata()
     ptree primary_key;
     ptree primary_keys;
 
-    enum class ordinal_position
-    {
+    enum class ordinal_position {
         column_1 = 1,
         column_2,
         column_3,
     };
 
-    std::vector<std::string> column_name = {
-            "column_1", "column_2", "column_3"
-        };
+    std::vector<std::string> column_name = {"column_1", "column_2", "column_3"};
 
     primary_key.put("", static_cast<int>(ordinal_position::column_1));
     primary_keys.push_back(std::make_pair("", primary_key));
@@ -271,41 +269,37 @@ ErrorCode add_table_metadata()
         // column #1
         column.clear();
         column.put(Tables::Column::NAME, column_name[0]);
-        column.put(Tables::Column::ORDINAL_POSITION, static_cast<int>(ordinal_position::column_1));
-        datatypes->get(DataTypes::PG_DATA_TYPE_QUALIFIED_NAME, "float4", datatype);
+        column.put(Tables::Column::ORDINAL_POSITION,
+                   static_cast<int>(ordinal_position::column_1));
+        datatypes->get(DataTypes::PG_DATA_TYPE_QUALIFIED_NAME, "float4",
+                       datatype);
         ObjectIdType data_type_id = datatype.get<ObjectIdType>(DataTypes::ID);
-        if (!data_type_id)
-        {
+        if (!data_type_id) {
             return ErrorCode::NOT_FOUND;
-        }
-        else
-        {
-            if (DataTypes::DataTypesId::FLOAT32
-                != static_cast<DataTypes::DataTypesId>(data_type_id))
-            {
+        } else {
+            if (DataTypes::DataTypesId::FLOAT32 !=
+                static_cast<DataTypes::DataTypesId>(data_type_id)) {
                 return ErrorCode::UNKNOWN;
             }
         }
         column.put<ObjectIdType>(Tables::Column::DATA_TYPE_ID, data_type_id);
         column.put<bool>(Tables::Column::NULLABLE, false);
-        column.put(Tables::Column::DIRECTION, static_cast<int>(Tables::Column::Direction::ASCENDANT));
+        column.put(Tables::Column::DIRECTION,
+                   static_cast<int>(Tables::Column::Direction::ASCENDANT));
         columns.push_back(std::make_pair("", column));
 
         // column #2
         column.clear();
         column.put(Tables::Column::NAME, column_name[1]);
-        column.put(Tables::Column::ORDINAL_POSITION, static_cast<int>(ordinal_position::column_2));
+        column.put(Tables::Column::ORDINAL_POSITION,
+                   static_cast<int>(ordinal_position::column_2));
         datatypes->get("VARCHAR", datatype);
         data_type_id = datatype.get<ObjectIdType>(DataTypes::ID);
-        if (!data_type_id)
-        {
+        if (!data_type_id) {
             return ErrorCode::NOT_FOUND;
-        }
-        else
-        {
-            if (DataTypes::DataTypesId::VARCHAR
-                != static_cast<DataTypes::DataTypesId>(data_type_id))
-            {
+        } else {
+            if (DataTypes::DataTypesId::VARCHAR !=
+                static_cast<DataTypes::DataTypesId>(data_type_id)) {
                 return ErrorCode::UNKNOWN;
             }
         }
@@ -313,29 +307,31 @@ ErrorCode add_table_metadata()
         column.put<uint64_t>(Tables::Column::DATA_LENGTH, 8);
         column.put<bool>(Tables::Column::VARYING, true);
         column.put<bool>(Tables::Column::NULLABLE, false);
-        column.put(Tables::Column::DIRECTION, static_cast<int>(Tables::Column::Direction::DEFAULT));
+        column.put(Tables::Column::DIRECTION,
+                   static_cast<int>(Tables::Column::Direction::DEFAULT));
         columns.push_back(std::make_pair("", column));
 
         // column #3
         column.clear();
         column.put(Tables::Column::NAME, column_name[2]);
-        column.put(Tables::Column::ORDINAL_POSITION, static_cast<int>(ordinal_position::column_3));
+        column.put(Tables::Column::ORDINAL_POSITION,
+                   static_cast<int>(ordinal_position::column_3));
         datatypes->get("CHAR", datatype);
         data_type_id = datatype.get<ObjectIdType>(DataTypes::ID);
         if (!data_type_id) {
             return ErrorCode::NOT_FOUND;
-        } else{
-            if (DataTypes::DataTypesId::CHAR
-                != static_cast<DataTypes::DataTypesId>(data_type_id))
-                {
-                    return ErrorCode::UNKNOWN;
+        } else {
+            if (DataTypes::DataTypesId::CHAR !=
+                static_cast<DataTypes::DataTypesId>(data_type_id)) {
+                return ErrorCode::UNKNOWN;
             }
         }
         column.put(Tables::Column::DATA_TYPE_ID, data_type_id);
         column.put<uint64_t>(Tables::Column::DATA_LENGTH, 1);
         column.put<bool>(Tables::Column::VARYING, false);
         column.put<bool>(Tables::Column::NULLABLE, true);
-        column.put(Tables::Column::DIRECTION, static_cast<int>(Tables::Column::Direction::DEFAULT));
+        column.put(Tables::Column::DIRECTION,
+                   static_cast<int>(Tables::Column::Direction::DEFAULT));
         columns.push_back(std::make_pair("", column));
     }
     new_table.add_child(Tables::COLUMNS_NODE, columns);
@@ -344,7 +340,7 @@ ErrorCode add_table_metadata()
     // add table-metadata object
     //
     error = tables->add(new_table);
-    if ( error != ErrorCode::OK) {
+    if (error != ErrorCode::OK) {
         print_error(error, __LINE__);
         return error;
     }
@@ -357,8 +353,7 @@ ErrorCode add_table_metadata()
 /*
  *  @biref  remove a table-metadata to metadata-table.
  */
-ErrorCode remove_table_metadata()
-{
+ErrorCode remove_table_metadata() {
     ErrorCode error = ErrorCode::UNKNOWN;
     int TABLE_NUM_ADDED = 4;
 
@@ -370,7 +365,8 @@ ErrorCode remove_table_metadata()
         }
     }
 
-    std::unique_ptr<Metadata> tables(new Tables(TEST_DB)); // use Template-Method.
+    std::unique_ptr<Metadata> tables(
+        new Tables(TEST_DB));  // use Template-Method.
     error = tables->load();
     if (error != ErrorCode::OK) {
         print_error(error, __LINE__);
@@ -381,12 +377,12 @@ ErrorCode remove_table_metadata()
     // remove table-metadata object
     //
     ObjectIdType number = ObjectId::current("tables");
-    std::vector<std::string> table_names =
-        {"table_" + std::to_string(number - 3),
-         "table_" + std::to_string(number - 1),
-         "table_" + std::to_string(number - 4),
-         "table_" + std::to_string(number - 0),
-         "table_" + std::to_string(number - 2)};
+    std::vector<std::string> table_names = {
+        "table_" + std::to_string(number - 3),
+        "table_" + std::to_string(number - 1),
+        "table_" + std::to_string(number - 4),
+        "table_" + std::to_string(number - 0),
+        "table_" + std::to_string(number - 2)};
 
     for (std::string name : table_names) {
         uint64_t object_id = 0;
@@ -395,37 +391,33 @@ ErrorCode remove_table_metadata()
             print_error(error, __LINE__);
             return error;
         } else {
-            std::cout << "remove table name :" << name << ", id:" << object_id << std::endl;
+            std::cout << "remove table name :" << name << ", id:" << object_id
+                      << std::endl;
         }
     }
 
-    const char *const table_name_not_exists = "table_name_not_exists";
+    const char* const table_name_not_exists = "table_name_not_exists";
     uint64_t object_id = 0;
     error = tables->remove(table_name_not_exists, &object_id);
 
-    if (error == ErrorCode::OK)
-    {
+    if (error == ErrorCode::OK) {
         print_error(error, __LINE__);
         return error;
-    }
-    else
-    {
-        std::cout << "can't remove table name not exists :" << table_name_not_exists << std::endl;
+    } else {
+        std::cout << "can't remove table name not exists :"
+                  << table_name_not_exists << std::endl;
     }
 
-    for (int num = 0; num < TABLE_NUM_ADDED + 1; num++)
-    {
+    for (int num = 0; num < TABLE_NUM_ADDED + 1; num++) {
         error = add_table_metadata();
-        if (error != ErrorCode::OK)
-        {
+        if (error != ErrorCode::OK) {
             print_error(error, __LINE__);
             return error;
         }
     }
 
     error = tables->load();
-    if (error != ErrorCode::OK)
-    {
+    if (error != ErrorCode::OK) {
         print_error(error, __LINE__);
         return error;
     }
@@ -435,22 +427,15 @@ ErrorCode remove_table_metadata()
     //
 
     number = ObjectId::current("tables");
-    std::vector<uint64_t> object_ids = {number - 3,
-                                        number - 1,
-                                        number - 4,
-                                        number - 0,
-                                        number - 2};
+    std::vector<uint64_t> object_ids = {number - 3, number - 1, number - 4,
+                                        number - 0, number - 2};
 
-    for (uint64_t object_id : object_ids)
-    {
+    for (uint64_t object_id : object_ids) {
         error = tables->remove(object_id);
-        if (error != ErrorCode::OK)
-        {
+        if (error != ErrorCode::OK) {
             print_error(error, __LINE__);
             return error;
-        }
-        else
-        {
+        } else {
             std::cout << "remove table id:" << object_id << std::endl;
         }
     }
@@ -458,14 +443,12 @@ ErrorCode remove_table_metadata()
     uint64_t table_id_not_exists = 0;
     error = tables->remove(table_id_not_exists);
 
-    if (error == ErrorCode::OK)
-    {
+    if (error == ErrorCode::OK) {
         print_error(error, __LINE__);
         return error;
-    }
-    else
-    {
-        std::cout << "can't remove table id not exists :" << table_id_not_exists << std::endl;
+    } else {
+        std::cout << "can't remove table id not exists :" << table_id_not_exists
+                  << std::endl;
     }
 
     error = add_table_metadata();
@@ -480,11 +463,11 @@ ErrorCode remove_table_metadata()
 /*
  *  @biref  read table-metadata from metadata-table.
  */
-ErrorCode read_table_metadata()
-{
+ErrorCode read_table_metadata() {
     ErrorCode error = ErrorCode::UNKNOWN;
 
-    std::unique_ptr<Metadata> tables(new Tables(TEST_DB));   // use Template-Method.
+    std::unique_ptr<Metadata> tables(
+        new Tables(TEST_DB));  // use Template-Method.
     error = tables->load();
     if (error != ErrorCode::OK) {
         print_error(error, __LINE__);
@@ -515,14 +498,12 @@ ErrorCode read_table_metadata()
 /*
  *  @biref  test for Tables class object.
  */
-ErrorCode class_object_test()
-{
+ErrorCode class_object_test() {
     ErrorCode error = ErrorCode::UNKNOWN;
 
     try {
         error = add_table_metadata();
-    }
-    catch (const ptree_error& e) {
+    } catch (const ptree_error& e) {
         std::cerr << e.what() << std::endl;
         print_error(error, __LINE__);
         return error;
@@ -552,8 +533,7 @@ ErrorCode class_object_test()
 /*
  *  @biref  test for Metadata class static functions.
  */
-ErrorCode static_functions_test()
-{
+ErrorCode static_functions_test() {
     ErrorCode error = ErrorCode::UNKNOWN;
 
     //
@@ -569,15 +549,15 @@ ErrorCode static_functions_test()
 
     try {
         BOOST_FOREACH (const ptree::value_type& node,
-            root.get_child(Tables::TABLES_NODE)) {
-                const ptree& table = node.second;
-                error = display_table_metadata_object(table);
-                if (error != ErrorCode::OK) {
-                    return error;
-                }
-                std::cout << std::endl;
+                       root.get_child(Tables::TABLES_NODE)) {
+            const ptree& table = node.second;
+            error = display_table_metadata_object(table);
+            if (error != ErrorCode::OK) {
+                return error;
             }
-    } catch(const ptree_error& e) {
+            std::cout << std::endl;
+        }
+    } catch (const ptree_error& e) {
         std::cerr << e.what() << std::endl;
         return error;
     }
@@ -588,8 +568,7 @@ ErrorCode static_functions_test()
 /*
  *  @biref  main function.
  */
-int main(void)
-{
+int main(void) {
     std::cout << "*** TableMetadta test start. ***" << std::endl << std::endl;
 #if 0
     if (!initialize()) {
@@ -603,9 +582,11 @@ int main(void)
     std::cout << "=== class object test done. ===" << std::endl;
     std::cout << std::endl;
 
-    std::cout << "=== static functions test start. ===" << std::endl;;
+    std::cout << "=== static functions test start. ===" << std::endl;
+    ;
     ErrorCode static_functions_test_error = static_functions_test();
-    std::cout << "=== static functions test done. ===" << std::endl;;
+    std::cout << "=== static functions test done. ===" << std::endl;
+    ;
     std::cout << std::endl;
 
     std::cout << "=== remove table functions test start. ===" << std::endl;
@@ -635,7 +616,8 @@ int main(void)
     }
     std::cout << std::endl;
 
-    std::cout << "*** TableMetadta test completed. ***" << std::endl;;
+    std::cout << "*** TableMetadta test completed. ***" << std::endl;
+    ;
 
     return 0;
 }

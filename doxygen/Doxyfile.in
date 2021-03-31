@@ -14,14 +14,12 @@
 
 PROJECT_NAME           = "manager"
 PROJECT_NUMBER         = @VERSION_MAJOR@.@VERSION_MINOR@.@VERSION_PATCH@
-STRIP_FROM_PATH        = @CMAKE_CURRENT_SOURCE_DIR@ \
-                         @PROJECT_SOURCE_DIR@/docs
-INPUT                  = @CMAKE_CURRENT_SOURCE_DIR@ \
-                         @TARGET_INCLUDES@ \
-                         @PROJECT_SOURCE_DIR@/docs
-FILE_PATTERNS          = *.h *.md
+STRIP_FROM_PATH        = @PROJECT_SOURCE_DIR@
+INPUT                  = @TARGET_INCLUDES@ \
+                         @PROJECT_SOURCE_DIR@/README.md
+FILE_PATTERNS          = *.cpp *.h *.md
 RECURSIVE              = YES
-USE_MDFILE_AS_MAINPAGE = @CMAKE_CURRENT_SOURCE_DIR@/README.md
+USE_MDFILE_AS_MAINPAGE = @PROJECT_SOURCE_DIR@/README.md
 
 OUTPUT_DIRECTORY       = @CMAKE_CURRENT_BINARY_DIR@
 

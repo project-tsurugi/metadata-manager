@@ -15,88 +15,60 @@
  */
 #pragma once
 
-#include <string>
-#include <string_view>
 #include <boost/property_tree/ptree.hpp>
+#include <memory>
+#include <string_view>
 
+#include "manager/metadata/dao/datatypes_dao.h"
 #include "manager/metadata/error_code.h"
 #include "manager/metadata/metadata.h"
 
 namespace manager::metadata {
-    class DataTypes : public Metadata
-    {
-    public:
-        // root object.
-        static constexpr const char* const DATATYPES_NODE = "dataTypes";
+class DataTypes : public Metadata {
+   public:
+    // root object.
+    static constexpr const char* const DATATYPES_NODE = "dataTypes";
 
-        // data type metadata-object.
-        // ID is defined in base class.
-        // NAME is defined in base class.
-        static constexpr const char* const PG_DATA_TYPE                = "pg_dataType";
-        static constexpr const char* const PG_DATA_TYPE_NAME           = "pg_dataTypeName";
-        static constexpr const char* const PG_DATA_TYPE_QUALIFIED_NAME = "pg_dataTypeQualifiedName";
+    // data type metadata-object.
+    // ID is defined in base class.
+    // NAME is defined in base class.
+    static constexpr const char* const PG_DATA_TYPE = "pg_dataType";
+    static constexpr const char* const PG_DATA_TYPE_NAME = "pg_dataTypeName";
+    static constexpr const char* const PG_DATA_TYPE_QUALIFIED_NAME =
+        "pg_dataTypeQualifiedName";
 
-        /**
-         * @brief represents data types id.
-         */
-        enum class DataTypesId : ObjectIdType
-        {
-            INT32 = 4,   //!< @brief INT32.
-            INT64 = 6,   //!< @brief INT64.
-            FLOAT32 = 8, //!< @brief FLOAT32.
-            FLOAT64 = 9, //!< @brief FLOAT64.
-            CHAR = 13,   //!< @brief CHAR.
-            VARCHAR = 14 //!< @brief VARCHAR.
-        };
+    /**
+     * @brief represents data types id.
+     */
+    enum class DataTypesId : ObjectIdType {
+        INT32 = 4,    //!< @brief INT32.
+        INT64 = 6,    //!< @brief INT64.
+        FLOAT32 = 8,  //!< @brief FLOAT32.
+        FLOAT64 = 9,  //!< @brief FLOAT64.
+        CHAR = 13,    //!< @brief CHAR.
+        VARCHAR = 14  //!< @brief VARCHAR.
+    };
 
-        static ErrorCode init();
+    ErrorCode init() override;
 
-        /**
-         *  @brief  Load metadata from metadata-table.
-         *  @param  (database)   [in]  database name
-         *  @param  (pt)         [out] property_tree object to populating metadata.
-         *  @param  (generation) [in]  metadata generation to load. load latest generation if NOT provided.
-         *  @return ErrorCode::OK if success, otherwise an error code.
-         */
-        static ErrorCode load(
-            std::string_view database, boost::property_tree::ptree& pt,
-            const GenerationType generation = Metadata::LATEST_VERSION);
+    ErrorCode get(std::string_view object_name,
+                  boost::property_tree::ptree& object) override;
+    ErrorCode get(const char* object_key, std::string_view object_value,
+                  boost::property_tree::ptree& object) override;
 
-        /**
-         *  @brief  Save the metadta to metadta-table.
-         *  @param  (database)   [in]  database name.
-         *  @param  (pt)         [in]  property_tree object that stores metadata to be saved.
-         *  @param  (generation) [out] the generation of saved metadata.
-         */
-        static ErrorCode save(
-            std::string_view database, boost::property_tree::ptree& pt,
-            GenerationType* generation = nullptr);
+    /**
+     *  @brief  Constructor
+     *  @param  (database) [in]  database name.
+     *  @return none.
+     */
+    DataTypes(std::string_view database, std::string_view component = "visitor")
+        : Metadata(database, component) {}
 
-        /**
-         *  @brief  Constructor
-         *  @param  (database) [in]  database name.
-         *  @return none.
-         */
-        DataTypes(std::string_view database, std::string_view component = "visitor")
-            : Metadata(database, component) { init(); }
+    DataTypes(const DataTypes&) = delete;
+    DataTypes& operator=(const DataTypes&) = delete;
 
-        DataTypes(const DataTypes&) = delete;
-        DataTypes& operator=(const DataTypes&) = delete;
-
-    protected:
-        // functions for template-method
-        std::string_view table_name() const { return TABLE_NAME; }
-        const std::string root_node() const { return DATATYPES_NODE; }
-        uint64_t generate_object_id() const {
-            static ObjectIdType datatype_id = 0;
-            return ++datatype_id;
-        }
-        ErrorCode fill_parameters( __attribute__((unused)) boost::property_tree::ptree& object) {
-            return ErrorCode::OK;
-        }
-
-    private:
-        static constexpr const char* const TABLE_NAME = "datatypes";
+   private:
+    std::shared_ptr<manager::metadata::db::DataTypesDAO> ddao;
 };
 
-} // namespace manager::metadata
+}  // namespace manager::metadata
