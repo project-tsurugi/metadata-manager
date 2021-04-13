@@ -17,10 +17,6 @@
 #ifndef DB_SESSION_MANAGER_H_
 #define DB_SESSION_MANAGER_H_
 
-extern "C" {
-#include <libpq-fe.h>
-}
-
 #include <memory>
 #include <string>
 

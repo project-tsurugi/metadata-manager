@@ -18,7 +18,8 @@
 #define DBC_UTILS_H_
 
 extern "C" {
-#include <libpq-fe.h>
+typedef struct pg_conn PGconn;
+typedef struct pg_result PGresult;
 }
 
 #include <functional>

@@ -20,6 +20,8 @@
 #include <memory>
 #include <string>
 
+#include <libpq-fe.h>
+
 #include "manager/metadata/dao/columns_dao.h"
 #include "manager/metadata/dao/common/config.h"
 #include "manager/metadata/dao/common/message.h"
