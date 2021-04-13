@@ -17,10 +17,6 @@
 #ifndef COLUMNS_DAO_H_
 #define COLUMNS_DAO_H_
 
-extern "C" {
-#include <libpq-fe.h>
-}
-
 #include <boost/property_tree/ptree.hpp>
 #include <string>
 

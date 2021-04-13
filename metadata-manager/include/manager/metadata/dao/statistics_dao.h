@@ -17,10 +17,6 @@
 #ifndef STATISTICS_DAO_H_
 #define STATISTICS_DAO_H_
 
-extern "C" {
-#include <libpq-fe.h>
-}
-
 #include <string>
 #include <unordered_map>
 

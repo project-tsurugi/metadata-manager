@@ -24,6 +24,8 @@
 #include <utility>
 #include <vector>
 
+#include <libpq-fe.h>
+
 #include "manager/metadata/dao/common/message.h"
 #include "manager/metadata/dao/common/statement_name.h"
 #include "manager/metadata/dao/dialect/dialect_strategy.h"

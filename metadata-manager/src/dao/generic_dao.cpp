@@ -20,6 +20,8 @@
 #include <string>
 #include <vector>
 
+#include <libpq-fe.h>
+
 #include "manager/metadata/dao/common/message.h"
 
 namespace manager::metadata::db {

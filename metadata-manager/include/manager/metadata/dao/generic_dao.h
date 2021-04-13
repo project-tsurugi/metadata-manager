@@ -17,10 +17,6 @@
 #ifndef GENERIC_DAO_H_
 #define GENERIC_DAO_H_
 
-extern "C" {
-#include <libpq-fe.h>
-}
-
 #include <string>
 #include <unordered_map>
 #include <vector>
