@@ -37,7 +37,7 @@ target_link_libraries(${PROJECT_NAME}
     PUBLIC ${PROJECT_NAME}-interface
     ${Boost_FILESYSTEM_LIBRARY}
     ${Boost_SYSTEM_LIBRARY}
-    pq
+    PRIVATE pq
 )
 
 install_custom(${PROJECT_NAME} ${export_name})
