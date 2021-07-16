@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentScriptType="application/ecmascript" contentStyleType="text/css" height="754px" preserveAspectRatio="none" style="width:602px;height:754px;" version="1.1" viewBox="0 0 602 754" width="602px" zoomAndPan="magnify"><defs><filter height="300%" id="fy7ld7ot45kty" width="300%" x="-1" y="-1"><feGaussianBlur result="blurOut" stdDeviation="2.0"/><feColorMatrix in="blurOut" result="blurOut2" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .4 0"/><feOffset dx="4.0" dy="4.0" in="blurOut2" result="blurOut3"/><feBlend in="SourceGraphic" in2="blurOut3" mode="normal"/></filter></defs><g><!--MD5=[e9cbb9dd88ded91326c7c57ecf0f8dfc]
+cluster PostgreSQL--><polygon fill="#FFFFFF" filter="url(#fy7ld7ot45kty)" points="16,167.5,105,167.5,112,191.1094,281,191.1094,281,634.5,16,634.5,16,167.5" style="stroke:#000000;stroke-width:1.5;"/><line style="stroke:#000000;stroke-width:1.5;" x1="16" x2="112" y1="191.1094" y2="191.1094"/><text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="83" x="20" y="184.0332">PostgreSQL</text><!--MD5=[46a063155973224c3fa27ddf1e3a8ae1]
+cluster OLTP--><polygon fill="#FFFFFF" filter="url(#fy7ld7ot45kty)" points="305,534.5,347,534.5,354,558.1094,585,558.1094,585,747.5,305,747.5,305,534.5" style="stroke:#000000;stroke-width:1.5;"/><line style="stroke:#000000;stroke-width:1.5;" x1="305" x2="354" y1="558.1094" y2="558.1094"/><text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="36" x="309" y="551.0332">OLTP</text><!--MD5=[b1e3d2dcb3697de9e6328d1cb436cbc4]
+entity frontend--><rect fill="#FEFECE" filter="url(#fy7ld7ot45kty)" height="47.6094" style="stroke:#A80036;stroke-width:1.5;" width="93" x="135.5" y="203.5"/><rect fill="#FEFECE" height="10" style="stroke:#A80036;stroke-width:1.5;" width="15" x="208.5" y="208.5"/><rect fill="#FEFECE" height="2" style="stroke:#A80036;stroke-width:1.5;" width="4" x="206.5" y="210.5"/><rect fill="#FEFECE" height="2" style="stroke:#A80036;stroke-width:1.5;" width="4" x="206.5" y="214.5"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="53" x="150.5" y="238.0332">frontend</text><!--MD5=[2b2d5ad518bf6746de4ffeb5be0566d4]
+entity manager--><rect fill="#FEFECE" filter="url(#fy7ld7ot45kty)" height="47.6094" style="stroke:#A80036;stroke-width:1.5;" width="96" x="144" y="570.5"/><rect fill="#FEFECE" height="10" style="stroke:#A80036;stroke-width:1.5;" width="15" x="220" y="575.5"/><rect fill="#FEFECE" height="2" style="stroke:#A80036;stroke-width:1.5;" width="4" x="218" y="577.5"/><rect fill="#FEFECE" height="2" style="stroke:#A80036;stroke-width:1.5;" width="4" x="218" y="581.5"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="56" x="159" y="605.0332">manager</text><!--MD5=[87734a20c2eaadadc712f7efe19c3795]
+entity metadata--><path d="M32.5,450.5 C32.5,440.5 72,440.5 72,440.5 C72,440.5 111.5,440.5 111.5,450.5 L111.5,477.1094 C111.5,487.1094 72,487.1094 72,487.1094 C72,487.1094 32.5,487.1094 32.5,477.1094 L32.5,450.5 " fill="#FEFECE" filter="url(#fy7ld7ot45kty)" style="stroke:#000000;stroke-width:1.5;"/><path d="M32.5,450.5 C32.5,460.5 72,460.5 72,460.5 C72,460.5 111.5,460.5 111.5,450.5 " fill="none" style="stroke:#000000;stroke-width:1.5;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="59" x="42.5" y="479.0332">metadata</text><!--MD5=[a0302e260767c3a151b9bc67457b16f8]
+entity pg_catalog--><path d="M147,450.5 C147,440.5 192,440.5 192,440.5 C192,440.5 237,440.5 237,450.5 L237,477.1094 C237,487.1094 192,487.1094 192,487.1094 C192,487.1094 147,487.1094 147,477.1094 L147,450.5 " fill="#FEFECE" filter="url(#fy7ld7ot45kty)" style="stroke:#000000;stroke-width:1.5;"/><path d="M147,450.5 C147,460.5 192,460.5 192,460.5 C192,460.5 237,460.5 237,450.5 " fill="none" style="stroke:#000000;stroke-width:1.5;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="70" x="157" y="479.0332">pg_catalog</text><!--MD5=[1a9b3ce6b05045b91178d8f4231a8390]
+entity table--><ellipse cx="48" cy="328.5" fill="#FEFECE" filter="url(#fy7ld7ot45kty)" rx="12" ry="12" style="stroke:#A80036;stroke-width:1.5;"/><line style="stroke:#A80036;stroke-width:1.5;" x1="36" x2="60" y1="342.5" y2="342.5"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="31" x="32.5" y="359.0332">table</text><!--MD5=[bf2f9096aec1c19dd7dbe35a7c751e39]
+entity view--><ellipse cx="115" cy="328.5" fill="#FEFECE" filter="url(#fy7ld7ot45kty)" rx="12" ry="12" style="stroke:#A80036;stroke-width:1.5;"/><line style="stroke:#A80036;stroke-width:1.5;" x1="103" x2="127" y1="342.5" y2="342.5"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="27" x="101.5" y="359.0332">view</text><!--MD5=[e753409e3a4de609e6aed690c35e546b]
+entity role--><ellipse cx="182" cy="328.5" fill="#FEFECE" filter="url(#fy7ld7ot45kty)" rx="12" ry="12" style="stroke:#A80036;stroke-width:1.5;"/><line style="stroke:#A80036;stroke-width:1.5;" x1="170" x2="194" y1="342.5" y2="342.5"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="24" x="170" y="359.0332">role</text><!--MD5=[2844129fefbfc2bd297b4d415d9e9044]
+entity proc--><ellipse cx="249" cy="328.5" fill="#FEFECE" filter="url(#fy7ld7ot45kty)" rx="12" ry="12" style="stroke:#A80036;stroke-width:1.5;"/><line style="stroke:#A80036;stroke-width:1.5;" x1="237" x2="261" y1="342.5" y2="342.5"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="28" x="235" y="359.0332">proc</text><!--MD5=[a54772c9105fac6293421e524356f698]
+entity table_--><ellipse cx="341" cy="697.5" fill="#FEFECE" filter="url(#fy7ld7ot45kty)" rx="12" ry="12" style="stroke:#A80036;stroke-width:1.5;"/><line style="stroke:#A80036;stroke-width:1.5;" x1="329" x2="353" y1="711.5" y2="711.5"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="39" x="321.5" y="728.0332">table_</text><!--MD5=[2312c5149fd4346974713aed1bdef222]
+entity view_--><ellipse cx="413" cy="697.5" fill="#FEFECE" filter="url(#fy7ld7ot45kty)" rx="12" ry="12" style="stroke:#A80036;stroke-width:1.5;"/><line style="stroke:#A80036;stroke-width:1.5;" x1="401" x2="425" y1="711.5" y2="711.5"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="35" x="395.5" y="728.0332">view_</text><!--MD5=[f3ac5da3c0ce251540f867fb4b7eb49a]
+entity role_--><ellipse cx="482" cy="697.5" fill="#FEFECE" filter="url(#fy7ld7ot45kty)" rx="12" ry="12" style="stroke:#A80036;stroke-width:1.5;"/><line style="stroke:#A80036;stroke-width:1.5;" x1="470" x2="494" y1="711.5" y2="711.5"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="32" x="466" y="728.0332">role_</text><!--MD5=[95a646b9b3859d82f50c9722b30acce3]
+entity proc_--><ellipse cx="551" cy="697.5" fill="#FEFECE" filter="url(#fy7ld7ot45kty)" rx="12" ry="12" style="stroke:#A80036;stroke-width:1.5;"/><line style="stroke:#A80036;stroke-width:1.5;" x1="539" x2="563" y1="711.5" y2="711.5"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="36" x="533" y="728.0332">proc_</text><!--MD5=[3617a1dcecd131945f386a894a6d65d9]
+entity ogawayama--><rect fill="#FEFECE" filter="url(#fy7ld7ot45kty)" height="47.6094" style="stroke:#A80036;stroke-width:1.5;" width="115" x="342.5" y="570.5"/><rect fill="#FEFECE" height="10" style="stroke:#A80036;stroke-width:1.5;" width="15" x="437.5" y="575.5"/><rect fill="#FEFECE" height="2" style="stroke:#A80036;stroke-width:1.5;" width="4" x="435.5" y="577.5"/><rect fill="#FEFECE" height="2" style="stroke:#A80036;stroke-width:1.5;" width="4" x="435.5" y="581.5"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="75" x="357.5" y="605.0332">ogawayama</text><!--MD5=[79a439086b036a57b90a01d7b2f8bbd1]
+entity admin--><ellipse cx="182" cy="14" fill="#FEFECE" filter="url(#fy7ld7ot45kty)" rx="8" ry="8" style="stroke:#A80036;stroke-width:1.5;"/><path d="M182,22 L182,49 M169,30 L195,30 M182,49 L169,64 M182,49 L195,64 " fill="none" filter="url(#fy7ld7ot45kty)" style="stroke:#A80036;stroke-width:1.5;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="38" x="163" y="84.0332">admin</text><!--MD5=[30f0027b52430d995ef8e58e6233eebd]
+link frontend to table--><path d="M153.25,251.67 C127.63,272.32 90.77,302.03 68.16,320.25 " fill="none" id="frontend-to-table" style="stroke:#A80036;stroke-width:1.0;"/><polygon fill="#A80036" points="64.11,323.52,73.6231,320.9702,67.9976,320.3757,68.5921,314.7501,64.11,323.52" style="stroke:#A80036;stroke-width:1.0;"/><!--MD5=[e18830a93c60eccd24b52fbc58a392dd]
+link frontend to view--><path d="M167.63,251.67 C157.42,268.12 143.65,290.32 132.75,307.89 " fill="none" id="frontend-to-view" style="stroke:#A80036;stroke-width:1.0;"/><polygon fill="#A80036" points="130.05,312.25,138.2036,306.7257,132.6936,308.006,131.4132,302.4959,130.05,312.25" style="stroke:#A80036;stroke-width:1.0;"/><!--MD5=[242fd6c38af4d79897e802fc81ea2a1b]
+link frontend to role--><path d="M182,251.67 C182,267.85 182,289.57 182,306.99 " fill="none" id="frontend-to-role" style="stroke:#A80036;stroke-width:1.0;"/><polygon fill="#A80036" points="182,312.25,186,303.25,182,307.25,178,303.25,182,312.25" style="stroke:#A80036;stroke-width:1.0;"/><!--MD5=[caa13f9e46542e8aca1f437586346002]
+link frontend to proc--><path d="M196.37,251.67 C206.58,268.12 220.35,290.32 231.25,307.89 " fill="none" id="frontend-to-proc" style="stroke:#A80036;stroke-width:1.0;"/><polygon fill="#A80036" points="233.95,312.25,232.5868,302.4959,231.3064,308.006,225.7964,306.7257,233.95,312.25" style="stroke:#A80036;stroke-width:1.0;"/><!--MD5=[92a35b5a7c6d898231d2bffda00e4a41]
+link table to metadata--><path d="M52.63,362.5 C56.64,383.31 62.44,413.41 66.65,435.25 " fill="none" id="table-to-metadata" style="stroke:#A80036;stroke-width:1.0;"/><polygon fill="#A80036" points="67.63,440.33,69.8625,430.7375,66.6879,435.4196,62.0058,432.2449,67.63,440.33" style="stroke:#A80036;stroke-width:1.0;"/><!--MD5=[70cb3d42bfdfe3e965b71d9e00a6990b]
+link view to pg_catalog--><path d="M129.85,362.5 C142.87,383.57 161.8,414.18 175.34,436.07 " fill="none" id="view-to-pg_catalog" style="stroke:#A80036;stroke-width:1.0;"/><polygon fill="#A80036" points="177.98,440.33,176.6315,430.5739,175.3428,436.082,169.8347,434.7934,177.98,440.33" style="stroke:#A80036;stroke-width:1.0;"/><!--MD5=[ba5ff56009d2120cc9911a643cd03bb8]
+link role to pg_catalog--><path d="M183.93,362.5 C185.6,383.31 188.02,413.41 189.77,435.25 " fill="none" id="role-to-pg_catalog" style="stroke:#A80036;stroke-width:1.0;"/><polygon fill="#A80036" points="190.18,440.33,193.4474,431.0389,189.7801,435.346,185.4731,431.6787,190.18,440.33" style="stroke:#A80036;stroke-width:1.0;"/><!--MD5=[4f6562fa03f068d0728ac96ab29ed103]
+link proc to pg_catalog--><path d="M238.01,362.5 C228.45,383.4 214.59,413.67 204.58,435.52 " fill="none" id="proc-to-pg_catalog" style="stroke:#A80036;stroke-width:1.0;"/><polygon fill="#A80036" points="202.38,440.33,209.7704,433.8198,204.4662,435.786,202.5,430.4819,202.38,440.33" style="stroke:#A80036;stroke-width:1.0;"/><!--MD5=[7cf1da3d91892ef8487211adcc52537b]
+link metadata to manager--><path d="M93.18,487.68 C113.74,509.7 144.97,543.14 166.8,566.52 " fill="none" id="metadata-to-manager" style="stroke:#A80036;stroke-width:1.0;"/><polygon fill="#A80036" points="170.22,570.18,167.0021,560.8717,166.8079,566.5252,161.1544,566.331,170.22,570.18" style="stroke:#A80036;stroke-width:1.0;"/><!--MD5=[af99cae13808bda9d00715640c767a61]
+link pg_catalog to manager--><path d="M192,487.68 C192,509.25 192,541.77 192,565.06 " fill="none" id="pg_catalog-to-manager" style="stroke:#A80036;stroke-width:1.0;"/><polygon fill="#A80036" points="192,570.18,196,561.18,192,565.18,188,561.18,192,570.18" style="stroke:#A80036;stroke-width:1.0;"/><!--MD5=[58f4cbfc483cc4679caa644f6a99fc87]
+link ogawayama to role_--><path d="M417.19,618.56 C430.55,636.48 449.07,661.33 462.9,679.87 " fill="none" id="ogawayama-to-role_" style="stroke:#A80036;stroke-width:1.0;"/><polygon fill="#A80036" points="465.95,683.97,463.772,674.365,462.9592,679.9631,457.361,679.1503,465.95,683.97" style="stroke:#A80036;stroke-width:1.0;"/><!--MD5=[35f9a55a72814e06d6fd6f837628d9ba]
+link ogawayama to table_--><path d="M387.63,618.56 C378.54,635.52 366.11,658.68 356.38,676.83 " fill="none" id="ogawayama-to-table_" style="stroke:#A80036;stroke-width:1.0;"/><polygon fill="#A80036" points="353.96,681.33,361.7511,675.3052,356.3322,676.9286,354.7088,671.5096,353.96,681.33" style="stroke:#A80036;stroke-width:1.0;"/><!--MD5=[45b2d553e31e996acece8d1b1416312d]
+link ogawayama to view_--><path d="M402.73,618.56 C404.7,635.23 407.37,657.89 409.5,675.9 " fill="none" id="ogawayama-to-view_" style="stroke:#A80036;stroke-width:1.0;"/><polygon fill="#A80036" points="410.14,681.33,413.0563,671.9228,409.5533,676.3645,405.1116,672.8615,410.14,681.33" style="stroke:#A80036;stroke-width:1.0;"/><!--MD5=[762e7039e637854d0dcdd29548fd5c4e]
+link ogawayama to proc_--><path d="M431.65,618.56 C460.59,639.64 502.69,670.31 528.38,689.02 " fill="none" id="ogawayama-to-proc_" style="stroke:#A80036;stroke-width:1.0;"/><polygon fill="#A80036" points="532.66,692.14,527.7376,683.6094,528.6176,689.1974,523.0296,690.0774,532.66,692.14" style="stroke:#A80036;stroke-width:1.0;"/><!--MD5=[7b7568e7b3d3d33b5be17ec55672259a]
+link admin to frontend--><path d="M182,87.73 C182,121.42 182,168.41 182,198.14 " fill="none" id="admin-to-frontend" style="stroke:#A80036;stroke-width:1.0;"/><polygon fill="#A80036" points="182,203.48,186,194.48,182,198.48,178,194.48,182,203.48" style="stroke:#A80036;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="358" x="183" y="131.9951">CREATE/ALTER/DROP TABLE, VIEW, ROLE, PROCEDURE</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="184" x="270" y="148.3467">GRANT/REVOKE PRIVILEGES</text><!--MD5=[cac2dd5fce51c8c44451d2cde01b0fb9]
+link frontend to ogawayama--><path d="M218.04,251.83 C239.23,267.03 265.26,288.46 283,312.5 C343.49,394.47 379.23,512.34 393.19,565.55 " fill="none" id="frontend-to-ogawayama" style="stroke:#A80036;stroke-width:1.0;"/><polygon fill="#A80036" points="394.47,570.5,396.0803,560.7837,393.2137,565.6604,388.337,562.7938,394.47,570.5" style="stroke:#A80036;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="158" x="339" y="406.9951">message(update metadata)</text><!--MD5=[725134c58ac48e76f7dc9724fb62703c]
+link manager to ogawayama--><path d="M240.24,594.5 C269.06,594.5 305.98,594.5 337.07,594.5 " fill="none" id="manager-to-ogawayama" style="stroke:#A80036;stroke-width:1.0;"/><polygon fill="#A80036" points="342.41,594.5,333.41,590.5,337.41,594.5,333.41,598.5,342.41,594.5" style="stroke:#A80036;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="54" x="264.25" y="587.9951">metadata</text><!--MD5=[050a43c4199499b682f7b8acb9bc9c04]
+@startuml metadata
+actor admin
+package PostgreSQL {
+  component frontend
+  component manager
+  database metadata
+  database pg_catalog
+  entity table
+  entity view
+  entity role
+  entity proc
+
+  frontend - -> table
+  frontend - -> view
+  frontend - -> role
+  frontend - -> proc
+  table - -> metadata
+  view - -> pg_catalog
+  role - -> pg_catalog
+  proc - -> pg_catalog
+  metadata - -> manager
+  pg_catalog - -> manager
+}
+
+package OLTP {
+  entity table_
+  entity view_
+  entity role_
+  entity proc_
+  component ogawayama
+
+  ogawayama - -> role_ 
+  ogawayama - -> table_ 
+  ogawayama - -> view_ 
+  ogawayama - -> proc_
+}
+
+admin - -> frontend : "CREATE/ALTER/DROP TABLE, VIEW, ROLE, PROCEDURE\nGRANT/REVOKE PRIVILEGES"
+frontend -> ogawayama : message(update metadata)
+manager -> ogawayama : metadata
+@enduml
+
+PlantUML version 1.2021.01(Tue Feb 02 16:55:08 JST 2021)
+(GPL source distribution)
+Java Runtime: OpenJDK Runtime Environment
+JVM: OpenJDK 64-Bit Server VM
+Default Encoding: MS932
+Language: ja
+Country: JP
+--></g></svg>
