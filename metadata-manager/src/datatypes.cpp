@@ -13,43 +13,63 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 #include "manager/metadata/datatypes.h"
 
-#include "manager/metadata/dao/generic_dao.h"
+#include <memory>
 
-using namespace boost::property_tree;
-using namespace manager::metadata::db;
+#include "manager/metadata/provider/datatypes_provider.h"
 
+// =============================================================================
+namespace {
+
+std::unique_ptr<manager::metadata::db::DataTypesProvider> provider = nullptr;
+
+}  // namespace
+
+// =============================================================================
 namespace manager::metadata {
+
+using manager::metadata::ErrorCode;
+
+/**
+ *  @brief  Constructor
+ *  @param  (database) [in]  database name.
+ *  @param  (component) [in]  component name.
+ */
+DataTypes::DataTypes(std::string_view database, std::string_view component)
+    : Metadata(database, component) {
+  // Create the provider.
+  provider = std::make_unique<db::DataTypesProvider>();
+}
 
 /**
  *  @brief  Initialization.
  *  @param  none.
- *  @return ErrorCode::OK
- *  if all the following steps are successfully completed.
- *  1. Establishes a connection to the metadata repository.
- *  2. Sends a query to set always-secure search path
- *     to the metadata repository.
- *  3. Defines prepared statements
- *     in the metadata repository.
- *  @return otherwise an error code.
+ *  @return  ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode DataTypes::init() {
-    if (ddao != nullptr) {
-        return ErrorCode::OK;
-    }
+  // Initialize the provider.
+  ErrorCode error = provider->init();
 
-    std::shared_ptr<GenericDAO> d_gdao = nullptr;
+  return error;
+}
 
-    ErrorCode error =
-        db_session_manager.get_dao(GenericDAO::TableName::DATATYPES, d_gdao);
+/**
+ *  @brief  Gets one data type metadata object
+ *  from the data types metadata table
+ *  based on the given object_name.
+ *  @param  (object_id) [in]  metadata-object ID.
+ *  @param  (object)        [out] one data type metadata object to get
+ *  based on the given object_name.
+ *  @return  ErrorCode::OK if success, otherwise an error code.
+ */
+ErrorCode DataTypes::get(const ObjectIdType object_id,
+                         boost::property_tree::ptree& object) {
+  if (object_id <= 0) {
+    return ErrorCode::INVALID_PARAMETER;
+  }
 
-    if (error == ErrorCode::OK) {
-        ddao = std::static_pointer_cast<DataTypesDAO>(d_gdao);
-    }
-
-    return error;
+  return get(DataTypes::ID, std::to_string(object_id), object);
 }
 
 /**
@@ -60,15 +80,15 @@ ErrorCode DataTypes::init() {
  * key.)
  *  @param  (object)        [out] one data type metadata object to get
  *  based on the given object_name.
- *  @return ErrorCode::OK if success, otherwise an error code.
+ *  @return  ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode DataTypes::get(std::string_view object_name,
                          boost::property_tree::ptree& object) {
-    if (object_name.empty()) {
-        return ErrorCode::INVALID_PARAMETER;
-    }
+  if (object_name.empty()) {
+    return ErrorCode::INVALID_PARAMETER;
+  }
 
-    return get(DataTypes::NAME, object_name, object);
+  return get(DataTypes::NAME, object_name, object);
 }
 
 /**
@@ -79,28 +99,17 @@ ErrorCode DataTypes::get(std::string_view object_name,
  *  @param  (value)         [in]  value of data type metadata object.
  *  @param  (object)        [out] one data type metadata object to get,
  *  where key = value.
- *  @return ErrorCode::OK if success, otherwise an error code.
+ *  @return  ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode DataTypes::get(const char* object_key, std::string_view object_value,
                          boost::property_tree::ptree& object) {
-    ErrorCode error = ErrorCode::INTERNAL_ERROR;
+  ErrorCode error = ErrorCode::INTERNAL_ERROR;
 
-    error = init();
-    if (error != ErrorCode::OK) {
-        return error;
-    }
+  std::string_view s_object_key = std::string_view(object_key);
+  // Get the data type metadata through the provider.
+  error = provider->get_datatype_metadata(s_object_key, object_value, object);
 
-    std::string s_object_key = std::string(object_key);
-    std::string s_object_value = object_value.data();
-
-    if (s_object_key.empty() || s_object_value.empty()) {
-        return ErrorCode::INVALID_PARAMETER;
-    }
-
-    error = ddao->select_one_data_type_metadata(s_object_key, s_object_value,
-                                                object);
-
-    return error;
+  return error;
 }
 
 }  // namespace manager::metadata

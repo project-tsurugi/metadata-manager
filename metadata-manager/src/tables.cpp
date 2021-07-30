@@ -13,54 +13,45 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 #include "manager/metadata/tables.h"
 
-#include <boost/foreach.hpp>
-#include <boost/optional.hpp>
+#include <memory>
 
-#include "manager/metadata/dao/generic_dao.h"
+#include "manager/metadata/provider/tables_provider.h"
 
-using namespace boost::property_tree;
-using namespace manager::metadata::db;
+// =============================================================================
+namespace {
 
+std::unique_ptr<manager::metadata::db::TablesProvider> provider = nullptr;
+
+}  // namespace
+
+// =============================================================================
 namespace manager::metadata {
+
+using manager::metadata::ErrorCode;
+
+/**
+ *  @brief  Constructor
+ *  @param  (database) [in]  database name.
+ *  @param  (component) [in]  component name.
+ */
+Tables::Tables(std::string_view database, std::string_view component)
+    : Metadata(database, component) {
+  // Create the provider.
+  provider = std::make_unique<db::TablesProvider>();
+}
 
 /**
  *  @brief  Initialization.
  *  @param  none.
- *  @return ErrorCode::OK
- *  if all the following steps are successfully completed.
- *  1. Establishes a connection to the metadata repository.
- *  2. Sends a query to set always-secure search path
- *     to the metadata repository.
- *  3. Defines prepared statements
- *     in the metadata repository.
- *  @return otherwise an error code.
+ *  @return  ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode Tables::init() {
-    if (tdao != nullptr && cdao != nullptr) {
-        return ErrorCode::OK;
-    }
+  // Initialize the provider.
+  ErrorCode error = provider->init();
 
-    std::shared_ptr<GenericDAO> t_gdao = nullptr;
-    ErrorCode error =
-        db_session_manager.get_dao(GenericDAO::TableName::TABLES, t_gdao);
-
-    if (error == ErrorCode::OK) {
-        tdao = std::static_pointer_cast<TablesDAO>(t_gdao);
-    } else {
-        return error;
-    }
-
-    std::shared_ptr<GenericDAO> c_gdao = nullptr;
-    error = db_session_manager.get_dao(GenericDAO::TableName::COLUMNS, c_gdao);
-
-    if (error == ErrorCode::OK) {
-        cdao = std::static_pointer_cast<ColumnsDAO>(c_gdao);
-    }
-
-    return error;
+  return error;
 }
 
 /**
@@ -68,8 +59,8 @@ ErrorCode Tables::init() {
  *  @param  (object) [in]  table metadata to add.
  *  @return ErrorCode::OK if success, otherwise an error code.
  */
-ErrorCode Tables::add(boost::property_tree::ptree& object) {
-    return add(object, nullptr);
+ErrorCode Tables::add(boost::property_tree::ptree &object) {
+  return add(object, nullptr);
 }
 
 /**
@@ -78,60 +69,18 @@ ErrorCode Tables::add(boost::property_tree::ptree& object) {
  *  @param  (object_id)   [out] ID of the added table metadata.
  *  @return ErrorCode::OK if success, otherwise an error code.
  */
-ErrorCode Tables::add(boost::property_tree::ptree& object,
-                      ObjectIdType* object_id) {
-    ErrorCode error = ErrorCode::INTERNAL_ERROR;
+ErrorCode Tables::add(boost::property_tree::ptree &object,
+                      ObjectIdType *object_id) {
+  // Adds the table metadata through the provider.
+  ObjectIdType retval_object_id;
+  ErrorCode error = provider->add_table_metadata(object, retval_object_id);
 
-    error = init();
-    if (error != ErrorCode::OK) {
-        return error;
-    }
+  // Set a value if object_id is not null.
+  if ((error == ErrorCode::OK) && (object_id != nullptr)) {
+    *object_id = retval_object_id;
+  }
 
-    error = db_session_manager.start_transaction();
-
-    if (error != ErrorCode::OK) {
-        return error;
-    }
-
-    // Add table metadata object to table metadata table.
-    ObjectIdType retval_object_id;
-    error = tdao->insert_table_metadata(object, retval_object_id);
-    if (error != ErrorCode::OK) {
-        ErrorCode rollback_error = db_session_manager.rollback();
-        if (rollback_error != ErrorCode::OK) {
-            return rollback_error;
-        }
-        return error;
-    }
-
-    // Add column metadata object to column metadata table.
-    BOOST_FOREACH (const ptree::value_type& node,
-                   object.get_child(Tables::COLUMNS_NODE)) {
-        ptree column = node.second;
-        error = cdao->insert_one_column_metadata(retval_object_id, column);
-        if (error != ErrorCode::OK) {
-            ErrorCode rollback_error = db_session_manager.rollback();
-            if (rollback_error != ErrorCode::OK) {
-                return rollback_error;
-            }
-            return error;
-        }
-    }
-
-    if (error == ErrorCode::OK) {
-        error = db_session_manager.commit();
-        if (error == ErrorCode::OK && object_id != nullptr) {
-            *object_id = retval_object_id;
-        }
-    } else {
-        ErrorCode rollback_error = db_session_manager.rollback();
-        if (rollback_error != ErrorCode::OK) {
-            return rollback_error;
-        }
-        return error;
-    }
-
-    return error;
+  return error;
 }
 
 /**
@@ -141,29 +90,17 @@ ErrorCode Tables::add(boost::property_tree::ptree& object,
  *  @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode Tables::get(const ObjectIdType object_id,
-                      boost::property_tree::ptree& object) {
-    ErrorCode error = ErrorCode::INTERNAL_ERROR;
+                      boost::property_tree::ptree &object) {
+  if (object_id <= 0) {
+    return ErrorCode::INVALID_PARAMETER;
+  }
 
-    error = init();
-    if (error != ErrorCode::OK) {
-        return error;
-    }
+  // Get the table metadata through the provider.
+  std::string s_object_id = std::to_string(object_id);
+  ErrorCode error =
+      provider->get_table_metadata(Tables::ID, s_object_id, object);
 
-    if (object_id <= 0) {
-        return ErrorCode::INVALID_PARAMETER;
-    }
-
-    std::string s_object_id = std::to_string(object_id);
-
-    error = tdao->select_table_metadata(Tables::ID, s_object_id, object);
-
-    if (error != ErrorCode::OK) {
-        return error;
-    }
-
-    error = get_all_column_metadatas(s_object_id, object);
-
-    return error;
+  return error;
 }
 
 /**
@@ -174,78 +111,16 @@ ErrorCode Tables::get(const ObjectIdType object_id,
  *  @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode Tables::get(std::string_view object_name,
-                      boost::property_tree::ptree& object) {
-    ErrorCode error = ErrorCode::INTERNAL_ERROR;
+                      boost::property_tree::ptree &object) {
+  if (object_name.empty()) {
+    return ErrorCode::INVALID_PARAMETER;
+  }
 
-    error = init();
-    if (error != ErrorCode::OK) {
-        return error;
-    }
+  // Get the table metadata through the provider.
+  ErrorCode error =
+      provider->get_table_metadata(Tables::NAME, object_name, object);
 
-    if (object_name.empty()) {
-        return ErrorCode::INVALID_PARAMETER;
-    }
-
-    error =
-        tdao->select_table_metadata(Tables::NAME, object_name.data(), object);
-
-    if (error != ErrorCode::OK) {
-        return error;
-    }
-
-    BOOST_FOREACH (ptree::value_type& node, object) {
-        ptree& table = node.second;
-
-        if (table.empty()) {
-            boost::optional<std::string> o_table_id =
-                object.get_optional<std::string>(Tables::ID);
-            if (!o_table_id) {
-                return ErrorCode::INTERNAL_ERROR;
-            }
-
-            error = get_all_column_metadatas(o_table_id.get(), object);
-            break;
-        } else {
-            boost::optional<std::string> o_table_id =
-                table.get_optional<std::string>(Tables::ID);
-            if (!o_table_id) {
-                return ErrorCode::INTERNAL_ERROR;
-            }
-
-            error = get_all_column_metadatas(o_table_id.get(), table);
-
-            if (error != ErrorCode::OK) {
-                return error;
-            }
-        }
-    }
-
-    return error;
-}
-
-/**
- *  @brief  Get column metadata-object based on the given table id.
- *  @param  (table_id) [in]  table id.
- *  @param  (tables)   [out] table metadata-object with the specified table
- * id.
- *  @return ErrorCode::OK if success, otherwise an error code.
- */
-ErrorCode Tables::get_all_column_metadatas(
-    const std::string& table_id, boost::property_tree::ptree& tables) {
-    assert(!table_id.empty());
-
-    ErrorCode error = ErrorCode::INTERNAL_ERROR;
-
-    ptree columns;
-    error = cdao->select_column_metadata(Tables::Column::TABLE_ID, table_id,
-                                         columns);
-
-    if (error == ErrorCode::OK || error == ErrorCode::INVALID_PARAMETER) {
-        tables.add_child(Tables::COLUMNS_NODE, columns);
-        error = ErrorCode::OK;
-    }
-
-    return error;
+  return error;
 }
 
 /**
@@ -257,35 +132,10 @@ ErrorCode Tables::get_all_column_metadatas(
  *  @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode Tables::remove(const ObjectIdType object_id) {
-    ErrorCode error = ErrorCode::INTERNAL_ERROR;
+  // Remove the table metadata through the provider.
+  ErrorCode error = provider->remove_table_metadata(object_id);
 
-    error = init();
-    if (error != ErrorCode::OK) {
-        return error;
-    }
-
-    if (object_id <= 0) {
-        return ErrorCode::INVALID_PARAMETER;
-    }
-
-    error = db_session_manager.start_transaction();
-
-    if (error != ErrorCode::OK) {
-        return error;
-    }
-
-    error = tdao->delete_table_metadata_by_table_id(object_id);
-    if (error == ErrorCode::OK) {
-        error = db_session_manager.commit();
-    } else {
-        ErrorCode rollback_error = db_session_manager.rollback();
-        if (rollback_error != ErrorCode::OK) {
-            return rollback_error;
-        }
-        return error;
-    }
-
-    return error;
+  return error;
 }
 
 /**
@@ -297,43 +147,20 @@ ErrorCode Tables::remove(const ObjectIdType object_id) {
  *  @param (object_id)   [out] object id of table removed.
  *  @return ErrorCode::OK if success, otherwise an error code.
  */
-ErrorCode Tables::remove(const char* object_name, ObjectIdType* object_id) {
-    ErrorCode error = ErrorCode::INTERNAL_ERROR;
+ErrorCode Tables::remove(const char *object_name, ObjectIdType *object_id) {
+  std::string_view s_object_name = std::string_view(object_name);
 
-    error = init();
-    if (error != ErrorCode::OK) {
-        return error;
-    }
+  // Remove the table metadata through the provider.
+  ObjectIdType retval_object_id;
+  ErrorCode error =
+      provider->remove_table_metadata(s_object_name, retval_object_id);
 
-    std::string s_object_name = std::string(object_name);
-    if (s_object_name.empty()) {
-        return ErrorCode::INVALID_PARAMETER;
-    }
+  // Set a value if object_id is not null.
+  if ((error == ErrorCode::OK) && (object_id != nullptr)) {
+    *object_id = retval_object_id;
+  }
 
-    error = db_session_manager.start_transaction();
-
-    if (error != ErrorCode::OK) {
-        return error;
-    }
-
-    ObjectIdType retval_object_id;
-    error = tdao->delete_table_metadata_by_table_name(s_object_name,
-                                                      retval_object_id);
-    if (error == ErrorCode::OK) {
-        error = db_session_manager.commit();
-
-        if (error == ErrorCode::OK && object_id != nullptr) {
-            *object_id = retval_object_id;
-        }
-    } else {
-        ErrorCode rollback_error = db_session_manager.rollback();
-        if (rollback_error != ErrorCode::OK) {
-            return rollback_error;
-        }
-        return error;
-    }
-
-    return error;
+  return error;
 }
 
 }  // namespace manager::metadata

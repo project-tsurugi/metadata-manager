@@ -13,34 +13,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-#ifndef DB_SESSION_MANAGER_H_
-#define DB_SESSION_MANAGER_H_
+#ifndef MANAGER_METADATA_DAO_DB_SESSION_MANAGER_H_
+#define MANAGER_METADATA_DAO_DB_SESSION_MANAGER_H_
 
 #include <memory>
 #include <string>
 
-#include "manager/metadata/dao/common/dbc_utils.h"
 #include "manager/metadata/dao/generic_dao.h"
 #include "manager/metadata/error_code.h"
 
 namespace manager::metadata::db {
 
 class DBSessionManager {
-   public:
-    manager::metadata::ErrorCode get_dao(GenericDAO::TableName table_name,
-                                         std::shared_ptr<GenericDAO>& gdao);
+ public:
+  virtual ~DBSessionManager(){};
 
-    manager::metadata::ErrorCode start_transaction();
-    manager::metadata::ErrorCode commit();
-    manager::metadata::ErrorCode rollback();
+  virtual manager::metadata::ErrorCode get_dao(
+      GenericDAO::TableName table_name, std::shared_ptr<GenericDAO> &gdao) = 0;
 
-   private:
-    ConnectionSPtr connection;
+  virtual manager::metadata::ErrorCode start_transaction() = 0;
+  virtual manager::metadata::ErrorCode commit() = 0;
+  virtual manager::metadata::ErrorCode rollback() = 0;
 
-    manager::metadata::ErrorCode connect();
-    manager::metadata::ErrorCode set_always_secure_search_path();
-};
+ protected:
+  manager::metadata::ErrorCode create_dao(
+      GenericDAO::TableName table_name,
+      manager::metadata::db::DBSessionManager *session_manager,
+      std::shared_ptr<GenericDAO> &gdao) const;
+
+};  // class DBSessionManager
+
 }  // namespace manager::metadata::db
 
-#endif  // DB_SESSION_MANAGER_H_
+#endif  // MANAGER_METADATA_DAO_DB_SESSION_MANAGER_H_

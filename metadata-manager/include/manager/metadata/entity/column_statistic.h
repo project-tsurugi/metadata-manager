@@ -13,9 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-#ifndef COLUMN_STATISTIC_H_
-#define COLUMN_STATISTIC_H_
+#ifndef MANAGER_METADATA_ENTITY_COLUMN_STATISTIC_H_
+#define MANAGER_METADATA_ENTITY_COLUMN_STATISTIC_H_
 
 #include <boost/property_tree/ptree.hpp>
 
@@ -24,12 +23,12 @@
 namespace manager::metadata {
 
 class ColumnStatistic {
-   public:
-    ObjectIdType table_id;
-    ObjectIdType ordinal_position;
-    boost::property_tree::ptree column_statistic;
-};
+ public:
+  ObjectIdType table_id;
+  ObjectIdType ordinal_position;
+  boost::property_tree::ptree column_statistic;
+};  // class ColumnStatistic
 
 }  // namespace manager::metadata
 
-#endif  // COLUMN_STATISTIC_H_
+#endif  // MANAGER_METADATA_ENTITY_COLUMN_STATISTIC_H_

@@ -19,7 +19,7 @@
 #include <boost/property_tree/json_parser.hpp>
 
 #include "manager/metadata/error_code.h"
-#include "manager/metadata/object_id.h"
+#include "manager/metadata/dao/json/object_id.h"
 #include "manager/metadata/metadata.h"
 #include "manager/metadata/table_metadata.h"
 

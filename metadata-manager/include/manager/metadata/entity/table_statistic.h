@@ -13,9 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-#ifndef TABLE_STATISTIC_H_
-#define TABLE_STATISTIC_H_
+#ifndef MANAGER_METADATA_ENTITY_TABLE_STATISTIC_H_
+#define MANAGER_METADATA_ENTITY_TABLE_STATISTIC_H_
 
 #include <string>
 
@@ -24,13 +23,13 @@
 namespace manager::metadata {
 
 class TableStatistic {
-   public:
-    ObjectIdType id;
-    std::string name;
-    std::string namespace_name;
-    float reltuples;
-};
+ public:
+  ObjectIdType id;
+  std::string name;
+  std::string namespace_name;
+  float reltuples;
+};  // class TableStatistic
 
 }  // namespace manager::metadata
 
-#endif  // TABLE_STATISTIC_H_
+#endif  // MANAGER_METADATA_ENTITY_TABLE_STATISTIC_H_

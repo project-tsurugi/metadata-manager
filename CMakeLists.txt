@@ -29,6 +29,8 @@ option(ENABLE_SANITIZER "enable sanitizer on debug build" ON)
 option(ENABLE_UB_SANITIZER "enable undefined behavior sanitizer on debug build" OFF)
 option(ENABLE_COVERAGE "enable coverage on debug build" OFF)
 
+option(DATA_STORAGE "Specifies the data-storage where the metadata is stored. [postgresql] or json." POSTGRESQL)
+
 find_package(Doxygen)
 find_package(Boost COMPONENTS system filesystem REQUIRED)
 
@@ -38,7 +40,7 @@ include(CompileOptions)
 include(InstallOptions)
 
 if (BUILD_TESTS)
-    enable_testing()
+  enable_testing()
 endif()
 
 set(package_name "manager")
@@ -84,30 +86,51 @@ function(GET_PG_CONFIG var)
   set(${var} ${_temp} PARENT_SCOPE)
 endfunction()
 
-FIND_PROGRAM(PG_CONFIG pg_config)
+string(TOUPPER ${DATA_STORAGE} VARNAME)
+if((VARNAME STREQUAL "POSTGRESQL") OR (NOT DATA_STORAGE))
+  set(DATA_STORAGE_PG TRUE)
+elseif(VARNAME STREQUAL "JSON")
+  set(DATA_STORAGE_JSON TRUE)
+else()
+  unset(DATA_STORAGE CACHE)
+  message(FATAL_ERROR "Unsupported data storage. [${VARNAME}]")
+endif()
+unset(DATA_STORAGE CACHE)
 
-IF (PG_CONFIG)
-   SET(PG_CONFIG_FOUND TRUE)
-ENDIF (PG_CONFIG)
+if(DATA_STORAGE_PG)
+  FIND_PROGRAM(PG_CONFIG pg_config)
 
-IF (PG_CONFIG_FOUND)
+  if(PG_CONFIG)
+    set(PG_CONFIG_FOUND TRUE)
+  endif(PG_CONFIG)
+
+  if(PG_CONFIG_FOUND)
     MESSAGE(STATUS "Found pg_config for PostgreSQL: ${PG_CONFIG}")
     get_pg_config(PG_INCLUDEDIR --includedir)
     get_pg_config(PG_LIBDIR --libdir)
-ELSE (NOT DEFINED PKG_CONFIG_FOUND)
+  else(NOT DEFINED PKG_CONFIG_FOUND)
     MESSAGE(FATAL_ERROR "pg_config not found in path")
     MESSAGE(FATAL_ERROR "cannot build")
-ENDIF (PG_CONFIG_FOUND)
+  endif(PG_CONFIG_FOUND)
+endif(DATA_STORAGE_PG)
 
 add_custom_target(format
-  COMMAND           git ls-files '*.cpp' '*.h' | xargs clang-format -i --style=file -verbose
-  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    COMMAND           git ls-files '*.cpp' '*.h' | xargs clang-format -i --style=file -verbose
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
 add_subdirectory(message-broker)
 add_subdirectory(metadata-manager)
 add_subdirectory(third_party/googletest)
 
-if (BUILD_DOCUMENTS)
-    add_subdirectory(doxygen)
+if(BUILD_DOCUMENTS)
+  add_subdirectory(doxygen)
+endif()
+
+if(DATA_STORAGE_PG)
+  target_compile_options(metadata PRIVATE -DSTORAGE_POSTGRESQL)
+  message(STATUS "Metadata is stored in PostgreSQL.")
+elseif(DATA_STORAGE_JSON)
+  target_compile_options(metadata PRIVATE -DSTORAGE_JSON)
+  message(STATUS "Metadata is stored in JSON-file.")
 endif()

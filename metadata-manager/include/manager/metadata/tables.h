@@ -13,96 +13,78 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#pragma once
+#ifndef MANAGER_METADATA_TABLES_H_
+#define MANAGER_METADATA_TABLES_H_
 
-#include <boost/property_tree/ptree.hpp>
-#include <memory>
-#include <string_view>
-
-#include "manager/metadata/dao/columns_dao.h"
-#include "manager/metadata/dao/tables_dao.h"
-#include "manager/metadata/error_code.h"
 #include "manager/metadata/metadata.h"
 
 namespace manager::metadata {
+
 class Tables : public Metadata {
-   public:
-    // root node.
-    static constexpr const char* const TABLES_NODE = "tables";
+ public:
+  // root node.
+  static constexpr const char *const TABLES_NODE = "tables";
 
-    // table metadata-object.
-    // ID is defined in base class.
-    // NAME is defined in base class.
-    static constexpr const char* const NAMESPACE = "namespace";
-    static constexpr const char* const COLUMNS_NODE = "columns";
-    static constexpr const char* const PRIMARY_KEY_NODE = "primaryKey";
-    static constexpr const char* const RELTUPLES = "reltuples";
+  // table metadata-object.
+  // ID is defined in base class.
+  // NAME is defined in base class.
+  static constexpr const char *const NAMESPACE = "namespace";
+  static constexpr const char *const COLUMNS_NODE = "columns";
+  static constexpr const char *const PRIMARY_KEY_NODE = "primaryKey";
+  static constexpr const char *const RELTUPLES = "reltuples";
 
-    // column metadata-object.
-    struct Column {
-        static constexpr const char* const ID = "id";
-        static constexpr const char* const TABLE_ID = "tableId";
-        static constexpr const char* const NAME = "name";
-        static constexpr const char* const ORDINAL_POSITION = "ordinalPosition";
-        static constexpr const char* const DATA_TYPE_ID = "dataTypeId";
-        static constexpr const char* const DATA_LENGTH = "dataLength";
-        static constexpr const char* const VARYING = "varying";
-        static constexpr const char* const NULLABLE = "nullable";
-        static constexpr const char* const DEFAULT = "defaultExpr";
-        static constexpr const char* const DIRECTION = "direction";
-
-        /**
-         * @brief represents sort direction of elements.
-         */
-        enum class Direction {
-
-            /**
-             * @brief default order.
-             */
-            DEFAULT = 0,
-
-            /**
-             * @brief ascendant order.
-             */
-            ASCENDANT,
-
-            /**
-             * @brief descendant order.
-             */
-            DESCENDANT,
-        };
-    };
-
-    ErrorCode init() override;
-
-    ErrorCode add(boost::property_tree::ptree& object) override;
-    ErrorCode add(boost::property_tree::ptree& object,
-                  ObjectIdType* object_id) override;
-    ErrorCode get(const ObjectIdType object_id,
-                  boost::property_tree::ptree& object) override;
-    ErrorCode get(std::string_view object_name,
-                  boost::property_tree::ptree& object) override;
-    ErrorCode remove(const ObjectIdType object_id) override;
-    ErrorCode remove(const char* object_name, ObjectIdType* object_id) override;
+  // column metadata-object.
+  struct Column {
+    static constexpr const char *const ID = "id";
+    static constexpr const char *const TABLE_ID = "tableId";
+    static constexpr const char *const NAME = "name";
+    static constexpr const char *const ORDINAL_POSITION = "ordinalPosition";
+    static constexpr const char *const DATA_TYPE_ID = "dataTypeId";
+    static constexpr const char *const DATA_LENGTH = "dataLength";
+    static constexpr const char *const VARYING = "varying";
+    static constexpr const char *const NULLABLE = "nullable";
+    static constexpr const char *const DEFAULT = "defaultExpr";
+    static constexpr const char *const DIRECTION = "direction";
 
     /**
-     *  @brief  Constructor
-     *  @param  (database) [in]  database name.
-     *  @return none.
+     * @brief represents sort direction of elements.
      */
-    Tables(std::string_view database, std::string_view component = "visitor")
-        : Metadata(database, component) {}
+    enum class Direction {
 
-    Tables(const Tables&) = delete;
-    Tables& operator=(const Tables&) = delete;
+      /**
+       * @brief default order.
+       */
+      DEFAULT = 0,
 
-   private:
-    std::shared_ptr<manager::metadata::db::TablesDAO> tdao;
-    std::shared_ptr<manager::metadata::db::ColumnsDAO> cdao;
+      /**
+       * @brief ascendant order.
+       */
+      ASCENDANT,
 
-    ErrorCode get_all_column_metadatas(const std::string& table_id,
-                                       boost::property_tree::ptree& tables);
+      /**
+       * @brief descendant order.
+       */
+      DESCENDANT,
+    };
+  };
 
+  Tables(std::string_view database, std::string_view component = "visitor");
+
+  Tables(const Tables &) = delete;
+  Tables &operator=(const Tables &) = delete;
+
+  ErrorCode init() override;
+  ErrorCode add(boost::property_tree::ptree &object) override;
+  ErrorCode add(boost::property_tree::ptree &object,
+                ObjectIdType *object_id) override;
+  ErrorCode get(const ObjectIdType object_id,
+                boost::property_tree::ptree &object) override;
+  ErrorCode get(std::string_view object_name,
+                boost::property_tree::ptree &object) override;
+  ErrorCode remove(const ObjectIdType object_id) override;
+  ErrorCode remove(const char *object_name, ObjectIdType *object_id) override;
 };  // class Tables
 
 }  // namespace manager::metadata
+
+#endif  // MANAGER_METADATA_TABLES_H_

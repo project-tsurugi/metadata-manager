@@ -13,14 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-#ifndef STATISTICS_DAO_H_
-#define STATISTICS_DAO_H_
+#ifndef MANAGER_METADATA_DAO_STATISTICS_DAO_H_
+#define MANAGER_METADATA_DAO_STATISTICS_DAO_H_
 
 #include <string>
+#include <string_view>
 #include <unordered_map>
 
-#include "manager/metadata/dao/common/dbc_utils.h"
 #include "manager/metadata/dao/generic_dao.h"
 #include "manager/metadata/entity/column_statistic.h"
 #include "manager/metadata/metadata.h"
@@ -28,36 +27,26 @@
 namespace manager::metadata::db {
 
 class StatisticsDAO : public GenericDAO {
-   public:
-    explicit StatisticsDAO(ConnectionSPtr connection)
-        : GenericDAO(connection, TableName::STATISTICS){};
-
-    manager::metadata::ErrorCode prepare() const override;
-
-    manager::metadata::ErrorCode
-    upsert_one_column_statistic_by_table_id_column_ordinal_position(
-        ObjectIdType table_id, ObjectIdType ordinal_position,
-        const std::string& column_statistic) const;
-    manager::metadata::ErrorCode
-    select_one_column_statistic_by_table_id_column_ordinal_position(
-        ObjectIdType table_id, ObjectIdType ordinal_position,
-        ColumnStatistic& column_statistic) const;
-    manager::metadata::ErrorCode select_all_column_statistic_by_table_id(
-        ObjectIdType table_id,
-        std::unordered_map<ObjectIdType, ColumnStatistic>& column_statistics)
-        const;
-    manager::metadata::ErrorCode delete_all_column_statistic_by_table_id(
-        ObjectIdType table_id) const;
-    manager::metadata::ErrorCode
-    delete_one_column_statistic_by_table_id_column_ordinal_position(
-        ObjectIdType table_id, ObjectIdType ordinal_position) const;
-
-   private:
-    manager::metadata::ErrorCode get_column_statistic_from_p_gresult(
-        PGresult*& res, int ordinal_position,
-        ColumnStatistic& column_statistic) const;
-};
+ public:
+  virtual manager::metadata::ErrorCode
+  upsert_one_column_statistic_by_table_id_column_ordinal_position(
+      ObjectIdType table_id, ObjectIdType ordinal_position,
+      std::string_view column_statistic) const = 0;
+  virtual manager::metadata::ErrorCode
+  select_one_column_statistic_by_table_id_column_ordinal_position(
+      ObjectIdType table_id, ObjectIdType ordinal_position,
+      ColumnStatistic &column_statistic) const = 0;
+  virtual manager::metadata::ErrorCode select_all_column_statistic_by_table_id(
+      ObjectIdType table_id,
+      std::unordered_map<ObjectIdType, ColumnStatistic> &column_statistics)
+      const = 0;
+  virtual manager::metadata::ErrorCode delete_all_column_statistic_by_table_id(
+      ObjectIdType table_id) const = 0;
+  virtual manager::metadata::ErrorCode
+  delete_one_column_statistic_by_table_id_column_ordinal_position(
+      ObjectIdType table_id, ObjectIdType ordinal_position) const = 0;
+};  // class StatisticsDAO
 
 }  // namespace manager::metadata::db
 
-#endif  // STATISTICS_DAO_H_
+#endif  // MANAGER_METADATA_DAO_POSTGRESQL_STATISTICS_DAO_H_

@@ -16,6 +16,14 @@ project(metadata)
 
 file(GLOB_RECURSE SOURCES "*.cpp")
 
+if (DATA_STORAGE_JSON)
+    list(FILTER SOURCES EXCLUDE REGEX "/?postgresql/*")
+else()
+    list(FILTER SOURCES EXCLUDE REGEX "/?json/*")
+endif()
+list(FILTER SOURCES EXCLUDE REGEX "/?datatype_metadata.cpp$")
+list(FILTER SOURCES EXCLUDE REGEX "/?table_metadata.cpp$")
+
 add_library(${PROJECT_NAME}
     SHARED ${SOURCES}
 )
@@ -31,7 +39,9 @@ set_target_properties(${PROJECT_NAME}
         LIBRARY_OUTPUT_NAME "manager-metadata"
 )
 
-set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -L${PG_LIBDIR}")
+if (DATA_STORAGE_PG)
+    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -L${PG_LIBDIR}")
+endif (DATA_STORAGE_PG)
 
 target_link_libraries(${PROJECT_NAME}
     PUBLIC ${PROJECT_NAME}-interface

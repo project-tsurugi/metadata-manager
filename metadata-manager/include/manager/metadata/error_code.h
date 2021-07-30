@@ -13,118 +13,126 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef METADATA_ERROR_CODE_H_
-#define METADATA_ERROR_CODE_H_
+#ifndef MANAGER_METADATA_ERROR_CODE_H_
+#define MANAGER_METADATA_ERROR_CODE_H_
 
 namespace manager::metadata {
 
 enum class ErrorCode {
-    /**
-     *  @brief Success.
-     */
-    OK = 0,
+  /**
+   *  @brief Success.
+   */
+  OK = 0,
 
-    /**
-     *  @brief The target object not found.
-     */
-    NOT_FOUND,
+  /**
+   *  @brief The target object not found.
+   */
+  NOT_FOUND,
 
-    /**
-     *  @brief ID of the metadata-object not found from metadata-table.
-     */
-    ID_NOT_FOUND,
+  /**
+   *  @brief ID of the metadata-object not found from metadata-table.
+   */
+  ID_NOT_FOUND,
 
-    /**
-     *  @brief name of the metadata-object not found from metadata-table.
-     */
-    NAME_NOT_FOUND,
+  /**
+   *  @brief name of the metadata-object not found from metadata-table.
+   */
+  NAME_NOT_FOUND,
 
-    /**
-     *  @brief Current in the Metadata stepped over the last row (a result of successful processing).
-     */
-    END_OF_ROW,
+  /**
+   *  @brief Current in the Metadata stepped over the last row (a result of
+   * successful processing).
+   */
+  END_OF_ROW,
 
-    /**
-     *  @brief the object with same parameter exists.
-     */
-    ALREADY_EXISTS,
+  /**
+   *  @brief the object with same parameter exists.
+   */
+  ALREADY_EXISTS,
 
-    /**
-     * @brief Unknown error.
-     */
-    UNKNOWN,
+  /**
+   *  @brief The target object not supported.
+   */
+  NOT_SUPPORTED,
 
-    /**
-     *  @brief table name already exists.
-     */
-    TABLE_NAME_ALREADY_EXISTS,
-    
-    /**
-     * @brief Invalid parameter input.
-     */
-    INVALID_PARAMETER,
+  /**
+   * @brief Unknown error.
+   */
+  UNKNOWN,
 
-    /**
-     * @brief Failed to access metadata repository.
-     */
-    DATABASE_ACCESS_FAILURE,
+  /**
+   *  @brief table name already exists.
+   */
+  TABLE_NAME_ALREADY_EXISTS,
 
-    /**
-     * @brief Service class instance is not initialized.
-     * Connection is not established,
-     * Failed to send prepared statement query to metadata store or
-     * Failed to set always-secure search path.
-     */
-    NOT_INITIALIZED,
+  /**
+   * @brief Invalid parameter input.
+   */
+  INVALID_PARAMETER,
 
-    /**
-     * @brief internal error.
-     */
-    INTERNAL_ERROR
-};
+  /**
+   * @brief Failed to access metadata repository.
+   */
+  DATABASE_ACCESS_FAILURE,
 
-}   // namespace manager::metadadta
+  /**
+   * @brief Service class instance is not initialized.
+   * Connection is not established,
+   * Failed to send prepared statement query to metadata store or
+   * Failed to set always-secure search path.
+   */
+  NOT_INITIALIZED,
 
-/* ============================================================================================= */
+  /**
+   * @brief internal error.
+   */
+  INTERNAL_ERROR
+};  // enum ErrorCode
+
+}  // namespace manager::metadata
+
+/* =============================================================================================
+ */
 namespace manager::metadata_manager {
 
 enum class ErrorCode {
-    /**
-     *  @brief Success.
-     */
-    OK = 0,
+  /**
+   *  @brief Success.
+   */
+  OK = 0,
 
-    /**
-     *  @brief The target object not found.
-     */
-    NOT_FOUND,
+  /**
+   *  @brief The target object not found.
+   */
+  NOT_FOUND,
 
-    /**
-     *  @brief ID of the metadata-object not found from metadata-table.
-     */
-    ID_NOT_FOUND,
+  /**
+   *  @brief ID of the metadata-object not found from metadata-table.
+   */
+  ID_NOT_FOUND,
 
-    /**
-     *  @brief name of the metadata-object not found from metadata-table.
-     */
-    NAME_NOT_FOUND,
+  /**
+   *  @brief name of the metadata-object not found from metadata-table.
+   */
+  NAME_NOT_FOUND,
 
-    /**
-     *  @brief Current in the Metadata stepped over the last row (a result of successful processing).
-     */
-    END_OF_ROW,
+  /**
+   *  @brief Current in the Metadata stepped over the last row (a result of
+   * successful processing).
+   */
+  END_OF_ROW,
 
-    /**
-     *  @brief the object with same parameter exists.
-     */
-    ALREADY_EXISTS,
+  /**
+   *  @brief the object with same parameter exists.
+   */
+  ALREADY_EXISTS,
 
-    /**
-     * @brief Unknown error.
-     */
-    UNKNOWN,
-};
+  /**
+   * @brief Unknown error.
+   */
+  UNKNOWN,
+};  // enum ErrorCode
 
-} // namespace manager::metadata_manager
+}  // namespace manager::metadata_manager
 
-#endif // METADATA_ERROR_CODE_H_
+#endif  // MANAGER_METADATA_ERROR_CODE_H_
