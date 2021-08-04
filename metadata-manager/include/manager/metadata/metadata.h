@@ -91,7 +91,7 @@ class Metadata {
    *  @param  (object) [in]  metadata-object to add.
    *  @return ErrorCode::OK if success, otherwise an error code.
    */
-  virtual ErrorCode add(boost::property_tree::ptree &object);
+  virtual ErrorCode add(boost::property_tree::ptree &object) = 0;
 
   /**
    *  @brief  Add metadata-object to metadata-table.
@@ -100,7 +100,7 @@ class Metadata {
    *  @return ErrorCode::OK if success, otherwise an error code.
    */
   virtual ErrorCode add(boost::property_tree::ptree &object,
-                        ObjectIdType *object_id);
+                        ObjectIdType *object_id) = 0;
 
   /**
    *  @brief  Get metadata-object.
@@ -109,7 +109,7 @@ class Metadata {
    *  @return ErrorCode::OK if success, otherwise an error code.
    */
   virtual ErrorCode get(const ObjectIdType object_id,
-                        boost::property_tree::ptree &object);
+                        boost::property_tree::ptree &object) = 0;
 
   /**
    *  @brief  Get metadata-object.
@@ -119,7 +119,7 @@ class Metadata {
    *  @return ErrorCode::OK if success, otherwise an error code.
    */
   virtual ErrorCode get(std::string_view object_name,
-                        boost::property_tree::ptree &object);
+                        boost::property_tree::ptree &object) = 0;
 
   /**
    *  @brief  Get metadata-object.
@@ -136,7 +136,7 @@ class Metadata {
    *  @param  [in] metadata-object ID.
    *  @return ErrorCode::OK if success, otherwise an error code.
    */
-  virtual ErrorCode remove(const ObjectIdType object_id);
+  virtual ErrorCode remove(const ObjectIdType object_id) = 0;
 
   /**
    *  @brief  Remove metadata-object from metadata-table.
@@ -145,7 +145,7 @@ class Metadata {
    *  @param  (object_id)   [out] ID of the added metadata-object.
    *  @return ErrorCode::OK if success, otherwise an error code.
    */
-  virtual ErrorCode remove(const char *object_name, ObjectIdType *object_id);
+  virtual ErrorCode remove(const char *object_name, ObjectIdType *object_id) = 0;
 
   Metadata(const Metadata &) = delete;
   Metadata &operator=(const Metadata &) = delete;

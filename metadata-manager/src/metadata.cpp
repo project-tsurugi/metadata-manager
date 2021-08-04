@@ -43,51 +43,6 @@ namespace manager::metadata {
 }
 
 /**
- *  @brief  Add metadata-object to metadata-table.
- *  @param  (object) [in]  metadata-object to add.
- *  @return ErrorCode::OK if success, otherwise an error code.
- */
-ErrorCode Metadata::add(boost::property_tree::ptree &object) {
-  return add(object, nullptr);
-}
-
-/**
- *  @brief  Add metadata-object to metadata-table.
- *  @param  (object)    [in]  metadata-object to add.
- *  @param  (object_id) [out] ID of the added metadata-object.
- *  @return ErrorCode::OK if success, otherwise an error code.
- */
-ErrorCode Metadata::add(boost::property_tree::ptree &object,
-                        ObjectIdType *object_id) {
-  ErrorCode error = ErrorCode::UNKNOWN;
-  return error;
-}
-
-/**
- *  @brief  Get metadata-object.
- *  @param  (object_id) [in]  metadata-object ID.
- *  @param  (object)    [out] metadata-object with the specified ID.
- *  @return ErrorCode::OK if success, otherwise an error code.
- */
-ErrorCode Metadata::get(const ObjectIdType object_id,
-                        boost::property_tree::ptree &object) {
-  ErrorCode error = ErrorCode::UNKNOWN;
-  return error;
-}
-
-/**
- *  @brief  Get metadata-object.
- *  @param  (object_name)   [in]  metadata-object name. (Value of "name" key.)
- *  @param  (object)        [out] metadata-object with the specified name.
- *  @return ErrorCode::OK if success, otherwise an error code.
- */
-ErrorCode Metadata::get(std::string_view object_name,
-                        boost::property_tree::ptree &object) {
-  ErrorCode error = ErrorCode::UNKNOWN;
-  return error;
-}
-
-/**
  *  @brief  Get metadata-object.
  *  @param  (key)           [in]  metadata-object key.
  *  @param  (value)         [in]  metadata-object value.
@@ -96,27 +51,6 @@ ErrorCode Metadata::get(std::string_view object_name,
  */
 ErrorCode Metadata::get(const char *object_key, std::string_view object_value,
                         boost::property_tree::ptree &object) {
-  ErrorCode error = ErrorCode::UNKNOWN;
-  return error;
-}
-
-/**
- *  @brief  Remove metadata-object from metadata-table.
- *  @param  [in] metadata-object ID.
- *  @return ErrorCode::OK if success, otherwise an error code.
- */
-ErrorCode Metadata::remove(const ObjectIdType object_id) {
-  ErrorCode error = ErrorCode::UNKNOWN;
-  return error;
-}
-
-/**
- *  @brief  Remove metadata-object from metadata-table.
- *  @param  (object_name)   [in] name of metadata-object. (Value of "name" key.)
- *  @param  (object_id) [out] ID of the added metadata-object.
- *  @return ErrorCode::OK if success, otherwise an error code.
- */
-ErrorCode Metadata::remove(const char *object_name, ObjectIdType *object_id) {
   ErrorCode error = ErrorCode::UNKNOWN;
   return error;
 }

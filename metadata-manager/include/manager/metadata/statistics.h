@@ -50,6 +50,18 @@ class Statistics : public Metadata {
   ErrorCode remove_one_column_statistic(ObjectIdType table_id,
                                         ObjectIdType ordinal_position);
   ErrorCode remove_all_column_statistics(ObjectIdType table_id);
+
+
+  ErrorCode add(boost::property_tree::ptree &object __attribute__ ((unused))) { return ErrorCode::UNKNOWN; }
+  ErrorCode add(boost::property_tree::ptree &object __attribute__ ((unused)),
+                ObjectIdType *object_id __attribute__ ((unused))) { return ErrorCode::UNKNOWN; }
+  ErrorCode get(const ObjectIdType object_id __attribute__ ((unused)),
+                boost::property_tree::ptree &object __attribute__ ((unused))) { return ErrorCode::UNKNOWN; }
+  ErrorCode get(std::string_view object_name __attribute__ ((unused)),
+                boost::property_tree::ptree &object __attribute__ ((unused))) { return ErrorCode::UNKNOWN; }
+  ErrorCode remove(const ObjectIdType object_id __attribute__ ((unused))) { return ErrorCode::UNKNOWN; }
+  ErrorCode remove(const char *object_name __attribute__ ((unused)), 
+                   ObjectIdType *object_id __attribute__ ((unused))) { return ErrorCode::UNKNOWN; }
 };  // class Statistics
 
 }  // namespace manager::metadata

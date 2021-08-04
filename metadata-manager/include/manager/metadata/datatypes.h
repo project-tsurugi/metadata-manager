@@ -51,12 +51,22 @@ class DataTypes : public Metadata {
   DataTypes &operator=(const DataTypes &) = delete;
 
   ErrorCode init() override;
+
+  ErrorCode add(boost::property_tree::ptree &object __attribute__ ((unused))) { return ErrorCode::UNKNOWN; }
+  ErrorCode add(boost::property_tree::ptree &object __attribute__ ((unused)),
+                ObjectIdType *object_id __attribute__ ((unused))) { return ErrorCode::UNKNOWN; }
+
   ErrorCode get(const ObjectIdType object_id,
-                boost::property_tree::ptree &object) override;
+                boost::property_tree::ptree &object);
   ErrorCode get(std::string_view object_name,
-                boost::property_tree::ptree &object) override;
+                boost::property_tree::ptree &object);
   ErrorCode get(const char *object_key, std::string_view object_value,
                 boost::property_tree::ptree &object) override;
+
+  ErrorCode remove(const ObjectIdType object_id __attribute__ ((unused))) { return ErrorCode::UNKNOWN; }
+  ErrorCode remove(const char *object_name __attribute__ ((unused)), 
+                   ObjectIdType *object_id __attribute__ ((unused))) { return ErrorCode::UNKNOWN; }
+
 };  // class DataTypes
 
 }  // namespace manager::metadata
