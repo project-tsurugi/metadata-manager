@@ -41,17 +41,4 @@ namespace manager::metadata {
   return ErrorCode::OK;
 }
 
-/**
- *  @brief  Get metadata-object.
- *  @param  (key)           [in]  metadata-object key.
- *  @param  (value)         [in]  metadata-object value.
- *  @param  (object)        [out] metadata-object with the specified name.
- *  @return ErrorCode::OK if success, otherwise an error code.
- */
-ErrorCode Metadata::get(const char *object_key, std::string_view object_value,
-                        boost::property_tree::ptree &object) {
-  ErrorCode error = ErrorCode::UNKNOWN;
-  return error;
-}
-
 }  // namespace manager::metadata

@@ -122,16 +122,6 @@ class Metadata {
                         boost::property_tree::ptree &object) = 0;
 
   /**
-   *  @brief  Get metadata-object.
-   *  @param  (key)           [in]  metadata-object key.
-   *  @param  (value)         [in]  metadata-object value.
-   *  @param  (object)        [out] metadata-object with the specified name.
-   *  @return ErrorCode::OK if success, otherwise an error code.
-   */
-  virtual ErrorCode get(const char *object_key, std::string_view object_value,
-                        boost::property_tree::ptree &object);
-
-  /**
    *  @brief  Remove metadata-object from metadata-table.
    *  @param  [in] metadata-object ID.
    *  @return ErrorCode::OK if success, otherwise an error code.
