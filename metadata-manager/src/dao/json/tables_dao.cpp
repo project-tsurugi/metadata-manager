@@ -113,16 +113,16 @@ ErrorCode TablesDAO::select_table_statistic_by_table_name(
 
 ErrorCode TablesDAO::insert_table_metadata(boost::property_tree::ptree &table,
                                            ObjectIdType &table_id) const {
-  ErrorCode result = ErrorCode::UNKNOWN;
+  ErrorCode error = ErrorCode::UNKNOWN;
 
   ptree table_name_searched;
   boost::optional<std::string> name =
       table.get_optional<std::string>(Metadata::NAME);
 
   // Load the metadata from the JSON file.
-  result = session_manager_->load_object();
-  if (result != ErrorCode::OK) {
-    return result;
+  error = session_manager_->load_object();
+  if (error != ErrorCode::OK) {
+    return error;
   }
 
   if (get_metadata_object(name.get(), table_name_searched) == ErrorCode::OK) {
@@ -133,9 +133,9 @@ ErrorCode TablesDAO::insert_table_metadata(boost::property_tree::ptree &table,
   table_id = ObjectId::generate(TABLE_NAME);
   table.put(Tables::ID, table_id);
 
-  result = fill_parameters(table);
-  if (result != ErrorCode::OK) {
-    return result;
+  error = fill_parameters(table);
+  if (error != ErrorCode::OK) {
+    return error;
   }
 
   // Getting a metadata object.
@@ -147,9 +147,9 @@ ErrorCode TablesDAO::insert_table_metadata(boost::property_tree::ptree &table,
   node.push_back(std::make_pair("", table));
   meta_object->put_child(Tables::TABLES_NODE, node);
 
-  result = ErrorCode::OK;
+  error = ErrorCode::OK;
 
-  return result;
+  return error;
 }
 
 /**
@@ -167,18 +167,18 @@ ErrorCode TablesDAO::select_table_metadata(std::string_view object_key,
   assert(!object_key.empty());
   assert(!object_value.empty());
 
-  ErrorCode result = ErrorCode::UNKNOWN;
+  ErrorCode error = ErrorCode::UNKNOWN;
 
   // Load the meta data from the JSON file.
-  result = session_manager_->load_object();
-  if (result != ErrorCode::OK) {
-    return result;
+  error = session_manager_->load_object();
+  if (error != ErrorCode::OK) {
+    return error;
   }
 
   // Getting a metadata object.
   ptree *meta_object = session_manager_->get_container();
 
-  result = ErrorCode::NAME_NOT_FOUND;
+  error = ErrorCode::NAME_NOT_FOUND;
   BOOST_FOREACH (const ptree::value_type &node,
                  meta_object->get_child(Tables::TABLES_NODE)) {
     const ptree &temp_obj = node.second;
@@ -190,12 +190,12 @@ ErrorCode TablesDAO::select_table_metadata(std::string_view object_key,
     }
     if (!value.get().compare(object_value)) {
       object = temp_obj;
-      result = ErrorCode::OK;
+      error = ErrorCode::OK;
       break;
     }
   }
 
-  return result;
+  return error;
 }
 
 /**
@@ -206,12 +206,12 @@ ErrorCode TablesDAO::select_table_metadata(std::string_view object_key,
  */
 ErrorCode TablesDAO::delete_table_metadata_by_table_id(
     ObjectIdType table_id) const {
-  ErrorCode result = ErrorCode::UNKNOWN;
+  ErrorCode error = ErrorCode::UNKNOWN;
 
   // Load the meta data from the JSON file.
-  result = session_manager_->load_object();
-  if (result != ErrorCode::OK) {
-    return result;
+  error = session_manager_->load_object();
+  if (error != ErrorCode::OK) {
+    return error;
   }
 
   // Getting a metadata object.
@@ -219,20 +219,20 @@ ErrorCode TablesDAO::delete_table_metadata_by_table_id(
 
   ptree &node = meta_object->get_child(Tables::TABLES_NODE);
 
-  result = ErrorCode::ID_NOT_FOUND;
+  error = ErrorCode::ID_NOT_FOUND;
   for (ptree::iterator it = node.begin(); it != node.end();) {
     const ptree &temp_obj = it->second;
     boost::optional<ObjectIdType> id =
         temp_obj.get_optional<ObjectIdType>(Tables::ID);
     if (id && (id.get() == table_id)) {
       it = node.erase(it);
-      result = ErrorCode::OK;
+      error = ErrorCode::OK;
     } else {
       ++it;
     }
   }
 
-  return result;
+  return error;
 }
 
 /**
@@ -246,12 +246,12 @@ ErrorCode TablesDAO::delete_table_metadata_by_table_name(
     std::string_view table_name, ObjectIdType &table_id) const {
   assert(!table_name.empty());
 
-  ErrorCode result = ErrorCode::UNKNOWN;
+  ErrorCode error = ErrorCode::UNKNOWN;
 
   // Load the meta data from the JSON file.
-  result = session_manager_->load_object();
-  if (result != ErrorCode::OK) {
-    return result;
+  error = session_manager_->load_object();
+  if (error != ErrorCode::OK) {
+    return error;
   }
 
   // Getting a metadata object.
@@ -259,7 +259,7 @@ ErrorCode TablesDAO::delete_table_metadata_by_table_name(
 
   ptree &node = meta_object->get_child(Tables::TABLES_NODE);
 
-  result = ErrorCode::NAME_NOT_FOUND;
+  error = ErrorCode::NAME_NOT_FOUND;
   for (ptree::iterator it = node.begin(); it != node.end();) {
     const ptree &temp_obj = it->second;
     boost::optional<std::string> name =
@@ -268,18 +268,18 @@ ErrorCode TablesDAO::delete_table_metadata_by_table_name(
         temp_obj.get_optional<ObjectIdType>(Tables::ID);
     if (name && (!name.get().compare(table_name))) {
       if (!id) {
-        result = ErrorCode::UNKNOWN;
+        error = ErrorCode::UNKNOWN;
         break;
       }
       table_id = id.get();
       it = node.erase(it);
-      result = ErrorCode::OK;
+      error = ErrorCode::OK;
     } else {
       ++it;
     }
   }
 
-  return result;
+  return error;
 }
 
 // -----------------------------------------------------------------------------
@@ -295,7 +295,7 @@ ErrorCode TablesDAO::get_metadata_object(
     std::string_view object_name, boost::property_tree::ptree &object) const {
   assert(!object_name.empty());
 
-  ErrorCode result = ErrorCode::NAME_NOT_FOUND;
+  ErrorCode error = ErrorCode::NAME_NOT_FOUND;
 
   ptree *meta_object = session_manager_->get_container();
 
@@ -310,11 +310,11 @@ ErrorCode TablesDAO::get_metadata_object(
     }
     if (!name.get().compare(object_name)) {
       object = temp_obj;
-      result = ErrorCode::OK;
+      error = ErrorCode::OK;
       break;
     }
   }
-  return result;
+  return error;
 }
 
 /**
@@ -323,7 +323,7 @@ ErrorCode TablesDAO::get_metadata_object(
  *  @return  ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode TablesDAO::fill_parameters(boost::property_tree::ptree &table) const {
-  ErrorCode result = ErrorCode::OK;
+  ErrorCode error = ErrorCode::OK;
 
   //
   // column metdata
@@ -341,12 +341,12 @@ ErrorCode TablesDAO::fill_parameters(boost::property_tree::ptree &table) const {
     boost::optional<ObjectIdType> data_type_id =
         column.get_optional<ObjectIdType>(Tables::Column::DATA_TYPE_ID);
     if (!data_type_id) {
-      result = ErrorCode::NOT_FOUND;
+      error = ErrorCode::NOT_FOUND;
       break;
     }
   }
 
-  return result;
+  return error;
 }
 
 }  // namespace manager::metadata::db::json

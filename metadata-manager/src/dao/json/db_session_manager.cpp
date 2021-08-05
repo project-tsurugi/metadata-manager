@@ -99,7 +99,7 @@ ErrorCode DBSessionManager::rollback() {
  */
 ErrorCode DBSessionManager::connect(std::string_view file_name,
                                     std::string_view initial_node) {
-  ErrorCode result = ErrorCode::OK;
+  ErrorCode error = ErrorCode::OK;
 
   file_name_ = std::string(file_name);
 
@@ -108,14 +108,14 @@ ErrorCode DBSessionManager::connect(std::string_view file_name,
     // create metadata-table
     init_meta_data();
     meta_object_->put(initial_node.data(), "");
-    result = save_object();
+    error = save_object();
 
-    if (result != ErrorCode::OK) {
+    if (error != ErrorCode::OK) {
       file_name_.clear();
     }
   }
 
-  return result;
+  return error;
 }
 
 /**

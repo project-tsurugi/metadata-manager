@@ -26,18 +26,18 @@ using manager::metadata::ErrorCode;
  *  @return  ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode DataTypesProvider::init() {
-  ErrorCode result = ErrorCode::OK;
+  ErrorCode error = ErrorCode::OK;
   std::shared_ptr<GenericDAO> gdao = nullptr;
 
   if (datatypes_dao_ == nullptr) {
     // Get an instance of the DataTypeDAO class.
-    result = session_manager_->get_dao(GenericDAO::TableName::DATATYPES, gdao);
-    datatypes_dao_ = (result == ErrorCode::OK)
+    error = session_manager_->get_dao(GenericDAO::TableName::DATATYPES, gdao);
+    datatypes_dao_ = (error == ErrorCode::OK)
                          ? std::static_pointer_cast<DataTypesDAO>(gdao)
                          : nullptr;
   }
 
-  return result;
+  return error;
 }
 
 /**
@@ -53,18 +53,18 @@ ErrorCode DataTypesProvider::get_datatype_metadata(std::string_view key,
                                                    std::string_view value,
                                                    ptree &object) {
   // Initialization
-  ErrorCode result = init();
-  if (result != ErrorCode::OK) {
-    return result;
+  ErrorCode error = init();
+  if (error != ErrorCode::OK) {
+    return error;
   }
 
   if (key.empty() || value.empty()) {
     return ErrorCode::INVALID_PARAMETER;
   }
 
-  result = datatypes_dao_->select_one_data_type_metadata(key, value, object);
+  error = datatypes_dao_->select_one_data_type_metadata(key, value, object);
 
-  return result;
+  return error;
 }
 
 }  // namespace manager::metadata::db

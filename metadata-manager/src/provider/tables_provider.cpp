@@ -30,28 +30,28 @@ using manager::metadata::ErrorCode;
  *  @return  ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode TablesProvider::init() {
-  ErrorCode result = ErrorCode::OK;
+  ErrorCode error = ErrorCode::OK;
   std::shared_ptr<GenericDAO> gdao = nullptr;
 
   if (tables_dao_ == nullptr) {
     // Get an instance of the TablesDAO class.
-    result =
+    error =
         session_manager_->get_dao(GenericDAO::TableName::TABLES, gdao);
-    tables_dao_ = (result == ErrorCode::OK)
+    tables_dao_ = (error == ErrorCode::OK)
                       ? std::static_pointer_cast<TablesDAO>(gdao)
                       : nullptr;
   }
 
-  if ((columns_dao_ == nullptr) && (result == ErrorCode::OK)) {
+  if ((columns_dao_ == nullptr) && (error == ErrorCode::OK)) {
     // Get an instance of the ColumnsDAO class.
-    result =
+    error =
         session_manager_->get_dao(GenericDAO::TableName::COLUMNS, gdao);
-    columns_dao_ = (result == ErrorCode::OK)
+    columns_dao_ = (error == ErrorCode::OK)
                        ? std::static_pointer_cast<ColumnsDAO>(gdao)
                        : nullptr;
   }
 
-  return result;
+  return error;
 }
 
 /**
@@ -63,42 +63,42 @@ ErrorCode TablesProvider::init() {
 ErrorCode TablesProvider::add_table_metadata(ptree &object,
                                              ObjectIdType &table_id) {
   // Initialization
-  ErrorCode result = init();
-  if (result != ErrorCode::OK) {
-    return result;
+  ErrorCode error = init();
+  if (error != ErrorCode::OK) {
+    return error;
   }
 
-  result = session_manager_->start_transaction();
-  if (result != ErrorCode::OK) {
-    return result;
+  error = session_manager_->start_transaction();
+  if (error != ErrorCode::OK) {
+    return error;
   }
 
   // Add table metadata object to table metadata table.
-  result = tables_dao_->insert_table_metadata(object, table_id);
-  if (result != ErrorCode::OK) {
+  error = tables_dao_->insert_table_metadata(object, table_id);
+  if (error != ErrorCode::OK) {
     ErrorCode rollback_result = session_manager_->rollback();
     if (rollback_result != ErrorCode::OK) {
       return rollback_result;
     }
-    return result;
+    return error;
   }
 
   // Add column metadata object to column metadata table.
   BOOST_FOREACH (const ptree::value_type &node,
                  object.get_child(Tables::COLUMNS_NODE)) {
     ptree column = node.second;
-    result = columns_dao_->insert_one_column_metadata(table_id, column);
-    if (result != ErrorCode::OK) {
+    error = columns_dao_->insert_one_column_metadata(table_id, column);
+    if (error != ErrorCode::OK) {
       ErrorCode rollback_result = session_manager_->rollback();
       if (rollback_result != ErrorCode::OK) {
         return rollback_result;
       }
-      return result;
+      return error;
     }
   }
 
-  result = session_manager_->commit();
-  return result;
+  error = session_manager_->commit();
+  return error;
 }
 
 /**
@@ -114,19 +114,19 @@ ErrorCode TablesProvider::get_table_metadata(std::string_view key,
                                              std::string_view value,
                                              ptree &object) {
   // Initialization
-  ErrorCode result = init();
-  if (result != ErrorCode::OK) {
-    return result;
+  ErrorCode error = init();
+  if (error != ErrorCode::OK) {
+    return error;
   }
 
-  result = tables_dao_->select_table_metadata(key, value, object);
-  if (result != ErrorCode::OK) {
-    return result;
+  error = tables_dao_->select_table_metadata(key, value, object);
+  if (error != ErrorCode::OK) {
+    return error;
   }
 
   std::string object_id = "";
   if (key == Tables::ID) {
-    result = get_all_column_metadatas(value, object);
+    error = get_all_column_metadatas(value, object);
   } else {
     BOOST_FOREACH (ptree::value_type &node, object) {
       ptree &table = node.second;
@@ -138,7 +138,7 @@ ErrorCode TablesProvider::get_table_metadata(std::string_view key,
           return ErrorCode::INTERNAL_ERROR;
         }
 
-        result = get_all_column_metadatas(o_table_id.get(), object);
+        error = get_all_column_metadatas(o_table_id.get(), object);
         break;
       } else {
         boost::optional<std::string> o_table_id =
@@ -147,14 +147,14 @@ ErrorCode TablesProvider::get_table_metadata(std::string_view key,
           return ErrorCode::INTERNAL_ERROR;
         }
 
-        result = get_all_column_metadatas(o_table_id.get(), table);
-        if (result != ErrorCode::OK) {
+        error = get_all_column_metadatas(o_table_id.get(), table);
+        if (error != ErrorCode::OK) {
           break;
         }
       }
     }
   }
-  return result;
+  return error;
 }
 
 /**
@@ -168,39 +168,39 @@ ErrorCode TablesProvider::get_table_metadata(std::string_view key,
  */
 ErrorCode TablesProvider::remove_table_metadata(const ObjectIdType table_id) {
   // Initialization
-  ErrorCode result = init();
-  if (result != ErrorCode::OK) {
-    return result;
+  ErrorCode error = init();
+  if (error != ErrorCode::OK) {
+    return error;
   }
 
   if (table_id <= 0) {
     return ErrorCode::INVALID_PARAMETER;
   }
 
-  result = session_manager_->start_transaction();
-  if (result != ErrorCode::OK) {
-    return result;
+  error = session_manager_->start_transaction();
+  if (error != ErrorCode::OK) {
+    return error;
   }
 
-  result = tables_dao_->delete_table_metadata_by_table_id(table_id);
-  if (result != ErrorCode::OK) {
+  error = tables_dao_->delete_table_metadata_by_table_id(table_id);
+  if (error != ErrorCode::OK) {
     ErrorCode rollback_result = session_manager_->rollback();
     if (rollback_result != ErrorCode::OK) {
       return rollback_result;
     }
-    return result;
+    return error;
   }
 
-  result = columns_dao_->delete_column_metadata_by_table_id(table_id);
-  if (result == ErrorCode::OK) {
-    result = session_manager_->commit();
+  error = columns_dao_->delete_column_metadata_by_table_id(table_id);
+  if (error == ErrorCode::OK) {
+    error = session_manager_->commit();
   } else {
     ErrorCode rollback_result = session_manager_->rollback();
     if (rollback_result != ErrorCode::OK) {
       return rollback_result;
     }
   }
-  return result;
+  return error;
 }
 
 /**
@@ -216,9 +216,9 @@ ErrorCode TablesProvider::remove_table_metadata(const ObjectIdType table_id) {
 ErrorCode TablesProvider::remove_table_metadata(std::string_view table_name,
                                                 ObjectIdType &table_id) {
   // Initialization
-  ErrorCode result = init();
-  if (result != ErrorCode::OK) {
-    return result;
+  ErrorCode error = init();
+  if (error != ErrorCode::OK) {
+    return error;
   }
 
   std::string s_object_name = std::string(table_name);
@@ -226,31 +226,31 @@ ErrorCode TablesProvider::remove_table_metadata(std::string_view table_name,
     return ErrorCode::INVALID_PARAMETER;
   }
 
-  result = session_manager_->start_transaction();
-  if (result != ErrorCode::OK) {
-    return result;
+  error = session_manager_->start_transaction();
+  if (error != ErrorCode::OK) {
+    return error;
   }
 
-  result =
+  error =
       tables_dao_->delete_table_metadata_by_table_name(s_object_name, table_id);
-  if (result != ErrorCode::OK) {
+  if (error != ErrorCode::OK) {
     ErrorCode rollback_result = session_manager_->rollback();
     if (rollback_result != ErrorCode::OK) {
       return rollback_result;
     }
-    return result;
+    return error;
   }
 
-  result = columns_dao_->delete_column_metadata_by_table_id(table_id);
-  if (result == ErrorCode::OK) {
-    result = session_manager_->commit();
+  error = columns_dao_->delete_column_metadata_by_table_id(table_id);
+  if (error == ErrorCode::OK) {
+    error = session_manager_->commit();
   } else {
     ErrorCode rollback_result = session_manager_->rollback();
     if (rollback_result != ErrorCode::OK) {
       return rollback_result;
     }
   }
-  return result;
+  return error;
 }
 
 //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
@@ -268,15 +268,15 @@ ErrorCode TablesProvider::get_all_column_metadatas(std::string_view table_id,
   assert(!table_id.empty());
 
   ptree columns;
-  ErrorCode result = columns_dao_->select_column_metadata(
+  ErrorCode error = columns_dao_->select_column_metadata(
       Tables::Column::TABLE_ID, table_id, columns);
 
-  if ((result == ErrorCode::OK) || (result == ErrorCode::INVALID_PARAMETER)) {
+  if ((error == ErrorCode::OK) || (error == ErrorCode::INVALID_PARAMETER)) {
     tables.add_child(Tables::COLUMNS_NODE, columns);
-    result = ErrorCode::OK;
+    error = ErrorCode::OK;
   }
 
-  return result;
+  return error;
 }
 
 }  // namespace manager::metadata::db

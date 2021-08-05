@@ -32,25 +32,25 @@ using manager::metadata::ErrorCode;
  *  @return  ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode StatisticsProvider::init() {
-  ErrorCode result = ErrorCode::OK;
+  ErrorCode error = ErrorCode::OK;
   std::shared_ptr<GenericDAO> gdao = nullptr;
 
   if (tables_dao_ == nullptr) {
     // Get an instance of the TablesDAO class.
-    result = session_manager_->get_dao(GenericDAO::TableName::TABLES, gdao);
-    tables_dao_ = (result == ErrorCode::OK)
+    error = session_manager_->get_dao(GenericDAO::TableName::TABLES, gdao);
+    tables_dao_ = (error == ErrorCode::OK)
                       ? std::static_pointer_cast<TablesDAO>(gdao)
                       : nullptr;
   }
-  if ((statistics_dao_ == nullptr) && (result == ErrorCode::OK)) {
+  if ((statistics_dao_ == nullptr) && (error == ErrorCode::OK)) {
     // Get an instance of the StatisticsDAO class.
-    result = session_manager_->get_dao(GenericDAO::TableName::STATISTICS, gdao);
-    statistics_dao_ = (result == ErrorCode::OK)
+    error = session_manager_->get_dao(GenericDAO::TableName::STATISTICS, gdao);
+    statistics_dao_ = (error == ErrorCode::OK)
                           ? std::static_pointer_cast<StatisticsDAO>(gdao)
                           : nullptr;
   }
 
-  return result;
+  return error;
 }
 
 /**
@@ -65,30 +65,30 @@ ErrorCode StatisticsProvider::init() {
 ErrorCode StatisticsProvider::add_table_statistic(ObjectIdType table_id,
                                                   float reltuples) {
   // Initialization
-  ErrorCode result = init();
-  if (result != ErrorCode::OK) {
-    return result;
+  ErrorCode error = init();
+  if (error != ErrorCode::OK) {
+    return error;
   }
 
   if (table_id <= 0) {
     return ErrorCode::INVALID_PARAMETER;
   }
 
-  result = session_manager_->start_transaction();
-  if (result != ErrorCode::OK) {
-    return result;
+  error = session_manager_->start_transaction();
+  if (error != ErrorCode::OK) {
+    return error;
   }
 
-  result = tables_dao_->update_reltuples_by_table_id(reltuples, table_id);
-  if (result == ErrorCode::OK) {
-    result = session_manager_->commit();
+  error = tables_dao_->update_reltuples_by_table_id(reltuples, table_id);
+  if (error == ErrorCode::OK) {
+    error = session_manager_->commit();
   } else {
     ErrorCode rollback_result = session_manager_->rollback();
     if (rollback_result != ErrorCode::OK) {
       return rollback_result;
     }
   }
-  return result;
+  return error;
 }
 
 /**
@@ -105,26 +105,26 @@ ErrorCode StatisticsProvider::add_table_statistic(std::string_view table_name,
                                                   float reltuples,
                                                   ObjectIdType *table_id) {
   // Initialization
-  ErrorCode result = init();
-  if (result != ErrorCode::OK) {
-    return result;
+  ErrorCode error = init();
+  if (error != ErrorCode::OK) {
+    return error;
   }
 
   if (table_name.empty()) {
     return ErrorCode::INVALID_PARAMETER;
   }
 
-  result = session_manager_->start_transaction();
-  if (result != ErrorCode::OK) {
-    return result;
+  error = session_manager_->start_transaction();
+  if (error != ErrorCode::OK) {
+    return error;
   }
 
   ObjectIdType retval_object_id = 0;
-  result = tables_dao_->update_reltuples_by_table_name(
+  error = tables_dao_->update_reltuples_by_table_name(
       reltuples, table_name.data(), retval_object_id);
-  if (result == ErrorCode::OK) {
-    result = session_manager_->commit();
-    if ((result == ErrorCode::OK) && (table_id != nullptr)) {
+  if (error == ErrorCode::OK) {
+    error = session_manager_->commit();
+    if ((error == ErrorCode::OK) && (table_id != nullptr)) {
       *table_id = retval_object_id;
     }
   } else {
@@ -133,7 +133,7 @@ ErrorCode StatisticsProvider::add_table_statistic(std::string_view table_name,
       return rollback_result;
     }
   }
-  return result;
+  return error;
 }
 
 /**
@@ -151,9 +151,9 @@ ErrorCode StatisticsProvider::add_column_statistic(
     ObjectIdType table_id, ObjectIdType ordinal_position,
     ptree &column_statistic) {
   // Initialization
-  ErrorCode result = init();
-  if (result != ErrorCode::OK) {
-    return result;
+  ErrorCode error = init();
+  if (error != ErrorCode::OK) {
+    return error;
   }
 
   if ((table_id <= 0) || (ordinal_position <= 0)) {
@@ -176,24 +176,24 @@ ErrorCode StatisticsProvider::add_column_statistic(
     s_column_statistic = ss.str();
   }
 
-  result = session_manager_->start_transaction();
-  if (result != ErrorCode::OK) {
-    return result;
+  error = session_manager_->start_transaction();
+  if (error != ErrorCode::OK) {
+    return error;
   }
 
-  result =
+  error =
       statistics_dao_
           ->upsert_one_column_statistic_by_table_id_column_ordinal_position(
               table_id, ordinal_position, s_column_statistic);
-  if (result == ErrorCode::OK) {
-    result = session_manager_->commit();
+  if (error == ErrorCode::OK) {
+    error = session_manager_->commit();
   } else {
     ErrorCode rollback_result = session_manager_->rollback();
     if (rollback_result != ErrorCode::OK) {
       return rollback_result;
     }
   }
-  return result;
+  return error;
 }
 
 /**
@@ -209,21 +209,21 @@ ErrorCode StatisticsProvider::get_column_statistic(
     ObjectIdType table_id, ObjectIdType ordinal_position,
     ColumnStatistic &column_statistic) {
   // Initialization
-  ErrorCode result = init();
-  if (result != ErrorCode::OK) {
-    return result;
+  ErrorCode error = init();
+  if (error != ErrorCode::OK) {
+    return error;
   }
 
   if ((table_id <= 0) || (ordinal_position <= 0)) {
     return ErrorCode::INVALID_PARAMETER;
   }
 
-  result =
+  error =
       statistics_dao_
           ->select_one_column_statistic_by_table_id_column_ordinal_position(
               table_id, ordinal_position, column_statistic);
 
-  return result;
+  return error;
 }
 
 /**
@@ -240,19 +240,19 @@ ErrorCode StatisticsProvider::get_all_column_statistics(
     ObjectIdType table_id,
     std::unordered_map<ObjectIdType, ColumnStatistic> &column_statistics) {
   // Initialization
-  ErrorCode result = init();
-  if (result != ErrorCode::OK) {
-    return result;
+  ErrorCode error = init();
+  if (error != ErrorCode::OK) {
+    return error;
   }
 
   if (table_id <= 0) {
     return ErrorCode::INVALID_PARAMETER;
   }
 
-  result = statistics_dao_->select_all_column_statistic_by_table_id(
+  error = statistics_dao_->select_all_column_statistic_by_table_id(
       table_id, column_statistics);
 
-  return result;
+  return error;
 }
 
 /**
@@ -266,19 +266,19 @@ ErrorCode StatisticsProvider::get_all_column_statistics(
 ErrorCode StatisticsProvider::get_table_statistic(
     ObjectIdType table_id, manager::metadata::TableStatistic &table_statistic) {
   // Initialization
-  ErrorCode result = init();
-  if (result != ErrorCode::OK) {
-    return result;
+  ErrorCode error = init();
+  if (error != ErrorCode::OK) {
+    return error;
   }
 
   if (table_id <= 0) {
     return ErrorCode::INVALID_PARAMETER;
   }
 
-  result = tables_dao_->select_table_statistic_by_table_id(table_id,
+  error = tables_dao_->select_table_statistic_by_table_id(table_id,
                                                            table_statistic);
 
-  return result;
+  return error;
 }
 
 /**
@@ -293,19 +293,19 @@ ErrorCode StatisticsProvider::get_table_statistic(
     std::string_view table_name,
     manager::metadata::TableStatistic &table_statistic) {
   // Initialization
-  ErrorCode result = init();
-  if (result != ErrorCode::OK) {
-    return result;
+  ErrorCode error = init();
+  if (error != ErrorCode::OK) {
+    return error;
   }
 
   if (table_name.empty()) {
     return ErrorCode::INVALID_PARAMETER;
   }
 
-  result = tables_dao_->select_table_statistic_by_table_name(table_name.data(),
+  error = tables_dao_->select_table_statistic_by_table_name(table_name.data(),
                                                              table_statistic);
 
-  return result;
+  return error;
 }
 
 /**
@@ -318,33 +318,33 @@ ErrorCode StatisticsProvider::get_table_statistic(
 ErrorCode StatisticsProvider::remove_column_statistic(
     ObjectIdType table_id, ObjectIdType ordinal_position) {
   // Initialization
-  ErrorCode result = init();
-  if (result != ErrorCode::OK) {
-    return result;
+  ErrorCode error = init();
+  if (error != ErrorCode::OK) {
+    return error;
   }
 
   if ((table_id <= 0) || (ordinal_position <= 0)) {
     return ErrorCode::INVALID_PARAMETER;
   }
 
-  result = session_manager_->start_transaction();
-  if (result != ErrorCode::OK) {
-    return result;
+  error = session_manager_->start_transaction();
+  if (error != ErrorCode::OK) {
+    return error;
   }
 
-  result =
+  error =
       statistics_dao_
           ->delete_one_column_statistic_by_table_id_column_ordinal_position(
               table_id, ordinal_position);
-  if (result == ErrorCode::OK) {
-    result = session_manager_->commit();
+  if (error == ErrorCode::OK) {
+    error = session_manager_->commit();
   } else {
     ErrorCode rollback_result = session_manager_->rollback();
     if (rollback_result != ErrorCode::OK) {
       return rollback_result;
     }
   }
-  return result;
+  return error;
 }
 
 /**
@@ -357,30 +357,30 @@ ErrorCode StatisticsProvider::remove_column_statistic(
 ErrorCode StatisticsProvider::remove_all_column_statistics(
     ObjectIdType table_id) {
   // Initialization
-  ErrorCode result = init();
-  if (result != ErrorCode::OK) {
-    return result;
+  ErrorCode error = init();
+  if (error != ErrorCode::OK) {
+    return error;
   }
 
   if (table_id <= 0) {
     return ErrorCode::INVALID_PARAMETER;
   }
 
-  result = session_manager_->start_transaction();
-  if (result != ErrorCode::OK) {
-    return result;
+  error = session_manager_->start_transaction();
+  if (error != ErrorCode::OK) {
+    return error;
   }
 
-  result = statistics_dao_->delete_all_column_statistic_by_table_id(table_id);
-  if (result == ErrorCode::OK) {
-    result = session_manager_->commit();
+  error = statistics_dao_->delete_all_column_statistic_by_table_id(table_id);
+  if (error == ErrorCode::OK) {
+    error = session_manager_->commit();
   } else {
     ErrorCode rollback_result = session_manager_->rollback();
     if (rollback_result != ErrorCode::OK) {
       return rollback_result;
     }
   }
-  return result;
+  return error;
 }
 
 }  // namespace manager::metadata::db
