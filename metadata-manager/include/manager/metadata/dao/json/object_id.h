@@ -35,20 +35,4 @@ class ObjectId {
 
 }  // namespace manager::metadata::db::json
 
-/* =============================================================================================
- */
-namespace manager::metadata_manager {
-
-class ObjectId {
- public:
-  static ErrorCode init();
-  static ObjectIdType current(const std::string table_name);
-  static ObjectIdType generate(const std::string table_name);
-
- private:
-  static const char *TABLE_NAME;
-};
-
-}  // namespace manager::metadata_manager
-
 #endif  // MANAGER_METADATA_DAO_JSON_OBJECT_ID_H_
