@@ -443,19 +443,11 @@ ErrorCode TablesDAO::insert_table_metadata(boost::property_tree::ptree &table,
 
   boost::optional<std::string> name =
       table.get_optional<std::string>(Tables::NAME);
-  if (!name) {
-    return ErrorCode::INVALID_PARAMETER;
-  }
-  param_values.emplace_back(name.value().c_str());
+  param_values.emplace_back((name ? name.value().c_str() : nullptr));
 
   boost::optional<std::string> namespace_name =
       table.get_optional<std::string>(Tables::NAMESPACE);
-
-  if (!namespace_name) {
-    param_values.emplace_back(nullptr);
-  } else {
-    param_values.emplace_back(namespace_name.value().c_str());
-  }
+  param_values.emplace_back((namespace_name ? namespace_name.value().c_str() : nullptr));
 
   boost::optional<ptree &> o_primary_keys =
       table.get_child_optional(Tables::PRIMARY_KEY_NODE);
@@ -478,21 +470,11 @@ ErrorCode TablesDAO::insert_table_metadata(boost::property_tree::ptree &table,
       s_primary_keys = ss.str();
     }
   }
-
-  if (s_primary_keys.empty()) {
-    param_values.emplace_back(nullptr);
-  } else {
-    param_values.emplace_back(s_primary_keys.c_str());
-  }
+  param_values.emplace_back((!s_primary_keys.empty() ? s_primary_keys.c_str() : nullptr));
 
   boost::optional<std::string> reltuples =
       table.get_optional<std::string>(Tables::RELTUPLES);
-
-  if (!reltuples) {
-    param_values.emplace_back(nullptr);
-  } else {
-    param_values.emplace_back(reltuples.value().c_str());
-  }
+  param_values.emplace_back((reltuples ? reltuples.value().c_str() : nullptr));
 
   PGresult *res;
   ErrorCode error = DbcUtils::exec_prepared(
@@ -554,8 +536,7 @@ ErrorCode TablesDAO::select_table_metadata(std::string_view object_key,
     int nrows = PQntuples(res);
 
     if (nrows <= 0) {
-      PQclear(res);
-      return ErrorCode::INVALID_PARAMETER;
+      error = ErrorCode::NOT_FOUND;
     } else if (nrows == 1) {
       int ordinal_position = 0;
 
@@ -566,13 +547,9 @@ ErrorCode TablesDAO::select_table_metadata(std::string_view object_key,
         ptree table;
 
         error = get_ptree_from_p_gresult(res, ordinal_position, table);
-
-        if (error != ErrorCode::OK) {
-          PQclear(res);
-          return error;
+        if (error == ErrorCode::OK) {
+          object.push_back(std::make_pair("", table));
         }
-
-        object.push_back(std::make_pair("", table));
       }
     }
   }
@@ -606,13 +583,9 @@ ErrorCode TablesDAO::delete_table_metadata_by_table_id(
         DbcUtils::get_number_of_rows_affected(res, number_of_rows_affected);
 
     if (error_get != ErrorCode::OK) {
-      PQclear(res);
-      return error_get;
-    }
-
-    if (number_of_rows_affected != 1) {
-      PQclear(res);
-      return ErrorCode::INVALID_PARAMETER;
+      error = error_get;
+    } else if (number_of_rows_affected != 1) {
+      error = ErrorCode::NOT_FOUND;
     }
   }
 
@@ -645,19 +618,15 @@ ErrorCode TablesDAO::delete_table_metadata_by_table_name(
         DbcUtils::get_number_of_rows_affected(res, number_of_rows_affected);
 
     if (error_get != ErrorCode::OK) {
-      PQclear(res);
-      return error_get;
-    }
-
-    if (number_of_rows_affected == 1) {
+      error = error_get;
+    } else if (number_of_rows_affected == 1) {
       int ordinal_position = 0;
       error = DbcUtils::str_to_integral<ObjectIdType>(
           PQgetvalue(res, ordinal_position,
                      TableMetadataTable::ColumnOrdinalPosition::ID),
           table_id);
     } else {
-      PQclear(res);
-      return ErrorCode::INVALID_PARAMETER;
+      error = ErrorCode::NOT_FOUND;
     }
   }
 

@@ -176,21 +176,15 @@ ErrorCode ColumnsDAO::insert_one_column_metadata(
   if (!name) {
     return ErrorCode::INVALID_PARAMETER;
   }
-  param_values.emplace_back(name.value().c_str());
+  param_values.emplace_back((name ? name.value().c_str() : nullptr));
 
   boost::optional<std::string> ordinal_position =
       column.get_optional<std::string>(Tables::Column::ORDINAL_POSITION);
-  if (!ordinal_position) {
-    return ErrorCode::INVALID_PARAMETER;
-  }
-  param_values.emplace_back(ordinal_position.value().c_str());
+  param_values.emplace_back((ordinal_position ? ordinal_position.value().c_str() : nullptr));
 
   boost::optional<std::string> data_type_id =
       column.get_optional<std::string>(Tables::Column::DATA_TYPE_ID);
-  if (!data_type_id) {
-    return ErrorCode::INVALID_PARAMETER;
-  }
-  param_values.emplace_back(data_type_id.value().c_str());
+  param_values.emplace_back((data_type_id ? data_type_id.value().c_str() : nullptr));
 
   boost::optional<ptree &> o_data_length =
       column.get_child_optional(Tables::Column::DATA_LENGTH);
@@ -222,34 +216,22 @@ ErrorCode ColumnsDAO::insert_one_column_metadata(
 
   boost::optional<std::string> varying =
       column.get_optional<std::string>(Tables::Column::VARYING);
-  if (!varying) {
-    param_values.emplace_back(nullptr);
-  } else {
-    param_values.emplace_back(varying.value().c_str());
-  }
+  param_values.emplace_back((varying ? varying.value().c_str() : nullptr));
 
   boost::optional<std::string> nullable =
       column.get_optional<std::string>(Tables::Column::NULLABLE);
   if (!nullable) {
     return ErrorCode::INVALID_PARAMETER;
   }
-  param_values.emplace_back(nullable.value().c_str());
+  param_values.emplace_back((nullable ? nullable.value().c_str() : nullptr));
 
   boost::optional<std::string> default_expr =
       column.get_optional<std::string>(Tables::Column::DEFAULT);
-  if (!default_expr) {
-    param_values.emplace_back(nullptr);
-  } else {
-    param_values.emplace_back(default_expr.value().c_str());
-  }
+  param_values.emplace_back((default_expr ? default_expr.value().c_str() : nullptr));
 
   boost::optional<std::string> direction =
       column.get_optional<std::string>(Tables::Column::DIRECTION);
-  if (!direction) {
-    param_values.emplace_back(nullptr);
-  } else {
-    param_values.emplace_back(direction.value().c_str());
-  }
+  param_values.emplace_back((direction ? direction.value().c_str() : nullptr));
 
   PGresult *res;
   ErrorCode error = DbcUtils::exec_prepared(

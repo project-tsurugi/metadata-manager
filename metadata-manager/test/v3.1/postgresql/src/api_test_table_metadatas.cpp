@@ -436,7 +436,7 @@ TEST_F(ApiTestTableMetadata, remove_table_metadata_by_table_name) {
     // verifies that table metadata does not exist.
     ptree table_metadata_got;
     error = tables->get(table_id_to_remove, table_metadata_got);
-    EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);
+    EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
 
     UTUtils::print("-- get table metadata --");
     UTUtils::print(UTUtils::get_tree_string(table_metadata_got));
@@ -469,7 +469,7 @@ TEST_F(ApiTestTableMetadata, remove_table_metadata_by_table_id) {
     // verifies that table metadata does not exist.
     ptree table_metadata_got;
     error = tables->get(ret_table_id, table_metadata_got);
-    EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);
+    EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
 
     UTUtils::print("-- get table metadata --");
     UTUtils::print(UTUtils::get_tree_string(table_metadata_got));

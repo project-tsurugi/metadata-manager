@@ -193,7 +193,7 @@ void DaoTestTableMetadata::get_table_metadata(
     if (error == ErrorCode::OK) {
         EXPECT_EQ(ErrorCode::OK, error);
     } else {
-        EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);
+        EXPECT_EQ(ErrorCode::NOT_FOUND, error);
         return;
     }
 

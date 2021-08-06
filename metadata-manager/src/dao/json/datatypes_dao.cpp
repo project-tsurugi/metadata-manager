@@ -110,10 +110,9 @@ ErrorCode DataTypesDAO::prepare() const {
 ErrorCode DataTypesDAO::select_one_data_type_metadata(
     std::string_view object_key, std::string_view object_value,
     boost::property_tree::ptree &object) const {
-  assert(object_key != NULL);
-  assert(!object_value.empty());
+  // Initialization of return value.
+  ErrorCode error = ErrorCode::NOT_FOUND;
 
-  ErrorCode error = ErrorCode::NAME_NOT_FOUND;
   ptree *meta_object = session_manager_->get_container();
 
   BOOST_FOREACH (const ptree::value_type &node,
@@ -123,7 +122,8 @@ ErrorCode DataTypesDAO::select_one_data_type_metadata(
     boost::optional<std::string> value =
         temp_obj.get_optional<std::string>(object_key.data());
     if (!value) {
-      return ErrorCode::NOT_FOUND;
+      error = ErrorCode::INVALID_PARAMETER;
+      break;
     }
     if (!value.get().compare(object_value)) {
       object = temp_obj;

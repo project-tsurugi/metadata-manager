@@ -171,7 +171,7 @@ TEST_P(ApiTestTableMetadataByTableIdException,
 
     ptree table;
     error = tables->get(GetParam(), table);
-    EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);
+    EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
 }
 
 /**
@@ -187,7 +187,7 @@ TEST_P(ApiTestTableMetadataByTableNameException,
 
     ptree table;
     error = tables->get(GetParam(), table);
-    EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);
+    EXPECT_EQ(ErrorCode::NAME_NOT_FOUND, error);
 }
 
 /**
@@ -202,7 +202,7 @@ TEST_P(ApiTestTableMetadataByTableIdException,
     EXPECT_EQ(ErrorCode::OK, error);
 
     error = tables->remove(GetParam());
-    EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);
+    EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
 }
 
 /**
@@ -218,7 +218,7 @@ TEST_P(ApiTestTableMetadataByTableNameException,
 
     ObjectIdType ret_table_id = -1;
     error = tables->remove(GetParam().c_str(), &ret_table_id);
-    EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);
+    EXPECT_EQ(ErrorCode::NAME_NOT_FOUND, error);
     EXPECT_EQ(-1, ret_table_id);
 }
 

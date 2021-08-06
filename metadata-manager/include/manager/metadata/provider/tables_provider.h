@@ -45,7 +45,8 @@ class TablesProvider : public ProviderBase {
   std::shared_ptr<ColumnsDAO> columns_dao_ = nullptr;
 
   ErrorCode get_all_column_metadatas(std::string_view table_id,
-                                     boost::property_tree::ptree &tables);
+                                     boost::property_tree::ptree &tables) const;
+  ErrorCode fill_parameters(boost::property_tree::ptree &table) const;
 };  // class TablesProvider
 
 }  // namespace manager::metadata::db

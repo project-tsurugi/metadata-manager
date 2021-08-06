@@ -85,7 +85,7 @@ ErrorCode DataTypes::get(const ObjectIdType object_id,
 ErrorCode DataTypes::get(std::string_view object_name,
                          boost::property_tree::ptree& object) {
   if (object_name.empty()) {
-    return ErrorCode::INVALID_PARAMETER;
+    return ErrorCode::NOT_FOUND;
   }
 
   return get(DataTypes::NAME, object_name, object);

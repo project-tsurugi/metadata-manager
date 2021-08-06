@@ -181,8 +181,7 @@ ErrorCode DataTypesDAO::select_one_data_type_metadata(
       int ordinal_position = 0;
       error = get_ptree_from_p_gresult(res, ordinal_position, object);
     } else {
-      PQclear(res);
-      return ErrorCode::INVALID_PARAMETER;
+      error = ErrorCode::NOT_FOUND;
     }
   }
 

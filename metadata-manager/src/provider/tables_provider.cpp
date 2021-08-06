@@ -17,6 +17,8 @@
 
 #include <boost/foreach.hpp>
 
+#include "manager/metadata/datatypes.h"
+#include "manager/metadata/provider/datatypes_provider.h"
 #include "manager/metadata/tables.h"
 
 // =============================================================================
@@ -35,8 +37,7 @@ ErrorCode TablesProvider::init() {
 
   if (tables_dao_ == nullptr) {
     // Get an instance of the TablesDAO class.
-    error =
-        session_manager_->get_dao(GenericDAO::TableName::TABLES, gdao);
+    error = session_manager_->get_dao(GenericDAO::TableName::TABLES, gdao);
     tables_dao_ = (error == ErrorCode::OK)
                       ? std::static_pointer_cast<TablesDAO>(gdao)
                       : nullptr;
@@ -44,8 +45,7 @@ ErrorCode TablesProvider::init() {
 
   if ((columns_dao_ == nullptr) && (error == ErrorCode::OK)) {
     // Get an instance of the ColumnsDAO class.
-    error =
-        session_manager_->get_dao(GenericDAO::TableName::COLUMNS, gdao);
+    error = session_manager_->get_dao(GenericDAO::TableName::COLUMNS, gdao);
     columns_dao_ = (error == ErrorCode::OK)
                        ? std::static_pointer_cast<ColumnsDAO>(gdao)
                        : nullptr;
@@ -64,6 +64,12 @@ ErrorCode TablesProvider::add_table_metadata(ptree &object,
                                              ObjectIdType &table_id) {
   // Initialization
   ErrorCode error = init();
+  if (error != ErrorCode::OK) {
+    return error;
+  }
+
+  // Parameter value check
+  error = fill_parameters(object);
   if (error != ErrorCode::OK) {
     return error;
   }
@@ -119,8 +125,21 @@ ErrorCode TablesProvider::get_table_metadata(std::string_view key,
     return error;
   }
 
+  // Parameter value check
+  if (key.empty() || value.empty()) {
+    return ErrorCode::NOT_FOUND;
+  }
+
   error = tables_dao_->select_table_metadata(key, value, object);
   if (error != ErrorCode::OK) {
+    if (error == ErrorCode::NOT_FOUND) {
+      // Convert the return value
+      if (key == Tables::ID) {
+        error = ErrorCode::ID_NOT_FOUND;
+      } else if (key == Tables::NAME) {
+        error = ErrorCode::NAME_NOT_FOUND;
+      }
+    }
     return error;
   }
 
@@ -173,8 +192,9 @@ ErrorCode TablesProvider::remove_table_metadata(const ObjectIdType table_id) {
     return error;
   }
 
+  // Parameter value check
   if (table_id <= 0) {
-    return ErrorCode::INVALID_PARAMETER;
+    return ErrorCode::ID_NOT_FOUND;
   }
 
   error = session_manager_->start_transaction();
@@ -187,6 +207,10 @@ ErrorCode TablesProvider::remove_table_metadata(const ObjectIdType table_id) {
     ErrorCode rollback_result = session_manager_->rollback();
     if (rollback_result != ErrorCode::OK) {
       return rollback_result;
+    }
+    if (error == ErrorCode::NOT_FOUND) {
+      // Convert the return value
+      error = ErrorCode::ID_NOT_FOUND;
     }
     return error;
   }
@@ -221,10 +245,12 @@ ErrorCode TablesProvider::remove_table_metadata(std::string_view table_name,
     return error;
   }
 
-  std::string s_object_name = std::string(table_name);
-  if (s_object_name.empty()) {
-    return ErrorCode::INVALID_PARAMETER;
+  // Parameter value check
+  if (table_name.empty()) {
+    return ErrorCode::NAME_NOT_FOUND;
   }
+
+  std::string s_object_name = std::string(table_name);
 
   error = session_manager_->start_transaction();
   if (error != ErrorCode::OK) {
@@ -237,6 +263,10 @@ ErrorCode TablesProvider::remove_table_metadata(std::string_view table_name,
     ErrorCode rollback_result = session_manager_->rollback();
     if (rollback_result != ErrorCode::OK) {
       return rollback_result;
+    }
+    if (error == ErrorCode::NOT_FOUND) {
+      // Convert the return value
+      error = ErrorCode::NAME_NOT_FOUND;
     }
     return error;
   }
@@ -264,7 +294,7 @@ ErrorCode TablesProvider::remove_table_metadata(std::string_view table_name,
  *  @return  ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode TablesProvider::get_all_column_metadatas(std::string_view table_id,
-                                                   ptree &tables) {
+                                                   ptree &tables) const {
   assert(!table_id.empty());
 
   ptree columns;
@@ -274,6 +304,65 @@ ErrorCode TablesProvider::get_all_column_metadatas(std::string_view table_id,
   if ((error == ErrorCode::OK) || (error == ErrorCode::INVALID_PARAMETER)) {
     tables.add_child(Tables::COLUMNS_NODE, columns);
     error = ErrorCode::OK;
+  }
+
+  return error;
+}
+
+/**
+ *  @brief  Checks if the parameters are correct.
+ *  @param  (table)  [in]  metadata-object
+ *  @return  ErrorCode::OK if success, otherwise an error code.
+ */
+ErrorCode TablesProvider::fill_parameters(
+    boost::property_tree::ptree &table) const {
+  ErrorCode error = ErrorCode::OK;
+
+  boost::optional<std::string> name =
+      table.get_optional<std::string>(Metadata::NAME);
+  if (!name) {
+    return ErrorCode::INVALID_PARAMETER;
+  }
+
+  // DataTypes check provider.
+  db::DataTypesProvider data_type_provider;
+  data_type_provider.init();
+
+  // Item name of the column metadata to check.
+  std::vector<std::string> check_columns{
+      Tables::Column::NAME, Tables::Column::ORDINAL_POSITION,
+      Tables::Column::DATA_TYPE_ID, Tables::Column::NULLABLE};
+
+  //
+  // column metadata
+  //
+  BOOST_FOREACH (ptree::value_type &node,
+                 table.get_child(Tables::COLUMNS_NODE)) {
+    ptree &column = node.second;
+
+    // Check if the required items exists.
+    BOOST_FOREACH (std::string name, check_columns) {
+      boost::optional<std::string> item =
+          column.get_optional<std::string>(name);
+      if (!item) {
+        error = ErrorCode::INVALID_PARAMETER;
+        break;
+      }
+    }
+    if (error != ErrorCode::OK) {
+      break;
+    }
+
+    // Check if the datatype id are correct.
+    ptree object;
+    boost::optional<std::string> data_type_id =
+        column.get_optional<std::string>(Tables::Column::DATA_TYPE_ID);
+    error = data_type_provider.get_datatype_metadata(
+        DataTypes::ID, data_type_id.get(), object);
+    if (error != ErrorCode::OK) {
+      error = ErrorCode::INVALID_PARAMETER;
+      break;
+    }
   }
 
   return error;

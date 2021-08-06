@@ -133,9 +133,14 @@ ErrorCode TablesDAO::insert_table_metadata(boost::property_tree::ptree &table,
   table_id = ObjectId::generate(TABLE_NAME);
   table.put(Tables::ID, table_id);
 
-  error = fill_parameters(table);
-  if (error != ErrorCode::OK) {
-    return error;
+  // column metadata
+  BOOST_FOREACH (ptree::value_type &node,
+                 table.get_child(Tables::COLUMNS_NODE)) {
+    ptree &column = node.second;
+    // column ID
+    column.put(Tables::Column::ID, ObjectId::generate("column"));
+    // table ID
+    column.put(Tables::Column::TABLE_ID, table_id);
   }
 
   // Getting a metadata object.
@@ -178,7 +183,9 @@ ErrorCode TablesDAO::select_table_metadata(std::string_view object_key,
   // Getting a metadata object.
   ptree *meta_object = session_manager_->get_container();
 
-  error = ErrorCode::NAME_NOT_FOUND;
+  // Initialization of return value.
+  error = ErrorCode::NOT_FOUND;
+
   BOOST_FOREACH (const ptree::value_type &node,
                  meta_object->get_child(Tables::TABLES_NODE)) {
     const ptree &temp_obj = node.second;
@@ -314,38 +321,6 @@ ErrorCode TablesDAO::get_metadata_object(
       break;
     }
   }
-  return error;
-}
-
-/**
- *  @brief  Checks if the parameters are correct.
- *  @param  (table)  [in]  metadata-object
- *  @return  ErrorCode::OK if success, otherwise an error code.
- */
-ErrorCode TablesDAO::fill_parameters(boost::property_tree::ptree &table) const {
-  ErrorCode error = ErrorCode::OK;
-
-  //
-  // column metdata
-  //
-  BOOST_FOREACH (ptree::value_type &node,
-                 table.get_child(Tables::COLUMNS_NODE)) {
-    ptree &column = node.second;
-    // column ID
-    column.put(Tables::Column::ID, ObjectId::generate("column"));
-
-    // table ID
-    column.put(Tables::Column::TABLE_ID, table.get<ObjectIdType>(Tables::ID));
-
-    // data-type ID.
-    boost::optional<ObjectIdType> data_type_id =
-        column.get_optional<ObjectIdType>(Tables::Column::DATA_TYPE_ID);
-    if (!data_type_id) {
-      error = ErrorCode::NOT_FOUND;
-      break;
-    }
-  }
-
   return error;
 }
 

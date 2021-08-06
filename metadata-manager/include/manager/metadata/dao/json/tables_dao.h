@@ -58,8 +58,6 @@ class TablesDAO : public manager::metadata::db::TablesDAO {
 
   manager::metadata::ErrorCode get_metadata_object(
       std::string_view object_name, boost::property_tree::ptree &object) const;
-  manager::metadata::ErrorCode fill_parameters(
-      boost::property_tree::ptree &table) const;
 };  // class TablesDAO
 
 }  // namespace manager::metadata::db::json

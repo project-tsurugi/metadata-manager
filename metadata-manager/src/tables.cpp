@@ -92,7 +92,7 @@ ErrorCode Tables::add(boost::property_tree::ptree &object,
 ErrorCode Tables::get(const ObjectIdType object_id,
                       boost::property_tree::ptree &object) {
   if (object_id <= 0) {
-    return ErrorCode::INVALID_PARAMETER;
+    return ErrorCode::ID_NOT_FOUND;
   }
 
   // Get the table metadata through the provider.
@@ -113,7 +113,7 @@ ErrorCode Tables::get(const ObjectIdType object_id,
 ErrorCode Tables::get(std::string_view object_name,
                       boost::property_tree::ptree &object) {
   if (object_name.empty()) {
-    return ErrorCode::INVALID_PARAMETER;
+    return ErrorCode::NAME_NOT_FOUND;
   }
 
   // Get the table metadata through the provider.
@@ -132,6 +132,10 @@ ErrorCode Tables::get(std::string_view object_name,
  *  @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode Tables::remove(const ObjectIdType object_id) {
+  if (object_id <= 0) {
+    return ErrorCode::ID_NOT_FOUND;
+  }
+
   // Remove the table metadata through the provider.
   ErrorCode error = provider->remove_table_metadata(object_id);
 
@@ -149,6 +153,10 @@ ErrorCode Tables::remove(const ObjectIdType object_id) {
  */
 ErrorCode Tables::remove(const char *object_name, ObjectIdType *object_id) {
   std::string_view s_object_name = std::string_view(object_name);
+
+  if (s_object_name.empty()) {
+    return ErrorCode::NAME_NOT_FOUND;
+  }
 
   // Remove the table metadata through the provider.
   ObjectIdType retval_object_id;
