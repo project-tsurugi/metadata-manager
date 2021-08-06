@@ -29,7 +29,7 @@ class DataTypesDAO : public GenericDAO {
  public:
   virtual manager::metadata::ErrorCode select_one_data_type_metadata(
       std::string_view object_key, std::string_view object_value,
-      boost::property_tree::ptree &object) const = 0;
+      boost::property_tree::ptree& object) const = 0;
 };  // class DataTypesDAO
 
 }  // namespace manager::metadata::db

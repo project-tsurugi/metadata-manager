@@ -82,7 +82,7 @@ struct DataTypesMetadataTable {
  *  @param  (connection)  [in]  a connection to the metadata repository.
  *  @return none.
  */
-DataTypesDAO::DataTypesDAO(DBSessionManager *session_manager)
+DataTypesDAO::DataTypesDAO(DBSessionManager* session_manager)
     : connection_(session_manager->get_connection()) {
   // Creates a list of column names
   // in order to get values based on
@@ -128,7 +128,7 @@ DataTypesDAO::DataTypesDAO(DBSessionManager *session_manager)
 ErrorCode DataTypesDAO::prepare() const {
   ErrorCode error = ErrorCode::INTERNAL_ERROR;
 
-  for (const std::string &column : column_names) {
+  for (const std::string& column : column_names) {
     error = DbcUtils::prepare(connection_,
                               statement_names_select_equal_to.at(column),
                               statement::select_equal_to(column));
@@ -153,8 +153,8 @@ ErrorCode DataTypesDAO::prepare() const {
  */
 ErrorCode DataTypesDAO::select_one_data_type_metadata(
     std::string_view object_key, std::string_view object_value,
-    ptree &object) const {
-  std::vector<const char *> param_values;
+    ptree& object) const {
+  std::vector<const char*> param_values;
 
   param_values.emplace_back(object_value.data());
 
@@ -162,7 +162,7 @@ ErrorCode DataTypesDAO::select_one_data_type_metadata(
   try {
     statement_name_found =
         statement_names_select_equal_to.at(std::string(object_key));
-  } catch (std::out_of_range &e) {
+  } catch (std::out_of_range& e) {
     std::cerr << Message::METADATA_KEY_NOT_FOUND << e.what() << std::endl;
     return ErrorCode::INVALID_PARAMETER;
   } catch (...) {
@@ -170,7 +170,7 @@ ErrorCode DataTypesDAO::select_one_data_type_metadata(
     return ErrorCode::INVALID_PARAMETER;
   }
 
-  PGresult *res;
+  PGresult* res;
   ErrorCode error = DbcUtils::exec_prepared(connection_, statement_name_found,
                                             param_values, res);
 
@@ -200,9 +200,9 @@ ErrorCode DataTypesDAO::select_one_data_type_metadata(
  *  @param  (object)            [out] one data type metadata.
  *  @return ErrorCode::OK if success, otherwise an error code.
  */
-ErrorCode DataTypesDAO::get_ptree_from_p_gresult(PGresult *&res,
+ErrorCode DataTypesDAO::get_ptree_from_p_gresult(PGresult*& res,
                                                  int ordinal_position,
-                                                 ptree &object) const {
+                                                 ptree& object) const {
   // ID
   ObjectIdType id = -1;
   ErrorCode error_str_to_int = DbcUtils::str_to_integral<ObjectIdType>(

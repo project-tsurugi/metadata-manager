@@ -27,7 +27,7 @@ namespace manager::metadata::db {
  * @return Connection Strings.
  */
 std::string Config::get_connection_string() {
-  const char *tmp_cs = std::getenv(TSURUGI_CONNECTION_STRING);
+  const char* tmp_cs = std::getenv(TSURUGI_CONNECTION_STRING);
 
   if (tmp_cs != nullptr) {
     return tmp_cs;
@@ -41,7 +41,7 @@ std::string Config::get_connection_string() {
  * @return Directory that stores the metadata.
  */
 std::string Config::get_storage_dir_path() {
-  const char *tmp_dir = std::getenv(TSURUGI_METADATA_DIR);
+  const char* tmp_dir = std::getenv(TSURUGI_METADATA_DIR);
   if (tmp_dir != nullptr) {
     return tmp_dir;
   }

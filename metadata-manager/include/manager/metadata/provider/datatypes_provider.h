@@ -30,7 +30,7 @@ class DataTypesProvider : public ProviderBase {
   manager::metadata::ErrorCode init();
   manager::metadata::ErrorCode get_datatype_metadata(
       std::string_view key, std::string_view value,
-      boost::property_tree::ptree &object);
+      boost::property_tree::ptree& object);
 
  private:
   std::shared_ptr<DataTypesDAO> datatypes_dao_ = nullptr;

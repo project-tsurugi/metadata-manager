@@ -45,8 +45,9 @@ class Config {
       "dbname=tsurugi";
 
   /**
-   * @brief The name of the OS environment variable for the directory that stores the metadata.
-   * Directory that stores the metadata is set to this environment variable.
+   * @brief The name of the OS environment variable for the directory that
+   * stores the metadata. Directory that stores the metadata is set to this
+   * environment variable.
    */
   static constexpr const char *const TSURUGI_METADATA_DIR =
       "TSURUGI_METADATA_DIR";

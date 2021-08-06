@@ -28,12 +28,12 @@ GlobalTestEnvironment *const global = reinterpret_cast<GlobalTestEnvironment *>(
 }  // namespace manager::metadata::testing
 
 int main(int argc, char **argv) {
-    printf("Running main() from %s\n", __FILE__);
-    ::testing::InitGoogleTest(&argc, argv);
+  printf("Running main() from %s\n", __FILE__);
+  ::testing::InitGoogleTest(&argc, argv);
 
-    if (argc == 2 && boost::filesystem::exists(argv[1])) {
-        manager::metadata::testing::global->set_json_schema_file_name(argv[1]);
-    }
+  if (argc == 2 && boost::filesystem::exists(argv[1])) {
+    manager::metadata::testing::global->set_json_schema_file_name(argv[1]);
+  }
 
-    return RUN_ALL_TESTS();
+  return RUN_ALL_TESTS();
 }

@@ -28,44 +28,44 @@ namespace manager::metadata::db::postgresql {
 
 class DbcUtils {
  public:
-  static bool is_open(const ConnectionSPtr &connection);
-  static std::string convert_boolean_expression(const char *string);
+  static bool is_open(const ConnectionSPtr& connection);
+  static std::string convert_boolean_expression(const char* string);
 
   template <typename T>
-  static manager::metadata::ErrorCode str_to_floating_point(const char *input,
-                                                            T &return_value);
+  static manager::metadata::ErrorCode str_to_floating_point(const char* input,
+                                                            T& return_value);
   template <typename T>
-  static manager::metadata::ErrorCode str_to_integral(const char *input,
-                                                      T &return_value);
+  static manager::metadata::ErrorCode str_to_integral(const char* input,
+                                                      T& return_value);
 
   static manager::metadata::ErrorCode get_number_of_rows_affected(
-      PGresult *&res, uint64_t &return_value);
+      PGresult*& res, uint64_t& return_value);
 
-  static ConnectionSPtr make_connection_sptr(PGconn *pgconn);
-  static ResultUPtr make_result_uptr(PGresult *pgres);
+  static ConnectionSPtr make_connection_sptr(PGconn* pgconn);
+  static ResultUPtr make_result_uptr(PGresult* pgres);
 
   static manager::metadata::ErrorCode prepare(
-      const ConnectionSPtr &connection, const StatementName &statement_name,
+      const ConnectionSPtr& connection, const StatementName& statement_name,
       std::string_view statement);
-  static manager::metadata::ErrorCode prepare(const ConnectionSPtr &connection,
+  static manager::metadata::ErrorCode prepare(const ConnectionSPtr& connection,
                                               std::string_view statement_name,
                                               std::string_view statement);
 
   static manager::metadata::ErrorCode exec_prepared(
-      const ConnectionSPtr &connection, const StatementName &statement_name,
-      const std::vector<char const *> &param_values, PGresult *&res);
+      const ConnectionSPtr& connection, const StatementName& statement_name,
+      const std::vector<char const*>& param_values, PGresult*& res);
   static manager::metadata::ErrorCode exec_prepared(
-      const ConnectionSPtr &connection, std::string_view statement_name,
-      const std::vector<char const *> &param_values, PGresult *&res);
+      const ConnectionSPtr& connection, std::string_view statement_name,
+      const std::vector<char const*>& param_values, PGresult*& res);
 
  private:
   static constexpr int BASE_10 = 10;
 
   template <typename T>
-  [[nodiscard]] static T call_floating_point(const char *nptr, char **endptr);
+  [[nodiscard]] static T call_floating_point(const char* nptr, char** endptr);
 
   template <typename T>
-  [[nodiscard]] static T call_integral(const char *nptr, char **endptr,
+  [[nodiscard]] static T call_integral(const char* nptr, char** endptr,
                                        int base);
 };  // class DbcUtils
 

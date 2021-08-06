@@ -69,7 +69,7 @@ ErrorCode Statistics::init() {
  */
 ErrorCode Statistics::add_one_column_statistic(
     ObjectIdType table_id, ObjectIdType ordinal_position,
-    boost::property_tree::ptree &column_statistic) {
+    boost::property_tree::ptree& column_statistic) {
   // Adds or updates the column statistic through the provider.
   ErrorCode error = provider->add_column_statistic(table_id, ordinal_position,
                                                    column_statistic);
@@ -106,7 +106,7 @@ ErrorCode Statistics::add_table_statistic(ObjectIdType table_id,
  */
 ErrorCode Statistics::add_table_statistic(std::string_view table_name,
                                           float reltuples,
-                                          ObjectIdType *table_id) {
+                                          ObjectIdType* table_id) {
   // Adds or updates the table statistic through the provider.
   ErrorCode error =
       provider->add_table_statistic(table_name, reltuples, table_id);
@@ -125,7 +125,7 @@ ErrorCode Statistics::add_table_statistic(std::string_view table_name,
  */
 ErrorCode Statistics::get_one_column_statistic(
     ObjectIdType table_id, ObjectIdType ordinal_position,
-    ColumnStatistic &column_statistic) {
+    ColumnStatistic& column_statistic) {
   // Get the column statistic through the provider.
   ErrorCode error = provider->get_column_statistic(table_id, ordinal_position,
                                                    column_statistic);
@@ -145,7 +145,7 @@ ErrorCode Statistics::get_one_column_statistic(
  */
 ErrorCode Statistics::get_all_column_statistics(
     ObjectIdType table_id,
-    std::unordered_map<ObjectIdType, ColumnStatistic> &column_statistics) {
+    std::unordered_map<ObjectIdType, ColumnStatistic>& column_statistics) {
   // Get the all column statistics through the provider.
   ErrorCode error =
       provider->get_all_column_statistics(table_id, column_statistics);
@@ -162,7 +162,7 @@ ErrorCode Statistics::get_all_column_statistics(
  *  @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode Statistics::get_table_statistic(
-    ObjectIdType table_id, manager::metadata::TableStatistic &table_statistic) {
+    ObjectIdType table_id, manager::metadata::TableStatistic& table_statistic) {
   // Get the table statistic through the provider.
   ErrorCode error = provider->get_table_statistic(table_id, table_statistic);
 
@@ -179,7 +179,7 @@ ErrorCode Statistics::get_table_statistic(
  */
 ErrorCode Statistics::get_table_statistic(
     std::string_view table_name,
-    manager::metadata::TableStatistic &table_statistic) {
+    manager::metadata::TableStatistic& table_statistic) {
   // Get the table statistic through the provider.
   ErrorCode error = provider->get_table_statistic(table_name, table_statistic);
 

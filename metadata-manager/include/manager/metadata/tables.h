@@ -23,28 +23,28 @@ namespace manager::metadata {
 class Tables : public Metadata {
  public:
   // root node.
-  static constexpr const char *const TABLES_NODE = "tables";
+  static constexpr const char* const TABLES_NODE = "tables";
 
   // table metadata-object.
   // ID is defined in base class.
   // NAME is defined in base class.
-  static constexpr const char *const NAMESPACE = "namespace";
-  static constexpr const char *const COLUMNS_NODE = "columns";
-  static constexpr const char *const PRIMARY_KEY_NODE = "primaryKey";
-  static constexpr const char *const RELTUPLES = "reltuples";
+  static constexpr const char* const NAMESPACE = "namespace";
+  static constexpr const char* const COLUMNS_NODE = "columns";
+  static constexpr const char* const PRIMARY_KEY_NODE = "primaryKey";
+  static constexpr const char* const RELTUPLES = "reltuples";
 
   // column metadata-object.
   struct Column {
-    static constexpr const char *const ID = "id";
-    static constexpr const char *const TABLE_ID = "tableId";
-    static constexpr const char *const NAME = "name";
-    static constexpr const char *const ORDINAL_POSITION = "ordinalPosition";
-    static constexpr const char *const DATA_TYPE_ID = "dataTypeId";
-    static constexpr const char *const DATA_LENGTH = "dataLength";
-    static constexpr const char *const VARYING = "varying";
-    static constexpr const char *const NULLABLE = "nullable";
-    static constexpr const char *const DEFAULT = "defaultExpr";
-    static constexpr const char *const DIRECTION = "direction";
+    static constexpr const char* const ID = "id";
+    static constexpr const char* const TABLE_ID = "tableId";
+    static constexpr const char* const NAME = "name";
+    static constexpr const char* const ORDINAL_POSITION = "ordinalPosition";
+    static constexpr const char* const DATA_TYPE_ID = "dataTypeId";
+    static constexpr const char* const DATA_LENGTH = "dataLength";
+    static constexpr const char* const VARYING = "varying";
+    static constexpr const char* const NULLABLE = "nullable";
+    static constexpr const char* const DEFAULT = "defaultExpr";
+    static constexpr const char* const DIRECTION = "direction";
 
     /**
      * @brief represents sort direction of elements.
@@ -70,19 +70,19 @@ class Tables : public Metadata {
 
   Tables(std::string_view database, std::string_view component = "visitor");
 
-  Tables(const Tables &) = delete;
-  Tables &operator=(const Tables &) = delete;
+  Tables(const Tables&) = delete;
+  Tables& operator=(const Tables&) = delete;
 
   ErrorCode init() override;
-  ErrorCode add(boost::property_tree::ptree &object) override;
-  ErrorCode add(boost::property_tree::ptree &object,
-                ObjectIdType *object_id) override;
+  ErrorCode add(boost::property_tree::ptree& object) override;
+  ErrorCode add(boost::property_tree::ptree& object,
+                ObjectIdType* object_id) override;
   ErrorCode get(const ObjectIdType object_id,
-                boost::property_tree::ptree &object) override;
+                boost::property_tree::ptree& object) override;
   ErrorCode get(std::string_view object_name,
-                boost::property_tree::ptree &object) override;
+                boost::property_tree::ptree& object) override;
   ErrorCode remove(const ObjectIdType object_id) override;
-  ErrorCode remove(const char *object_name, ObjectIdType *object_id) override;
+  ErrorCode remove(const char* object_name, ObjectIdType* object_id) override;
 };  // class Tables
 
 }  // namespace manager::metadata

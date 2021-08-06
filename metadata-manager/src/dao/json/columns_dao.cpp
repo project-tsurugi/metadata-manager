@@ -39,7 +39,7 @@ ErrorCode ColumnsDAO::prepare() const {
  *  @return  ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode ColumnsDAO::insert_one_column_metadata(
-    ObjectIdType table_id, boost::property_tree::ptree &column) const {
+    ObjectIdType table_id, boost::property_tree::ptree& column) const {
   // Do nothing and return of ErrorCode::OK.
   return ErrorCode::OK;
 }
@@ -57,7 +57,7 @@ ErrorCode ColumnsDAO::insert_one_column_metadata(
  */
 ErrorCode ColumnsDAO::select_column_metadata(
     std::string_view object_key, std::string_view object_value,
-    boost::property_tree::ptree &object) const {
+    boost::property_tree::ptree& object) const {
   // Do nothing and return of ErrorCode::OK.
   return ErrorCode::OK;
 }

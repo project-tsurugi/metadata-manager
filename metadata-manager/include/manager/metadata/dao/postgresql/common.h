@@ -27,17 +27,17 @@ typedef struct pg_result PGresult;
 namespace manager::metadata::db::postgresql {
 
 typedef std::shared_ptr<PGconn> ConnectionSPtr;
-typedef std::unique_ptr<PGresult, std::function<void(PGresult *)>> ResultUPtr;
+typedef std::unique_ptr<PGresult, std::function<void(PGresult*)>> ResultUPtr;
 
-static constexpr const char *const SCHEMA_NAME = "tsurugi_catalog";
+static constexpr const char* const SCHEMA_NAME = "tsurugi_catalog";
 struct TableName {
-  static constexpr const char *const TABLE_METADATA_TABLE =
+  static constexpr const char* const TABLE_METADATA_TABLE =
       "tsurugi_class";  //!< @brief table metadata table.
-  static constexpr const char *const COLUMN_METADATA_TABLE =
+  static constexpr const char* const COLUMN_METADATA_TABLE =
       "tsurugi_attribute";  //!< @brief column metadata table.
-  static constexpr const char *const COLUMN_STATISTICS_TABLE =
+  static constexpr const char* const COLUMN_STATISTICS_TABLE =
       "tsurugi_statistic";  //!< @brief column statistics table.
-  static constexpr const char *const DATA_TYPES_TABLE =
+  static constexpr const char* const DATA_TYPES_TABLE =
       "tsurugi_type";  //!< @brief  data type metadata table.
 };                     // struct TableName
 

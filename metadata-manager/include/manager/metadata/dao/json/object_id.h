@@ -30,7 +30,7 @@ class ObjectId {
   static ObjectIdType generate(const std::string table_name);
 
  private:
-  static constexpr const char *const OID_NAME = "oid";
+  static constexpr const char* const OID_NAME = "oid";
 };
 
 }  // namespace manager::metadata::db::json

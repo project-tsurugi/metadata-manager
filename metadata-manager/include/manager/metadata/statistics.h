@@ -23,45 +23,60 @@ namespace manager::metadata {
 
 class Statistics : public Metadata {
  public:
-  static constexpr const char *const COLUMN_STATISTIC = "columnStatistic";
+  static constexpr const char* const COLUMN_STATISTIC = "columnStatistic";
 
   Statistics(std::string_view database, std::string_view component = "visitor");
 
-  Statistics(const Statistics &) = delete;
-  Statistics &operator=(const Statistics &) = delete;
+  Statistics(const Statistics&) = delete;
+  Statistics& operator=(const Statistics&) = delete;
 
   ErrorCode init() override;
   ErrorCode add_one_column_statistic(
       ObjectIdType table_id, ObjectIdType ordinal_position,
-      boost::property_tree::ptree &column_statistic);
+      boost::property_tree::ptree& column_statistic);
   ErrorCode add_table_statistic(ObjectIdType table_id, float reltuples);
   ErrorCode add_table_statistic(std::string_view table_name, float reltuples,
-                                ObjectIdType *table_id);
+                                ObjectIdType* table_id);
   ErrorCode get_one_column_statistic(ObjectIdType table_id,
                                      ObjectIdType ordinal_position,
-                                     ColumnStatistic &column_statistic);
+                                     ColumnStatistic& column_statistic);
   ErrorCode get_all_column_statistics(
       ObjectIdType table_id,
-      std::unordered_map<ObjectIdType, ColumnStatistic> &column_statistics);
+      std::unordered_map<ObjectIdType, ColumnStatistic>& column_statistics);
   ErrorCode get_table_statistic(ObjectIdType table_id,
-                                TableStatistic &table_statistic);
+                                TableStatistic& table_statistic);
   ErrorCode get_table_statistic(std::string_view table_name,
-                                TableStatistic &table_statistic);
+                                TableStatistic& table_statistic);
   ErrorCode remove_one_column_statistic(ObjectIdType table_id,
                                         ObjectIdType ordinal_position);
   ErrorCode remove_all_column_statistics(ObjectIdType table_id);
 
-
-  ErrorCode add(boost::property_tree::ptree &object __attribute__ ((unused))) override { return ErrorCode::UNKNOWN; }
-  ErrorCode add(boost::property_tree::ptree &object __attribute__ ((unused)),
-                ObjectIdType *object_id __attribute__ ((unused))) override { return ErrorCode::UNKNOWN; }
-  ErrorCode get(const ObjectIdType object_id __attribute__ ((unused)),
-                boost::property_tree::ptree &object __attribute__ ((unused))) override { return ErrorCode::UNKNOWN; }
-  ErrorCode get(std::string_view object_name __attribute__ ((unused)),
-                boost::property_tree::ptree &object __attribute__ ((unused))) override { return ErrorCode::UNKNOWN; }
-  ErrorCode remove(const ObjectIdType object_id __attribute__ ((unused))) override { return ErrorCode::UNKNOWN; }
-  ErrorCode remove(const char *object_name __attribute__ ((unused)), 
-                   ObjectIdType *object_id __attribute__ ((unused))) override { return ErrorCode::UNKNOWN; }
+  ErrorCode add(boost::property_tree::ptree& object
+                __attribute__((unused))) override {
+    return ErrorCode::UNKNOWN;
+  }
+  ErrorCode add(boost::property_tree::ptree& object __attribute__((unused)),
+                ObjectIdType* object_id __attribute__((unused))) override {
+    return ErrorCode::UNKNOWN;
+  }
+  ErrorCode get(const ObjectIdType object_id __attribute__((unused)),
+                boost::property_tree::ptree& object
+                __attribute__((unused))) override {
+    return ErrorCode::UNKNOWN;
+  }
+  ErrorCode get(std::string_view object_name __attribute__((unused)),
+                boost::property_tree::ptree& object
+                __attribute__((unused))) override {
+    return ErrorCode::UNKNOWN;
+  }
+  ErrorCode remove(const ObjectIdType object_id
+                   __attribute__((unused))) override {
+    return ErrorCode::UNKNOWN;
+  }
+  ErrorCode remove(const char* object_name __attribute__((unused)),
+                   ObjectIdType* object_id __attribute__((unused))) override {
+    return ErrorCode::UNKNOWN;
+  }
 };  // class Statistics
 
 }  // namespace manager::metadata

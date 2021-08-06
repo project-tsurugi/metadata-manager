@@ -35,10 +35,10 @@ class StatisticsDAO : public GenericDAO {
   virtual manager::metadata::ErrorCode
   select_one_column_statistic_by_table_id_column_ordinal_position(
       ObjectIdType table_id, ObjectIdType ordinal_position,
-      ColumnStatistic &column_statistic) const = 0;
+      ColumnStatistic& column_statistic) const = 0;
   virtual manager::metadata::ErrorCode select_all_column_statistic_by_table_id(
       ObjectIdType table_id,
-      std::unordered_map<ObjectIdType, ColumnStatistic> &column_statistics)
+      std::unordered_map<ObjectIdType, ColumnStatistic>& column_statistics)
       const = 0;
   virtual manager::metadata::ErrorCode delete_all_column_statistic_by_table_id(
       ObjectIdType table_id) const = 0;

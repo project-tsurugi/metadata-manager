@@ -79,7 +79,7 @@ ObjectIdType ObjectId::current(const std::string table_name) {
   ptree pt;
   try {
     ini_parser::read_ini(oid_file_name, pt);
-  } catch (ini_parser_error &e) {
+  } catch (ini_parser_error& e) {
     std::wcout << "read_ini() error. " << e.what() << std::endl;
     return INVALID_OID;
   } catch (...) {
@@ -109,7 +109,7 @@ ObjectIdType ObjectId::generate(const std::string table_name) {
   ptree pt;
   try {
     ini_parser::read_ini(oid_file_name, pt);
-  } catch (ini_parser_error &e) {
+  } catch (ini_parser_error& e) {
     std::wcout << "read_ini() error. " << e.what() << std::endl;
     return INVALID_OID;
   } catch (...) {
@@ -129,7 +129,7 @@ ObjectIdType ObjectId::generate(const std::string table_name) {
 
   try {
     ini_parser::write_ini(oid_file_name, pt);
-  } catch (ini_parser_error &e) {
+  } catch (ini_parser_error& e) {
     std::wcout << "write_ini() error. " << e.what() << std::endl;
     return INVALID_OID;
   } catch (...) {

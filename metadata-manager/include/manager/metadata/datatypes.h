@@ -23,14 +23,14 @@ namespace manager::metadata {
 class DataTypes : public Metadata {
  public:
   // root object.
-  static constexpr const char *const DATATYPES_NODE = "dataTypes";
+  static constexpr const char* const DATATYPES_NODE = "dataTypes";
 
   // data type metadata-object.
   // ID is defined in base class.
   // NAME is defined in base class.
-  static constexpr const char *const PG_DATA_TYPE = "pg_dataType";
-  static constexpr const char *const PG_DATA_TYPE_NAME = "pg_dataTypeName";
-  static constexpr const char *const PG_DATA_TYPE_QUALIFIED_NAME =
+  static constexpr const char* const PG_DATA_TYPE = "pg_dataType";
+  static constexpr const char* const PG_DATA_TYPE_NAME = "pg_dataTypeName";
+  static constexpr const char* const PG_DATA_TYPE_QUALIFIED_NAME =
       "pg_dataTypeQualifiedName";
 
   /**
@@ -47,25 +47,35 @@ class DataTypes : public Metadata {
 
   DataTypes(std::string_view database, std::string_view component = "visitor");
 
-  DataTypes(const DataTypes &) = delete;
-  DataTypes &operator=(const DataTypes &) = delete;
+  DataTypes(const DataTypes&) = delete;
+  DataTypes& operator=(const DataTypes&) = delete;
 
   ErrorCode init() override;
 
-  ErrorCode add(boost::property_tree::ptree &object __attribute__ ((unused))) override { return ErrorCode::UNKNOWN; }
-  ErrorCode add(boost::property_tree::ptree &object __attribute__ ((unused)),
-                ObjectIdType *object_id __attribute__ ((unused))) override { return ErrorCode::UNKNOWN; }
+  ErrorCode add(boost::property_tree::ptree& object
+                __attribute__((unused))) override {
+    return ErrorCode::UNKNOWN;
+  }
+  ErrorCode add(boost::property_tree::ptree& object __attribute__((unused)),
+                ObjectIdType* object_id __attribute__((unused))) override {
+    return ErrorCode::UNKNOWN;
+  }
 
   ErrorCode get(const ObjectIdType object_id,
-                boost::property_tree::ptree &object) override;
+                boost::property_tree::ptree& object) override;
   ErrorCode get(std::string_view object_name,
-                boost::property_tree::ptree &object) override;
-  ErrorCode get(const char *object_key, std::string_view object_value,
-                boost::property_tree::ptree &object);
+                boost::property_tree::ptree& object) override;
+  ErrorCode get(const char* object_key, std::string_view object_value,
+                boost::property_tree::ptree& object);
 
-  ErrorCode remove(const ObjectIdType object_id __attribute__ ((unused))) override { return ErrorCode::UNKNOWN; }
-  ErrorCode remove(const char *object_name __attribute__ ((unused)), 
-                   ObjectIdType *object_id __attribute__ ((unused))) override { return ErrorCode::UNKNOWN; }
+  ErrorCode remove(const ObjectIdType object_id
+                   __attribute__((unused))) override {
+    return ErrorCode::UNKNOWN;
+  }
+  ErrorCode remove(const char* object_name __attribute__((unused)),
+                   ObjectIdType* object_id __attribute__((unused))) override {
+    return ErrorCode::UNKNOWN;
+  }
 
 };  // class DataTypes
 

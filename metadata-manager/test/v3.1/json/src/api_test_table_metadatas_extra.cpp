@@ -61,7 +61,7 @@ std::vector<ptree> ApiTestTableMetadataExtra::make_valid_table_metadatas() {
   try {
     // read a json file with table metadata used as test data.
     read_json(global->get_json_schema_file_name(), pt);
-  } catch (boost::property_tree::json_parser_error &e) {
+  } catch (boost::property_tree::json_parser_error& e) {
     UTUtils::print("could not read a json file with table metadata.", e.what());
     return test_data_table_metadata;
   } catch (...) {
@@ -73,8 +73,8 @@ std::vector<ptree> ApiTestTableMetadataExtra::make_valid_table_metadatas() {
   boost::optional<ptree &> o_tables =
       pt.get_child_optional(Tables::TABLES_NODE);
   if (o_tables) {
-    ptree &tables = o_tables.value();
-    BOOST_FOREACH (const ptree::value_type &node, tables) {
+    ptree& tables = o_tables.value();
+    BOOST_FOREACH (const ptree::value_type& node, tables) {
       ptree table = node.second;
       test_data_table_metadata.emplace_back(table);
     }

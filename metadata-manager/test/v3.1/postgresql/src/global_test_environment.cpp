@@ -34,43 +34,43 @@ using postgresql::ConnectionSPtr;
 using postgresql::DbcUtils;
 
 void GlobalTestEnvironment::SetUp() {
-    // generate table metadata as test data.
-    UTUtils::generate_table_metadata(testdata_table_metadata);
+  // generate table metadata as test data.
+  UTUtils::generate_table_metadata(testdata_table_metadata);
 
-    // generate column statistics as test data.
-    for (auto column : testdata_table_metadata->columns) {
-        column_statistics.push_back(UTUtils::generate_column_statistic());
-    }
+  // generate column statistics as test data.
+  for (auto column : testdata_table_metadata->columns) {
+    column_statistics.push_back(UTUtils::generate_column_statistic());
+  }
 
-    // initialize non-existing table id.
-    table_id_not_exists = {-1,
-                           0,
-                           INT64_MAX - 1,
-                           INT64_MAX,
-                           std::numeric_limits<ObjectIdType>::infinity(),
-                           -std::numeric_limits<ObjectIdType>::infinity(),
-                           std::numeric_limits<ObjectIdType>::quiet_NaN()};
+  // initialize non-existing table id.
+  table_id_not_exists = {-1,
+                         0,
+                         INT64_MAX - 1,
+                         INT64_MAX,
+                         std::numeric_limits<ObjectIdType>::infinity(),
+                         -std::numeric_limits<ObjectIdType>::infinity(),
+                         std::numeric_limits<ObjectIdType>::quiet_NaN()};
 
-    // initialize non-existing ordinal positions.
-    ordinal_position_not_exists = {
-        -1,
-        0,
-        INT64_MAX - 1,
-        INT64_MAX,
-        4,
-        std::numeric_limits<ObjectIdType>::infinity(),
-        -std::numeric_limits<ObjectIdType>::infinity(),
-        std::numeric_limits<ObjectIdType>::quiet_NaN()};
+  // initialize non-existing ordinal positions.
+  ordinal_position_not_exists = {
+      -1,
+      0,
+      INT64_MAX - 1,
+      INT64_MAX,
+      4,
+      std::numeric_limits<ObjectIdType>::infinity(),
+      -std::numeric_limits<ObjectIdType>::infinity(),
+      std::numeric_limits<ObjectIdType>::quiet_NaN()};
 
-    // check if a connection to the metadata repository is opened or not.
-    ConnectionSPtr connection = DbcUtils::make_connection_sptr(
-        PQconnectdb(Config::get_connection_string().c_str()));
+  // check if a connection to the metadata repository is opened or not.
+  ConnectionSPtr connection = DbcUtils::make_connection_sptr(
+      PQconnectdb(Config::get_connection_string().c_str()));
 
-    if (DbcUtils::is_open(connection)) {
-        is_open_ = true;
-    } else {
-        is_open_ = false;
-    }
+  if (DbcUtils::is_open(connection)) {
+    is_open_ = true;
+  } else {
+    is_open_ = false;
+  }
 }
 
 void GlobalTestEnvironment::TearDown() {}

@@ -32,10 +32,10 @@ class Metadata {
   /**
    * @brief key of metadata.
    */
-  static constexpr const char *const FORMAT_VERSION = "formatVersion";
-  static constexpr const char *const GENERATION = "generation";
-  static constexpr const char *const ID = "id";
-  static constexpr const char *const NAME = "name";
+  static constexpr const char* const FORMAT_VERSION = "formatVersion";
+  static constexpr const char* const GENERATION = "generation";
+  static constexpr const char* const ID = "id";
+  static constexpr const char* const NAME = "name";
 
   /**
    *  @brief  Constructor
@@ -43,7 +43,7 @@ class Metadata {
    *  @param  (component) [in]  your component name.
    *  @return none.
    */
-  Metadata(std::string_view &database, std::string_view &component)
+  Metadata(std::string_view& database, std::string_view& component)
       : database_(database), component_(component) {}
 
   ~Metadata() {}
@@ -83,7 +83,7 @@ class Metadata {
    *  @return ErrorCode::OK if success, otherwise an error code.
    */
   static ErrorCode load(std::string_view database,
-                        boost::property_tree::ptree &object,
+                        boost::property_tree::ptree& object,
                         const GenerationType generation = LATEST_VERSION);
 
   /**
@@ -91,7 +91,7 @@ class Metadata {
    *  @param  (object) [in]  metadata-object to add.
    *  @return ErrorCode::OK if success, otherwise an error code.
    */
-  virtual ErrorCode add(boost::property_tree::ptree &object) = 0;
+  virtual ErrorCode add(boost::property_tree::ptree& object) = 0;
 
   /**
    *  @brief  Add metadata-object to metadata-table.
@@ -99,8 +99,8 @@ class Metadata {
    *  @param  (object_id)   [out] ID of the added metadata-object.
    *  @return ErrorCode::OK if success, otherwise an error code.
    */
-  virtual ErrorCode add(boost::property_tree::ptree &object,
-                        ObjectIdType *object_id) = 0;
+  virtual ErrorCode add(boost::property_tree::ptree& object,
+                        ObjectIdType* object_id) = 0;
 
   /**
    *  @brief  Get metadata-object.
@@ -109,7 +109,7 @@ class Metadata {
    *  @return ErrorCode::OK if success, otherwise an error code.
    */
   virtual ErrorCode get(const ObjectIdType object_id,
-                        boost::property_tree::ptree &object) = 0;
+                        boost::property_tree::ptree& object) = 0;
 
   /**
    *  @brief  Get metadata-object.
@@ -119,7 +119,7 @@ class Metadata {
    *  @return ErrorCode::OK if success, otherwise an error code.
    */
   virtual ErrorCode get(std::string_view object_name,
-                        boost::property_tree::ptree &object) = 0;
+                        boost::property_tree::ptree& object) = 0;
 
   /**
    *  @brief  Remove metadata-object from metadata-table.
@@ -135,10 +135,11 @@ class Metadata {
    *  @param  (object_id)   [out] ID of the added metadata-object.
    *  @return ErrorCode::OK if success, otherwise an error code.
    */
-  virtual ErrorCode remove(const char *object_name, ObjectIdType *object_id) = 0;
+  virtual ErrorCode remove(const char* object_name,
+                           ObjectIdType* object_id) = 0;
 
-  Metadata(const Metadata &) = delete;
-  Metadata &operator=(const Metadata &) = delete;
+  Metadata(const Metadata&) = delete;
+  Metadata& operator=(const Metadata&) = delete;
 
  protected:
   static const GenerationType LATEST_VERSION = 0;

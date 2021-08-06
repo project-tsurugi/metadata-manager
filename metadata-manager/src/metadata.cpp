@@ -36,7 +36,7 @@ namespace manager::metadata {
  *  @return ErrorCode::OK if success, otherwise an error code.
  */
 [[deprecated("don't use load() function.")]] ErrorCode Metadata::load(
-    std::string_view database, boost::property_tree::ptree &object,
+    std::string_view database, boost::property_tree::ptree& object,
     const GenerationType generation) {
   return ErrorCode::OK;
 }

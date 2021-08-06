@@ -33,16 +33,16 @@ typedef std::tuple<std::string, std::vector<boost::property_tree::ptree>,
     TupleApiTestColumnStatisticsUpdate;
 
 class ApiTestColumnStatistics {
-   public:
-    static void add_column_statistics(
-        ObjectIdType table_id,
-        std::vector<boost::property_tree::ptree> column_statistics);
-    static std::vector<TupleApiTestColumnStatisticsAllAPI>
-    make_tuple_for_api_test_column_statistics_all_api_happy(
-        const std::string& test_number);
-    static std::vector<TupleApiTestColumnStatisticsUpdate>
-    make_tuple_for_api_test_column_statistics_update_happy(
-        const std::string& test_number);
+ public:
+  static void add_column_statistics(
+      ObjectIdType table_id,
+      std::vector<boost::property_tree::ptree> column_statistics);
+  static std::vector<TupleApiTestColumnStatisticsAllAPI>
+  make_tuple_for_api_test_column_statistics_all_api_happy(
+      const std::string& test_number);
+  static std::vector<TupleApiTestColumnStatisticsUpdate>
+  make_tuple_for_api_test_column_statistics_update_happy(
+      const std::string& test_number);
 };
 
 }  // namespace manager::metadata::testing

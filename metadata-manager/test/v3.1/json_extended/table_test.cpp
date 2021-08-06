@@ -237,7 +237,7 @@ ErrorCode add_table_metadata() {
   //   return error;
   // }
 
-  std::unique_ptr<Metadata> datatypes(new DataTypes(TEST_DB));
+  std::unique_ptr<DataTypes> datatypes(new DataTypes(TEST_DB));
   // error = datatypes->load();
   // if (error != ErrorCode::OK) {
   //   print_error(error, __LINE__);

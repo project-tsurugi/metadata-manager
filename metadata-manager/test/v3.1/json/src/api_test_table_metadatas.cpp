@@ -43,15 +43,15 @@ void ApiTestTableMetadata::SetUp() {}
  *  @param  (meta_name)  [in]  column name of column metadata table.
  *  @return none.
  */
-void ApiTestTableMetadata::check_metadata_expected(ptree &expected,
-                                                   ptree &actual,
-                                                   const char *meta_name) {
-  boost::optional<ptree &> o_expected = expected.get_child_optional(meta_name);
-  boost::optional<ptree &> o_actual = actual.get_child_optional(meta_name);
+void ApiTestTableMetadata::check_metadata_expected(ptree& expected,
+                                                   ptree& actual,
+                                                   const char* meta_name) {
+  boost::optional<ptree&> o_expected = expected.get_child_optional(meta_name);
+  boost::optional<ptree&> o_actual = actual.get_child_optional(meta_name);
 
   if (o_expected && o_actual) {
-    ptree &p_expected = o_expected.value();
-    ptree &p_actual = o_actual.value();
+    ptree& p_expected = o_expected.value();
+    ptree& p_actual = o_actual.value();
     EXPECT_EQ(UTUtils::get_tree_string(p_expected),
               UTUtils::get_tree_string(p_actual));
   } else if ((!o_expected && !o_actual) ||
@@ -72,7 +72,7 @@ void ApiTestTableMetadata::check_metadata_expected(ptree &expected,
  */
 template <typename T>
 void ApiTestTableMetadata::check_column_metadata_expecetd(
-    ptree &expected, ptree &actual, const char *meta_name) {
+    ptree& expected, ptree& actual, const char* meta_name) {
   boost::optional<T> value_expected = expected.get_optional<T>(meta_name);
   boost::optional<T> value_actual = actual.get_optional<T>(meta_name);
   if (value_expected && value_actual) {
@@ -90,8 +90,8 @@ void ApiTestTableMetadata::check_column_metadata_expecetd(
  *  @param  (actual)     [in]  actual table metadata.
  *  @return none.
  */
-void ApiTestTableMetadata::check_table_metadata_expected(ptree &expected,
-                                                         ptree &actual) {
+void ApiTestTableMetadata::check_table_metadata_expected(ptree& expected,
+                                                         ptree& actual) {
   // table name
   EXPECT_EQ(expected.get<std::string>(Tables::NAME),
             actual.get<std::string>(Tables::NAME));
@@ -107,8 +107,8 @@ void ApiTestTableMetadata::check_table_metadata_expected(ptree &expected,
       actual.get_optional<std::string>(Tables::NAMESPACE);
 
   if (o_namespace_expected && o_namespace_actual) {
-    std::string &s_namespace_expected = o_namespace_expected.value();
-    std::string &s_namespace_actual = o_namespace_actual.value();
+    std::string& s_namespace_expected = o_namespace_expected.value();
+    std::string& s_namespace_actual = o_namespace_actual.value();
     EXPECT_EQ(s_namespace_expected, s_namespace_actual);
   } else if (!o_namespace_expected && !o_namespace_actual) {
     ASSERT_TRUE(true);
@@ -120,19 +120,19 @@ void ApiTestTableMetadata::check_table_metadata_expected(ptree &expected,
   check_metadata_expected(expected, actual, Tables::PRIMARY_KEY_NODE);
 
   // column metadatas
-  boost::optional<ptree &> o_columns_expected =
+  boost::optional<ptree&> o_columns_expected =
       expected.get_child_optional(Tables::COLUMNS_NODE);
-  boost::optional<ptree &> o_columns_actual =
+  boost::optional<ptree&> o_columns_actual =
       actual.get_child_optional(Tables::COLUMNS_NODE);
 
   if (o_columns_expected && o_columns_actual) {
     std::vector<ptree> p_columns_expected;
     std::vector<ptree> p_columns_actual;
-    BOOST_FOREACH (const ptree::value_type &node, o_columns_expected.value()) {
+    BOOST_FOREACH (const ptree::value_type& node, o_columns_expected.value()) {
       ptree column = node.second;
       p_columns_expected.emplace_back(column);
     }
-    BOOST_FOREACH (const ptree::value_type &node, o_columns_actual.value()) {
+    BOOST_FOREACH (const ptree::value_type& node, o_columns_actual.value()) {
       ptree column = node.second;
       p_columns_actual.emplace_back(column);
     }
@@ -194,12 +194,12 @@ void ApiTestTableMetadata::check_table_metadata_expected(ptree &expected,
  * table metadata.
  *  @return none.
  */
-void ApiTestTableMetadata::add_table(const std::string &table_name,
-                                     ObjectIdType *ret_table_id) {
+void ApiTestTableMetadata::add_table(const std::string& table_name,
+                                     ObjectIdType* ret_table_id) {
   assert(ret_table_id != nullptr);
 
   // prepare test data for adding table metadata.
-  UTTableMetadata *testdata_table_metadata =
+  UTTableMetadata* testdata_table_metadata =
       global->testdata_table_metadata.get();
   ptree new_table = testdata_table_metadata->tables;
   new_table.put(Tables::NAME, table_name);
@@ -216,7 +216,7 @@ void ApiTestTableMetadata::add_table(const std::string &table_name,
  *  @return none.
  */
 void ApiTestTableMetadata::add_table(ptree new_table,
-                                     ObjectIdType *ret_table_id) {
+                                     ObjectIdType* ret_table_id) {
   assert(ret_table_id != nullptr);
 
   auto tables = std::make_unique<Tables>(GlobalTestEnvironment::TEST_DB);

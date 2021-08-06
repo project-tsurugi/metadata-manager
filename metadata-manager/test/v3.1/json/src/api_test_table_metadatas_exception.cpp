@@ -88,35 +88,35 @@ ApiTestAddTableMetadataException::make_invalid_table_metadatas() {
 
   // remove all column name
   new_table = global->testdata_table_metadata->tables;
-  BOOST_FOREACH (ptree::value_type &node,
+  BOOST_FOREACH (ptree::value_type& node,
                  new_table.get_child(Tables::COLUMNS_NODE)) {
-    ptree &column = node.second;
+    ptree& column = node.second;
     column.erase(Tables::Column::NAME);
   }
   invalid_table_metadatas.emplace_back(new_table);
 
   // remove all ordinal position
   new_table = global->testdata_table_metadata->tables;
-  BOOST_FOREACH (ptree::value_type &node,
+  BOOST_FOREACH (ptree::value_type& node,
                  new_table.get_child(Tables::COLUMNS_NODE)) {
-    ptree &column = node.second;
+    ptree& column = node.second;
     column.erase(Tables::Column::ORDINAL_POSITION);
   }
   invalid_table_metadatas.emplace_back(new_table);
 
   // remove all data type id
   new_table = global->testdata_table_metadata->tables;
-  BOOST_FOREACH (ptree::value_type &node,
+  BOOST_FOREACH (ptree::value_type& node,
                  new_table.get_child(Tables::COLUMNS_NODE)) {
-    ptree &column = node.second;
+    ptree& column = node.second;
     column.erase(Tables::Column::DATA_TYPE_ID);
   }
   invalid_table_metadatas.emplace_back(new_table);
 
   // add invalid data type id
-  BOOST_FOREACH (ptree::value_type &node,
+  BOOST_FOREACH (ptree::value_type& node,
                  new_table.get_child(Tables::COLUMNS_NODE)) {
-    ptree &column = node.second;
+    ptree& column = node.second;
     int invalid_data_type_id = -1;
     column.put(Tables::Column::DATA_TYPE_ID, invalid_data_type_id);
   }
@@ -124,9 +124,9 @@ ApiTestAddTableMetadataException::make_invalid_table_metadatas() {
 
   // remove all not null constraint
   new_table = global->testdata_table_metadata->tables;
-  BOOST_FOREACH (ptree::value_type &node,
+  BOOST_FOREACH (ptree::value_type& node,
                  new_table.get_child(Tables::COLUMNS_NODE)) {
-    ptree &column = node.second;
+    ptree& column = node.second;
     column.erase(Tables::Column::NULLABLE);
   }
   invalid_table_metadatas.emplace_back(new_table);

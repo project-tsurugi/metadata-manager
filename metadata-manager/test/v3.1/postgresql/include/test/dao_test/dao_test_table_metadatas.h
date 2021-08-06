@@ -26,16 +26,16 @@
 namespace manager::metadata::testing {
 
 class DaoTestTableMetadata : public ::testing::Test {
-   public:
-    void SetUp() override { UTUtils::skip_if_connection_not_opened(); }
-    static void add_table(std::string table_name, ObjectIdType *object_id);
-    static void get_table_metadata(std::string_view object_name,
-                                   boost::property_tree::ptree &object);
-    static void get_table_metadata(ObjectIdType object_id,
-                                   boost::property_tree::ptree &object);
-    static void remove_table_metadata(const ObjectIdType object_id);
-    static void remove_table_metadata(const char *object_name,
-                                      ObjectIdType *object_id);
+ public:
+  void SetUp() override { UTUtils::skip_if_connection_not_opened(); }
+  static void add_table(std::string table_name, ObjectIdType* object_id);
+  static void get_table_metadata(std::string_view object_name,
+                                 boost::property_tree::ptree& object);
+  static void get_table_metadata(ObjectIdType object_id,
+                                 boost::property_tree::ptree& object);
+  static void remove_table_metadata(const ObjectIdType object_id);
+  static void remove_table_metadata(const char* object_name,
+                                    ObjectIdType* object_id);
 };
 
 }  // namespace manager::metadata::testing

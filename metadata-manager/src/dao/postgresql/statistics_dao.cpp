@@ -88,9 +88,10 @@ std::string select_one_column_statistic_by_table_id_column_ordinal_position() {
  */
 std::string select_all_column_statistic_by_table_id() {
   // SQL statement
-  boost::format query = boost::format("SELECT * FROM %s.%s WHERE %s = $1 ORDER BY %s") %
-                        SCHEMA_NAME % TableName::COLUMN_STATISTICS_TABLE %
-                        Tables::Column::TABLE_ID % Tables::Column::ORDINAL_POSITION;
+  boost::format query =
+      boost::format("SELECT * FROM %s.%s WHERE %s = $1 ORDER BY %s") %
+      SCHEMA_NAME % TableName::COLUMN_STATISTICS_TABLE %
+      Tables::Column::TABLE_ID % Tables::Column::ORDINAL_POSITION;
 
   return query.str();
 }
@@ -218,7 +219,7 @@ ErrorCode
 StatisticsDAO::upsert_one_column_statistic_by_table_id_column_ordinal_position(
     ObjectIdType table_id, ObjectIdType ordinal_position,
     std::string_view column_statistic) const {
-  std::vector<char const *> param_values;
+  std::vector<char const*> param_values;
 
   std::string s_table_id = std::to_string(table_id);
   std::string s_ordinal_position = std::to_string(ordinal_position);
@@ -232,7 +233,7 @@ StatisticsDAO::upsert_one_column_statistic_by_table_id_column_ordinal_position(
     param_values.emplace_back(column_statistic.data());
   }
 
-  PGresult *res;
+  PGresult* res;
   ErrorCode error = DbcUtils::exec_prepared(
       connection_,
       StatementName::
@@ -272,8 +273,8 @@ StatisticsDAO::upsert_one_column_statistic_by_table_id_column_ordinal_position(
 ErrorCode
 StatisticsDAO::select_one_column_statistic_by_table_id_column_ordinal_position(
     ObjectIdType table_id, ObjectIdType ordinal_position,
-    ColumnStatistic &column_statistic) const {
-  std::vector<const char *> param_values;
+    ColumnStatistic& column_statistic) const {
+  std::vector<const char*> param_values;
 
   std::string s_table_id = std::to_string(table_id);
   std::string s_ordinal_position = std::to_string(ordinal_position);
@@ -281,7 +282,7 @@ StatisticsDAO::select_one_column_statistic_by_table_id_column_ordinal_position(
   param_values.emplace_back(s_table_id.c_str());
   param_values.emplace_back(s_ordinal_position.c_str());
 
-  PGresult *res;
+  PGresult* res;
   ErrorCode error = DbcUtils::exec_prepared(
       connection_,
       StatementName::
@@ -317,15 +318,15 @@ StatisticsDAO::select_one_column_statistic_by_table_id_column_ordinal_position(
  */
 ErrorCode StatisticsDAO::select_all_column_statistic_by_table_id(
     ObjectIdType table_id,
-    std::unordered_map<ObjectIdType, ColumnStatistic> &column_statistics)
+    std::unordered_map<ObjectIdType, ColumnStatistic>& column_statistics)
     const {
-  std::vector<const char *> param_values;
+  std::vector<const char*> param_values;
 
   std::string s_table_id = std::to_string(table_id);
 
   param_values.emplace_back(s_table_id.c_str());
 
-  PGresult *res;
+  PGresult* res;
   ErrorCode error = DbcUtils::exec_prepared(
       connection_,
       StatementName::STATISTICS_DAO_SELECT_ALL_COLUMN_STATISTIC_BY_TABLE_ID,
@@ -366,13 +367,13 @@ ErrorCode StatisticsDAO::select_all_column_statistic_by_table_id(
  */
 ErrorCode StatisticsDAO::delete_all_column_statistic_by_table_id(
     ObjectIdType table_id) const {
-  std::vector<const char *> param_values;
+  std::vector<const char*> param_values;
 
   std::string s_table_id = std::to_string(table_id);
 
   param_values.emplace_back(s_table_id.c_str());
 
-  PGresult *res;
+  PGresult* res;
   ErrorCode error = DbcUtils::exec_prepared(
       connection_,
       StatementName::STATISTICS_DAO_DELETE_ALL_COLUMN_STATISTIC_BY_TABLE_ID,
@@ -409,7 +410,7 @@ ErrorCode StatisticsDAO::delete_all_column_statistic_by_table_id(
 ErrorCode
 StatisticsDAO::delete_one_column_statistic_by_table_id_column_ordinal_position(
     ObjectIdType table_id, ObjectIdType ordinal_position) const {
-  std::vector<const char *> param_values;
+  std::vector<const char*> param_values;
 
   std::string s_table_id = std::to_string(table_id);
   std::string s_ordinal_position = std::to_string(ordinal_position);
@@ -417,7 +418,7 @@ StatisticsDAO::delete_one_column_statistic_by_table_id_column_ordinal_position(
   param_values.emplace_back(s_table_id.c_str());
   param_values.emplace_back(s_ordinal_position.c_str());
 
-  PGresult *res;
+  PGresult* res;
   ErrorCode error = DbcUtils::exec_prepared(
       connection_,
       StatementName::
@@ -456,8 +457,8 @@ StatisticsDAO::delete_one_column_statistic_by_table_id_column_ordinal_position(
  *  @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode StatisticsDAO::get_column_statistic_from_p_gresult(
-    PGresult *&res, int ordinal_position,
-    ColumnStatistic &column_statistic) const {
+    PGresult*& res, int ordinal_position,
+    ColumnStatistic& column_statistic) const {
   // table id
   ErrorCode error_str_to_int = DbcUtils::str_to_integral<ObjectIdType>(
       PQgetvalue(res, ordinal_position, ColumnOrdinalPosition::TABLE_ID),
@@ -486,7 +487,7 @@ ErrorCode StatisticsDAO::get_column_statistic_from_p_gresult(
     ss << s_column_statistic;
     try {
       json_parser::read_json(ss, column_statistic.column_statistic);
-    } catch (json_parser_error &e) {
+    } catch (json_parser_error& e) {
       std::cerr << Message::READ_JSON_FAILURE << e.what() << std::endl;
       return ErrorCode::INTERNAL_ERROR;
     } catch (...) {

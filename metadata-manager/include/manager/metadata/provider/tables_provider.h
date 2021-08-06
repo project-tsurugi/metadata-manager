@@ -31,22 +31,22 @@ class TablesProvider : public ProviderBase {
  public:
   manager::metadata::ErrorCode init();
   manager::metadata::ErrorCode add_table_metadata(
-      boost::property_tree::ptree &object, ObjectIdType &table_id);
+      boost::property_tree::ptree& object, ObjectIdType& table_id);
   manager::metadata::ErrorCode get_table_metadata(
       std::string_view key, std::string_view value,
-      boost::property_tree::ptree &object);
+      boost::property_tree::ptree& object);
   manager::metadata::ErrorCode remove_table_metadata(
       const ObjectIdType table_id);
   manager::metadata::ErrorCode remove_table_metadata(
-      std::string_view table_name, ObjectIdType &table_id);
+      std::string_view table_name, ObjectIdType& table_id);
 
  private:
   std::shared_ptr<TablesDAO> tables_dao_ = nullptr;
   std::shared_ptr<ColumnsDAO> columns_dao_ = nullptr;
 
   ErrorCode get_all_column_metadatas(std::string_view table_id,
-                                     boost::property_tree::ptree &tables) const;
-  ErrorCode fill_parameters(boost::property_tree::ptree &table) const;
+                                     boost::property_tree::ptree& tables) const;
+  ErrorCode fill_parameters(boost::property_tree::ptree& table) const;
 };  // class TablesProvider
 
 }  // namespace manager::metadata::db

@@ -41,8 +41,8 @@ using manager::metadata::Metadata;
  *  @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode DBSessionManager::get_dao(GenericDAO::TableName table_name,
-                                    std::shared_ptr<GenericDAO> &gdao) {
-  return create_dao(table_name, (manager::metadata::db::DBSessionManager *)this,
+                                    std::shared_ptr<GenericDAO>& gdao) {
+  return create_dao(table_name, (manager::metadata::db::DBSessionManager*)this,
                     gdao);
 }
 
@@ -122,7 +122,7 @@ ErrorCode DBSessionManager::connect(std::string_view file_name,
  *  @brief  Gets the metadata object.
  *  @return  metadata object.
  */
-ptree *DBSessionManager::get_container() const { return meta_object_.get(); }
+ptree* DBSessionManager::get_container() const { return meta_object_.get(); }
 
 /**
  *  @brief  Load the metadata from the file.
@@ -135,7 +135,7 @@ ErrorCode DBSessionManager::load_object() const {
 
   try {
     json_parser::read_json(file_name_, *(meta_object_.get()));
-  } catch (json_parser_error &e) {
+  } catch (json_parser_error& e) {
     std::wcout << "read_json() error. " << e.what() << std::endl;
     return ErrorCode::UNKNOWN;
   } catch (...) {
@@ -171,7 +171,7 @@ ErrorCode DBSessionManager::save_object() const {
 
   try {
     json_parser::write_json(file_name_, *(meta_object_.get()));
-  } catch (json_parser_error &e) {
+  } catch (json_parser_error& e) {
     std::wcout << "write_json() error. " << e.what() << std::endl;
     return ErrorCode::UNKNOWN;
   } catch (...) {

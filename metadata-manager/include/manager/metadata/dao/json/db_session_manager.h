@@ -24,24 +24,24 @@ namespace manager::metadata::db::json {
 
 class DBSessionManager : public manager::metadata::db::DBSessionManager {
  public:
-  DBSessionManager(): meta_object_(std::make_unique<boost::property_tree::ptree>()) {}
+  DBSessionManager()
+      : meta_object_(std::make_unique<boost::property_tree::ptree>()) {}
 
   manager::metadata::ErrorCode get_dao(
       GenericDAO::TableName table_name,
-      std::shared_ptr<GenericDAO> &gdao) override;
+      std::shared_ptr<GenericDAO>& gdao) override;
 
   manager::metadata::ErrorCode start_transaction() override;
   manager::metadata::ErrorCode commit() override;
   manager::metadata::ErrorCode rollback() override;
 
-
   manager::metadata::ErrorCode connect(std::string_view file_name,
                                        std::string_view initial_node);
-  boost::property_tree::ptree *get_container() const;
+  boost::property_tree::ptree* get_container() const;
   manager::metadata::ErrorCode load_object() const;
 
-  DBSessionManager(const DBSessionManager &) = delete;
-  DBSessionManager &operator=(const DBSessionManager &) = delete;
+  DBSessionManager(const DBSessionManager&) = delete;
+  DBSessionManager& operator=(const DBSessionManager&) = delete;
 
  private:
   std::string file_name_;

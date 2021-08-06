@@ -30,7 +30,7 @@ namespace manager::metadata::db::postgresql {
 
 class StatisticsDAO : public manager::metadata::db::StatisticsDAO {
  public:
-  explicit StatisticsDAO(DBSessionManager *session_manager)
+  explicit StatisticsDAO(DBSessionManager* session_manager)
       : connection_(session_manager->get_connection()){};
 
   manager::metadata::ErrorCode prepare() const override;
@@ -42,10 +42,10 @@ class StatisticsDAO : public manager::metadata::db::StatisticsDAO {
   manager::metadata::ErrorCode
   select_one_column_statistic_by_table_id_column_ordinal_position(
       ObjectIdType table_id, ObjectIdType ordinal_position,
-      ColumnStatistic &column_statistic) const override;
+      ColumnStatistic& column_statistic) const override;
   manager::metadata::ErrorCode select_all_column_statistic_by_table_id(
       ObjectIdType table_id,
-      std::unordered_map<ObjectIdType, ColumnStatistic> &column_statistics)
+      std::unordered_map<ObjectIdType, ColumnStatistic>& column_statistics)
       const override;
   manager::metadata::ErrorCode delete_all_column_statistic_by_table_id(
       ObjectIdType table_id) const override;
@@ -57,8 +57,8 @@ class StatisticsDAO : public manager::metadata::db::StatisticsDAO {
   ConnectionSPtr connection_;
 
   manager::metadata::ErrorCode get_column_statistic_from_p_gresult(
-      PGresult *&res, int ordinal_position,
-      ColumnStatistic &column_statistic) const;
+      PGresult*& res, int ordinal_position,
+      ColumnStatistic& column_statistic) const;
 };  // class StatisticsDAO
 
 }  // namespace manager::metadata::db::postgresql

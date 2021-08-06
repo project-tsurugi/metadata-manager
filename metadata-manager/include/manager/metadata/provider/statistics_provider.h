@@ -37,20 +37,20 @@ class StatisticsProvider : public ProviderBase {
                                                    float reltuples);
   manager::metadata::ErrorCode add_table_statistic(
       std::string_view table_name, float reltuples,
-      ObjectIdType *table_id = nullptr);
+      ObjectIdType* table_id = nullptr);
   manager::metadata::ErrorCode add_column_statistic(
       ObjectIdType table_id, ObjectIdType ordinal_position,
-      boost::property_tree::ptree &column_statistic);
+      boost::property_tree::ptree& column_statistic);
   manager::metadata::ErrorCode get_table_statistic(
-      ObjectIdType table_id, TableStatistic &table_statistic);
+      ObjectIdType table_id, TableStatistic& table_statistic);
   manager::metadata::ErrorCode get_table_statistic(
-      std::string_view table_name, TableStatistic &table_statistic);
+      std::string_view table_name, TableStatistic& table_statistic);
   manager::metadata::ErrorCode get_column_statistic(
       ObjectIdType table_id, ObjectIdType ordinal_position,
-      ColumnStatistic &column_statistic);
+      ColumnStatistic& column_statistic);
   manager::metadata::ErrorCode get_all_column_statistics(
       ObjectIdType table_id,
-      std::unordered_map<ObjectIdType, ColumnStatistic> &column_statistics);
+      std::unordered_map<ObjectIdType, ColumnStatistic>& column_statistics);
   manager::metadata::ErrorCode remove_column_statistic(
       ObjectIdType table_id, ObjectIdType ordinal_position);
   manager::metadata::ErrorCode remove_all_column_statistics(

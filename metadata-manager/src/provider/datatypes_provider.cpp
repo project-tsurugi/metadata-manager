@@ -53,7 +53,7 @@ ErrorCode DataTypesProvider::init() {
  */
 ErrorCode DataTypesProvider::get_datatype_metadata(std::string_view key,
                                                    std::string_view value,
-                                                   ptree &object) {
+                                                   ptree& object) {
   // Parameter value check
   if (key.empty() || value.empty()) {
     return ErrorCode::NOT_FOUND;

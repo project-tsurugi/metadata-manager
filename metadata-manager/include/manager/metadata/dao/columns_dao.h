@@ -28,10 +28,10 @@ namespace manager::metadata::db {
 class ColumnsDAO : public GenericDAO {
  public:
   virtual manager::metadata::ErrorCode insert_one_column_metadata(
-      ObjectIdType table_id, boost::property_tree::ptree &column) const = 0;
+      ObjectIdType table_id, boost::property_tree::ptree& column) const = 0;
   virtual manager::metadata::ErrorCode select_column_metadata(
       std::string_view object_key, std::string_view object_value,
-      boost::property_tree::ptree &object) const = 0;
+      boost::property_tree::ptree& object) const = 0;
   virtual manager::metadata::ErrorCode delete_column_metadata_by_table_id(
       ObjectIdType table_id) const = 0;
 };  // class ColumnsDAO

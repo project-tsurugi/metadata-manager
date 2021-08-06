@@ -62,10 +62,10 @@ namespace storage = manager::metadata::db::json;
  *  @return ErrorCode::OK if success, otherwise an error code.
  */
 manager::metadata::ErrorCode DBSessionManager::create_dao(
-    GenericDAO::TableName table_name, DBSessionManager *session_manager,
-    std::shared_ptr<GenericDAO> &gdao) const {
-
-  storage::DBSessionManager *strage_session_manager = (storage::DBSessionManager *)session_manager;
+    GenericDAO::TableName table_name, DBSessionManager* session_manager,
+    std::shared_ptr<GenericDAO>& gdao) const {
+  storage::DBSessionManager* strage_session_manager =
+      (storage::DBSessionManager*)session_manager;
 
   switch (table_name) {
     case GenericDAO::TableName::TABLES: {
@@ -75,7 +75,8 @@ manager::metadata::ErrorCode DBSessionManager::create_dao(
     }
     case GenericDAO::TableName::STATISTICS: {
 #if defined(STORAGE_POSTGRESQL)
-      auto sdao = std::make_shared<storage::StatisticsDAO>(strage_session_manager);
+      auto sdao =
+          std::make_shared<storage::StatisticsDAO>(strage_session_manager);
       gdao = sdao;
 #elif defined(STORAGE_JSON)
       // Statistics are not supported in JSON.
@@ -84,7 +85,8 @@ manager::metadata::ErrorCode DBSessionManager::create_dao(
       break;
     }
     case GenericDAO::TableName::DATATYPES: {
-      auto ddao = std::make_shared<storage::DataTypesDAO>(strage_session_manager);
+      auto ddao =
+          std::make_shared<storage::DataTypesDAO>(strage_session_manager);
       gdao = ddao;
       break;
     }

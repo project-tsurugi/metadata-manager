@@ -170,7 +170,7 @@ struct TableMetadataTable {
  *  @param  (connection)  [in]  a connection to the metadata repository.
  *  @return none.
  */
-TablesDAO::TablesDAO(DBSessionManager *session_manager)
+TablesDAO::TablesDAO(DBSessionManager* session_manager)
     : connection_(session_manager->get_connection()) {
   // Creates a list of column names
   // in order to get values based on
@@ -247,7 +247,7 @@ ErrorCode TablesDAO::prepare() const {
     return error;
   }
 
-  for (const std::string &column : column_names) {
+  for (const std::string& column : column_names) {
     error = DbcUtils::prepare(connection_,
                               statement_names_select_equal_to.at(column),
                               statement::select_equal_to(column));
@@ -283,7 +283,7 @@ ErrorCode TablesDAO::prepare() const {
  */
 ErrorCode TablesDAO::update_reltuples_by_table_id(float reltuples,
                                                   ObjectIdType table_id) const {
-  std::vector<char const *> param_values;
+  std::vector<char const*> param_values;
 
   std::string s_reltuples = std::to_string(reltuples);
   std::string s_table_id = std::to_string(table_id);
@@ -291,7 +291,7 @@ ErrorCode TablesDAO::update_reltuples_by_table_id(float reltuples,
   param_values.emplace_back(s_reltuples.c_str());
   param_values.emplace_back(s_table_id.c_str());
 
-  PGresult *res;
+  PGresult* res;
   ErrorCode error = DbcUtils::exec_prepared(
       connection_, StatementName::TABLES_DAO_UPDATE_RELTUPLES_BY_TABLE_ID,
       param_values, res);
@@ -326,15 +326,15 @@ ErrorCode TablesDAO::update_reltuples_by_table_id(float reltuples,
  */
 ErrorCode TablesDAO::update_reltuples_by_table_name(
     float reltuples, std::string_view table_name,
-    ObjectIdType &table_id) const {
-  std::vector<char const *> param_values;
+    ObjectIdType& table_id) const {
+  std::vector<char const*> param_values;
 
   std::string s_reltuples = std::to_string(reltuples);
 
   param_values.emplace_back(s_reltuples.c_str());
   param_values.emplace_back(table_name.data());
 
-  PGresult *res;
+  PGresult* res;
   ErrorCode error = DbcUtils::exec_prepared(
       connection_, StatementName::TABLES_DAO_UPDATE_RELTUPLES_BY_TABLE_NAME,
       param_values, res);
@@ -366,13 +366,13 @@ ErrorCode TablesDAO::update_reltuples_by_table_name(
  *  @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode TablesDAO::select_table_statistic_by_table_id(
-    ObjectIdType table_id, TableStatistic &table_statistic) const {
-  std::vector<const char *> param_values;
+    ObjectIdType table_id, TableStatistic& table_statistic) const {
+  std::vector<const char*> param_values;
 
   std::string s_table_id = std::to_string(table_id);
   param_values.emplace_back(s_table_id.c_str());
 
-  PGresult *res;
+  PGresult* res;
   ErrorCode error = DbcUtils::exec_prepared(
       connection_, StatementName::TABLES_DAO_SELECT_TABLE_STATISTIC_BY_TABLE_ID,
       param_values, res);
@@ -402,12 +402,12 @@ ErrorCode TablesDAO::select_table_statistic_by_table_id(
  *  @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode TablesDAO::select_table_statistic_by_table_name(
-    std::string_view table_name, TableStatistic &table_statistic) const {
-  std::vector<const char *> param_values;
+    std::string_view table_name, TableStatistic& table_statistic) const {
+  std::vector<const char*> param_values;
 
   param_values.emplace_back(table_name.data());
 
-  PGresult *res;
+  PGresult* res;
   ErrorCode error = DbcUtils::exec_prepared(
       connection_,
       StatementName::TABLES_DAO_SELECT_TABLE_STATISTIC_BY_TABLE_NAME,
@@ -437,9 +437,9 @@ ErrorCode TablesDAO::select_table_statistic_by_table_name(
  *  @param  (table_id)          [out]  table id.
  *  @return ErrorCode::OK if success, otherwise an error code.
  */
-ErrorCode TablesDAO::insert_table_metadata(boost::property_tree::ptree &table,
-                                           ObjectIdType &table_id) const {
-  std::vector<char const *> param_values;
+ErrorCode TablesDAO::insert_table_metadata(boost::property_tree::ptree& table,
+                                           ObjectIdType& table_id) const {
+  std::vector<char const*> param_values;
 
   boost::optional<std::string> name =
       table.get_optional<std::string>(Tables::NAME);
@@ -447,20 +447,21 @@ ErrorCode TablesDAO::insert_table_metadata(boost::property_tree::ptree &table,
 
   boost::optional<std::string> namespace_name =
       table.get_optional<std::string>(Tables::NAMESPACE);
-  param_values.emplace_back((namespace_name ? namespace_name.value().c_str() : nullptr));
+  param_values.emplace_back(
+      (namespace_name ? namespace_name.value().c_str() : nullptr));
 
-  boost::optional<ptree &> o_primary_keys =
+  boost::optional<ptree&> o_primary_keys =
       table.get_child_optional(Tables::PRIMARY_KEY_NODE);
 
   std::string s_primary_keys;
   if (o_primary_keys) {
-    ptree &p_primary_keys = o_primary_keys.value();
+    ptree& p_primary_keys = o_primary_keys.value();
 
     if (!p_primary_keys.empty()) {
       std::stringstream ss;
       try {
         json_parser::write_json(ss, p_primary_keys, false);
-      } catch (json_parser_error &e) {
+      } catch (json_parser_error& e) {
         std::cerr << Message::WRITE_JSON_FAILURE << e.what() << std::endl;
         return ErrorCode::INTERNAL_ERROR;
       } catch (...) {
@@ -470,13 +471,14 @@ ErrorCode TablesDAO::insert_table_metadata(boost::property_tree::ptree &table,
       s_primary_keys = ss.str();
     }
   }
-  param_values.emplace_back((!s_primary_keys.empty() ? s_primary_keys.c_str() : nullptr));
+  param_values.emplace_back(
+      (!s_primary_keys.empty() ? s_primary_keys.c_str() : nullptr));
 
   boost::optional<std::string> reltuples =
       table.get_optional<std::string>(Tables::RELTUPLES);
   param_values.emplace_back((reltuples ? reltuples.value().c_str() : nullptr));
 
-  PGresult *res;
+  PGresult* res;
   ErrorCode error = DbcUtils::exec_prepared(
       connection_, StatementName::TABLES_DAO_INSERT_TABLE_METADATA,
       param_values, res);
@@ -511,8 +513,8 @@ ErrorCode TablesDAO::insert_table_metadata(boost::property_tree::ptree &table,
  */
 ErrorCode TablesDAO::select_table_metadata(std::string_view object_key,
                                            std::string_view object_value,
-                                           ptree &object) const {
-  std::vector<const char *> param_values;
+                                           ptree& object) const {
+  std::vector<const char*> param_values;
 
   param_values.emplace_back(object_value.data());
 
@@ -520,7 +522,7 @@ ErrorCode TablesDAO::select_table_metadata(std::string_view object_key,
   try {
     statement_name_found =
         statement_names_select_equal_to.at(std::string(object_key));
-  } catch (std::out_of_range &e) {
+  } catch (std::out_of_range& e) {
     std::cerr << Message::METADATA_KEY_NOT_FOUND << e.what() << std::endl;
     return ErrorCode::INVALID_PARAMETER;
   } catch (...) {
@@ -528,7 +530,7 @@ ErrorCode TablesDAO::select_table_metadata(std::string_view object_key,
     return ErrorCode::INVALID_PARAMETER;
   }
 
-  PGresult *res;
+  PGresult* res;
   ErrorCode error = DbcUtils::exec_prepared(connection_, statement_name_found,
                                             param_values, res);
 
@@ -566,13 +568,13 @@ ErrorCode TablesDAO::select_table_metadata(std::string_view object_key,
  */
 ErrorCode TablesDAO::delete_table_metadata_by_table_id(
     ObjectIdType table_id) const {
-  std::vector<const char *> param_values;
+  std::vector<const char*> param_values;
 
   std::string s_table_id = std::to_string(table_id);
 
   param_values.emplace_back(s_table_id.c_str());
 
-  PGresult *res;
+  PGresult* res;
   ErrorCode error = DbcUtils::exec_prepared(
       connection_, StatementName::TABLES_DAO_DELETE_TABLE_METADATA_BY_TABLE_ID,
       param_values, res);
@@ -601,12 +603,12 @@ ErrorCode TablesDAO::delete_table_metadata_by_table_id(
  *  @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode TablesDAO::delete_table_metadata_by_table_name(
-    std::string_view table_name, ObjectIdType &table_id) const {
-  std::vector<const char *> param_values;
+    std::string_view table_name, ObjectIdType& table_id) const {
+  std::vector<const char*> param_values;
 
   param_values.emplace_back(table_name.data());
 
-  PGresult *res;
+  PGresult* res;
   ErrorCode error = DbcUtils::exec_prepared(
       connection_,
       StatementName::TABLES_DAO_DELETE_TABLE_METADATA_BY_TABLE_NAME,
@@ -646,8 +648,8 @@ ErrorCode TablesDAO::delete_table_metadata_by_table_name(
  *  @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode TablesDAO::get_table_statistic_from_p_gresult(
-    PGresult *&res, int ordinal_position,
-    TableStatistic &table_statistic) const {
+    PGresult*& res, int ordinal_position,
+    TableStatistic& table_statistic) const {
   // id
   ErrorCode error_str_to_int = DbcUtils::str_to_integral<ObjectIdType>(
       PQgetvalue(res, ordinal_position,
@@ -689,8 +691,8 @@ ErrorCode TablesDAO::get_table_statistic_from_p_gresult(
  *  @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode TablesDAO::get_ptree_from_p_gresult(
-    PGresult *&res, int ordinal_position,
-    boost::property_tree::ptree &table) const {
+    PGresult*& res, int ordinal_position,
+    boost::property_tree::ptree& table) const {
   table.put(Tables::ID,
             PQgetvalue(res, ordinal_position,
                        TableMetadataTable::ColumnOrdinalPosition::ID));
@@ -730,7 +732,7 @@ ErrorCode TablesDAO::get_ptree_from_p_gresult(
     ss << s_primary_keys;
     try {
       json_parser::read_json(ss, primary_keys);
-    } catch (json_parser_error &e) {
+    } catch (json_parser_error& e) {
       std::cerr << Message::READ_JSON_FAILURE << e.what() << std::endl;
       return ErrorCode::INTERNAL_ERROR;
     } catch (...) {

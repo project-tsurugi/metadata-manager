@@ -25,7 +25,7 @@ namespace manager::metadata::db::json {
 
 class TablesDAO : public manager::metadata::db::TablesDAO {
  public:
-  explicit TablesDAO(DBSessionManager *session_manager)
+  explicit TablesDAO(DBSessionManager* session_manager)
       : session_manager_(session_manager){};
 
   manager::metadata::ErrorCode prepare() const override;
@@ -34,30 +34,30 @@ class TablesDAO : public manager::metadata::db::TablesDAO {
       float reltuples, ObjectIdType table_id) const override;
   manager::metadata::ErrorCode update_reltuples_by_table_name(
       float reltuples, std::string_view table_name,
-      ObjectIdType &table_id) const override;
+      ObjectIdType& table_id) const override;
   manager::metadata::ErrorCode select_table_statistic_by_table_id(
       ObjectIdType table_id,
-      manager::metadata::TableStatistic &table_statistic) const override;
+      manager::metadata::TableStatistic& table_statistic) const override;
   manager::metadata::ErrorCode select_table_statistic_by_table_name(
       std::string_view table_name,
-      TableStatistic &table_statistic) const override;
+      TableStatistic& table_statistic) const override;
   manager::metadata::ErrorCode insert_table_metadata(
-      boost::property_tree::ptree &table,
-      ObjectIdType &table_id) const override;
+      boost::property_tree::ptree& table,
+      ObjectIdType& table_id) const override;
   manager::metadata::ErrorCode select_table_metadata(
       std::string_view object_key, std::string_view object_value,
-      boost::property_tree::ptree &object) const override;
+      boost::property_tree::ptree& object) const override;
   manager::metadata::ErrorCode delete_table_metadata_by_table_id(
       ObjectIdType table_id) const override;
   manager::metadata::ErrorCode delete_table_metadata_by_table_name(
-      std::string_view table_name, ObjectIdType &table_id) const override;
+      std::string_view table_name, ObjectIdType& table_id) const override;
 
  private:
-  static constexpr const char *const TABLE_NAME = "tables";
-  DBSessionManager *session_manager_;
+  static constexpr const char* const TABLE_NAME = "tables";
+  DBSessionManager* session_manager_;
 
   manager::metadata::ErrorCode get_metadata_object(
-      std::string_view object_name, boost::property_tree::ptree &object) const;
+      std::string_view object_name, boost::property_tree::ptree& object) const;
 };  // class TablesDAO
 
 }  // namespace manager::metadata::db::json

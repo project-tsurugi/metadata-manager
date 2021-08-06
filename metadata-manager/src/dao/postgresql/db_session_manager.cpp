@@ -45,7 +45,7 @@ using manager::metadata::ErrorCode;
  *  @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode DBSessionManager::get_dao(GenericDAO::TableName table_name,
-                                    std::shared_ptr<GenericDAO> &gdao) {
+                                    std::shared_ptr<GenericDAO>& gdao) {
   if (!DbcUtils::is_open(connection_)) {
     ErrorCode error = connect();
     if (error != ErrorCode::OK) {
@@ -58,7 +58,7 @@ ErrorCode DBSessionManager::get_dao(GenericDAO::TableName table_name,
     }
   }
 
-  return create_dao(table_name, (manager::metadata::db::DBSessionManager *)this,
+  return create_dao(table_name, (manager::metadata::db::DBSessionManager*)this,
                     gdao);
 }
 

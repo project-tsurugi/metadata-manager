@@ -93,7 +93,7 @@ ErrorCode DataTypesDAO::prepare() const {
     datatypes.push_back(std::make_pair("", datatype));
   }
 
-  ptree *meta_object = session_manager_->get_container();
+  ptree* meta_object = session_manager_->get_container();
   meta_object->add_child(DataTypes::DATATYPES_NODE, datatypes);
 
   return ErrorCode::OK;
@@ -109,15 +109,15 @@ ErrorCode DataTypesDAO::prepare() const {
  */
 ErrorCode DataTypesDAO::select_one_data_type_metadata(
     std::string_view object_key, std::string_view object_value,
-    boost::property_tree::ptree &object) const {
+    boost::property_tree::ptree& object) const {
   // Initialization of return value.
   ErrorCode error = ErrorCode::NOT_FOUND;
 
-  ptree *meta_object = session_manager_->get_container();
+  ptree* meta_object = session_manager_->get_container();
 
-  BOOST_FOREACH (const ptree::value_type &node,
+  BOOST_FOREACH (const ptree::value_type& node,
                  meta_object->get_child(DataTypes::DATATYPES_NODE)) {
-    const ptree &temp_obj = node.second;
+    const ptree& temp_obj = node.second;
 
     boost::optional<std::string> value =
         temp_obj.get_optional<std::string>(object_key.data());

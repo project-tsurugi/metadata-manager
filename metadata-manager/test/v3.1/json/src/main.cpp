@@ -22,12 +22,12 @@
 
 namespace manager::metadata::testing {
 
-GlobalTestEnvironment *const global = reinterpret_cast<GlobalTestEnvironment *>(
+GlobalTestEnvironment* const global = reinterpret_cast<GlobalTestEnvironment*>(
     ::testing::AddGlobalTestEnvironment(new GlobalTestEnvironment));
 
 }  // namespace manager::metadata::testing
 
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
   printf("Running main() from %s\n", __FILE__);
   ::testing::InitGoogleTest(&argc, argv);
 

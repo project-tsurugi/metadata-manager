@@ -50,8 +50,8 @@ std::string UTUtils::indent(int level) {
  * @param  (output_string)        [out] string converted from ptree.
  * @param  (print_tree_enabled)   [in]  enable/disable to print output_string.
  */
-void UTUtils::get_tree_string_internal(const ptree &pt, int level,
-                                       std::string &output_string,
+void UTUtils::get_tree_string_internal(const ptree& pt, int level,
+                                       std::string& output_string,
                                        bool print_tree_enabled) {
   if (pt.empty()) {
     output_string.append("\"");
@@ -93,7 +93,7 @@ void UTUtils::get_tree_string_internal(const ptree &pt, int level,
  * @brief Get string converted from ptree. (not print string)
  * @param  (pt)                   [in]  ptree to be converted to string.
  */
-std::string UTUtils::get_tree_string(const ptree &pt) {
+std::string UTUtils::get_tree_string(const ptree& pt) {
   std::string output_string;
   int level = 0;
   get_tree_string_internal(pt, level, output_string, false);
@@ -105,7 +105,7 @@ std::string UTUtils::get_tree_string(const ptree &pt) {
  * @param  (pt)                   [in]  ptree to be converted to string.
  * @param  (level)                [in]  indent level.
  */
-std::string UTUtils::print_tree(const ptree &pt, int level) {
+std::string UTUtils::print_tree(const ptree& pt, int level) {
   std::string output_string;
   get_tree_string_internal(pt, level, output_string, true);
   std::cerr << std::endl;
@@ -116,7 +116,7 @@ std::string UTUtils::print_tree(const ptree &pt, int level) {
  * @brief Print column metadata fields used as test data.
  * @param  (column_metadata)    [in] column metadata used as test data.
  */
-void UTUtils::print_column_metadata(const UTColumnMetadata &column_metadata) {
+void UTUtils::print_column_metadata(const UTColumnMetadata& column_metadata) {
   print("id:", column_metadata.id);
   print("tableId:", column_metadata.table_id);
   print("name:", column_metadata.name);
@@ -134,7 +134,7 @@ void UTUtils::print_column_metadata(const UTColumnMetadata &column_metadata) {
  * @param  (testdata_table_metadata)    [out] table metadata used as test data.
  */
 void UTUtils::generate_table_metadata(
-    std::unique_ptr<UTTableMetadata> &testdata_table_metadata) {
+    std::unique_ptr<UTTableMetadata>& testdata_table_metadata) {
   // generate unique table name.
   int s = time(NULL);
   std::string table_name = "table_name" + std::to_string(s);

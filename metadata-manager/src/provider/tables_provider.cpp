@@ -60,8 +60,8 @@ ErrorCode TablesProvider::init() {
  *  @param  (table_id)   [out] ID of the added table metadata.
  *  @return  ErrorCode::OK if success, otherwise an error code.
  */
-ErrorCode TablesProvider::add_table_metadata(ptree &object,
-                                             ObjectIdType &table_id) {
+ErrorCode TablesProvider::add_table_metadata(ptree& object,
+                                             ObjectIdType& table_id) {
   // Initialization
   ErrorCode error = init();
   if (error != ErrorCode::OK) {
@@ -90,7 +90,7 @@ ErrorCode TablesProvider::add_table_metadata(ptree &object,
   }
 
   // Add column metadata object to column metadata table.
-  BOOST_FOREACH (const ptree::value_type &node,
+  BOOST_FOREACH (const ptree::value_type& node,
                  object.get_child(Tables::COLUMNS_NODE)) {
     ptree column = node.second;
     error = columns_dao_->insert_one_column_metadata(table_id, column);
@@ -118,7 +118,7 @@ ErrorCode TablesProvider::add_table_metadata(ptree &object,
  */
 ErrorCode TablesProvider::get_table_metadata(std::string_view key,
                                              std::string_view value,
-                                             ptree &object) {
+                                             ptree& object) {
   // Initialization
   ErrorCode error = init();
   if (error != ErrorCode::OK) {
@@ -147,8 +147,8 @@ ErrorCode TablesProvider::get_table_metadata(std::string_view key,
   if (key == Tables::ID) {
     error = get_all_column_metadatas(value, object);
   } else {
-    BOOST_FOREACH (ptree::value_type &node, object) {
-      ptree &table = node.second;
+    BOOST_FOREACH (ptree::value_type& node, object) {
+      ptree& table = node.second;
 
       if (table.empty()) {
         boost::optional<std::string> o_table_id =
@@ -238,7 +238,7 @@ ErrorCode TablesProvider::remove_table_metadata(const ObjectIdType table_id) {
  *  @return  ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode TablesProvider::remove_table_metadata(std::string_view table_name,
-                                                ObjectIdType &table_id) {
+                                                ObjectIdType& table_id) {
   // Initialization
   ErrorCode error = init();
   if (error != ErrorCode::OK) {
@@ -294,7 +294,7 @@ ErrorCode TablesProvider::remove_table_metadata(std::string_view table_name,
  *  @return  ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode TablesProvider::get_all_column_metadatas(std::string_view table_id,
-                                                   ptree &tables) const {
+                                                   ptree& tables) const {
   assert(!table_id.empty());
 
   ptree columns;
@@ -315,7 +315,7 @@ ErrorCode TablesProvider::get_all_column_metadatas(std::string_view table_id,
  *  @return  ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode TablesProvider::fill_parameters(
-    boost::property_tree::ptree &table) const {
+    boost::property_tree::ptree& table) const {
   ErrorCode error = ErrorCode::OK;
 
   boost::optional<std::string> name =
@@ -336,9 +336,9 @@ ErrorCode TablesProvider::fill_parameters(
   //
   // column metadata
   //
-  BOOST_FOREACH (ptree::value_type &node,
+  BOOST_FOREACH (ptree::value_type& node,
                  table.get_child(Tables::COLUMNS_NODE)) {
-    ptree &column = node.second;
+    ptree& column = node.second;
 
     // Check if the required items exists.
     BOOST_FOREACH (std::string name, check_columns) {

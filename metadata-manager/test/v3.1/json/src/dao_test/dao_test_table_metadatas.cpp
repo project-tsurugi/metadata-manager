@@ -47,10 +47,10 @@ using namespace manager::metadata::db;
  *  @return ErrorCode::OK if success, otherwise an error code.
  */
 void DaoTestTableMetadata::add_table(std::string table_name,
-                                     ObjectIdType *object_id) {
+                                     ObjectIdType* object_id) {
   assert(object_id != nullptr);
 
-  UTTableMetadata *testdata_table_metadata =
+  UTTableMetadata* testdata_table_metadata =
       global->testdata_table_metadata.get();
   ptree new_table = testdata_table_metadata->tables;
 
@@ -85,7 +85,7 @@ void DaoTestTableMetadata::add_table(std::string table_name,
   EXPECT_GT(table_id_returned, 0);
 
   // Add column metadata object to column metadata table.
-  BOOST_FOREACH (const ptree::value_type &node,
+  BOOST_FOREACH (const ptree::value_type& node,
                  new_table.get_child(Tables::COLUMNS_NODE)) {
     ptree column = node.second;
     error = cdao->insert_one_column_metadata(table_id_returned, column);
@@ -109,7 +109,7 @@ void DaoTestTableMetadata::add_table(std::string table_name,
  *  @return ErrorCode::OK if success, otherwise an error code.
  */
 void DaoTestTableMetadata::get_table_metadata(
-    std::string_view object_name, boost::property_tree::ptree &object) {
+    std::string_view object_name, boost::property_tree::ptree& object) {
   std::shared_ptr<GenericDAO> t_gdao = nullptr;
 
   storage::DBSessionManager db_session_manager;
@@ -131,8 +131,8 @@ void DaoTestTableMetadata::get_table_metadata(
   error = tdao->select_table_metadata(Tables::NAME, object_name.data(), object);
   EXPECT_EQ(ErrorCode::OK, error);
 
-  BOOST_FOREACH (ptree::value_type &node, object) {
-    ptree &table = node.second;
+  BOOST_FOREACH (ptree::value_type& node, object) {
+    ptree& table = node.second;
 
     if (table.empty()) {
       boost::optional<std::string> o_table_id =
@@ -168,7 +168,7 @@ void DaoTestTableMetadata::get_table_metadata(
  *  @return ErrorCode::OK if success, otherwise an error code.
  */
 void DaoTestTableMetadata::get_table_metadata(
-    ObjectIdType object_id, boost::property_tree::ptree &object) {
+    ObjectIdType object_id, boost::property_tree::ptree& object) {
   std::shared_ptr<GenericDAO> t_gdao = nullptr;
 
   storage::DBSessionManager db_session_manager;
@@ -199,8 +199,8 @@ void DaoTestTableMetadata::get_table_metadata(
     return;
   }
 
-  BOOST_FOREACH (ptree::value_type &node, object) {
-    ptree &table = node.second;
+  BOOST_FOREACH (ptree::value_type& node, object) {
+    ptree& table = node.second;
 
     if (table.empty()) {
       boost::optional<std::string> o_table_id =
@@ -273,8 +273,8 @@ void DaoTestTableMetadata::remove_table_metadata(const ObjectIdType object_id) {
  *  @param (object_id)   [out] object id of table removed.
  *  @return ErrorCode::OK if success, otherwise an error code.
  */
-void DaoTestTableMetadata::remove_table_metadata(const char *object_name,
-                                                 ObjectIdType *object_id) {
+void DaoTestTableMetadata::remove_table_metadata(const char* object_name,
+                                                 ObjectIdType* object_id) {
   std::shared_ptr<GenericDAO> t_gdao = nullptr;
 
   storage::DBSessionManager db_session_manager;

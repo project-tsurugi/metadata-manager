@@ -103,7 +103,7 @@ ErrorCode StatisticsProvider::add_table_statistic(ObjectIdType table_id,
  */
 ErrorCode StatisticsProvider::add_table_statistic(std::string_view table_name,
                                                   float reltuples,
-                                                  ObjectIdType *table_id) {
+                                                  ObjectIdType* table_id) {
   // Initialization
   ErrorCode error = init();
   if (error != ErrorCode::OK) {
@@ -149,7 +149,7 @@ ErrorCode StatisticsProvider::add_table_statistic(std::string_view table_name,
  */
 ErrorCode StatisticsProvider::add_column_statistic(
     ObjectIdType table_id, ObjectIdType ordinal_position,
-    ptree &column_statistic) {
+    ptree& column_statistic) {
   // Initialization
   ErrorCode error = init();
   if (error != ErrorCode::OK) {
@@ -165,7 +165,7 @@ ErrorCode StatisticsProvider::add_column_statistic(
     std::stringstream ss;
     try {
       json_parser::write_json(ss, column_statistic, false);
-    } catch (json_parser::json_parser_error &e) {
+    } catch (json_parser::json_parser_error& e) {
       std::cerr << Message::WRITE_JSON_FAILURE << e.what() << std::endl;
       return ErrorCode::INTERNAL_ERROR;
     } catch (...) {
@@ -181,10 +181,9 @@ ErrorCode StatisticsProvider::add_column_statistic(
     return error;
   }
 
-  error =
-      statistics_dao_
-          ->upsert_one_column_statistic_by_table_id_column_ordinal_position(
-              table_id, ordinal_position, s_column_statistic);
+  error = statistics_dao_
+              ->upsert_one_column_statistic_by_table_id_column_ordinal_position(
+                  table_id, ordinal_position, s_column_statistic);
   if (error == ErrorCode::OK) {
     error = session_manager_->commit();
   } else {
@@ -207,7 +206,7 @@ ErrorCode StatisticsProvider::add_column_statistic(
  */
 ErrorCode StatisticsProvider::get_column_statistic(
     ObjectIdType table_id, ObjectIdType ordinal_position,
-    ColumnStatistic &column_statistic) {
+    ColumnStatistic& column_statistic) {
   // Initialization
   ErrorCode error = init();
   if (error != ErrorCode::OK) {
@@ -218,10 +217,9 @@ ErrorCode StatisticsProvider::get_column_statistic(
     return ErrorCode::INVALID_PARAMETER;
   }
 
-  error =
-      statistics_dao_
-          ->select_one_column_statistic_by_table_id_column_ordinal_position(
-              table_id, ordinal_position, column_statistic);
+  error = statistics_dao_
+              ->select_one_column_statistic_by_table_id_column_ordinal_position(
+                  table_id, ordinal_position, column_statistic);
 
   return error;
 }
@@ -238,7 +236,7 @@ ErrorCode StatisticsProvider::get_column_statistic(
  */
 ErrorCode StatisticsProvider::get_all_column_statistics(
     ObjectIdType table_id,
-    std::unordered_map<ObjectIdType, ColumnStatistic> &column_statistics) {
+    std::unordered_map<ObjectIdType, ColumnStatistic>& column_statistics) {
   // Initialization
   ErrorCode error = init();
   if (error != ErrorCode::OK) {
@@ -264,7 +262,7 @@ ErrorCode StatisticsProvider::get_all_column_statistics(
  *  @return  ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode StatisticsProvider::get_table_statistic(
-    ObjectIdType table_id, manager::metadata::TableStatistic &table_statistic) {
+    ObjectIdType table_id, manager::metadata::TableStatistic& table_statistic) {
   // Initialization
   ErrorCode error = init();
   if (error != ErrorCode::OK) {
@@ -276,7 +274,7 @@ ErrorCode StatisticsProvider::get_table_statistic(
   }
 
   error = tables_dao_->select_table_statistic_by_table_id(table_id,
-                                                           table_statistic);
+                                                          table_statistic);
 
   return error;
 }
@@ -291,7 +289,7 @@ ErrorCode StatisticsProvider::get_table_statistic(
  */
 ErrorCode StatisticsProvider::get_table_statistic(
     std::string_view table_name,
-    manager::metadata::TableStatistic &table_statistic) {
+    manager::metadata::TableStatistic& table_statistic) {
   // Initialization
   ErrorCode error = init();
   if (error != ErrorCode::OK) {
@@ -303,7 +301,7 @@ ErrorCode StatisticsProvider::get_table_statistic(
   }
 
   error = tables_dao_->select_table_statistic_by_table_name(table_name.data(),
-                                                             table_statistic);
+                                                            table_statistic);
 
   return error;
 }
@@ -332,10 +330,9 @@ ErrorCode StatisticsProvider::remove_column_statistic(
     return error;
   }
 
-  error =
-      statistics_dao_
-          ->delete_one_column_statistic_by_table_id_column_ordinal_position(
-              table_id, ordinal_position);
+  error = statistics_dao_
+              ->delete_one_column_statistic_by_table_id_column_ordinal_position(
+                  table_id, ordinal_position);
   if (error == ErrorCode::OK) {
     error = session_manager_->commit();
   } else {

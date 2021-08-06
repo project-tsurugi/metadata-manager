@@ -28,14 +28,13 @@ namespace manager::metadata::testing {
 
 class ApiTestTableMetadataExtra
     : public ::testing::TestWithParam<boost::property_tree::ptree> {
-   public:
-    void SetUp() override;
+ public:
+  void SetUp() override;
 
-    static std::vector<boost::property_tree::ptree>
-    make_valid_table_metadatas();
+  static std::vector<boost::property_tree::ptree> make_valid_table_metadatas();
 
-   protected:
-    std::vector<boost::property_tree::ptree> table_metadatas;
+ protected:
+  std::vector<boost::property_tree::ptree> table_metadatas;
 };
 
 }  // namespace manager::metadata::testing

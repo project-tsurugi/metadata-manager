@@ -33,7 +33,7 @@ namespace manager::metadata::db::postgresql {
  * @param  (connection)   [in]  a connection.
  * @return true if this connection is open, otherwise false.
  */
-bool DbcUtils::is_open(const ConnectionSPtr &connection) {
+bool DbcUtils::is_open(const ConnectionSPtr& connection) {
   return PQstatus(connection.get()) == CONNECTION_OK;
 }
 
@@ -45,7 +45,7 @@ bool DbcUtils::is_open(const ConnectionSPtr &connection) {
  * "false" if "f" is input,
  * otherwise an empty string.
  */
-std::string DbcUtils::convert_boolean_expression(const char *string) {
+std::string DbcUtils::convert_boolean_expression(const char* string) {
   if (!string) {
     return "";
   }
@@ -69,16 +69,16 @@ std::string DbcUtils::convert_boolean_expression(const char *string) {
  * @return the converted floating point number as a value of type float.
  */
 template <>
-[[nodiscard]] float DbcUtils::call_floating_point<float>(const char *nptr,
-                                                         char **endptr) {
+[[nodiscard]] float DbcUtils::call_floating_point<float>(const char* nptr,
+                                                         char** endptr) {
   return std::strtof(nptr, endptr);
 }
 
 /**
  * @brief Explicit Template Instantiation for str_to_floating_point(float type).
  */
-template ErrorCode DbcUtils::str_to_floating_point(const char *input,
-                                                   float &return_value);
+template ErrorCode DbcUtils::str_to_floating_point(const char* input,
+                                                   float& return_value);
 
 /**
  * @brief Convert string to floating point.
@@ -88,12 +88,12 @@ template ErrorCode DbcUtils::str_to_floating_point(const char *input,
  * @return ErrorCode::OK if success, otherwise an error code.
  */
 template <typename T>
-[[nodiscard]] ErrorCode DbcUtils::str_to_floating_point(const char *input,
-                                                        T &return_value) {
+[[nodiscard]] ErrorCode DbcUtils::str_to_floating_point(const char* input,
+                                                        T& return_value) {
   if (!input || *input == '\0' || std::isspace(*input)) {
     return ErrorCode::INTERNAL_ERROR;
   }
-  char *end;
+  char* end;
   errno = 0;
 
   const T result = call_floating_point<T>(input, &end);
@@ -119,7 +119,7 @@ template <typename T>
  */
 template <>
 [[nodiscard]] unsigned long DbcUtils::call_integral<unsigned long>(
-    const char *nptr, char **endptr, int base) {
+    const char* nptr, char** endptr, int base) {
   return std::strtoul(nptr, endptr, base);
 }
 
@@ -136,21 +136,21 @@ template <>
  * @return converted integral number as long int value.
  */
 template <>
-[[nodiscard]] long DbcUtils::call_integral<long>(const char *nptr,
-                                                 char **endptr, int base) {
+[[nodiscard]] long DbcUtils::call_integral<long>(const char* nptr,
+                                                 char** endptr, int base) {
   return std::strtol(nptr, endptr, base);
 }
 
 /**
  * @brief Explicit Template Instantiation for str_to_integral(unsigned long).
  */
-template ErrorCode DbcUtils::str_to_integral(const char *str,
-                                             unsigned long &return_value);
+template ErrorCode DbcUtils::str_to_integral(const char* str,
+                                             unsigned long& return_value);
 /**
  * @brief Explicit Template Instantiation for str_to_integral(long).
  */
-template ErrorCode DbcUtils::str_to_integral(const char *str,
-                                             long &return_value);
+template ErrorCode DbcUtils::str_to_integral(const char* str,
+                                             long& return_value);
 
 /**
  * @brief Convert string to integr.
@@ -160,13 +160,13 @@ template ErrorCode DbcUtils::str_to_integral(const char *str,
  * @return ErrorCode::OK if success, otherwise an error code.
  */
 template <typename T>
-[[nodiscard]] ErrorCode DbcUtils::str_to_integral(const char *input,
-                                                  T &return_value) {
+[[nodiscard]] ErrorCode DbcUtils::str_to_integral(const char* input,
+                                                  T& return_value) {
   if (!input || *input == '\0' || std::isspace(*input)) {
     return ErrorCode::INTERNAL_ERROR;
   }
 
-  char *end;
+  char* end;
   errno = 0;
 
   const T result = call_integral<T>(input, &end, BASE_10);
@@ -186,8 +186,8 @@ template <typename T>
  * if last command was INSERT, UPDATE, or
  * DELETE. zero for all other commands.
  */
-ErrorCode DbcUtils::get_number_of_rows_affected(PGresult *&res,
-                                                uint64_t &return_value) {
+ErrorCode DbcUtils::get_number_of_rows_affected(PGresult*& res,
+                                                uint64_t& return_value) {
   return str_to_integral(PQcmdTuples(res), return_value);
 }
 
@@ -196,8 +196,8 @@ ErrorCode DbcUtils::get_number_of_rows_affected(PGresult *&res,
  * @param  (pgconn)   [in]  a connection.
  * @return shared_ptr of PGconn with deleter.
  */
-ConnectionSPtr DbcUtils::make_connection_sptr(PGconn *pgconn) {
-  ConnectionSPtr conn(pgconn, [](PGconn *c) { ::PQfinish(c); });
+ConnectionSPtr DbcUtils::make_connection_sptr(PGconn* pgconn) {
+  ConnectionSPtr conn(pgconn, [](PGconn* c) { ::PQfinish(c); });
   return conn;
 }
 
@@ -206,8 +206,8 @@ ConnectionSPtr DbcUtils::make_connection_sptr(PGconn *pgconn) {
  * @param  (pgres)   [in]  the result of a query.
  * @return unique_ptr of PGresult with deleter.
  */
-ResultUPtr DbcUtils::make_result_uptr(PGresult *pgres) {
-  ResultUPtr res(pgres, [](PGresult *r) { ::PQclear(r); });
+ResultUPtr DbcUtils::make_result_uptr(PGresult* pgres) {
+  ResultUPtr res(pgres, [](PGresult* r) { ::PQclear(r); });
   return res;
 }
 
@@ -218,8 +218,8 @@ ResultUPtr DbcUtils::make_result_uptr(PGresult *pgres) {
  * @param  (statement)       [in] SQL statement to prepare.
  * @return ErrorCode::OK if success, otherwise an error code.
  */
-ErrorCode DbcUtils::prepare(const ConnectionSPtr &connection,
-                            const StatementName &statement_name,
+ErrorCode DbcUtils::prepare(const ConnectionSPtr& connection,
+                            const StatementName& statement_name,
                             std::string_view statement) {
   return DbcUtils::prepare(connection, std::to_string(statement_name),
                            statement);
@@ -232,7 +232,7 @@ ErrorCode DbcUtils::prepare(const ConnectionSPtr &connection,
  * @param  (statement)       [in] SQL statement to prepare.
  * @return ErrorCode::OK if success, otherwise an error code.
  */
-ErrorCode DbcUtils::prepare(const ConnectionSPtr &connection,
+ErrorCode DbcUtils::prepare(const ConnectionSPtr& connection,
                             std::string_view statement_name,
                             std::string_view statement) {
   if (!DbcUtils::is_open(connection)) {
@@ -261,10 +261,10 @@ ErrorCode DbcUtils::prepare(const ConnectionSPtr &connection,
  * @param  (res)             [out] the result of a query.
  * @return ErrorCode::OK if success, otherwise an error code.
  */
-ErrorCode DbcUtils::exec_prepared(const ConnectionSPtr &connection,
-                                  const StatementName &statement_name,
-                                  const std::vector<char const *> &param_values,
-                                  PGresult *&res) {
+ErrorCode DbcUtils::exec_prepared(const ConnectionSPtr& connection,
+                                  const StatementName& statement_name,
+                                  const std::vector<char const*>& param_values,
+                                  PGresult*& res) {
   return exec_prepared(connection, std::to_string(statement_name), param_values,
                        res);
 }
@@ -278,10 +278,10 @@ ErrorCode DbcUtils::exec_prepared(const ConnectionSPtr &connection,
  * @param  (res)             [out] the result of a query.
  * @return ErrorCode::OK if success, otherwise an error code.
  */
-ErrorCode DbcUtils::exec_prepared(const ConnectionSPtr &connection,
+ErrorCode DbcUtils::exec_prepared(const ConnectionSPtr& connection,
                                   std::string_view statement_name,
-                                  const std::vector<char const *> &param_values,
-                                  PGresult *&res) {
+                                  const std::vector<char const*>& param_values,
+                                  PGresult*& res) {
   if (!DbcUtils::is_open(connection)) {
     std::cerr << Message::PREPARED_STATEMENT_EXECUTION_FAILURE
               << Message::NOT_INITIALIZED << std::endl;

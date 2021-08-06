@@ -26,17 +26,17 @@ namespace manager::metadata::db::json {
 
 class DataTypesDAO : public manager::metadata::db::DataTypesDAO {
  public:
-  explicit DataTypesDAO(DBSessionManager *session_manager)
+  explicit DataTypesDAO(DBSessionManager* session_manager)
       : session_manager_(session_manager){};
 
   manager::metadata::ErrorCode prepare() const override;
 
   manager::metadata::ErrorCode select_one_data_type_metadata(
       std::string_view object_key, std::string_view object_value,
-      boost::property_tree::ptree &object) const;
+      boost::property_tree::ptree& object) const;
 
  private:
-  DBSessionManager *session_manager_;
+  DBSessionManager* session_manager_;
 };  // class DataTypesDAO
 
 }  // namespace manager::metadata::db::json

@@ -32,21 +32,21 @@ class TablesDAO : public GenericDAO {
       float reltuples, ObjectIdType table_id) const = 0;
   virtual manager::metadata::ErrorCode update_reltuples_by_table_name(
       float reltuples, std::string_view table_name,
-      ObjectIdType &table_id) const = 0;
+      ObjectIdType& table_id) const = 0;
   virtual manager::metadata::ErrorCode select_table_statistic_by_table_id(
       ObjectIdType table_id,
-      manager::metadata::TableStatistic &table_statistic) const = 0;
+      manager::metadata::TableStatistic& table_statistic) const = 0;
   virtual manager::metadata::ErrorCode select_table_statistic_by_table_name(
-      std::string_view table_name, TableStatistic &table_statistic) const = 0;
+      std::string_view table_name, TableStatistic& table_statistic) const = 0;
   virtual manager::metadata::ErrorCode insert_table_metadata(
-      boost::property_tree::ptree &table, ObjectIdType &table_id) const = 0;
+      boost::property_tree::ptree& table, ObjectIdType& table_id) const = 0;
   virtual manager::metadata::ErrorCode select_table_metadata(
       std::string_view object_key, std::string_view object_value,
-      boost::property_tree::ptree &object) const = 0;
+      boost::property_tree::ptree& object) const = 0;
   virtual manager::metadata::ErrorCode delete_table_metadata_by_table_id(
       ObjectIdType table_id) const = 0;
   virtual manager::metadata::ErrorCode delete_table_metadata_by_table_name(
-      std::string_view table_name, ObjectIdType &table_id) const = 0;
+      std::string_view table_name, ObjectIdType& table_id) const = 0;
 };  // class TablesDAO
 
 }  // namespace manager::metadata::db

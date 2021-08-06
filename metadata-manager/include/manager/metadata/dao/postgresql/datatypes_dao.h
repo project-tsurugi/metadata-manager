@@ -28,13 +28,13 @@ namespace manager::metadata::db::postgresql {
 
 class DataTypesDAO : public manager::metadata::db::DataTypesDAO {
  public:
-  explicit DataTypesDAO(DBSessionManager *session_manager);
+  explicit DataTypesDAO(DBSessionManager* session_manager);
 
   manager::metadata::ErrorCode prepare() const override;
 
   manager::metadata::ErrorCode select_one_data_type_metadata(
       std::string_view object_key, std::string_view object_value,
-      boost::property_tree::ptree &object) const override;
+      boost::property_tree::ptree& object) const override;
 
  private:
   ConnectionSPtr connection_;
@@ -42,8 +42,8 @@ class DataTypesDAO : public manager::metadata::db::DataTypesDAO {
   std::unordered_map<std::string, std::string> statement_names_select_equal_to;
 
   manager::metadata::ErrorCode get_ptree_from_p_gresult(
-      PGresult *&res, int ordinal_position,
-      boost::property_tree::ptree &object) const;
+      PGresult*& res, int ordinal_position,
+      boost::property_tree::ptree& object) const;
 };  // class DataTypesDAO
 
 }  // namespace manager::metadata::db::postgresql
