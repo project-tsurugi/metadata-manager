@@ -102,9 +102,12 @@ TEST_P(DaoTestTableStatisticsByTableIdException,
 
   float reltuples = 1000;
   auto table_id_not_exists = GetParam();
-  error = tdao->update_reltuples_by_table_id(reltuples, table_id_not_exists);
-
+  ObjectIdType retval_table_id = -1;
+  error = tdao->update_reltuples(reltuples, Tables::ID,
+                                 std::to_string(table_id_not_exists),
+                                 retval_table_id);
   EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);
+  EXPECT_EQ(-1, retval_table_id);
 
   error = db_session_manager.rollback();
 
@@ -135,10 +138,8 @@ TEST_P(DaoTestTableStatisticsByTableNameException,
   float reltuples = 1000;
   std::string table_name_not_exists = GetParam();
   ObjectIdType retval_table_id = -1;
-
-  error = tdao->update_reltuples_by_table_name(reltuples, table_name_not_exists,
-                                               retval_table_id);
-
+  error = tdao->update_reltuples(reltuples, Tables::NAME, table_name_not_exists,
+                                 retval_table_id);
   EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);
   EXPECT_EQ(retval_table_id, -1);
 
@@ -229,8 +230,11 @@ TEST_P(DaoTestTableStatisticsByTableIdHappy,
   EXPECT_EQ(ErrorCode::OK, error);
 
   float reltuples_to_add = std::get<1>(param);
-  error = tdao->update_reltuples_by_table_id(reltuples_to_add, ret_table_id);
+  ObjectIdType retval_table_id = -1;
+  error = tdao->update_reltuples(reltuples_to_add, Tables::ID,
+                                 std::to_string(ret_table_id), retval_table_id);
   EXPECT_EQ(ErrorCode::OK, error);
+  EXPECT_NE(-1, retval_table_id);
 
   error = db_session_manager.commit();
   EXPECT_EQ(ErrorCode::OK, error);
@@ -257,8 +261,11 @@ TEST_P(DaoTestTableStatisticsByTableIdHappy,
   EXPECT_EQ(ErrorCode::OK, error);
 
   float reltuples_to_update = std::get<2>(param);
-  error = tdao->update_reltuples_by_table_id(reltuples_to_update, ret_table_id);
+  retval_table_id = -1;
+  error = tdao->update_reltuples(reltuples_to_update, Tables::ID,
+                                 std::to_string(ret_table_id), retval_table_id);
   EXPECT_EQ(ErrorCode::OK, error);
+  EXPECT_NE(-1, retval_table_id);
 
   error = db_session_manager.commit();
   EXPECT_EQ(ErrorCode::OK, error);
@@ -312,9 +319,9 @@ TEST_P(DaoTestTableStatisticsByTableNameHappy,
   EXPECT_EQ(ErrorCode::OK, error);
 
   float reltuples_to_add = std::get<1>(param);
-  ObjectIdType ret_table_id_ts_add;
-  error = tdao->update_reltuples_by_table_name(reltuples_to_add, table_name,
-                                               ret_table_id_ts_add);
+  ObjectIdType ret_table_id_ts_add = -1;
+  error = tdao->update_reltuples(reltuples_to_add, Tables::NAME, table_name,
+                                 ret_table_id_ts_add);
   EXPECT_EQ(ErrorCode::OK, error);
   EXPECT_EQ(ret_table_id_ts_add, ret_table_id);
 
@@ -343,9 +350,9 @@ TEST_P(DaoTestTableStatisticsByTableNameHappy,
   EXPECT_EQ(ErrorCode::OK, error);
 
   float reltuples_to_update = std::get<2>(param);
-  ObjectIdType ret_table_id_ts_update;
-  error = tdao->update_reltuples_by_table_name(reltuples_to_update, table_name,
-                                               ret_table_id_ts_update);
+  ObjectIdType ret_table_id_ts_update = -1;
+  error = tdao->update_reltuples(reltuples_to_update, Tables::NAME, table_name,
+                                 ret_table_id_ts_update);
   EXPECT_EQ(ErrorCode::OK, error);
   EXPECT_EQ(ret_table_id_ts_update, ret_table_id);
 

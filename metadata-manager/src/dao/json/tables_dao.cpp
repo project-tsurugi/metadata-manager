@@ -53,27 +53,15 @@ ErrorCode TablesDAO::prepare() const {
 /**
  *  @brief  This feature is not supported, so it will always return
  *      ErrorCode::NOT_SUPPORTED.
- *  @param  (reltuples)  [in]  the number of rows to update.
- *  @param  (table_id)   [in]  table id.
+ *  @param  (reltuples)     [in]  the number of rows to update.
+ *  @param  (object_key)    [in]  key. column name of a statistic table.
+ *  @param  (object_value)  [in]  value to be filtered.
  *  @return  ErrorCode::NOT_SUPPORTED.
  */
-ErrorCode TablesDAO::update_reltuples_by_table_id(float reltuples,
-                                                  ObjectIdType table_id) const {
-  // This feature is not supported.
-  return ErrorCode::NOT_SUPPORTED;
-}
-
-/**
- *  @brief  This feature is not supported, so it will always return
- *      ErrorCode::NOT_SUPPORTED.
- *  @param  (reltuples)   [in]  the number of rows to update.
- *  @param  (table_name)  [in]  table name.
- *  @param  (table_id)    [out] table id of the row updated.
- *  @return  ErrorCode::NOT_SUPPORTED.
- */
-ErrorCode TablesDAO::update_reltuples_by_table_name(
-    float reltuples, std::string_view table_name,
-    ObjectIdType& table_id) const {
+ErrorCode TablesDAO::update_reltuples(float reltuples,
+                                      std::string_view object_key,
+                                      std::string_view object_value,
+                                      ObjectIdType& table_id) const {
   // This feature is not supported.
   return ErrorCode::NOT_SUPPORTED;
 }

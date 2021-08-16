@@ -33,6 +33,7 @@
 // =============================================================================
 namespace {
 
+std::unordered_map<std::string, std::string> statement_names_update_reltuples;
 std::unordered_map<std::string, std::string>
     statement_names_select_statistic_equal_to;
 std::unordered_map<std::string, std::string> statement_names_select_equal_to;
@@ -46,33 +47,17 @@ using manager::metadata::db::postgresql::TableName;
 
 /**
  *  @brief  Returnes an UPDATE stetement for the number of rows
- *  based on table id.
- *  @param  none.
- *  @return an UPDATE stetement to update the number of rows
- *  based on table id.
- */
-std::string update_reltuples_by_table_id() {
-  // SQL statement
-  boost::format query =
-      boost::format("UPDATE %s.%s SET %s = $1 WHERE %s = $2") % SCHEMA_NAME %
-      TableName::TABLE_METADATA_TABLE % Tables::RELTUPLES % Tables::ID;
-
-  return query.str();
-}
-
-/**
- *  @brief  Returnes an UPDATE stetement for the number of rows
  *  based on table name.
- *  @param  none.
+ *  @param  (column_name)  [in]  column name of metadata-table.
  *  @return an UPDATE stetement to update the number of rows
  *  based on table name.
  */
-std::string update_reltuples_by_table_name() {
+std::string update_reltuples(std::string_view column_name) {
   // SQL statement
   boost::format query =
       boost::format("UPDATE %s.%s SET %s = $1 WHERE %s = $2 RETURNING %s") %
       SCHEMA_NAME % TableName::TABLE_METADATA_TABLE % Tables::RELTUPLES %
-      Tables::NAME % Tables::ID;
+      column_name.data() % Tables::ID;
 
   return query.str();
 }
@@ -180,6 +165,18 @@ TablesDAO::TablesDAO(DBSessionManager* session_manager)
   // for the new prepared statement for each column names.
   for (auto column : column_names) {
     // Creates unique name for the new prepared statement.
+    boost::format statement_name_update_reltuples =
+        boost::format("%1%-%2%-%3%") %
+        StatementName::TABLES_DAO_UPDATE_RELTUPLES % TableName::TABLES %
+        column.c_str();
+
+    // Addes this list to unique name for the new prepared statement.
+    // key : column name
+    // value : unique name for the new prepared statement.
+    statement_names_update_reltuples.emplace(
+        column, statement_name_update_reltuples.str());
+
+    // Creates unique name for the new prepared statement.
     boost::format statement_name_select_statistic =
         boost::format("%1%-%2%-%3%") %
         StatementName::TABLES_DAO_SELECT_TABLE_STATISTIC % TableName::TABLES %
@@ -221,35 +218,7 @@ TablesDAO::TablesDAO(DBSessionManager* session_manager)
  *  @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode TablesDAO::prepare() const {
-  ErrorCode error = DbcUtils::prepare(
-      connection_, StatementName::TABLES_DAO_UPDATE_RELTUPLES_BY_TABLE_ID,
-      statement::update_reltuples_by_table_id());
-  if (error != ErrorCode::OK) {
-    return error;
-  }
-
-  error = DbcUtils::prepare(
-      connection_, StatementName::TABLES_DAO_UPDATE_RELTUPLES_BY_TABLE_NAME,
-      statement::update_reltuples_by_table_name());
-  if (error != ErrorCode::OK) {
-    return error;
-  }
-
-  // error = DbcUtils::prepare(
-  //     connection_,
-  //     StatementName::TABLES_DAO_SELECT_TABLE_STATISTIC_BY_TABLE_ID,
-  //     statement::select_equal_to(Tables::ID));
-  // if (error != ErrorCode::OK) {
-  //   return error;
-  // }
-
-  // error = DbcUtils::prepare(
-  //     connection_,
-  //     StatementName::TABLES_DAO_SELECT_TABLE_STATISTIC_BY_TABLE_NAME,
-  //     statement::select_equal_to(Tables::NAME));
-  // if (error != ErrorCode::OK) {
-  //   return error;
-  // }
+  ErrorCode error = ErrorCode::INTERNAL_ERROR;
 
   error = DbcUtils::prepare(connection_,
                             StatementName::TABLES_DAO_INSERT_TABLE_METADATA,
@@ -259,6 +228,14 @@ ErrorCode TablesDAO::prepare() const {
   }
 
   for (const std::string& column : column_names) {
+    // reltuples update statement.
+    error = DbcUtils::prepare(connection_,
+                              statement_names_update_reltuples.at(column),
+                              statement::update_reltuples(column));
+    if (error != ErrorCode::OK) {
+      return error;
+    }
+
     // statistics select statement.
     error = DbcUtils::prepare(
         connection_, statement_names_select_statistic_equal_to.at(column),
@@ -290,80 +267,47 @@ ErrorCode TablesDAO::prepare() const {
 /**
  *  @brief  Executes UPDATE statement to update the given number of rows
  *  into the table metadata table based on the given table id.
- *  @param  (reltuples)         [in]  the number of rows to update.
- *  @param  (table_id)          [in]  table id.
- *  @return ErrorCode::OK if success, otherwise an error code.
+ *  @param  (reltuples)     [in]  the number of rows to update.
+ *  @param  (object_key)    [in]  key. column name of a statistic table.
+ *  @param  (object_value)  [in]  value to be filtered.
+ *  @return  ErrorCode::OK if success, otherwise an error code.
  */
-ErrorCode TablesDAO::update_reltuples_by_table_id(float reltuples,
-                                                  ObjectIdType table_id) const {
+ErrorCode TablesDAO::update_reltuples(float reltuples,
+                                      std::string_view object_key,
+                                      std::string_view object_value,
+                                      ObjectIdType& table_id) const {
   std::vector<char const*> param_values;
 
   std::string s_reltuples = std::to_string(reltuples);
-  std::string s_table_id = std::to_string(table_id);
 
   param_values.emplace_back(s_reltuples.c_str());
-  param_values.emplace_back(s_table_id.c_str());
+  param_values.emplace_back(object_value.data());
 
-  PGresult* res;
-  ErrorCode error = DbcUtils::exec_prepared(
-      connection_, StatementName::TABLES_DAO_UPDATE_RELTUPLES_BY_TABLE_ID,
-      param_values, res);
-
-  if (error == ErrorCode::OK) {
-    uint64_t number_of_rows_affected = 0;
-    ErrorCode error_get =
-        DbcUtils::get_number_of_rows_affected(res, number_of_rows_affected);
-
-    if (error_get != ErrorCode::OK) {
-      PQclear(res);
-      return error_get;
-    }
-
-    if (number_of_rows_affected != 1) {
-      PQclear(res);
-      return ErrorCode::INVALID_PARAMETER;
-    }
+  std::string statement_name_found;
+  try {
+    statement_name_found =
+        statement_names_update_reltuples.at(std::string(object_key));
+  } catch (std::out_of_range& e) {
+    std::cerr << Message::METADATA_KEY_NOT_FOUND << e.what() << std::endl;
+    return ErrorCode::INVALID_PARAMETER;
+  } catch (...) {
+    std::cerr << Message::METADATA_KEY_NOT_FOUND << std::endl;
+    return ErrorCode::INVALID_PARAMETER;
   }
 
-  PQclear(res);
-  return error;
-}
-
-/**
- *  @brief  Executes UPDATE statement to update the given number of rows
- *  into the table metadata table based on the given table name.
- *  @param  (reltuples)         [in]  the number of rows to update.
- *  @param  (table_name)        [in]  table name.
- *  @param  (table_id)          [out] table id of the row updated.
- *  @return ErrorCode::OK if success, otherwise an error code.
- */
-ErrorCode TablesDAO::update_reltuples_by_table_name(
-    float reltuples, std::string_view table_name,
-    ObjectIdType& table_id) const {
-  std::vector<char const*> param_values;
-
-  std::string s_reltuples = std::to_string(reltuples);
-
-  param_values.emplace_back(s_reltuples.c_str());
-  param_values.emplace_back(table_name.data());
-
   PGresult* res;
-  ErrorCode error = DbcUtils::exec_prepared(
-      connection_, StatementName::TABLES_DAO_UPDATE_RELTUPLES_BY_TABLE_NAME,
-      param_values, res);
-
+  ErrorCode error = DbcUtils::exec_prepared(connection_, statement_name_found,
+                                            param_values, res);
   if (error == ErrorCode::OK) {
     int nrows = PQntuples(res);
     if (nrows == 1) {
       int ordinal_position = 0;
       error = DbcUtils::str_to_integral<ObjectIdType>(
           PQgetvalue(res, ordinal_position,
-                     TableMetadataTable::ColumnOrdinalPosition::ID),
+                      TableMetadataTable::ColumnOrdinalPosition::ID),
           table_id);
-
     } else {
-      PQclear(res);
-      return ErrorCode::INVALID_PARAMETER;
+      error = ErrorCode::INVALID_PARAMETER;
     }
   }
 

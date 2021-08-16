@@ -27,12 +27,9 @@ class TablesDAO : public manager::metadata::db::TablesDAO {
   explicit TablesDAO(DBSessionManager* session_manager);
 
   manager::metadata::ErrorCode prepare() const override;
-
-  manager::metadata::ErrorCode update_reltuples_by_table_id(
-      float reltuples, ObjectIdType table_id) const override;
-  manager::metadata::ErrorCode update_reltuples_by_table_name(
-      float reltuples, std::string_view table_name,
-      ObjectIdType& table_id) const override;
+  manager::metadata::ErrorCode update_reltuples(
+      float reltuples, std::string_view object_key,
+      std::string_view object_value, ObjectIdType& table_id) const override;
   manager::metadata::ErrorCode select_table_statistic(
       std::string_view object_key, std::string_view object_value,
       TableStatistic& table_statistic) const override;

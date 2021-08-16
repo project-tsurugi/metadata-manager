@@ -81,7 +81,9 @@ ErrorCode StatisticsProvider::add_table_statistic(ObjectIdType table_id,
     return error;
   }
 
-  error = tables_dao_->update_reltuples_by_table_id(reltuples, table_id);
+  ObjectIdType retval_object_id = 0;
+  error = tables_dao_->update_reltuples(
+      reltuples, Tables::ID, std::to_string(table_id), retval_object_id);
   if (error == ErrorCode::OK) {
     error = session_manager_->commit();
   } else {
@@ -122,8 +124,8 @@ ErrorCode StatisticsProvider::add_table_statistic(std::string_view table_name,
   }
 
   ObjectIdType retval_object_id = 0;
-  error = tables_dao_->update_reltuples_by_table_name(
-      reltuples, table_name.data(), retval_object_id);
+  error = tables_dao_->update_reltuples(reltuples, Tables::NAME,
+                                        table_name.data(), retval_object_id);
   if (error == ErrorCode::OK) {
     error = session_manager_->commit();
     if ((error == ErrorCode::OK) && (table_id != nullptr)) {

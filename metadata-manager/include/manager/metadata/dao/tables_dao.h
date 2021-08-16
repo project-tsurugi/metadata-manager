@@ -28,11 +28,9 @@ namespace manager::metadata::db {
 
 class TablesDAO : public GenericDAO {
  public:
-  virtual manager::metadata::ErrorCode update_reltuples_by_table_id(
-      float reltuples, ObjectIdType table_id) const = 0;
-  virtual manager::metadata::ErrorCode update_reltuples_by_table_name(
-      float reltuples, std::string_view table_name,
-      ObjectIdType& table_id) const = 0;
+  virtual manager::metadata::ErrorCode update_reltuples(
+      float reltuples, std::string_view object_key,
+      std::string_view object_value, ObjectIdType& table_id) const = 0;
   virtual manager::metadata::ErrorCode select_table_statistic(
       std::string_view object_key, std::string_view object_value,
       manager::metadata::TableStatistic& table_statistic) const = 0;
