@@ -137,7 +137,8 @@ ErrorCode Tables::remove(const ObjectIdType object_id) {
   }
 
   // Remove the table metadata through the provider.
-  ErrorCode error = provider->remove_table_metadata(object_id);
+  ErrorCode error =
+      provider->remove_table_metadata(Tables::ID, std::to_string(object_id));
 
   return error;
 }
@@ -159,14 +160,8 @@ ErrorCode Tables::remove(const char* object_name, ObjectIdType* object_id) {
   }
 
   // Remove the table metadata through the provider.
-  ObjectIdType retval_object_id;
   ErrorCode error =
-      provider->remove_table_metadata(s_object_name, retval_object_id);
-
-  // Set a value if object_id is not null.
-  if ((error == ErrorCode::OK) && (object_id != nullptr)) {
-    *object_id = retval_object_id;
-  }
+      provider->remove_table_metadata(Tables::NAME, s_object_name, object_id);
 
   return error;
 }

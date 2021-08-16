@@ -208,11 +208,14 @@ ErrorCode TablesDAO::select_table_metadata(std::string_view object_key,
 /**
  *  @brief  Executes DELETE statement to delete table metadata from the table
  * metadata table based on the given table id.
- *  @param  (table_id)  [in]  table id.
+ *  @param  (object_key)    [in]  key. column name of a table metadata table.
+ *  @param  (object_value)  [in]  value to be filtered.
+ *  @param  (table_id)      [out]  table id of the row deleted.
  *  @return  ErrorCode::OK if success, otherwise an error code.
  */
-ErrorCode TablesDAO::delete_table_metadata_by_table_id(
-    ObjectIdType table_id) const {
+ErrorCode TablesDAO::delete_table_metadata(std::string_view object_key,
+                                           std::string_view object_value,
+                                           ObjectIdType& table_id) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   // Load the meta data from the JSON file.
@@ -226,63 +229,41 @@ ErrorCode TablesDAO::delete_table_metadata_by_table_id(
 
   ptree& node = meta_object->get_child(Tables::TABLES_NODE);
 
-  error = ErrorCode::ID_NOT_FOUND;
+  error = ErrorCode::NOT_FOUND;
   for (ptree::iterator it = node.begin(); it != node.end();) {
     const ptree& temp_obj = it->second;
-    boost::optional<ObjectIdType> id =
-        temp_obj.get_optional<ObjectIdType>(Tables::ID);
-    if (id && (id.get() == table_id)) {
-      it = node.erase(it);
-      error = ErrorCode::OK;
-    } else {
-      ++it;
-    }
-  }
+    boost::optional<std::string> object_id =
+        temp_obj.get_optional<std::string>(Tables::ID);
 
-  return error;
-}
-
-/**
- *  @brief  Executes DELETE statement to delete table metadata from the table
- * metadata table based on the given table name.
- *  @param  (table_name)  [id]   table name.
- *  @param  (table_id)    [out]  table id of the row deleted.
- *  @return  ErrorCode::OK if success, otherwise an error code.
- */
-ErrorCode TablesDAO::delete_table_metadata_by_table_name(
-    std::string_view table_name, ObjectIdType& table_id) const {
-  assert(!table_name.empty());
-
-  ErrorCode error = ErrorCode::UNKNOWN;
-
-  // Load the meta data from the JSON file.
-  error = session_manager_->load_object();
-  if (error != ErrorCode::OK) {
-    return error;
-  }
-
-  // Getting a metadata object.
-  ptree* meta_object = session_manager_->get_container();
-
-  ptree& node = meta_object->get_child(Tables::TABLES_NODE);
-
-  error = ErrorCode::NAME_NOT_FOUND;
-  for (ptree::iterator it = node.begin(); it != node.end();) {
-    const ptree& temp_obj = it->second;
-    boost::optional<std::string> name =
-        temp_obj.get_optional<std::string>(Tables::NAME);
-    boost::optional<ObjectIdType> id =
-        temp_obj.get_optional<ObjectIdType>(Tables::ID);
-    if (name && (!name.get().compare(table_name))) {
-      if (!id) {
-        error = ErrorCode::UNKNOWN;
+    if (!object_key.compare(Tables::ID)) {
+      // Delete metadata with table-id as a key.
+      if (object_id && (!object_id.get().compare(object_value))) {
+        it = node.erase(it);
+        table_id = std::stoul(object_id.get());
+        error = ErrorCode::OK;
         break;
+      } else {
+        ++it;
       }
-      table_id = id.get();
-      it = node.erase(it);
-      error = ErrorCode::OK;
+    } else if (!object_key.compare(Tables::NAME)) {
+      // Delete metadata with table-name as a key.
+      boost::optional<std::string> name =
+          temp_obj.get_optional<std::string>(Tables::NAME);
+
+      if (name && (!name.get().compare(object_value))) {
+        if (object_id) {
+          table_id = std::stoul(object_id.get());
+          error = ErrorCode::OK;
+          it = node.erase(it);
+        } else {
+          error = ErrorCode::UNKNOWN;
+        }
+        break;
+      } else {
+        ++it;
+      }
     } else {
-      ++it;
+      break;
     }
   }
 

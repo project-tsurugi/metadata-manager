@@ -69,9 +69,9 @@ ErrorCode DataTypesProvider::get_datatype_metadata(std::string_view key,
 
   // Convert the return value
   if (error == ErrorCode::NOT_FOUND) {
-    if (key == DataTypes::ID) {
+    if (!key.compare(DataTypes::ID)) {
       error = ErrorCode::ID_NOT_FOUND;
-    } else if (key == DataTypes::NAME) {
+    } else if (!key.compare(DataTypes::NAME)) {
       error = ErrorCode::NAME_NOT_FOUND;
     }
   }

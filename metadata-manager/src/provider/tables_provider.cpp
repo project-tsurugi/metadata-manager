@@ -134,9 +134,9 @@ ErrorCode TablesProvider::get_table_metadata(std::string_view key,
   if (error != ErrorCode::OK) {
     if (error == ErrorCode::NOT_FOUND) {
       // Convert the return value
-      if (key == Tables::ID) {
+      if (!key.compare(Tables::ID)) {
         error = ErrorCode::ID_NOT_FOUND;
-      } else if (key == Tables::NAME) {
+      } else if (!key.compare(Tables::NAME)) {
         error = ErrorCode::NAME_NOT_FOUND;
       }
     }
@@ -177,68 +177,19 @@ ErrorCode TablesProvider::get_table_metadata(std::string_view key,
 }
 
 /**
- * @brief  Remove all metadata-object based on the given table id
- *  (table metadata, column metadata and column statistics)
- *  from metadata-repositorys
- *  (the table metadata repository, the column metadata repository and the
- *  column statistics repository).
- *  @param  (table_id) [in] ID of the table metadata.
- *  @return  ErrorCode::OK if success, otherwise an error code.
- */
-ErrorCode TablesProvider::remove_table_metadata(const ObjectIdType table_id) {
-  // Initialization
-  ErrorCode error = init();
-  if (error != ErrorCode::OK) {
-    return error;
-  }
-
-  // Parameter value check
-  if (table_id <= 0) {
-    return ErrorCode::ID_NOT_FOUND;
-  }
-
-  error = session_manager_->start_transaction();
-  if (error != ErrorCode::OK) {
-    return error;
-  }
-
-  error = tables_dao_->delete_table_metadata_by_table_id(table_id);
-  if (error != ErrorCode::OK) {
-    ErrorCode rollback_result = session_manager_->rollback();
-    if (rollback_result != ErrorCode::OK) {
-      return rollback_result;
-    }
-    if (error == ErrorCode::NOT_FOUND) {
-      // Convert the return value
-      error = ErrorCode::ID_NOT_FOUND;
-    }
-    return error;
-  }
-
-  error = columns_dao_->delete_column_metadata_by_table_id(table_id);
-  if (error == ErrorCode::OK) {
-    error = session_manager_->commit();
-  } else {
-    ErrorCode rollback_result = session_manager_->rollback();
-    if (rollback_result != ErrorCode::OK) {
-      return rollback_result;
-    }
-  }
-  return error;
-}
-
-/**
  *  @brief  Remove all metadata-object based on the given table name
  *  (table metadata, column metadata and column statistics)
  *  from metadata-repositorys
  *  (the table metadata repository, the column metadata repository and the
  *  column statistics repository).
- *  @param  (table_name) [in]  table name.
- *  @param  (table_id)   [out] ID of the removed table metadata.
+ *  @param  (key)       [in]  key of data type metadata object.
+ *  @param  (value)     [in]  value of data type metadata object.
+ *  @param  (table_id)  [out] ID of the removed table metadata.
  *  @return  ErrorCode::OK if success, otherwise an error code.
  */
-ErrorCode TablesProvider::remove_table_metadata(std::string_view table_name,
-                                                ObjectIdType& table_id) {
+ErrorCode TablesProvider::remove_table_metadata(std::string_view key,
+                                                   std::string_view value,
+                                                ObjectIdType *table_id) {
   // Initialization
   ErrorCode error = init();
   if (error != ErrorCode::OK) {
@@ -246,19 +197,18 @@ ErrorCode TablesProvider::remove_table_metadata(std::string_view table_name,
   }
 
   // Parameter value check
-  if (table_name.empty()) {
-    return ErrorCode::NAME_NOT_FOUND;
+  if (key.empty() || value.empty()) {
+    return ErrorCode::NOT_FOUND;
   }
-
-  std::string s_object_name = std::string(table_name);
 
   error = session_manager_->start_transaction();
   if (error != ErrorCode::OK) {
     return error;
   }
 
+  ObjectIdType retval_table_id;
   error =
-      tables_dao_->delete_table_metadata_by_table_name(s_object_name, table_id);
+      tables_dao_->delete_table_metadata(key, value, retval_table_id);
   if (error != ErrorCode::OK) {
     ErrorCode rollback_result = session_manager_->rollback();
     if (rollback_result != ErrorCode::OK) {
@@ -266,20 +216,36 @@ ErrorCode TablesProvider::remove_table_metadata(std::string_view table_name,
     }
     if (error == ErrorCode::NOT_FOUND) {
       // Convert the return value
-      error = ErrorCode::NAME_NOT_FOUND;
+      if (!key.compare(Tables::ID)) {
+        error = ErrorCode::ID_NOT_FOUND;
+      } else if (!key.compare(Tables::NAME)) {
+        error = ErrorCode::NAME_NOT_FOUND;
+      }
     }
     return error;
   }
 
-  error = columns_dao_->delete_column_metadata_by_table_id(table_id);
+  error = columns_dao_->delete_column_metadata_by_table_id(retval_table_id);
   if (error == ErrorCode::OK) {
     error = session_manager_->commit();
   } else {
     ErrorCode rollback_result = session_manager_->rollback();
     if (rollback_result != ErrorCode::OK) {
-      return rollback_result;
+      error = rollback_result;
+    } else if (error == ErrorCode::NOT_FOUND) {
+      // Convert the return value
+      if (!key.compare(Tables::ID)) {
+        error = ErrorCode::ID_NOT_FOUND;
+      } else if (!key.compare(Tables::NAME)) {
+        error = ErrorCode::NAME_NOT_FOUND;
+      }
     }
   }
+  // Set a value if object_id is not null.
+  if ((error == ErrorCode::OK) && (table_id != nullptr)) {
+    *table_id = retval_table_id;
+  }
+
   return error;
 }
 

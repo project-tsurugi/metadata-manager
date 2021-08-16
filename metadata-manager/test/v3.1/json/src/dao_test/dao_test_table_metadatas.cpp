@@ -252,8 +252,10 @@ void DaoTestTableMetadata::remove_table_metadata(const ObjectIdType object_id) {
   std::shared_ptr<TablesDAO> tdao;
   tdao = std::static_pointer_cast<TablesDAO>(t_gdao);
 
-  error = tdao->delete_table_metadata_by_table_id(object_id);
+  ObjectIdType retval_object_id;
+  error = tdao->delete_table_metadata(Tables::ID, std::to_string(object_id), retval_object_id);
   EXPECT_EQ(ErrorCode::OK, error);
+  EXPECT_EQ(object_id, retval_object_id);
 
   if (error == ErrorCode::OK) {
     error = db_session_manager.commit();
@@ -289,10 +291,11 @@ void DaoTestTableMetadata::remove_table_metadata(const char* object_name,
   std::shared_ptr<TablesDAO> tdao;
   tdao = std::static_pointer_cast<TablesDAO>(t_gdao);
 
-  ObjectIdType retval_object_id;
-  error = tdao->delete_table_metadata_by_table_name(std::string(object_name),
-                                                    retval_object_id);
+  ObjectIdType retval_object_id = -1;
+  error = tdao->delete_table_metadata(Tables::NAME, std::string(object_name),
+                                      retval_object_id);
   EXPECT_EQ(ErrorCode::OK, error);
+  EXPECT_NE(-1, retval_object_id);
 
   if (error == ErrorCode::OK) {
     error = db_session_manager.commit();

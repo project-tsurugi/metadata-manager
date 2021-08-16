@@ -43,10 +43,9 @@ class TablesDAO : public GenericDAO {
   virtual manager::metadata::ErrorCode select_table_metadata(
       std::string_view object_key, std::string_view object_value,
       boost::property_tree::ptree& object) const = 0;
-  virtual manager::metadata::ErrorCode delete_table_metadata_by_table_id(
-      ObjectIdType table_id) const = 0;
-  virtual manager::metadata::ErrorCode delete_table_metadata_by_table_name(
-      std::string_view table_name, ObjectIdType& table_id) const = 0;
+  virtual manager::metadata::ErrorCode delete_table_metadata(
+      std::string_view object_key, std::string_view object_value,
+      ObjectIdType& table_id) const = 0;
 };  // class TablesDAO
 
 }  // namespace manager::metadata::db

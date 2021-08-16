@@ -36,9 +36,8 @@ class TablesProvider : public ProviderBase {
       std::string_view key, std::string_view value,
       boost::property_tree::ptree& object);
   manager::metadata::ErrorCode remove_table_metadata(
-      const ObjectIdType table_id);
-  manager::metadata::ErrorCode remove_table_metadata(
-      std::string_view table_name, ObjectIdType& table_id);
+      std::string_view key, std::string_view value,
+      ObjectIdType* table_id = nullptr);
 
  private:
   std::shared_ptr<TablesDAO> tables_dao_ = nullptr;

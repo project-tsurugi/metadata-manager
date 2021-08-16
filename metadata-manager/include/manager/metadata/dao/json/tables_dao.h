@@ -47,10 +47,9 @@ class TablesDAO : public manager::metadata::db::TablesDAO {
   manager::metadata::ErrorCode select_table_metadata(
       std::string_view object_key, std::string_view object_value,
       boost::property_tree::ptree& object) const override;
-  manager::metadata::ErrorCode delete_table_metadata_by_table_id(
-      ObjectIdType table_id) const override;
-  manager::metadata::ErrorCode delete_table_metadata_by_table_name(
-      std::string_view table_name, ObjectIdType& table_id) const override;
+  manager::metadata::ErrorCode delete_table_metadata(
+      std::string_view object_key, std::string_view object_value,
+      ObjectIdType& table_id) const override;
 
  private:
   static constexpr const char* const TABLE_NAME = "tables";
