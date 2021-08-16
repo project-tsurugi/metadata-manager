@@ -81,25 +81,14 @@ ErrorCode TablesDAO::update_reltuples_by_table_name(
 /**
  *  @brief  This feature is not supported, so it will always return
  *     ErrorCode::NOT_SUPPORTED.
- *  @param  (table_id)         [in]  table id.
- *  @param  (table_statistic)  [out] table statistic to get.
- *  @return  ErrorCode::NOT_SUPPORTED.
- */
-ErrorCode TablesDAO::select_table_statistic_by_table_id(
-    ObjectIdType table_id, TableStatistic& table_statistic) const {
-  // This feature is not supported.
-  return ErrorCode::NOT_SUPPORTED;
-}
-
-/**
- *  @brief  This feature is not supported, so it will always return
- *      ErrorCode::NOT_SUPPORTED.
- *  @param  (table_name)        [in]  table name.
+ *  @param  (object_key)        [in]  key. column name of a statistic table.
+ *  @param  (object_value)      [in]  value to be filtered.
  *  @param  (table_statistic)   [out] table statistic to get.
  *  @return  ErrorCode::NOT_SUPPORTED.
  */
-ErrorCode TablesDAO::select_table_statistic_by_table_name(
-    std::string_view table_name, TableStatistic& table_statistic) const {
+ErrorCode TablesDAO::select_table_statistic(
+    std::string_view object_key, std::string_view object_value,
+    TableStatistic& table_statistic) const {
   // This feature is not supported.
   return ErrorCode::NOT_SUPPORTED;
 }

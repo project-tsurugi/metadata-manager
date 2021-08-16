@@ -19,6 +19,7 @@
 
 #include "manager/metadata/dao/common/message.h"
 #include "manager/metadata/provider/statistics_provider.h"
+#include "manager/metadata/tables.h"
 
 // =============================================================================
 namespace {
@@ -164,7 +165,8 @@ ErrorCode Statistics::get_all_column_statistics(
 ErrorCode Statistics::get_table_statistic(
     ObjectIdType table_id, manager::metadata::TableStatistic& table_statistic) {
   // Get the table statistic through the provider.
-  ErrorCode error = provider->get_table_statistic(table_id, table_statistic);
+  ErrorCode error = provider->get_table_statistic(
+      Tables::ID, std::to_string(table_id), table_statistic);
 
   return error;
 }
@@ -181,7 +183,8 @@ ErrorCode Statistics::get_table_statistic(
     std::string_view table_name,
     manager::metadata::TableStatistic& table_statistic) {
   // Get the table statistic through the provider.
-  ErrorCode error = provider->get_table_statistic(table_name, table_statistic);
+  ErrorCode error =
+      provider->get_table_statistic(Tables::NAME, table_name, table_statistic);
 
   return error;
 }

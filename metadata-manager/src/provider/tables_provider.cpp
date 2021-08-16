@@ -182,8 +182,8 @@ ErrorCode TablesProvider::get_table_metadata(std::string_view key,
  *  from metadata-repositorys
  *  (the table metadata repository, the column metadata repository and the
  *  column statistics repository).
- *  @param  (key)       [in]  key of data type metadata object.
- *  @param  (value)     [in]  value of data type metadata object.
+ *  @param  (key)       [in]  key of table metadata object.
+ *  @param  (value)     [in]  value of table metadata object.
  *  @param  (table_id)  [out] ID of the removed table metadata.
  *  @return  ErrorCode::OK if success, otherwise an error code.
  */

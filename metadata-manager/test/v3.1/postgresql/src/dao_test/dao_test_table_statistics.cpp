@@ -25,6 +25,7 @@
 #include "manager/metadata/dao/postgresql/db_session_manager.h"
 #include "manager/metadata/dao/tables_dao.h"
 #include "manager/metadata/error_code.h"
+#include "manager/metadata/tables.h"
 
 #include "test/api_test_table_statistics.h"
 #include "test/dao_test/dao_test_table_metadatas.h"
@@ -165,8 +166,8 @@ TEST_P(DaoTestTableStatisticsByTableIdException,
 
   auto table_id_not_exists = GetParam();
   TableStatistic table_stats;
-  error = tdao->select_table_statistic_by_table_id(table_id_not_exists,
-                                                   table_stats);
+  error = tdao->select_table_statistic(
+      Tables::ID, std::to_string(table_id_not_exists), table_stats);
 
   EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);
   UTUtils::print_table_statistics(table_stats);
@@ -191,8 +192,8 @@ TEST_P(DaoTestTableStatisticsByTableNameException,
 
   std::string table_name_not_exists = GetParam();
   TableStatistic table_stats;
-  error = tdao->select_table_statistic_by_table_name(table_name_not_exists,
-                                                     table_stats);
+  error = tdao->select_table_statistic(Tables::NAME, table_name_not_exists,
+                                       table_stats);
 
   EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);
 }
@@ -235,8 +236,8 @@ TEST_P(DaoTestTableStatisticsByTableIdHappy,
   EXPECT_EQ(ErrorCode::OK, error);
 
   TableStatistic table_stats_added;
-  error =
-      tdao->select_table_statistic_by_table_id(ret_table_id, table_stats_added);
+  error = tdao->select_table_statistic(Tables::ID, std::to_string(ret_table_id),
+                                       table_stats_added);
   EXPECT_EQ(ErrorCode::OK, error);
 
   EXPECT_EQ(ret_table_id, table_stats_added.id);
@@ -263,8 +264,8 @@ TEST_P(DaoTestTableStatisticsByTableIdHappy,
   EXPECT_EQ(ErrorCode::OK, error);
 
   TableStatistic table_stats_updated;
-  error = tdao->select_table_statistic_by_table_id(ret_table_id,
-                                                   table_stats_updated);
+  error = tdao->select_table_statistic(Tables::ID, std::to_string(ret_table_id),
+                                       table_stats_updated);
   EXPECT_EQ(ErrorCode::OK, error);
 
   EXPECT_EQ(ret_table_id, table_stats_updated.id);
@@ -322,7 +323,7 @@ TEST_P(DaoTestTableStatisticsByTableNameHappy,
 
   TableStatistic table_stats_added;
   error =
-      tdao->select_table_statistic_by_table_name(table_name, table_stats_added);
+      tdao->select_table_statistic(Tables::NAME, table_name, table_stats_added);
   EXPECT_EQ(ErrorCode::OK, error);
 
   EXPECT_EQ(ret_table_id, table_stats_added.id);
@@ -352,8 +353,8 @@ TEST_P(DaoTestTableStatisticsByTableNameHappy,
   EXPECT_EQ(ErrorCode::OK, error);
 
   TableStatistic table_stats_updated;
-  error = tdao->select_table_statistic_by_table_name(table_name,
-                                                     table_stats_updated);
+  error = tdao->select_table_statistic(Tables::NAME, table_name,
+                                       table_stats_updated);
   EXPECT_EQ(ErrorCode::OK, error);
 
   EXPECT_EQ(ret_table_id, table_stats_updated.id);

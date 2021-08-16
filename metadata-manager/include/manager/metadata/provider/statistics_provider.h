@@ -42,9 +42,8 @@ class StatisticsProvider : public ProviderBase {
       ObjectIdType table_id, ObjectIdType ordinal_position,
       boost::property_tree::ptree& column_statistic);
   manager::metadata::ErrorCode get_table_statistic(
-      ObjectIdType table_id, TableStatistic& table_statistic);
-  manager::metadata::ErrorCode get_table_statistic(
-      std::string_view table_name, TableStatistic& table_statistic);
+      std::string_view key, std::string_view value,
+      TableStatistic& table_statistic);
   manager::metadata::ErrorCode get_column_statistic(
       ObjectIdType table_id, ObjectIdType ordinal_position,
       ColumnStatistic& column_statistic);

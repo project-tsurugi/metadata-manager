@@ -33,11 +33,9 @@ class TablesDAO : public GenericDAO {
   virtual manager::metadata::ErrorCode update_reltuples_by_table_name(
       float reltuples, std::string_view table_name,
       ObjectIdType& table_id) const = 0;
-  virtual manager::metadata::ErrorCode select_table_statistic_by_table_id(
-      ObjectIdType table_id,
+  virtual manager::metadata::ErrorCode select_table_statistic(
+      std::string_view object_key, std::string_view object_value,
       manager::metadata::TableStatistic& table_statistic) const = 0;
-  virtual manager::metadata::ErrorCode select_table_statistic_by_table_name(
-      std::string_view table_name, TableStatistic& table_statistic) const = 0;
   virtual manager::metadata::ErrorCode insert_table_metadata(
       boost::property_tree::ptree& table, ObjectIdType& table_id) const = 0;
   virtual manager::metadata::ErrorCode select_table_metadata(

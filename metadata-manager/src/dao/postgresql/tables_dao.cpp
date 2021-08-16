@@ -33,6 +33,8 @@
 // =============================================================================
 namespace {
 
+std::unordered_map<std::string, std::string>
+    statement_names_select_statistic_equal_to;
 std::unordered_map<std::string, std::string> statement_names_select_equal_to;
 std::unordered_map<std::string, std::string> statement_names_delete_equal_to;
 
@@ -178,6 +180,18 @@ TablesDAO::TablesDAO(DBSessionManager* session_manager)
   // for the new prepared statement for each column names.
   for (auto column : column_names) {
     // Creates unique name for the new prepared statement.
+    boost::format statement_name_select_statistic =
+        boost::format("%1%-%2%-%3%") %
+        StatementName::TABLES_DAO_SELECT_TABLE_STATISTIC % TableName::TABLES %
+        column.c_str();
+
+    // Addes this list to unique name for the new prepared statement.
+    // key : column name
+    // value : unique name for the new prepared statement.
+    statement_names_select_statistic_equal_to.emplace(
+        column, statement_name_select_statistic.str());
+
+    // Creates unique name for the new prepared statement.
     boost::format statement_name_select = boost::format("%1%-%2%-%3%") %
                                           StatementName::DAO_SELECT_EQUAL_TO %
                                           TableName::TABLES % column.c_str();
@@ -221,20 +235,21 @@ ErrorCode TablesDAO::prepare() const {
     return error;
   }
 
-  error = DbcUtils::prepare(
-      connection_, StatementName::TABLES_DAO_SELECT_TABLE_STATISTIC_BY_TABLE_ID,
-      statement::select_equal_to(Tables::ID));
-  if (error != ErrorCode::OK) {
-    return error;
-  }
+  // error = DbcUtils::prepare(
+  //     connection_,
+  //     StatementName::TABLES_DAO_SELECT_TABLE_STATISTIC_BY_TABLE_ID,
+  //     statement::select_equal_to(Tables::ID));
+  // if (error != ErrorCode::OK) {
+  //   return error;
+  // }
 
-  error = DbcUtils::prepare(
-      connection_,
-      StatementName::TABLES_DAO_SELECT_TABLE_STATISTIC_BY_TABLE_NAME,
-      statement::select_equal_to(Tables::NAME));
-  if (error != ErrorCode::OK) {
-    return error;
-  }
+  // error = DbcUtils::prepare(
+  //     connection_,
+  //     StatementName::TABLES_DAO_SELECT_TABLE_STATISTIC_BY_TABLE_NAME,
+  //     statement::select_equal_to(Tables::NAME));
+  // if (error != ErrorCode::OK) {
+  //   return error;
+  // }
 
   error = DbcUtils::prepare(connection_,
                             StatementName::TABLES_DAO_INSERT_TABLE_METADATA,
@@ -244,6 +259,14 @@ ErrorCode TablesDAO::prepare() const {
   }
 
   for (const std::string& column : column_names) {
+    // statistics select statement.
+    error = DbcUtils::prepare(
+        connection_, statement_names_select_statistic_equal_to.at(column),
+        statement::select_equal_to(column));
+    if (error != ErrorCode::OK) {
+      return error;
+    }
+
     // select statement.
     error = DbcUtils::prepare(connection_,
                               statement_names_select_equal_to.at(column),
@@ -350,58 +373,34 @@ ErrorCode TablesDAO::update_reltuples_by_table_name(
 
 /**
  *  @brief  Executes SELECT statement to get one table statistic
- *  from the table metadata table based on the given table id.
- *  @param  (table_id)        [in]  table id.
- *  @param  (table_statistic) [out] table statistic to get.
- *  @return ErrorCode::OK if success, otherwise an error code.
- */
-ErrorCode TablesDAO::select_table_statistic_by_table_id(
-    ObjectIdType table_id, TableStatistic& table_statistic) const {
-  std::vector<const char*> param_values;
-
-  std::string s_table_id = std::to_string(table_id);
-  param_values.emplace_back(s_table_id.c_str());
-
-  PGresult* res;
-  ErrorCode error = DbcUtils::exec_prepared(
-      connection_, StatementName::TABLES_DAO_SELECT_TABLE_STATISTIC_BY_TABLE_ID,
-      param_values, res);
-  if (error == ErrorCode::OK) {
-    int nrows = PQntuples(res);
-
-    if (nrows == 1) {
-      int ordinal_position = 0;
-
-      error = get_table_statistic_from_p_gresult(res, ordinal_position,
-                                                 table_statistic);
-    } else {
-      PQclear(res);
-      return ErrorCode::INVALID_PARAMETER;
-    }
-  }
-
-  PQclear(res);
-  return error;
-}
-
-/**
- *  @brief  Executes SELECT statement to get one table statistic
  *  from the table metadata table based on the given table name.
- *  @param  (table_name)        [in]  table name.
+ *  @param  (object_key)        [in]  key. column name of a statistic table.
+ *  @param  (object_value)      [in]  value to be filtered.
  *  @param  (table_statistic)   [out] table statistic to get.
  *  @return ErrorCode::OK if success, otherwise an error code.
  */
-ErrorCode TablesDAO::select_table_statistic_by_table_name(
-    std::string_view table_name, TableStatistic& table_statistic) const {
+ErrorCode TablesDAO::select_table_statistic(
+    std::string_view object_key, std::string_view object_value,
+    TableStatistic& table_statistic) const {
   std::vector<const char*> param_values;
 
-  param_values.emplace_back(table_name.data());
+  param_values.emplace_back(object_value.data());
+
+  std::string statement_name_found;
+  try {
+    statement_name_found =
+        statement_names_select_statistic_equal_to.at(std::string(object_key));
+  } catch (std::out_of_range& e) {
+    std::cerr << Message::METADATA_KEY_NOT_FOUND << e.what() << std::endl;
+    return ErrorCode::INVALID_PARAMETER;
+  } catch (...) {
+    std::cerr << Message::METADATA_KEY_NOT_FOUND << std::endl;
+    return ErrorCode::INVALID_PARAMETER;
+  }
 
   PGresult* res;
-  ErrorCode error = DbcUtils::exec_prepared(
-      connection_,
-      StatementName::TABLES_DAO_SELECT_TABLE_STATISTIC_BY_TABLE_NAME,
-      param_values, res);
+  ErrorCode error = DbcUtils::exec_prepared(connection_, statement_name_found,
+                                            param_values, res);
 
   if (error == ErrorCode::OK) {
     int nrows = PQntuples(res);

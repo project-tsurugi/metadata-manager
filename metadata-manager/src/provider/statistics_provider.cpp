@@ -19,6 +19,8 @@
 #include <iostream>
 
 #include "manager/metadata/dao/common/message.h"
+#include "manager/metadata/statistics.h"
+#include "manager/metadata/tables.h"
 
 // =============================================================================
 namespace manager::metadata::db {
@@ -255,40 +257,15 @@ ErrorCode StatisticsProvider::get_all_column_statistics(
 
 /**
  *  @brief  Gets one table statistic from the table metadata table
- *  based on the given table id.
- *  @param  (table_id)         [in]  table id.
- *  @param  (table_statistic)  [out] one table statistic
- *  with the specified table id.
- *  @return  ErrorCode::OK if success, otherwise an error code.
- */
-ErrorCode StatisticsProvider::get_table_statistic(
-    ObjectIdType table_id, manager::metadata::TableStatistic& table_statistic) {
-  // Initialization
-  ErrorCode error = init();
-  if (error != ErrorCode::OK) {
-    return error;
-  }
-
-  if (table_id <= 0) {
-    return ErrorCode::INVALID_PARAMETER;
-  }
-
-  error = tables_dao_->select_table_statistic_by_table_id(table_id,
-                                                          table_statistic);
-
-  return error;
-}
-
-/**
- *  @brief  Gets one table statistic from the table metadata table
  *  based on the given table name.
- *  @param  (table_name)       [in]  table name.
+ *  @param  (key)              [in]  key of data type metadata object.
+ *  @param  (value)            [in]  value of data type metadata object.
  *  @param  (table_statistic)  [out] one table statistic
  *  with the specified table name.
  *  @return  ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode StatisticsProvider::get_table_statistic(
-    std::string_view table_name,
+    std::string_view key, std::string_view value,
     manager::metadata::TableStatistic& table_statistic) {
   // Initialization
   ErrorCode error = init();
@@ -296,12 +273,11 @@ ErrorCode StatisticsProvider::get_table_statistic(
     return error;
   }
 
-  if (table_name.empty()) {
+  // Parameter value check
+  if (key.empty() || value.empty()) {
     return ErrorCode::INVALID_PARAMETER;
   }
-
-  error = tables_dao_->select_table_statistic_by_table_name(table_name.data(),
-                                                            table_statistic);
+  error = tables_dao_->select_table_statistic(key, value, table_statistic);
 
   return error;
 }
