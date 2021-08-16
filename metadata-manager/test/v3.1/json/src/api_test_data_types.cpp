@@ -255,11 +255,7 @@ TEST_P(ApiTestDataTypesException, get_non_existing_datatypes_by_name) {
 
   ptree datatype;
   ErrorCode error = datatypes->get(value, datatype);
-  if (value.empty()) {
-    EXPECT_EQ(ErrorCode::NOT_FOUND, error);
-  } else {
-    EXPECT_EQ(ErrorCode::NAME_NOT_FOUND, error);
-  }
+  EXPECT_EQ(ErrorCode::NAME_NOT_FOUND, error);
 
   // Verifies that returned data type metadata equals expected one.
   ptree empty_ptree;
@@ -279,7 +275,7 @@ TEST_P(ApiTestDataTypesException, get_non_existing_datatypes_by_key_value) {
 
   ptree datatype;
   ErrorCode error = datatypes->get(key.c_str(), value, datatype);
-  if (key.empty() || value.empty()) {
+  if (!key.empty() && value.empty()) {
     EXPECT_EQ(ErrorCode::NOT_FOUND, error);
   } else {
     EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);

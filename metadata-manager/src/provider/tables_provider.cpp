@@ -97,7 +97,7 @@ ErrorCode TablesProvider::add_table_metadata(ptree& object,
     if (error != ErrorCode::OK) {
       ErrorCode rollback_result = session_manager_->rollback();
       if (rollback_result != ErrorCode::OK) {
-        return rollback_result;
+        error = rollback_result;
       }
       return error;
     }
@@ -125,28 +125,15 @@ ErrorCode TablesProvider::get_table_metadata(std::string_view key,
     return error;
   }
 
-  // Parameter value check
-  if (key.empty() || value.empty()) {
-    return ErrorCode::NOT_FOUND;
-  }
-
   error = tables_dao_->select_table_metadata(key, value, object);
   if (error != ErrorCode::OK) {
-    if (error == ErrorCode::NOT_FOUND) {
-      // Convert the return value
-      if (!key.compare(Tables::ID)) {
-        error = ErrorCode::ID_NOT_FOUND;
-      } else if (!key.compare(Tables::NAME)) {
-        error = ErrorCode::NAME_NOT_FOUND;
-      }
-    }
     return error;
   }
 
   std::string object_id = "";
   if (key == Tables::ID) {
     error = get_all_column_metadatas(value, object);
-  } else {
+  } else if (key == Tables::NAME) {
     BOOST_FOREACH (ptree::value_type& node, object) {
       ptree& table = node.second;
 
@@ -172,6 +159,8 @@ ErrorCode TablesProvider::get_table_metadata(std::string_view key,
         }
       }
     }
+  } else {
+    error = ErrorCode::INVALID_PARAMETER;
   }
   return error;
 }
@@ -188,17 +177,12 @@ ErrorCode TablesProvider::get_table_metadata(std::string_view key,
  *  @return  ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode TablesProvider::remove_table_metadata(std::string_view key,
-                                                   std::string_view value,
-                                                ObjectIdType *table_id) {
+                                                std::string_view value,
+                                                ObjectIdType* table_id) {
   // Initialization
   ErrorCode error = init();
   if (error != ErrorCode::OK) {
     return error;
-  }
-
-  // Parameter value check
-  if (key.empty() || value.empty()) {
-    return ErrorCode::NOT_FOUND;
   }
 
   error = session_manager_->start_transaction();
@@ -207,20 +191,11 @@ ErrorCode TablesProvider::remove_table_metadata(std::string_view key,
   }
 
   ObjectIdType retval_table_id;
-  error =
-      tables_dao_->delete_table_metadata(key, value, retval_table_id);
+  error = tables_dao_->delete_table_metadata(key, value, retval_table_id);
   if (error != ErrorCode::OK) {
     ErrorCode rollback_result = session_manager_->rollback();
     if (rollback_result != ErrorCode::OK) {
       return rollback_result;
-    }
-    if (error == ErrorCode::NOT_FOUND) {
-      // Convert the return value
-      if (!key.compare(Tables::ID)) {
-        error = ErrorCode::ID_NOT_FOUND;
-      } else if (!key.compare(Tables::NAME)) {
-        error = ErrorCode::NAME_NOT_FOUND;
-      }
     }
     return error;
   }
@@ -232,13 +207,6 @@ ErrorCode TablesProvider::remove_table_metadata(std::string_view key,
     ErrorCode rollback_result = session_manager_->rollback();
     if (rollback_result != ErrorCode::OK) {
       error = rollback_result;
-    } else if (error == ErrorCode::NOT_FOUND) {
-      // Convert the return value
-      if (!key.compare(Tables::ID)) {
-        error = ErrorCode::ID_NOT_FOUND;
-      } else if (!key.compare(Tables::NAME)) {
-        error = ErrorCode::NAME_NOT_FOUND;
-      }
     }
   }
   // Set a value if object_id is not null.
@@ -261,8 +229,6 @@ ErrorCode TablesProvider::remove_table_metadata(std::string_view key,
  */
 ErrorCode TablesProvider::get_all_column_metadatas(std::string_view table_id,
                                                    ptree& tables) const {
-  assert(!table_id.empty());
-
   ptree columns;
   ErrorCode error = columns_dao_->select_column_metadata(
       Tables::Column::TABLE_ID, table_id, columns);

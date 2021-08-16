@@ -91,6 +91,7 @@ ErrorCode Tables::add(boost::property_tree::ptree& object,
  */
 ErrorCode Tables::get(const ObjectIdType object_id,
                       boost::property_tree::ptree& object) {
+  // Parameter value check
   if (object_id <= 0) {
     return ErrorCode::ID_NOT_FOUND;
   }
@@ -99,6 +100,9 @@ ErrorCode Tables::get(const ObjectIdType object_id,
   std::string s_object_id = std::to_string(object_id);
   ErrorCode error =
       provider->get_table_metadata(Tables::ID, s_object_id, object);
+
+  // Convert the return value
+  error = (error == ErrorCode::NOT_FOUND ? ErrorCode::ID_NOT_FOUND : error);
 
   return error;
 }
@@ -112,6 +116,7 @@ ErrorCode Tables::get(const ObjectIdType object_id,
  */
 ErrorCode Tables::get(std::string_view object_name,
                       boost::property_tree::ptree& object) {
+  // Parameter value check
   if (object_name.empty()) {
     return ErrorCode::NAME_NOT_FOUND;
   }
@@ -119,6 +124,9 @@ ErrorCode Tables::get(std::string_view object_name,
   // Get the table metadata through the provider.
   ErrorCode error =
       provider->get_table_metadata(Tables::NAME, object_name, object);
+
+  // Convert the return value
+  error = (error == ErrorCode::NOT_FOUND ? ErrorCode::NAME_NOT_FOUND : error);
 
   return error;
 }
@@ -132,6 +140,7 @@ ErrorCode Tables::get(std::string_view object_name,
  *  @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode Tables::remove(const ObjectIdType object_id) {
+  // Parameter value check
   if (object_id <= 0) {
     return ErrorCode::ID_NOT_FOUND;
   }
@@ -139,6 +148,9 @@ ErrorCode Tables::remove(const ObjectIdType object_id) {
   // Remove the table metadata through the provider.
   ErrorCode error =
       provider->remove_table_metadata(Tables::ID, std::to_string(object_id));
+
+  // Convert the return value
+  error = (error == ErrorCode::NOT_FOUND ? ErrorCode::ID_NOT_FOUND : error);
 
   return error;
 }
@@ -155,6 +167,7 @@ ErrorCode Tables::remove(const ObjectIdType object_id) {
 ErrorCode Tables::remove(const char* object_name, ObjectIdType* object_id) {
   std::string_view s_object_name = std::string_view(object_name);
 
+  // Parameter value check
   if (s_object_name.empty()) {
     return ErrorCode::NAME_NOT_FOUND;
   }
@@ -162,6 +175,9 @@ ErrorCode Tables::remove(const char* object_name, ObjectIdType* object_id) {
   // Remove the table metadata through the provider.
   ErrorCode error =
       provider->remove_table_metadata(Tables::NAME, s_object_name, object_id);
+
+  // Convert the return value
+  error = (error == ErrorCode::NOT_FOUND ? ErrorCode::NAME_NOT_FOUND : error);
 
   return error;
 }

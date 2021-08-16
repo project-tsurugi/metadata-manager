@@ -72,10 +72,6 @@ ErrorCode StatisticsProvider::add_table_statistic(ObjectIdType table_id,
     return error;
   }
 
-  if (table_id <= 0) {
-    return ErrorCode::INVALID_PARAMETER;
-  }
-
   error = session_manager_->start_transaction();
   if (error != ErrorCode::OK) {
     return error;
@@ -112,10 +108,6 @@ ErrorCode StatisticsProvider::add_table_statistic(std::string_view table_name,
   ErrorCode error = init();
   if (error != ErrorCode::OK) {
     return error;
-  }
-
-  if (table_name.empty()) {
-    return ErrorCode::INVALID_PARAMETER;
   }
 
   error = session_manager_->start_transaction();
@@ -158,10 +150,6 @@ ErrorCode StatisticsProvider::add_column_statistic(
   ErrorCode error = init();
   if (error != ErrorCode::OK) {
     return error;
-  }
-
-  if ((table_id <= 0) || (ordinal_position <= 0)) {
-    return ErrorCode::INVALID_PARAMETER;
   }
 
   std::string s_column_statistic;
@@ -217,10 +205,6 @@ ErrorCode StatisticsProvider::get_column_statistic(
     return error;
   }
 
-  if ((table_id <= 0) || (ordinal_position <= 0)) {
-    return ErrorCode::INVALID_PARAMETER;
-  }
-
   error = statistics_dao_
               ->select_one_column_statistic_by_table_id_column_ordinal_position(
                   table_id, ordinal_position, column_statistic);
@@ -247,10 +231,6 @@ ErrorCode StatisticsProvider::get_all_column_statistics(
     return error;
   }
 
-  if (table_id <= 0) {
-    return ErrorCode::INVALID_PARAMETER;
-  }
-
   error = statistics_dao_->select_all_column_statistic_by_table_id(
       table_id, column_statistics);
 
@@ -275,10 +255,6 @@ ErrorCode StatisticsProvider::get_table_statistic(
     return error;
   }
 
-  // Parameter value check
-  if (key.empty() || value.empty()) {
-    return ErrorCode::INVALID_PARAMETER;
-  }
   error = tables_dao_->select_table_statistic(key, value, table_statistic);
 
   return error;
@@ -297,10 +273,6 @@ ErrorCode StatisticsProvider::remove_column_statistic(
   ErrorCode error = init();
   if (error != ErrorCode::OK) {
     return error;
-  }
-
-  if ((table_id <= 0) || (ordinal_position <= 0)) {
-    return ErrorCode::INVALID_PARAMETER;
   }
 
   error = session_manager_->start_transaction();
@@ -335,10 +307,6 @@ ErrorCode StatisticsProvider::remove_all_column_statistics(
   ErrorCode error = init();
   if (error != ErrorCode::OK) {
     return error;
-  }
-
-  if (table_id <= 0) {
-    return ErrorCode::INVALID_PARAMETER;
   }
 
   error = session_manager_->start_transaction();

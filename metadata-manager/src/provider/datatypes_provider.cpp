@@ -54,11 +54,6 @@ ErrorCode DataTypesProvider::init() {
 ErrorCode DataTypesProvider::get_datatype_metadata(std::string_view key,
                                                    std::string_view value,
                                                    ptree& object) {
-  // Parameter value check
-  if (key.empty() || value.empty()) {
-    return ErrorCode::NOT_FOUND;
-  }
-
   // Initialization
   ErrorCode error = init();
   if (error != ErrorCode::OK) {
@@ -66,15 +61,6 @@ ErrorCode DataTypesProvider::get_datatype_metadata(std::string_view key,
   }
 
   error = datatypes_dao_->select_one_data_type_metadata(key, value, object);
-
-  // Convert the return value
-  if (error == ErrorCode::NOT_FOUND) {
-    if (!key.compare(DataTypes::ID)) {
-      error = ErrorCode::ID_NOT_FOUND;
-    } else if (!key.compare(DataTypes::NAME)) {
-      error = ErrorCode::NAME_NOT_FOUND;
-    }
-  }
 
   return error;
 }

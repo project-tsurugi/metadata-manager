@@ -289,7 +289,11 @@ TEST_P(ApiTestDBAccessFailureByTableIdReltuples,
   ObjectIdType table_id = std::get<0>(params);
   float reltuples = std::get<1>(params);
   error = stats->add_table_statistic(table_id, reltuples);
-  EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
+  if (table_id <= 0) {
+    EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
+  } else {
+    EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
+  }
 }
 
 /**
@@ -308,8 +312,11 @@ TEST_P(ApiTestDBAccessFailureByTableNameReltuples,
   std::string table_name = std::get<0>(params);
   float reltuples = std::get<1>(params);
   error = stats->add_table_statistic(table_name, reltuples, &retval_table_id);
-
-  EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
+  if (table_name.empty()) {
+    EXPECT_EQ(ErrorCode::NAME_NOT_FOUND, error);
+  } else {
+    EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
+  }
   EXPECT_EQ(retval_table_id, -1);
 }
 
@@ -329,8 +336,11 @@ TEST_P(ApiTestDBAccessFailureByTableId, get_table_statistic_by_table_id) {
   table_stats.reltuples = -1;
 
   error = stats->get_table_statistic(table_id, table_stats);
-  EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
-
+  if (table_id <= 0) {
+    EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
+  } else {
+    EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
+  }
   EXPECT_EQ(-1, table_stats.id);
   EXPECT_EQ(-1, table_stats.reltuples);
   EXPECT_EQ("", table_stats.name);
@@ -354,8 +364,11 @@ TEST_P(ApiTestDBAccessFailureByTableName, get_table_statistics_by_table_name) {
   table_stats.reltuples = -1;
 
   error = stats->get_table_statistic(table_name, table_stats);
-  EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
-
+  if (table_name.empty()) {
+    EXPECT_EQ(ErrorCode::NAME_NOT_FOUND, error);
+  } else {
+    EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
+  }
   EXPECT_EQ(-1, table_stats.id);
   EXPECT_EQ(-1, table_stats.reltuples);
   EXPECT_EQ("", table_stats.name);
@@ -379,7 +392,13 @@ TEST_P(ApiTestDBAccessFailureByColumnStatistics, add_one_column_statistic) {
 
   error =
       stats->add_one_column_statistic(table_id, ordinal_position, column_stats);
-  EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
+  if (table_id <= 0) {
+    EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
+  } else if (ordinal_position <= 0) {
+    EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);
+  } else {
+    EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
+  }
 }
 
 /**
@@ -403,7 +422,13 @@ TEST_P(ApiTestDBAccessFailureByTableIdOrdinalPosition,
 
   error =
       stats->get_one_column_statistic(table_id, ordinal_position, column_stats);
-  EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
+  if (table_id <= 0) {
+    EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
+  } else if (ordinal_position <= 0) {
+    EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);
+  } else {
+    EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
+  }
   EXPECT_EQ(-1, column_stats.table_id);
   EXPECT_EQ(-1, column_stats.ordinal_position);
 
@@ -426,7 +451,11 @@ TEST_P(ApiTestDBAccessFailureByTableId, get_all_column_statistics) {
   std::unordered_map<ObjectIdType, ColumnStatistic> column_stats;
 
   error = stats->get_all_column_statistics(table_id, column_stats);
-  EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
+  if (table_id <= 0) {
+    EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
+  } else {
+    EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
+  }
   EXPECT_EQ(0, column_stats.size());
 }
 
@@ -446,7 +475,13 @@ TEST_P(ApiTestDBAccessFailureByTableIdOrdinalPosition,
   ObjectIdType ordinal_position = std::get<1>(params);
 
   error = stats->remove_one_column_statistic(table_id, ordinal_position);
-  EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
+  if (table_id <= 0) {
+    EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
+  } else if (ordinal_position <= 0) {
+    EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);
+  } else {
+    EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
+  }
 }
 
 /**
@@ -461,7 +496,11 @@ TEST_P(ApiTestDBAccessFailureByTableId, remove_all_column_statistics) {
 
   ObjectIdType table_id = GetParam();
   error = stats->remove_all_column_statistics(table_id);
-  EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
+  if (table_id <= 0) {
+    EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
+  } else {
+    EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
+  }
 }
 
 }  // namespace manager::metadata::testing

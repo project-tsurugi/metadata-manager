@@ -146,9 +146,6 @@ ErrorCode TablesDAO::insert_table_metadata(boost::property_tree::ptree& table,
 ErrorCode TablesDAO::select_table_metadata(std::string_view object_key,
                                            std::string_view object_value,
                                            ptree& object) const {
-  assert(!object_key.empty());
-  assert(!object_value.empty());
-
   ErrorCode error = ErrorCode::UNKNOWN;
 
   // Load the meta data from the JSON file.
@@ -258,8 +255,6 @@ ErrorCode TablesDAO::delete_table_metadata(std::string_view object_key,
  */
 ErrorCode TablesDAO::get_metadata_object(
     std::string_view object_name, boost::property_tree::ptree& object) const {
-  assert(!object_name.empty());
-
   ErrorCode error = ErrorCode::NAME_NOT_FOUND;
 
   ptree* meta_object = session_manager_->get_container();

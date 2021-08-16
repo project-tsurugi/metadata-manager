@@ -71,9 +71,19 @@ ErrorCode Statistics::init() {
 ErrorCode Statistics::add_one_column_statistic(
     ObjectIdType table_id, ObjectIdType ordinal_position,
     boost::property_tree::ptree& column_statistic) {
+  // Parameter value check
+  if (table_id <= 0) {
+    return ErrorCode::ID_NOT_FOUND;
+  } else if (ordinal_position <= 0) {
+    return ErrorCode::INVALID_PARAMETER;
+  }
+
   // Adds or updates the column statistic through the provider.
   ErrorCode error = provider->add_column_statistic(table_id, ordinal_position,
                                                    column_statistic);
+
+  // Convert the return value
+  error = (error == ErrorCode::NOT_FOUND ? ErrorCode::ID_NOT_FOUND : error);
 
   return error;
 }
@@ -89,8 +99,16 @@ ErrorCode Statistics::add_one_column_statistic(
  */
 ErrorCode Statistics::add_table_statistic(ObjectIdType table_id,
                                           float reltuples) {
+  // Parameter value check
+  if (table_id <= 0) {
+    return ErrorCode::ID_NOT_FOUND;
+  }
+
   // Adds or updates the table statistic through the provider.
   ErrorCode error = provider->add_table_statistic(table_id, reltuples);
+
+  // Convert the return value
+  error = (error == ErrorCode::NOT_FOUND ? ErrorCode::ID_NOT_FOUND : error);
 
   return error;
 }
@@ -108,9 +126,17 @@ ErrorCode Statistics::add_table_statistic(ObjectIdType table_id,
 ErrorCode Statistics::add_table_statistic(std::string_view table_name,
                                           float reltuples,
                                           ObjectIdType* table_id) {
+  // Parameter value check
+  if (table_name.empty()) {
+    return ErrorCode::NAME_NOT_FOUND;
+  }
+
   // Adds or updates the table statistic through the provider.
   ErrorCode error =
       provider->add_table_statistic(table_name, reltuples, table_id);
+
+  // Convert the return value
+  error = (error == ErrorCode::NOT_FOUND ? ErrorCode::NAME_NOT_FOUND : error);
 
   return error;
 }
@@ -127,9 +153,19 @@ ErrorCode Statistics::add_table_statistic(std::string_view table_name,
 ErrorCode Statistics::get_one_column_statistic(
     ObjectIdType table_id, ObjectIdType ordinal_position,
     ColumnStatistic& column_statistic) {
+  // Parameter value check
+  if (table_id <= 0) {
+    return ErrorCode::ID_NOT_FOUND;
+  } else if (ordinal_position <= 0) {
+    return ErrorCode::INVALID_PARAMETER;
+  }
+
   // Get the column statistic through the provider.
   ErrorCode error = provider->get_column_statistic(table_id, ordinal_position,
                                                    column_statistic);
+
+  // Convert the return value
+  error = (error == ErrorCode::NOT_FOUND ? ErrorCode::ID_NOT_FOUND : error);
 
   return error;
 }
@@ -147,9 +183,17 @@ ErrorCode Statistics::get_one_column_statistic(
 ErrorCode Statistics::get_all_column_statistics(
     ObjectIdType table_id,
     std::unordered_map<ObjectIdType, ColumnStatistic>& column_statistics) {
+  // Parameter value check
+  if (table_id <= 0) {
+    return ErrorCode::ID_NOT_FOUND;
+  }
+
   // Get the all column statistics through the provider.
   ErrorCode error =
       provider->get_all_column_statistics(table_id, column_statistics);
+
+  // Convert the return value
+  error = (error == ErrorCode::NOT_FOUND ? ErrorCode::ID_NOT_FOUND : error);
 
   return error;
 }
@@ -164,9 +208,17 @@ ErrorCode Statistics::get_all_column_statistics(
  */
 ErrorCode Statistics::get_table_statistic(
     ObjectIdType table_id, manager::metadata::TableStatistic& table_statistic) {
+  // Parameter value check
+  if (table_id <= 0) {
+    return ErrorCode::ID_NOT_FOUND;
+  }
+
   // Get the table statistic through the provider.
   ErrorCode error = provider->get_table_statistic(
       Tables::ID, std::to_string(table_id), table_statistic);
+
+  // Convert the return value
+  error = (error == ErrorCode::NOT_FOUND ? ErrorCode::ID_NOT_FOUND : error);
 
   return error;
 }
@@ -182,9 +234,17 @@ ErrorCode Statistics::get_table_statistic(
 ErrorCode Statistics::get_table_statistic(
     std::string_view table_name,
     manager::metadata::TableStatistic& table_statistic) {
+  // Parameter value check
+  if (table_name.empty()) {
+    return ErrorCode::NAME_NOT_FOUND;
+  }
+
   // Get the table statistic through the provider.
   ErrorCode error =
       provider->get_table_statistic(Tables::NAME, table_name, table_statistic);
+
+  // Convert the return value
+  error = (error == ErrorCode::NOT_FOUND ? ErrorCode::NAME_NOT_FOUND : error);
 
   return error;
 }
@@ -198,9 +258,19 @@ ErrorCode Statistics::get_table_statistic(
  */
 ErrorCode Statistics::remove_one_column_statistic(
     ObjectIdType table_id, ObjectIdType ordinal_position) {
+  // Parameter value check
+  if (table_id <= 0) {
+    return ErrorCode::ID_NOT_FOUND;
+  } else if (ordinal_position <= 0) {
+    return ErrorCode::INVALID_PARAMETER;
+  }
+
   // Remove the column statistic through the provider.
   ErrorCode error =
       provider->remove_column_statistic(table_id, ordinal_position);
+
+  // Convert the return value
+  error = (error == ErrorCode::NOT_FOUND ? ErrorCode::ID_NOT_FOUND : error);
 
   return error;
 }
@@ -213,8 +283,16 @@ ErrorCode Statistics::remove_one_column_statistic(
  *  @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode Statistics::remove_all_column_statistics(ObjectIdType table_id) {
+  // Parameter value check
+  if (table_id <= 0) {
+    return ErrorCode::ID_NOT_FOUND;
+  }
+
   // Remove the all column statistics through the provider.
   ErrorCode error = provider->remove_all_column_statistics(table_id);
+
+  // Convert the return value
+  error = (error == ErrorCode::NOT_FOUND ? ErrorCode::ID_NOT_FOUND : error);
 
   return error;
 }

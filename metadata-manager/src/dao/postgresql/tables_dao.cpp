@@ -304,7 +304,7 @@ ErrorCode TablesDAO::update_reltuples(float reltuples,
       int ordinal_position = 0;
       error = DbcUtils::str_to_integral<ObjectIdType>(
           PQgetvalue(res, ordinal_position,
-                      TableMetadataTable::ColumnOrdinalPosition::ID),
+                     TableMetadataTable::ColumnOrdinalPosition::ID),
           table_id);
     } else {
       error = ErrorCode::INVALID_PARAMETER;
