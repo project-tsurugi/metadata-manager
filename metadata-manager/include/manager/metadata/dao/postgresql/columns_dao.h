@@ -24,8 +24,7 @@ namespace manager::metadata::db::postgresql {
 
 class ColumnsDAO : public manager::metadata::db::ColumnsDAO {
  public:
-  explicit ColumnsDAO(DBSessionManager* session_manager)
-      : connection_(session_manager->get_connection()){};
+  explicit ColumnsDAO(DBSessionManager* session_manager);
 
   manager::metadata::ErrorCode prepare() const override;
 
@@ -35,11 +34,12 @@ class ColumnsDAO : public manager::metadata::db::ColumnsDAO {
   manager::metadata::ErrorCode select_column_metadata(
       std::string_view object_key, std::string_view object_value,
       boost::property_tree::ptree& object) const override;
-  manager::metadata::ErrorCode delete_column_metadata_by_table_id(
-      ObjectIdType table_id) const override;
+  manager::metadata::ErrorCode delete_column_metadata(
+      std::string_view object_key, std::string_view object_value) const override;
 
  private:
   ConnectionSPtr connection_;
+  std::vector<std::string> column_names_;
 
   manager::metadata::ErrorCode get_ptree_from_p_gresult(
       PGresult*& res, int ordinal_position,

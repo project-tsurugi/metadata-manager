@@ -200,7 +200,8 @@ ErrorCode TablesProvider::remove_table_metadata(std::string_view key,
     return error;
   }
 
-  error = columns_dao_->delete_column_metadata_by_table_id(retval_table_id);
+  error = columns_dao_->delete_column_metadata(Tables::Column::TABLE_ID,
+                                               std::to_string(retval_table_id));
   if (error == ErrorCode::OK) {
     error = session_manager_->commit();
   } else {

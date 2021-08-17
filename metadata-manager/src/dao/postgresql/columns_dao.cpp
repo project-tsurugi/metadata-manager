@@ -32,6 +32,10 @@
 
 // =============================================================================
 namespace {
+
+std::unordered_map<std::string, std::string> statement_names_select;
+std::unordered_map<std::string, std::string> statement_names_delete;
+
 namespace statement {
 
 using manager::metadata::Tables;
@@ -63,15 +67,16 @@ std::string insert_one_column_metadata() {
  *  @brief  Returnes a SELECT stetement to get all column metadata
  *  from column metadata table,
  *  based on table id.
- *  @return a SELECT stetement to get all column metadata,
- *  based on table id.
+ * @param  (column_name)  [in]  column name of metadata-columns.
+ * @return a SELECT stetement to get all column metadata:
+ *    select * from table_name where column_name = $1.
  */
-std::string select_all_column_metadata_by_table_id() {
+std::string select_all_column_metadata(std::string_view column_name) {
   // SQL statement
   boost::format query =
       boost::format("SELECT * FROM %s.%s WHERE %s = $1 ORDER BY %s") %
-      SCHEMA_NAME % TableName::COLUMN_METADATA_TABLE %
-      Tables::Column::TABLE_ID % Tables::Column::ORDINAL_POSITION;
+      SCHEMA_NAME % TableName::COLUMN_METADATA_TABLE % column_name.data() %
+      Tables::Column::ORDINAL_POSITION;
 
   return query.str();
 }
@@ -80,14 +85,15 @@ std::string select_all_column_metadata_by_table_id() {
  *  @brief  Returnes a DELETE stetement for one column metadata
  *  from column metadata table,
  *  based on table id.
- *  @return a DELETE stetement for one column metadata,
- *  based on table id.
+ * @param  (column_name)  [in]  column name of metadata-columns.
+ * @return a DELETE stetement for one column metadata:
+ *    delete from table_name where column_name = $1.
  */
-std::string delete_all_column_metadata_by_table_id() {
+std::string delete_all_column_metadata(std::string_view column_name) {
   // SQL statement
   boost::format query = boost::format("DELETE FROM %s.%s WHERE %s = $1") %
                         SCHEMA_NAME % TableName::COLUMN_METADATA_TABLE %
-                        Tables::Column::TABLE_ID;
+                        column_name.data();
 
   return query.str();
 }
@@ -125,6 +131,51 @@ struct ColumnMetadataTable {
 };
 
 /**
+ *  @brief  Constructor
+ *  @param  (connection)  [in]  a connection to the metadata repository.
+ *  @return none.
+ */
+ColumnsDAO::ColumnsDAO(DBSessionManager *session_manager)
+    : connection_(session_manager->get_connection()) {
+  // Creates a list of column names
+  // in order to get values based on
+  // one column included in this list
+  // from metadata repository.
+  //
+  // For example,
+  // If column name "tableId" is added to this list,
+  // later defines a prepared statement
+  // "select * from where tableId = ?".
+  column_names_.emplace_back(Tables::Column::TABLE_ID);
+
+  // Creates a list of unique name
+  // for the new prepared statement for each column names.
+  for (auto column : column_names_) {
+    // Creates unique name for the new prepared statement.
+    boost::format statement_name_select =
+        boost::format("%1%-%2%-%3%") %
+        StatementName::COLUMNS_DAO_SELECT_ALL_COLUMN_METADATA %
+        TableName::COLUMNS % column.c_str();
+
+    // Addes this list to unique name for the new prepared statement.
+    // key : column name
+    // value : unique name for the new prepared statement.
+    statement_names_select.emplace(column, statement_name_select.str());
+
+    // Creates unique name for the new prepared statement.
+    boost::format statement_name_delete =
+        boost::format("%1%-%2%-%3%") %
+        StatementName::COLUMNS_DAO_DELETE_ALL_COLUMN_METADATA %
+        TableName::COLUMNS % column.c_str();
+
+    // Addes this list to unique name for the new prepared statement.
+    // key : column name
+    // value : unique name for the new prepared statement.
+    statement_names_delete.emplace(column, statement_name_delete.str());
+  }
+}
+
+/**
  *  @brief  Defines all prepared statements.
  *  @param  none.
  *  @return ErrorCode::OK if success, otherwise an error code.
@@ -137,20 +188,20 @@ ErrorCode ColumnsDAO::prepare() const {
     return error;
   }
 
-  error = DbcUtils::prepare(
-      connection_,
-      StatementName::COLUMNS_DAO_SELECT_ALL_COLUMN_METADATA_BY_TABLE_ID,
-      statement::select_all_column_metadata_by_table_id());
-  if (error != ErrorCode::OK) {
-    return error;
-  }
+  for (const std::string &column : column_names_) {
+    // select statement.
+    error = DbcUtils::prepare(connection_, statement_names_select.at(column),
+                              statement::select_all_column_metadata(column));
+    if (error != ErrorCode::OK) {
+      return error;
+    }
 
-  error = DbcUtils::prepare(
-      connection_,
-      StatementName::COLUMNS_DAO_DELETE_ALL_COLUMN_METADATA_BY_TABLE_ID,
-      statement::delete_all_column_metadata_by_table_id());
-  if (error != ErrorCode::OK) {
-    return error;
+    // delete statement.
+    error = DbcUtils::prepare(connection_, statement_names_delete.at(column),
+                              statement::delete_all_column_metadata(column));
+    if (error != ErrorCode::OK) {
+      return error;
+    }
   }
 
   return error;
@@ -160,8 +211,8 @@ ErrorCode ColumnsDAO::prepare() const {
  *  @brief  Executes INSERT statement to insert
  *  the given one column statistic
  *  into the column metadata table based on the given table id.
- *  @param  (table_id)          [in]  table id.
- *  @param  (column)            [in]  one column metadata to add.
+ *  @param  (table_id)  [in]  table id.
+ *  @param  (column)    [in]  one column metadata to add.
  *  @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode ColumnsDAO::insert_one_column_metadata(
@@ -265,10 +316,9 @@ ErrorCode ColumnsDAO::insert_one_column_metadata(
  *  @brief  Executes a SELECT statement to get column metadata rows
  *  from the column metadata table,
  *  where the given key equals the given value.
- *  @param  (object_key)          [in]  key. column name of a column metadata
- * table.
- *  @param  (object_value)        [in]  value to be filtered.
- *  @param  (object)              [out] column metadatas to get,
+ *  @param  (object_key)    [in]  key. column name of a column metadata table.
+ *  @param  (object_value)  [in]  value to be filtered.
+ *  @param  (object)        [out] column metadatas to get,
  *  where the given key equals the given value.
  *  @return ErrorCode::OK if success, otherwise an error code.
  */
@@ -279,11 +329,20 @@ ErrorCode ColumnsDAO::select_column_metadata(
 
   param_values.emplace_back(object_value.data());
 
+  std::string statement_name_found;
+  try {
+    statement_name_found = statement_names_select.at(std::string(object_key));
+  } catch (std::out_of_range &e) {
+    std::cerr << Message::METADATA_KEY_NOT_FOUND << e.what() << std::endl;
+    return ErrorCode::INVALID_PARAMETER;
+  } catch (...) {
+    std::cerr << Message::METADATA_KEY_NOT_FOUND << std::endl;
+    return ErrorCode::INVALID_PARAMETER;
+  }
+
   PGresult *res;
-  ErrorCode error = DbcUtils::exec_prepared(
-      connection_,
-      StatementName::COLUMNS_DAO_SELECT_ALL_COLUMN_METADATA_BY_TABLE_ID,
-      param_values, res);
+  ErrorCode error = DbcUtils::exec_prepared(connection_, statement_name_found,
+                                            param_values, res);
 
   if (error == ErrorCode::OK) {
     int nrows = PQntuples(res);
@@ -315,22 +374,30 @@ ErrorCode ColumnsDAO::select_column_metadata(
  *  @brief  Execute DELETE statement to delete column metadata
  *  from the column metadata table
  *  where the given key equals the given value.
- *  @param  (table_id)  [in]  table id.
+ *  @param  (object_key)    [in]  key. column name of a column metadata table.
+ *  @param  (object_value)  [in]  value to be filtered.
  *  @return ErrorCode::OK if success, otherwise an error code.
  */
-ErrorCode ColumnsDAO::delete_column_metadata_by_table_id(
-    ObjectIdType table_id) const {
+ErrorCode ColumnsDAO::delete_column_metadata(
+    std::string_view object_key, std::string_view object_value) const {
   std::vector<const char *> param_values;
 
-  std::string s_table_id = std::to_string(table_id);
+  param_values.emplace_back(object_value.data());
 
-  param_values.emplace_back(s_table_id.c_str());
+  std::string statement_name_found;
+  try {
+    statement_name_found = statement_names_delete.at(std::string(object_key));
+  } catch (std::out_of_range &e) {
+    std::cerr << Message::METADATA_KEY_NOT_FOUND << e.what() << std::endl;
+    return ErrorCode::INVALID_PARAMETER;
+  } catch (...) {
+    std::cerr << Message::METADATA_KEY_NOT_FOUND << std::endl;
+    return ErrorCode::INVALID_PARAMETER;
+  }
 
   PGresult *res;
-  ErrorCode error = DbcUtils::exec_prepared(
-      connection_,
-      StatementName::COLUMNS_DAO_DELETE_ALL_COLUMN_METADATA_BY_TABLE_ID,
-      param_values, res);
+  ErrorCode error = DbcUtils::exec_prepared(connection_, statement_name_found,
+                                            param_values, res);
 
   if (error == ErrorCode::OK) {
     uint64_t number_of_rows_affected = 0;

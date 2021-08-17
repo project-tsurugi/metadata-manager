@@ -34,8 +34,8 @@ ErrorCode ColumnsDAO::prepare() const {
  *  @brief  Execute INSERT statement to insert
  *  the given one column statistic
  *  into the column metadata table based on the given table id.
- *  @param  (table_id)          [in]  table id.
- *  @param  (column)            [in]  one column metadata to add.
+ *  @param  (table_id)  [in]  table id.
+ *  @param  (column)    [in]  one column metadata to add.
  *  @return  ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode ColumnsDAO::insert_one_column_metadata(
@@ -48,10 +48,9 @@ ErrorCode ColumnsDAO::insert_one_column_metadata(
  *  @brief  Execute a SELECT statement to get column metadata rows
  *  from the column metadata table,
  *  where the given key equals the given value.
- *  @param  (object_key)          [in]  key. column name of a column metadata
- * table.
- *  @param  (object_value)        [in]  value to be filtered.
- *  @param  (object)              [out] column metadatas to get,
+ *  @param  (object_key)    [in]  key. column name of a column metadata table.
+ *  @param  (object_value)  [in]  value to be filtered.
+ *  @param  (object)        [out] column metadatas to get,
  *  where the given key equals the given value.
  *  @return  ErrorCode::OK if success, otherwise an error code.
  */
@@ -66,11 +65,12 @@ ErrorCode ColumnsDAO::select_column_metadata(
  *  @brief  Execute DELETE statement to delete column metadata
  *  from the column metadata table
  *  where the given key equals the given value.
- *  @param  (table_id)  [in]  table id.
+ *  @param  (object_key)    [in]  key. column name of a column metadata table.
+ *  @param  (object_value)  [in]  value to be filtered.
  *  @return  ErrorCode::OK if success, otherwise an error code.
  */
-ErrorCode ColumnsDAO::delete_column_metadata_by_table_id(
-    ObjectIdType table_id) const {
+ErrorCode ColumnsDAO::delete_column_metadata(
+    std::string_view object_key, std::string_view object_value) const {
   // Do nothing and return of ErrorCode::OK.
   return ErrorCode::OK;
 }

@@ -32,8 +32,8 @@ class ColumnsDAO : public GenericDAO {
   virtual manager::metadata::ErrorCode select_column_metadata(
       std::string_view object_key, std::string_view object_value,
       boost::property_tree::ptree& object) const = 0;
-  virtual manager::metadata::ErrorCode delete_column_metadata_by_table_id(
-      ObjectIdType table_id) const = 0;
+  virtual manager::metadata::ErrorCode delete_column_metadata(
+      std::string_view object_key, std::string_view object_value) const = 0;
 };  // class ColumnsDAO
 
 }  // namespace manager::metadata::db

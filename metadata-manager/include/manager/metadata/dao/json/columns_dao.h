@@ -35,8 +35,8 @@ class ColumnsDAO : public manager::metadata::db::ColumnsDAO {
   manager::metadata::ErrorCode select_column_metadata(
       std::string_view object_key, std::string_view object_value,
       boost::property_tree::ptree& object) const override;
-  manager::metadata::ErrorCode delete_column_metadata_by_table_id(
-      ObjectIdType table_id) const override;
+  manager::metadata::ErrorCode delete_column_metadata(
+      std::string_view object_key, std::string_view object_value) const override;
 };  // class ColumnsDAO
 
 }  // namespace manager::metadata::db::json
