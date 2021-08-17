@@ -18,7 +18,6 @@
 
 #include <boost/property_tree/ptree.hpp>
 #include <string>
-#include <unordered_map>
 
 #include "manager/metadata/dao/datatypes_dao.h"
 #include "manager/metadata/dao/postgresql/db_session_manager.h"
@@ -38,8 +37,7 @@ class DataTypesDAO : public manager::metadata::db::DataTypesDAO {
 
  private:
   ConnectionSPtr connection_;
-  std::vector<std::string> column_names;
-  std::unordered_map<std::string, std::string> statement_names_select_equal_to;
+  std::vector<std::string> column_names_;
 
   manager::metadata::ErrorCode get_ptree_from_p_gresult(
       PGresult*& res, int ordinal_position,

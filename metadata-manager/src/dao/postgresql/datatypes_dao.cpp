@@ -19,6 +19,7 @@
 #include <iostream>
 #include <string>
 #include <string_view>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -31,6 +32,9 @@
 
 // =============================================================================
 namespace {
+
+std::unordered_map<std::string, std::string> statement_names_select_equal_to;
+
 namespace statement {
 
 using manager::metadata::db::postgresql::SCHEMA_NAME;
@@ -93,15 +97,15 @@ DataTypesDAO::DataTypesDAO(DBSessionManager* session_manager)
   // If column name "id" is added to this list,
   // later defines a prepared statement
   // "select * from where id = ?".
-  column_names.emplace_back(DataTypes::ID);
-  column_names.emplace_back(DataTypes::NAME);
-  column_names.emplace_back(DataTypes::PG_DATA_TYPE);
-  column_names.emplace_back(DataTypes::PG_DATA_TYPE_NAME);
-  column_names.emplace_back(DataTypes::PG_DATA_TYPE_QUALIFIED_NAME);
+  column_names_.emplace_back(DataTypes::ID);
+  column_names_.emplace_back(DataTypes::NAME);
+  column_names_.emplace_back(DataTypes::PG_DATA_TYPE);
+  column_names_.emplace_back(DataTypes::PG_DATA_TYPE_NAME);
+  column_names_.emplace_back(DataTypes::PG_DATA_TYPE_QUALIFIED_NAME);
 
   // Creates a list of unique name
   // for the new prepared statement for each column names.
-  for (auto column : column_names) {
+  for (auto column : column_names_) {
     // Creates unique name
     // for the new prepared statement.
     std::string statement_name;
@@ -128,7 +132,7 @@ DataTypesDAO::DataTypesDAO(DBSessionManager* session_manager)
 ErrorCode DataTypesDAO::prepare() const {
   ErrorCode error = ErrorCode::INTERNAL_ERROR;
 
-  for (const std::string& column : column_names) {
+  for (const std::string& column : column_names_) {
     error = DbcUtils::prepare(connection_,
                               statement_names_select_equal_to.at(column),
                               statement::select_equal_to(column));

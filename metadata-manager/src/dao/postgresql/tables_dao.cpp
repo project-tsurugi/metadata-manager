@@ -158,12 +158,12 @@ TablesDAO::TablesDAO(DBSessionManager* session_manager)
   // If column name "id" is added to this list,
   // later defines a prepared statement
   // "select * from where id = ?".
-  column_names.emplace_back(Tables::ID);
-  column_names.emplace_back(Tables::NAME);
+  column_names_.emplace_back(Tables::ID);
+  column_names_.emplace_back(Tables::NAME);
 
   // Creates a list of unique name
   // for the new prepared statement for each column names.
-  for (auto column : column_names) {
+  for (auto column : column_names_) {
     // Creates unique name for the new prepared statement.
     boost::format statement_name_update_reltuples =
         boost::format("%1%-%2%-%3%") %
@@ -227,7 +227,7 @@ ErrorCode TablesDAO::prepare() const {
     return error;
   }
 
-  for (const std::string& column : column_names) {
+  for (const std::string& column : column_names_) {
     // reltuples update statement.
     error = DbcUtils::prepare(connection_,
                               statement_names_update_reltuples.at(column),

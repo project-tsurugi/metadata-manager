@@ -27,6 +27,7 @@ class TablesDAO : public manager::metadata::db::TablesDAO {
   explicit TablesDAO(DBSessionManager* session_manager);
 
   manager::metadata::ErrorCode prepare() const override;
+
   manager::metadata::ErrorCode update_reltuples(
       float reltuples, std::string_view object_key,
       std::string_view object_value, ObjectIdType& table_id) const override;
@@ -45,7 +46,7 @@ class TablesDAO : public manager::metadata::db::TablesDAO {
 
  private:
   ConnectionSPtr connection_;
-  std::vector<std::string> column_names;
+  std::vector<std::string> column_names_;
 
   manager::metadata::ErrorCode get_table_statistic_from_p_gresult(
       PGresult*& res, int ordinal_position,
