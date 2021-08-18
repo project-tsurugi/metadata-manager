@@ -115,18 +115,26 @@ ErrorCode DataTypes::get(std::string_view object_name,
  */
 ErrorCode DataTypes::get(const char* object_key, std::string_view object_value,
                          boost::property_tree::ptree& object) {
+  ErrorCode error = ErrorCode::INTERNAL_ERROR;
   std::string_view s_object_key = std::string_view(object_key);
 
-  // Parameter value check
-  if (s_object_key.empty()) {
-    return ErrorCode::INVALID_PARAMETER;
+  if ((!s_object_key.empty()) && (!object_value.empty())) {
+    // Get the data type metadata through the provider.
+    error = provider->get_datatype_metadata(s_object_key, object_value, object);
+  } else if (s_object_key.empty()) {
+    error = ErrorCode::INVALID_PARAMETER;
   } else if (object_value.empty()) {
-    return ErrorCode::NOT_FOUND;
+    error = ErrorCode::NOT_FOUND;
   }
 
-  // Get the data type metadata through the provider.
-  ErrorCode error =
-      provider->get_datatype_metadata(s_object_key, object_value, object);
+  // Convert the return value
+  if (error == ErrorCode::NOT_FOUND) {
+    if (!s_object_key.compare(DataTypes::ID)) {
+      error = ErrorCode::ID_NOT_FOUND;
+    } else if (!s_object_key.compare(DataTypes::NAME)) {
+      error = ErrorCode::NAME_NOT_FOUND;
+    }
+  }
 
   return error;
 }

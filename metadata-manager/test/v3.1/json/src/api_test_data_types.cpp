@@ -275,7 +275,11 @@ TEST_P(ApiTestDataTypesException, get_non_existing_datatypes_by_key_value) {
 
   ptree datatype;
   ErrorCode error = datatypes->get(key.c_str(), value, datatype);
-  if (!key.empty() && value.empty()) {
+  if (!key.compare(DataTypes::ID)) {
+    EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
+  } else if (!key.compare(DataTypes::NAME)) {
+    EXPECT_EQ(ErrorCode::NAME_NOT_FOUND, error);
+  } else if (!key.empty() && value.empty()) {
     EXPECT_EQ(ErrorCode::NOT_FOUND, error);
   } else {
     EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);
@@ -293,11 +297,15 @@ INSTANTIATE_TEST_CASE_P(
     ParamtererizedTest, ApiTestDataTypesByKeyValue,
     ::testing::ValuesIn(ApiTestDataTypes::make_datatypes_tuple()));
 
-INSTANTIATE_TEST_CASE_P(ParamtererizedTest, ApiTestDataTypesException,
-                        ::testing::Values(std::make_tuple("", ""),
-                                          std::make_tuple("", "invalid_value"),
-                                          std::make_tuple("invalid_key", ""),
-                                          std::make_tuple("invalid_key",
-                                                          "invalid_value")));
+INSTANTIATE_TEST_CASE_P(
+    ParamtererizedTest, ApiTestDataTypesException,
+    ::testing::Values(std::make_tuple("", ""),
+                      std::make_tuple("", "invalid_value"),
+                      std::make_tuple("invalid_key", ""),
+                      std::make_tuple("invalid_key", "invalid_value"),
+                      std::make_tuple(DataTypes::ID, ""),
+                      std::make_tuple(DataTypes::ID, "invalid_value"),
+                      std::make_tuple(DataTypes::NAME, ""),
+                      std::make_tuple(DataTypes::NAME, "invalid_value")));
 
 }  // namespace manager::metadata::testing
