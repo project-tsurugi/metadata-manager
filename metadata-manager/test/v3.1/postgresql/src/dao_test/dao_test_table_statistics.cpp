@@ -106,7 +106,7 @@ TEST_P(DaoTestTableStatisticsByTableIdException,
   error = tdao->update_reltuples(reltuples, Tables::ID,
                                  std::to_string(table_id_not_exists),
                                  retval_table_id);
-  EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);
+  EXPECT_EQ(ErrorCode::NOT_FOUND, error);
   EXPECT_EQ(-1, retval_table_id);
 
   error = db_session_manager.rollback();
@@ -140,7 +140,7 @@ TEST_P(DaoTestTableStatisticsByTableNameException,
   ObjectIdType retval_table_id = -1;
   error = tdao->update_reltuples(reltuples, Tables::NAME, table_name_not_exists,
                                  retval_table_id);
-  EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);
+  EXPECT_EQ(ErrorCode::NOT_FOUND, error);
   EXPECT_EQ(retval_table_id, -1);
 
   error = db_session_manager.rollback();
@@ -170,7 +170,7 @@ TEST_P(DaoTestTableStatisticsByTableIdException,
   error = tdao->select_table_statistic(
       Tables::ID, std::to_string(table_id_not_exists), table_stats);
 
-  EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);
+  EXPECT_EQ(ErrorCode::NOT_FOUND, error);
   UTUtils::print_table_statistics(table_stats);
 }
 
@@ -196,7 +196,7 @@ TEST_P(DaoTestTableStatisticsByTableNameException,
   error = tdao->select_table_statistic(Tables::NAME, table_name_not_exists,
                                        table_stats);
 
-  EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);
+  EXPECT_EQ(ErrorCode::NOT_FOUND, error);
 }
 
 /**

@@ -71,19 +71,9 @@ ErrorCode Statistics::init() {
 ErrorCode Statistics::add_one_column_statistic(
     ObjectIdType table_id, ObjectIdType ordinal_position,
     boost::property_tree::ptree& column_statistic) {
-  // Parameter value check
-  if (table_id <= 0) {
-    return ErrorCode::ID_NOT_FOUND;
-  } else if (ordinal_position <= 0) {
-    return ErrorCode::INVALID_PARAMETER;
-  }
-
   // Adds or updates the column statistic through the provider.
   ErrorCode error = provider->add_column_statistic(table_id, ordinal_position,
                                                    column_statistic);
-
-  // Convert the return value
-  error = (error == ErrorCode::NOT_FOUND ? ErrorCode::ID_NOT_FOUND : error);
 
   return error;
 }
@@ -154,10 +144,8 @@ ErrorCode Statistics::get_one_column_statistic(
     ObjectIdType table_id, ObjectIdType ordinal_position,
     ColumnStatistic& column_statistic) {
   // Parameter value check
-  if (table_id <= 0) {
+  if ((table_id <= 0) || (ordinal_position <= 0)) {
     return ErrorCode::ID_NOT_FOUND;
-  } else if (ordinal_position <= 0) {
-    return ErrorCode::INVALID_PARAMETER;
   }
 
   // Get the column statistic through the provider.
@@ -259,10 +247,8 @@ ErrorCode Statistics::get_table_statistic(
 ErrorCode Statistics::remove_one_column_statistic(
     ObjectIdType table_id, ObjectIdType ordinal_position) {
   // Parameter value check
-  if (table_id <= 0) {
+  if ((table_id <= 0) || (ordinal_position <= 0)) {
     return ErrorCode::ID_NOT_FOUND;
-  } else if (ordinal_position <= 0) {
-    return ErrorCode::INVALID_PARAMETER;
   }
 
   // Remove the column statistic through the provider.

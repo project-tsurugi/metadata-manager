@@ -392,13 +392,7 @@ TEST_P(ApiTestDBAccessFailureByColumnStatistics, add_one_column_statistic) {
 
   error =
       stats->add_one_column_statistic(table_id, ordinal_position, column_stats);
-  if (table_id <= 0) {
-    EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
-  } else if (ordinal_position <= 0) {
-    EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);
-  } else {
-    EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
-  }
+  EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
 }
 
 /**
@@ -422,10 +416,8 @@ TEST_P(ApiTestDBAccessFailureByTableIdOrdinalPosition,
 
   error =
       stats->get_one_column_statistic(table_id, ordinal_position, column_stats);
-  if (table_id <= 0) {
+  if ((table_id <= 0) || (ordinal_position <= 0)) {
     EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
-  } else if (ordinal_position <= 0) {
-    EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);
   } else {
     EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
   }
@@ -475,10 +467,8 @@ TEST_P(ApiTestDBAccessFailureByTableIdOrdinalPosition,
   ObjectIdType ordinal_position = std::get<1>(params);
 
   error = stats->remove_one_column_statistic(table_id, ordinal_position);
-  if (table_id <= 0) {
+  if ((table_id <= 0) || (ordinal_position <= 0)) {
     EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
-  } else if (ordinal_position <= 0) {
-    EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);
   } else {
     EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
   }

@@ -283,7 +283,7 @@ TEST_P(ApiTestColumnStatisticsAllAPIHappy, All_API_happy) {
                                             cs_returned);
 
     if (ordinal_position_to_remove == ordinal_position) {
-      EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);
+      EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
     } else {
       EXPECT_EQ(ErrorCode::OK, error);
 
@@ -348,7 +348,7 @@ TEST_P(ApiTestColumnStatisticsAllAPIHappy, All_API_happy) {
   std::unordered_map<int64_t, ColumnStatistic> all_column_statistics_removed;
   error = stats->get_all_column_statistics(ret_table_id,
                                            all_column_statistics_removed);
-  EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);
+  EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
 
   EXPECT_EQ(all_column_statistics_removed.size(), 0);
 
@@ -359,7 +359,7 @@ TEST_P(ApiTestColumnStatisticsAllAPIHappy, All_API_happy) {
 
     error = stats->get_one_column_statistic(ret_table_id, ordinal_position,
                                             cs_returned);
-    EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);
+    EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
   }
 }
 
@@ -548,7 +548,7 @@ TEST_P(ApiTestColumnStatisticsUpdateHappy, update_column_statistics) {
                                             cs_returned);
 
     if (ordinal_position_to_remove == ordinal_position) {
-      EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);
+      EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
     } else {
       EXPECT_EQ(ErrorCode::OK, error);
 
@@ -573,7 +573,7 @@ TEST_P(ApiTestColumnStatisticsUpdateHappy, update_column_statistics) {
                                            hashmap_cs_removed_returned);
 
   if (column_statistics_to_update.size() == 1) {
-    EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);
+    EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
   } else {
     EXPECT_EQ(ErrorCode::OK, error);
   }
@@ -618,7 +618,7 @@ TEST_P(ApiTestColumnStatisticsUpdateHappy, update_column_statistics) {
   error = stats->remove_all_column_statistics(ret_table_id);
 
   if (column_statistics_to_update.size() == 1) {
-    EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);
+    EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
   } else {
     EXPECT_EQ(ErrorCode::OK, error);
   }
@@ -626,7 +626,7 @@ TEST_P(ApiTestColumnStatisticsUpdateHappy, update_column_statistics) {
   std::unordered_map<int64_t, ColumnStatistic> all_column_statistics_removed;
   error = stats->get_all_column_statistics(ret_table_id,
                                            all_column_statistics_removed);
-  EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);
+  EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
 
   EXPECT_EQ(all_column_statistics_removed.size(), 0);
 
@@ -638,7 +638,7 @@ TEST_P(ApiTestColumnStatisticsUpdateHappy, update_column_statistics) {
 
     error = stats->get_one_column_statistic(ret_table_id, ordinal_position,
                                             cs_returned);
-    EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);
+    EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
   }
 }
 
@@ -740,7 +740,7 @@ TEST_P(ApiTestColumnStatisticsRemoveAllHappy, remove_all_column_statistics) {
   std::unordered_map<int64_t, ColumnStatistic> all_column_statistics_removed;
   error = stats->get_all_column_statistics(ret_table_id,
                                            all_column_statistics_removed);
-  EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);
+  EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
 
   EXPECT_EQ(all_column_statistics_removed.size(), 0);
 
@@ -751,7 +751,7 @@ TEST_P(ApiTestColumnStatisticsRemoveAllHappy, remove_all_column_statistics) {
 
     error = stats->get_one_column_statistic(ret_table_id, ordinal_position,
                                             cs_returned);
-    EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);
+    EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
   }
 }
 
@@ -824,9 +824,7 @@ TEST_P(ApiTestColumnStatisticsAllAPIException, All_API_exception) {
       // table id and ordinal position not exists
       error = stats->add_one_column_statistic(table_id, ordinal_position,
                                               column_statistics[0]);
-      EXPECT_EQ((table_id <= 0 ? ErrorCode::ID_NOT_FOUND
-                               : ErrorCode::INVALID_PARAMETER),
-                error);
+      EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);
     }
   }
 
@@ -835,9 +833,7 @@ TEST_P(ApiTestColumnStatisticsAllAPIException, All_API_exception) {
     // table id only not exists
     error = stats->add_one_column_statistic(table_id, ordinal_position_exists,
                                             column_statistics[0]);
-    EXPECT_EQ((table_id <= 0 ? ErrorCode::ID_NOT_FOUND
-                             : ErrorCode::INVALID_PARAMETER),
-              error);
+    EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);
   }
 
   /**
@@ -848,9 +844,7 @@ TEST_P(ApiTestColumnStatisticsAllAPIException, All_API_exception) {
     // table id only not exists
     std::unordered_map<int64_t, ColumnStatistic> hashmap_cs_returned;
     error = stats->get_all_column_statistics(table_id, hashmap_cs_returned);
-    EXPECT_EQ((table_id <= 0 ? ErrorCode::ID_NOT_FOUND
-                             : ErrorCode::INVALID_PARAMETER),
-              error);
+    EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
     EXPECT_EQ(hashmap_cs_returned.size(), 0);
   }
 
@@ -864,15 +858,13 @@ TEST_P(ApiTestColumnStatisticsAllAPIException, All_API_exception) {
     // ordinal position only not exists
     error = stats->get_one_column_statistic(ret_table_id, ordinal_position,
                                             cs_returned);
-    EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);
+    EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
 
     for (ObjectIdType table_id : global->table_id_not_exists) {
       // table id and ordinal position not exists
       error = stats->get_one_column_statistic(table_id, ordinal_position,
                                               cs_returned);
-      EXPECT_EQ((table_id <= 0 ? ErrorCode::ID_NOT_FOUND
-                               : ErrorCode::INVALID_PARAMETER),
-                error);
+      EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
     }
   }
 
@@ -880,9 +872,7 @@ TEST_P(ApiTestColumnStatisticsAllAPIException, All_API_exception) {
     // table id only not exists
     error = stats->get_one_column_statistic(table_id, ordinal_position_exists,
                                             cs_returned);
-    EXPECT_EQ((table_id <= 0 ? ErrorCode::ID_NOT_FOUND
-                             : ErrorCode::INVALID_PARAMETER),
-              error);
+    EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
   }
 
   /**
@@ -893,14 +883,12 @@ TEST_P(ApiTestColumnStatisticsAllAPIException, All_API_exception) {
   for (ObjectIdType ordinal_position : global->ordinal_position_not_exists) {
     // ordinal position only not exists
     error = stats->remove_one_column_statistic(ret_table_id, ordinal_position);
-    EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);
+    EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
 
     for (ObjectIdType table_id : global->table_id_not_exists) {
       // table id and ordinal position not exists
       error = stats->remove_one_column_statistic(table_id, ordinal_position);
-      EXPECT_EQ((table_id <= 0 ? ErrorCode::ID_NOT_FOUND
-                               : ErrorCode::INVALID_PARAMETER),
-                error);
+      EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
     }
   }
 
@@ -908,9 +896,7 @@ TEST_P(ApiTestColumnStatisticsAllAPIException, All_API_exception) {
     // table id only not exists
     error =
         stats->remove_one_column_statistic(table_id, ordinal_position_exists);
-    EXPECT_EQ((table_id <= 0 ? ErrorCode::ID_NOT_FOUND
-                             : ErrorCode::INVALID_PARAMETER),
-              error);
+    EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
   }
 
   /**
@@ -920,9 +906,7 @@ TEST_P(ApiTestColumnStatisticsAllAPIException, All_API_exception) {
   for (ObjectIdType table_id : global->table_id_not_exists) {
     // table id not exists
     error = stats->remove_all_column_statistics(table_id);
-    EXPECT_EQ((table_id <= 0 ? ErrorCode::ID_NOT_FOUND
-                             : ErrorCode::INVALID_PARAMETER),
-              error);
+    EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
   }
 }
 
@@ -1072,7 +1056,7 @@ TEST_P(ApiTestColumnStatisticsAllAPIHappyWithoutInit,
         ret_table_id, ordinal_position, cs_returned);
 
     if (ordinal_position_to_remove == ordinal_position) {
-      EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);
+      EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
     } else {
       EXPECT_EQ(ErrorCode::OK, error);
 
@@ -1140,7 +1124,7 @@ TEST_P(ApiTestColumnStatisticsAllAPIHappyWithoutInit,
   std::unordered_map<int64_t, ColumnStatistic> all_column_statistics_removed;
   error = stats_remove_all_cs->get_all_column_statistics(
       ret_table_id, all_column_statistics_removed);
-  EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);
+  EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
 
   EXPECT_EQ(all_column_statistics_removed.size(), 0);
 
@@ -1151,7 +1135,7 @@ TEST_P(ApiTestColumnStatisticsAllAPIHappyWithoutInit,
 
     error = stats_remove_all_cs->get_one_column_statistic(
         ret_table_id, ordinal_position, cs_returned);
-    EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);
+    EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
   }
 }
 

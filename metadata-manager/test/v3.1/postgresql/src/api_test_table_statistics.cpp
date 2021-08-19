@@ -122,9 +122,7 @@ TEST_P(ApiTestTableStatisticsByTableIdException,
   float reltuples = 1000;
 
   error = stats->add_table_statistic(table_id_not_exists, reltuples);
-  EXPECT_EQ(
-      (table_id_not_exists <= 0 ? ErrorCode::ID_NOT_FOUND : ErrorCode::INVALID_PARAMETER),
-      error);
+  EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
 }
 
 /**
@@ -144,9 +142,7 @@ TEST_P(ApiTestTableStatisticsByTableNameException,
 
   error = stats->add_table_statistic(table_name_not_exists, reltuples,
                                      &retval_table_id);
-  EXPECT_EQ(
-      (table_name_not_exists.empty() ? ErrorCode::NAME_NOT_FOUND : ErrorCode::INVALID_PARAMETER),
-      error);
+  EXPECT_EQ(ErrorCode::NAME_NOT_FOUND, error);
   EXPECT_EQ(retval_table_id, -1);
 }
 
@@ -165,9 +161,7 @@ TEST_P(ApiTestTableStatisticsByTableIdException,
   auto table_id_not_exists = GetParam();
 
   error = stats->get_table_statistic(table_id_not_exists, table_stats);
-  EXPECT_EQ(
-      (table_id_not_exists <= 0 ? ErrorCode::ID_NOT_FOUND : ErrorCode::INVALID_PARAMETER),
-      error);
+  EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
 
   UTUtils::print_table_statistics(table_stats);
 }
@@ -187,9 +181,7 @@ TEST_P(ApiTestTableStatisticsByTableNameException,
   std::string table_name_not_exists = GetParam();
 
   error = stats->get_table_statistic(table_name_not_exists, table_stats);
-  EXPECT_EQ(
-      (table_name_not_exists.empty() ? ErrorCode::NAME_NOT_FOUND : ErrorCode::INVALID_PARAMETER),
-      error);
+  EXPECT_EQ(ErrorCode::NAME_NOT_FOUND, error);
 }
 
 /**

@@ -297,8 +297,7 @@ StatisticsDAO::select_one_column_statistic_by_table_id_column_ordinal_position(
       error = get_column_statistic_from_p_gresult(res, ordinal_position,
                                                   column_statistic);
     } else {
-      PQclear(res);
-      return ErrorCode::INVALID_PARAMETER;
+      error = ErrorCode::NOT_FOUND;
     }
   }
 
@@ -334,24 +333,24 @@ ErrorCode StatisticsDAO::select_all_column_statistic_by_table_id(
 
   if (error == ErrorCode::OK) {
     int nrows = PQntuples(res);
-    if (nrows <= 0) {
-      PQclear(res);
-      return ErrorCode::INVALID_PARAMETER;
-    }
-    for (int ordinal_position = 0; ordinal_position < nrows;
-         ordinal_position++) {
-      ColumnStatistic column_statistic;
+    if (nrows >= 1) {
+      for (int ordinal_position = 0; ordinal_position < nrows;
+           ordinal_position++) {
+        ColumnStatistic column_statistic;
 
-      ErrorCode error_internal = get_column_statistic_from_p_gresult(
-          res, ordinal_position, column_statistic);
+        ErrorCode error_internal = get_column_statistic_from_p_gresult(
+            res, ordinal_position, column_statistic);
 
-      if (error_internal != ErrorCode::OK) {
-        PQclear(res);
-        return error_internal;
+        if (error_internal != ErrorCode::OK) {
+          error = error_internal;
+          break;
+        }
+
+        column_statistics.insert(pair_const_oit_cstats{
+            column_statistic.ordinal_position, column_statistic});
       }
-
-      column_statistics.insert(pair_const_oit_cstats{
-          column_statistic.ordinal_position, column_statistic});
+    } else {
+      error = ErrorCode::NOT_FOUND;
     }
   }
 
@@ -385,13 +384,9 @@ ErrorCode StatisticsDAO::delete_all_column_statistic_by_table_id(
         DbcUtils::get_number_of_rows_affected(res, number_of_rows_affected);
 
     if (error_get != ErrorCode::OK) {
-      PQclear(res);
-      return error_get;
-    }
-
-    if (number_of_rows_affected <= 0) {
-      PQclear(res);
-      return ErrorCode::INVALID_PARAMETER;
+      error = error_get;
+    } else if (number_of_rows_affected <= 0) {
+      error = ErrorCode::NOT_FOUND;
     }
   }
 
@@ -430,13 +425,9 @@ StatisticsDAO::delete_one_column_statistic_by_table_id_column_ordinal_position(
         DbcUtils::get_number_of_rows_affected(res, number_of_rows_affected);
 
     if (error_get != ErrorCode::OK) {
-      PQclear(res);
-      return error_get;
-    }
-
-    if (number_of_rows_affected != 1) {
-      PQclear(res);
-      return ErrorCode::INVALID_PARAMETER;
+      error = error_get;
+    } else if (number_of_rows_affected != 1) {
+      error = ErrorCode::NOT_FOUND;
     }
   }
 
