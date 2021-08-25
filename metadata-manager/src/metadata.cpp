@@ -41,4 +41,24 @@ namespace manager::metadata {
   return ErrorCode::OK;
 }
 
+/**
+ *  @brief  Converts error codes according to the specified conditions.
+ *  @param  (error_code)  [in] error code.
+ *  @param  (key_name)    [in] key.
+ *  @return  Converted error code.
+ */
+ErrorCode Metadata::code_converter(const ErrorCode& error_code, std::string_view key_name) {
+  ErrorCode result_code = error_code;
+  // Find of error code.
+  auto find_error_code = code_convert_list_.find(error_code);
+  if (find_error_code != code_convert_list_.end()) {
+    // Find of key.
+    auto find_convert_code = find_error_code->second.find(key_name.data());
+    if (find_convert_code != find_error_code->second.end()) {
+      result_code = find_convert_code->second;
+    }
+  }
+  return result_code;
+}
+
 }  // namespace manager::metadata

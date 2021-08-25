@@ -40,6 +40,15 @@ DataTypes::DataTypes(std::string_view database, std::string_view component)
     : Metadata(database, component) {
   // Create the provider.
   provider = std::make_unique<db::DataTypesProvider>();
+
+  // Set error code conversion list.
+  code_convert_list_ = {
+      {ErrorCode::NOT_FOUND,
+       {
+           {DataTypes::ID, ErrorCode::ID_NOT_FOUND},
+           {DataTypes::NAME, ErrorCode::NAME_NOT_FOUND},
+       }},
+  };
 }
 
 /**
@@ -73,7 +82,7 @@ ErrorCode DataTypes::get(const ObjectIdType object_id,
   ErrorCode error = get(DataTypes::ID, std::to_string(object_id), object);
 
   // Convert the return value
-  error = (error == ErrorCode::NOT_FOUND ? ErrorCode::ID_NOT_FOUND : error);
+  error = code_converter(error, DataTypes::ID);
 
   return error;
 }
@@ -98,7 +107,7 @@ ErrorCode DataTypes::get(std::string_view object_name,
   ErrorCode error = get(DataTypes::NAME, object_name, object);
 
   // Convert the return value
-  error = (error == ErrorCode::NOT_FOUND ? ErrorCode::NAME_NOT_FOUND : error);
+  error = code_converter(error, DataTypes::NAME);
 
   return error;
 }
@@ -128,13 +137,7 @@ ErrorCode DataTypes::get(const char* object_key, std::string_view object_value,
   }
 
   // Convert the return value
-  if (error == ErrorCode::NOT_FOUND) {
-    if (!s_object_key.compare(DataTypes::ID)) {
-      error = ErrorCode::ID_NOT_FOUND;
-    } else if (!s_object_key.compare(DataTypes::NAME)) {
-      error = ErrorCode::NAME_NOT_FOUND;
-    }
-  }
+  error = code_converter(error, s_object_key);
 
   return error;
 }

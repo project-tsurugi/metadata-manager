@@ -19,6 +19,7 @@
 #include <boost/property_tree/ptree.hpp>
 #include <string>
 #include <string_view>
+#include <unordered_map>
 
 #include "manager/metadata/error_code.h"
 
@@ -143,6 +144,10 @@ class Metadata {
 
  protected:
   static const GenerationType LATEST_VERSION = 0;
+  std::unordered_map<ErrorCode, std::unordered_map<std::string, ErrorCode>>
+      code_convert_list_;
+
+  ErrorCode code_converter(const ErrorCode& error_code, std::string_view key_name);
 
  private:
   std::string database_;

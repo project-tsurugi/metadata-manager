@@ -40,6 +40,15 @@ Tables::Tables(std::string_view database, std::string_view component)
     : Metadata(database, component) {
   // Create the provider.
   provider = std::make_unique<db::TablesProvider>();
+
+  // Set error code conversion list.
+  code_convert_list_ = {
+      {ErrorCode::NOT_FOUND,
+       {
+           {Tables::ID, ErrorCode::ID_NOT_FOUND},
+           {Tables::NAME, ErrorCode::NAME_NOT_FOUND},
+       }},
+  };
 }
 
 /**
@@ -101,8 +110,8 @@ ErrorCode Tables::get(const ObjectIdType object_id,
   ErrorCode error =
       provider->get_table_metadata(Tables::ID, s_object_id, object);
 
-  // Convert the return value
-  error = (error == ErrorCode::NOT_FOUND ? ErrorCode::ID_NOT_FOUND : error);
+  // Convert the return value.
+  error = code_converter(error, Tables::ID);
 
   return error;
 }
@@ -126,7 +135,7 @@ ErrorCode Tables::get(std::string_view object_name,
       provider->get_table_metadata(Tables::NAME, object_name, object);
 
   // Convert the return value
-  error = (error == ErrorCode::NOT_FOUND ? ErrorCode::NAME_NOT_FOUND : error);
+  error = code_converter(error, Tables::NAME);
 
   return error;
 }
@@ -150,7 +159,7 @@ ErrorCode Tables::remove(const ObjectIdType object_id) {
       provider->remove_table_metadata(Tables::ID, std::to_string(object_id));
 
   // Convert the return value
-  error = (error == ErrorCode::NOT_FOUND ? ErrorCode::ID_NOT_FOUND : error);
+  error = code_converter(error, Tables::ID);
 
   return error;
 }
@@ -177,7 +186,7 @@ ErrorCode Tables::remove(const char* object_name, ObjectIdType* object_id) {
       provider->remove_table_metadata(Tables::NAME, s_object_name, object_id);
 
   // Convert the return value
-  error = (error == ErrorCode::NOT_FOUND ? ErrorCode::NAME_NOT_FOUND : error);
+  error = code_converter(error, Tables::NAME);
 
   return error;
 }

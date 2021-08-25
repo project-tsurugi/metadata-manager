@@ -43,6 +43,15 @@ Statistics::Statistics(std::string_view database, std::string_view component)
     : Metadata(database, component) {
   // Create the provider.
   provider = std::make_unique<db::StatisticsProvider>();
+
+  // Set error code conversion list.
+  code_convert_list_ = {
+      {ErrorCode::NOT_FOUND,
+       {
+           {Tables::ID, ErrorCode::ID_NOT_FOUND},
+           {Tables::NAME, ErrorCode::NAME_NOT_FOUND},
+       }},
+  };
 }
 
 /**
@@ -98,7 +107,7 @@ ErrorCode Statistics::add_table_statistic(ObjectIdType table_id,
   ErrorCode error = provider->add_table_statistic(table_id, reltuples);
 
   // Convert the return value
-  error = (error == ErrorCode::NOT_FOUND ? ErrorCode::ID_NOT_FOUND : error);
+  error = code_converter(error, Tables::ID);
 
   return error;
 }
@@ -126,7 +135,7 @@ ErrorCode Statistics::add_table_statistic(std::string_view table_name,
       provider->add_table_statistic(table_name, reltuples, table_id);
 
   // Convert the return value
-  error = (error == ErrorCode::NOT_FOUND ? ErrorCode::NAME_NOT_FOUND : error);
+  error = code_converter(error, Tables::NAME);
 
   return error;
 }
@@ -153,7 +162,7 @@ ErrorCode Statistics::get_one_column_statistic(
                                                    column_statistic);
 
   // Convert the return value
-  error = (error == ErrorCode::NOT_FOUND ? ErrorCode::ID_NOT_FOUND : error);
+  error = code_converter(error, Tables::ID);
 
   return error;
 }
@@ -181,7 +190,7 @@ ErrorCode Statistics::get_all_column_statistics(
       provider->get_all_column_statistics(table_id, column_statistics);
 
   // Convert the return value
-  error = (error == ErrorCode::NOT_FOUND ? ErrorCode::ID_NOT_FOUND : error);
+  error = code_converter(error, Tables::ID);
 
   return error;
 }
@@ -206,7 +215,7 @@ ErrorCode Statistics::get_table_statistic(
       Tables::ID, std::to_string(table_id), table_statistic);
 
   // Convert the return value
-  error = (error == ErrorCode::NOT_FOUND ? ErrorCode::ID_NOT_FOUND : error);
+  error = code_converter(error, Tables::ID);
 
   return error;
 }
@@ -232,7 +241,7 @@ ErrorCode Statistics::get_table_statistic(
       provider->get_table_statistic(Tables::NAME, table_name, table_statistic);
 
   // Convert the return value
-  error = (error == ErrorCode::NOT_FOUND ? ErrorCode::NAME_NOT_FOUND : error);
+  error = code_converter(error, Tables::NAME);
 
   return error;
 }
@@ -256,7 +265,7 @@ ErrorCode Statistics::remove_one_column_statistic(
       provider->remove_column_statistic(table_id, ordinal_position);
 
   // Convert the return value
-  error = (error == ErrorCode::NOT_FOUND ? ErrorCode::ID_NOT_FOUND : error);
+  error = code_converter(error, Tables::ID);
 
   return error;
 }
@@ -278,7 +287,7 @@ ErrorCode Statistics::remove_all_column_statistics(ObjectIdType table_id) {
   ErrorCode error = provider->remove_all_column_statistics(table_id);
 
   // Convert the return value
-  error = (error == ErrorCode::NOT_FOUND ? ErrorCode::ID_NOT_FOUND : error);
+  error = code_converter(error, Tables::ID);
 
   return error;
 }
