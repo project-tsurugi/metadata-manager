@@ -43,6 +43,8 @@ Tables::Tables(std::string_view database, std::string_view component)
 
   // Set error code conversion list.
   code_convert_list_ = {
+      // If ErrorCode is NOT_FOUND, "id" is converted to ID_NOT_FOUND and "name"
+      // is converted to NAME_NOT_FOUND.
       {ErrorCode::NOT_FOUND,
        {
            {Tables::ID, ErrorCode::ID_NOT_FOUND},
