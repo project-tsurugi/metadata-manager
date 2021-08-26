@@ -91,48 +91,4 @@ enum class ErrorCode {
 
 }  // namespace manager::metadata
 
-/* =============================================================================================
- */
-namespace manager::metadata_manager {
-
-enum class ErrorCode {
-  /**
-   *  @brief Success.
-   */
-  OK = 0,
-
-  /**
-   *  @brief The target object not found.
-   */
-  NOT_FOUND,
-
-  /**
-   *  @brief ID of the metadata-object not found from metadata-table.
-   */
-  ID_NOT_FOUND,
-
-  /**
-   *  @brief name of the metadata-object not found from metadata-table.
-   */
-  NAME_NOT_FOUND,
-
-  /**
-   *  @brief Current in the Metadata stepped over the last row (a result of
-   * successful processing).
-   */
-  END_OF_ROW,
-
-  /**
-   *  @brief the object with same parameter exists.
-   */
-  ALREADY_EXISTS,
-
-  /**
-   * @brief Unknown error.
-   */
-  UNKNOWN,
-};  // enum ErrorCode
-
-}  // namespace manager::metadata_manager
-
 #endif  // MANAGER_METADATA_ERROR_CODE_H_
