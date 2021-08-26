@@ -35,7 +35,8 @@ class ColumnsDAO : public manager::metadata::db::ColumnsDAO {
       std::string_view object_key, std::string_view object_value,
       boost::property_tree::ptree& object) const override;
   manager::metadata::ErrorCode delete_column_metadata(
-      std::string_view object_key, std::string_view object_value) const override;
+      std::string_view object_key,
+      std::string_view object_value) const override;
 
  private:
   ConnectionSPtr connection_;

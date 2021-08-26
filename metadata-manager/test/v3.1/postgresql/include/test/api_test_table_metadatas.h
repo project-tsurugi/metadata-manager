@@ -22,7 +22,6 @@
 #include <vector>
 
 #include "manager/metadata/metadata.h"
-
 #include "test/global_test_environment.h"
 #include "test/utility/ut_table_metadata.h"
 

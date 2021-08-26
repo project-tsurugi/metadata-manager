@@ -20,7 +20,6 @@
 #include <string>
 
 #include "manager/metadata/metadata.h"
-
 #include "test/utility/ut_utils.h"
 
 namespace manager::metadata::testing {

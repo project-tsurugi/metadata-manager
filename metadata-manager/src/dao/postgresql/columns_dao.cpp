@@ -135,7 +135,7 @@ struct ColumnMetadataTable {
  *  @param  (connection)  [in]  a connection to the metadata repository.
  *  @return none.
  */
-ColumnsDAO::ColumnsDAO(DBSessionManager *session_manager)
+ColumnsDAO::ColumnsDAO(DBSessionManager* session_manager)
     : connection_(session_manager->get_connection()) {
   // Creates a list of column names
   // in order to get values based on
@@ -188,7 +188,7 @@ ErrorCode ColumnsDAO::prepare() const {
     return error;
   }
 
-  for (const std::string &column : column_names_) {
+  for (const std::string& column : column_names_) {
     // select statement.
     error = DbcUtils::prepare(connection_, statement_names_select.at(column),
                               statement::select_all_column_metadata(column));
@@ -216,8 +216,8 @@ ErrorCode ColumnsDAO::prepare() const {
  *  @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode ColumnsDAO::insert_one_column_metadata(
-    ObjectIdType table_id, boost::property_tree::ptree &column) const {
-  std::vector<char const *> param_values;
+    ObjectIdType table_id, boost::property_tree::ptree& column) const {
+  std::vector<char const*> param_values;
 
   std::string s_table_id = std::to_string(table_id);
   param_values.emplace_back(s_table_id.c_str());
@@ -239,14 +239,14 @@ ErrorCode ColumnsDAO::insert_one_column_metadata(
   param_values.emplace_back(
       (data_type_id ? data_type_id.value().c_str() : nullptr));
 
-  boost::optional<ptree &> o_data_length =
+  boost::optional<ptree&> o_data_length =
       column.get_child_optional(Tables::Column::DATA_LENGTH);
 
   std::string s_data_length;
   if (!o_data_length) {
     param_values.emplace_back(nullptr);
   } else {
-    ptree &p_data_length = o_data_length.value();
+    ptree& p_data_length = o_data_length.value();
 
     if (p_data_length.empty()) {
       param_values.emplace_back(p_data_length.data().c_str());
@@ -254,7 +254,7 @@ ErrorCode ColumnsDAO::insert_one_column_metadata(
       std::stringstream ss;
       try {
         json_parser::write_json(ss, p_data_length, false);
-      } catch (json_parser_error &e) {
+      } catch (json_parser_error& e) {
         std::cerr << Message::WRITE_JSON_FAILURE << e.what() << std::endl;
         return ErrorCode::INTERNAL_ERROR;
       } catch (...) {
@@ -287,7 +287,7 @@ ErrorCode ColumnsDAO::insert_one_column_metadata(
       column.get_optional<std::string>(Tables::Column::DIRECTION);
   param_values.emplace_back((direction ? direction.value().c_str() : nullptr));
 
-  PGresult *res;
+  PGresult* res;
   ErrorCode error = DbcUtils::exec_prepared(
       connection_, StatementName::COLUMNS_DAO_INSERT_ONE_COLUMN_METADATA,
       param_values, res);
@@ -324,15 +324,15 @@ ErrorCode ColumnsDAO::insert_one_column_metadata(
  */
 ErrorCode ColumnsDAO::select_column_metadata(
     std::string_view object_key, std::string_view object_value,
-    boost::property_tree::ptree &object) const {
-  std::vector<const char *> param_values;
+    boost::property_tree::ptree& object) const {
+  std::vector<const char*> param_values;
 
   param_values.emplace_back(object_value.data());
 
   std::string statement_name_found;
   try {
     statement_name_found = statement_names_select.at(std::string(object_key));
-  } catch (std::out_of_range &e) {
+  } catch (std::out_of_range& e) {
     std::cerr << Message::METADATA_KEY_NOT_FOUND << e.what() << std::endl;
     return ErrorCode::INVALID_PARAMETER;
   } catch (...) {
@@ -340,7 +340,7 @@ ErrorCode ColumnsDAO::select_column_metadata(
     return ErrorCode::INVALID_PARAMETER;
   }
 
-  PGresult *res;
+  PGresult* res;
   ErrorCode error = DbcUtils::exec_prepared(connection_, statement_name_found,
                                             param_values, res);
 
@@ -380,14 +380,14 @@ ErrorCode ColumnsDAO::select_column_metadata(
  */
 ErrorCode ColumnsDAO::delete_column_metadata(
     std::string_view object_key, std::string_view object_value) const {
-  std::vector<const char *> param_values;
+  std::vector<const char*> param_values;
 
   param_values.emplace_back(object_value.data());
 
   std::string statement_name_found;
   try {
     statement_name_found = statement_names_delete.at(std::string(object_key));
-  } catch (std::out_of_range &e) {
+  } catch (std::out_of_range& e) {
     std::cerr << Message::METADATA_KEY_NOT_FOUND << e.what() << std::endl;
     return ErrorCode::INVALID_PARAMETER;
   } catch (...) {
@@ -395,7 +395,7 @@ ErrorCode ColumnsDAO::delete_column_metadata(
     return ErrorCode::INVALID_PARAMETER;
   }
 
-  PGresult *res;
+  PGresult* res;
   ErrorCode error = DbcUtils::exec_prepared(connection_, statement_name_found,
                                             param_values, res);
 
@@ -430,9 +430,9 @@ ErrorCode ColumnsDAO::delete_column_metadata(
  *  @param  (column)            [out] one column metadata.
  *  @return ErrorCode::OK if success, otherwise an error code.
  */
-ErrorCode ColumnsDAO::get_ptree_from_p_gresult(PGresult *&res,
+ErrorCode ColumnsDAO::get_ptree_from_p_gresult(PGresult*& res,
                                                int ordinal_position,
-                                               ptree &column) const {
+                                               ptree& column) const {
   column.put(Tables::Column::ID,
              PQgetvalue(res, ordinal_position,
                         ColumnMetadataTable::ColumnOrdinalPosition::ID));
@@ -462,7 +462,7 @@ ErrorCode ColumnsDAO::get_ptree_from_p_gresult(PGresult *&res,
     ptree p_data_length;
     try {
       json_parser::read_json(ss, p_data_length);
-    } catch (json_parser_error &e) {
+    } catch (json_parser_error& e) {
       std::cerr << Message::READ_JSON_FAILURE << e.what() << std::endl;
 
       return ErrorCode::INTERNAL_ERROR;

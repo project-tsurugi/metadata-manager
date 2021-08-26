@@ -22,7 +22,6 @@
 #include <vector>
 
 #include "manager/metadata/metadata.h"
-
 #include "test/global_test_environment.h"
 #include "test/utility/ut_table_metadata.h"
 
@@ -32,24 +31,24 @@ class ApiTestTableMetadata : public ::testing::Test {
  public:
   void SetUp() override;
 
-  static void add_table(const std::string &table_name,
-                        ObjectIdType *ret_table_id);
+  static void add_table(const std::string& table_name,
+                        ObjectIdType* ret_table_id);
   static void add_table(boost::property_tree::ptree new_table,
-                        ObjectIdType *ret_table_id);
+                        ObjectIdType* ret_table_id);
   static void check_table_metadata_expected(
-      boost::property_tree::ptree &expected,
-      boost::property_tree::ptree &actual);
+      boost::property_tree::ptree& expected,
+      boost::property_tree::ptree& actual);
   static std::vector<boost::property_tree::ptree>
   make_testdata_table_metadata();
 
  private:
-  static void check_metadata_expected(boost::property_tree::ptree &expected,
-                                      boost::property_tree::ptree &actual,
-                                      const char *meta_name);
+  static void check_metadata_expected(boost::property_tree::ptree& expected,
+                                      boost::property_tree::ptree& actual,
+                                      const char* meta_name);
   template <typename T>
   static void check_column_metadata_expecetd(
-      boost::property_tree::ptree &expected,
-      boost::property_tree::ptree &actual, const char *meta_name);
+      boost::property_tree::ptree& expected,
+      boost::property_tree::ptree& actual, const char* meta_name);
 };
 
 }  // namespace manager::metadata::testing

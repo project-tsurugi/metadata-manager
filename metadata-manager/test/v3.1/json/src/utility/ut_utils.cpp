@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 #include "test/utility/ut_utils.h"
 
 #include <gtest/gtest.h>
@@ -25,7 +24,6 @@
 #include "manager/metadata/datatypes.h"
 #include "manager/metadata/metadata.h"
 #include "manager/metadata/tables.h"
-
 #include "test/global_test_environment.h"
 
 using namespace manager::metadata;

@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 #ifndef GLOBAL_TEST_ENVIRONMENT_H_
 #define GLOBAL_TEST_ENVIRONMENT_H_
 
@@ -72,7 +71,7 @@ class GlobalTestEnvironment : public ::testing::Environment {
 /**
  * @brief GlobalTestEnvironment instance that is a global variable.
  */
-extern GlobalTestEnvironment *const global;
+extern GlobalTestEnvironment* const global;
 
 }  // namespace manager::metadata::testing
 

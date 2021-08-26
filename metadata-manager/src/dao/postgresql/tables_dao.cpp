@@ -307,7 +307,8 @@ ErrorCode TablesDAO::update_reltuples(float reltuples,
                      TableMetadataTable::ColumnOrdinalPosition::ID),
           table_id);
     } else {
-      error = (nrows == 0 ? ErrorCode::NOT_FOUND : ErrorCode::INVALID_PARAMETER);
+      error =
+          (nrows == 0 ? ErrorCode::NOT_FOUND : ErrorCode::INVALID_PARAMETER);
     }
   }
 
@@ -354,7 +355,8 @@ ErrorCode TablesDAO::select_table_statistic(
       error = get_table_statistic_from_p_gresult(res, ordinal_position,
                                                  table_statistic);
     } else {
-      error = (nrows == 0 ? ErrorCode::NOT_FOUND : ErrorCode::INVALID_PARAMETER);
+      error =
+          (nrows == 0 ? ErrorCode::NOT_FOUND : ErrorCode::INVALID_PARAMETER);
     }
   }
 

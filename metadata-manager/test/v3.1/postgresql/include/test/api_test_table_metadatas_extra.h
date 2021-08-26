@@ -21,7 +21,6 @@
 #include <vector>
 
 #include "manager/metadata/metadata.h"
-
 #include "test/global_test_environment.h"
 
 namespace manager::metadata::testing {

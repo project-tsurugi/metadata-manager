@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 #include <gtest/gtest.h>
 #include <boost/foreach.hpp>
 #include <boost/property_tree/json_parser.hpp>
@@ -24,7 +23,6 @@
 #include "manager/metadata/error_code.h"
 #include "manager/metadata/metadata.h"
 #include "manager/metadata/tables.h"
-
 #include "test/api_test_table_metadatas.h"
 #include "test/utility/ut_utils.h"
 

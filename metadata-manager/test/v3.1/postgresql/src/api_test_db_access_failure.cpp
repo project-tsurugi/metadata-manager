@@ -13,9 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 #include <gtest/gtest.h>
-
 #include <boost/property_tree/ptree.hpp>
 #include <limits>
 #include <memory>
@@ -28,7 +26,6 @@
 #include "manager/metadata/error_code.h"
 #include "manager/metadata/statistics.h"
 #include "manager/metadata/tables.h"
-
 #include "test/global_test_environment.h"
 #include "test/utility/ut_utils.h"
 

@@ -13,9 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 #include <gtest/gtest.h>
-
 #include <boost/property_tree/ptree.hpp>
 #include <memory>
 #include <string>
@@ -26,7 +24,6 @@
 #include "manager/metadata/dao/generic_dao.h"
 #include "manager/metadata/dao/postgresql/db_session_manager.h"
 #include "manager/metadata/error_code.h"
-
 #include "test/api_test_data_types.h"
 #include "test/global_test_environment.h"
 #include "test/utility/ut_utils.h"

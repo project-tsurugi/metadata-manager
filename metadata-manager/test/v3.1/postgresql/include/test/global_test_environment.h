@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 #ifndef GLOBAL_TEST_ENVIRONMENT_H_
 #define GLOBAL_TEST_ENVIRONMENT_H_
 

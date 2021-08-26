@@ -15,16 +15,15 @@
  */
 #include "test/global_test_environment.h"
 
-extern "C" {
-#include <libpq-fe.h>
-}
-
 #include <limits>
 
 #include "manager/metadata/dao/common/config.h"
 #include "manager/metadata/dao/postgresql/dbc_utils.h"
-
 #include "test/utility/ut_utils.h"
+
+extern "C" {
+#include <libpq-fe.h>
+}
 
 namespace manager::metadata::testing {
 

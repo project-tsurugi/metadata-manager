@@ -25,9 +25,9 @@ namespace manager::metadata::testing {
 typedef std::tuple<std::string, float, float> TupleApiTestTableStatistics;
 
 class ApiTestTableStatistics {
-   public:
-    static std::vector<TupleApiTestTableStatistics> make_tuple_table_statistics(
-        const std::string& test_number);
+ public:
+  static std::vector<TupleApiTestTableStatistics> make_tuple_table_statistics(
+      const std::string& test_number);
 };
 
 }  // namespace manager::metadata::testing

@@ -32,7 +32,7 @@ class Config {
    * for a Connection Strings.
    * A Connection Strings is set to this environment variable.
    */
-  static constexpr const char *const TSURUGI_CONNECTION_STRING =
+  static constexpr const char* const TSURUGI_CONNECTION_STRING =
       "TSURUGI_CONNECTION_STRING";
 
   /**
@@ -41,7 +41,7 @@ class Config {
    * this default connection strings
    * to obtain connection parameters.
    */
-  static constexpr const char *const DEFAULT_CONNECTION_STRING =
+  static constexpr const char* const DEFAULT_CONNECTION_STRING =
       "dbname=tsurugi";
 
   /**
@@ -49,20 +49,20 @@ class Config {
    * stores the metadata. Directory that stores the metadata is set to this
    * environment variable.
    */
-  static constexpr const char *const TSURUGI_METADATA_DIR =
+  static constexpr const char* const TSURUGI_METADATA_DIR =
       "TSURUGI_METADATA_DIR";
 
   /**
    * @brief The name of the OS environment variable in the user's home
    * directory.
    */
-  static constexpr const char *const HOME_DIR = "HOME";
+  static constexpr const char* const HOME_DIR = "HOME";
 
   /**
    * @brief Default directory that stores the metadata.
    * Metadata is stored under $HOME/[default directory].
    */
-  static constexpr const char *const DEFAULT_TSURUGI_METADATA_DIR =
+  static constexpr const char* const DEFAULT_TSURUGI_METADATA_DIR =
       ".local/tsurugi/metadata";
 
 };  // class Config

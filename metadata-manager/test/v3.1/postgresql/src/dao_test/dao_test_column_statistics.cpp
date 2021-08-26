@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 #include "test/dao_test/dao_test_column_statistics.h"
 
 #include <gtest/gtest.h>
@@ -29,7 +28,6 @@
 #include "manager/metadata/dao/statistics_dao.h"
 #include "manager/metadata/entity/column_statistic.h"
 #include "manager/metadata/error_code.h"
-
 #include "test/api_test_column_statistics.h"
 #include "test/dao_test/dao_test_table_metadatas.h"
 #include "test/global_test_environment.h"

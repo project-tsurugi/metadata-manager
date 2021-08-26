@@ -13,11 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-extern "C" {
-#include <libpq-fe.h>
-}
-
 #include <gtest/gtest.h>
 #include <cmath>
 #include <iostream>
@@ -25,14 +20,16 @@ extern "C" {
 #include <tuple>
 #include <vector>
 
-#include "manager/metadata/error_code.h"
-#include "manager/metadata/metadata.h"
-
 #include "manager/metadata/dao/common/config.h"
 #include "manager/metadata/dao/postgresql/common.h"
 #include "manager/metadata/dao/postgresql/dbc_utils.h"
-
+#include "manager/metadata/error_code.h"
+#include "manager/metadata/metadata.h"
 #include "test/utility/ut_utils.h"
+
+extern "C" {
+#include <libpq-fe.h>
+}
 
 namespace manager::metadata::testing {
 

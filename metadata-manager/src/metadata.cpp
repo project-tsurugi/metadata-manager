@@ -47,7 +47,8 @@ namespace manager::metadata {
  *  @param  (key_name)    [in] key.
  *  @return  Converted error code.
  */
-ErrorCode Metadata::code_converter(const ErrorCode& error_code, std::string_view key_name) {
+ErrorCode Metadata::code_converter(const ErrorCode& error_code,
+                                   std::string_view key_name) {
   ErrorCode result_code = error_code;
   // Find of error code.
   auto find_error_code = code_convert_list_.find(error_code);

@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 #include <gtest/gtest.h>
 #include <cmath>
 #include <limits>
@@ -26,7 +25,6 @@
 #include "manager/metadata/dao/tables_dao.h"
 #include "manager/metadata/error_code.h"
 #include "manager/metadata/tables.h"
-
 #include "test/api_test_table_statistics.h"
 #include "test/dao_test/dao_test_table_metadatas.h"
 #include "test/global_test_environment.h"

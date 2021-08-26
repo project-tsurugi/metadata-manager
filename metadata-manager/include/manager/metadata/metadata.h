@@ -147,7 +147,8 @@ class Metadata {
   std::unordered_map<ErrorCode, std::unordered_map<std::string, ErrorCode>>
       code_convert_list_;
 
-  ErrorCode code_converter(const ErrorCode& error_code, std::string_view key_name);
+  ErrorCode code_converter(const ErrorCode& error_code,
+                           std::string_view key_name);
 
  private:
   std::string database_;

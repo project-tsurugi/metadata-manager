@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 #include "test/utility/ut_table_metadata.h"
 
 #include <utility>

@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 #ifndef UT_UTILS_H_
 #define UT_UTILS_H_
 
@@ -23,7 +22,6 @@
 #include <string>
 
 #include "manager/metadata/entity/table_statistic.h"
-
 #include "test/utility/ut_column_metadata.h"
 #include "test/utility/ut_table_metadata.h"
 

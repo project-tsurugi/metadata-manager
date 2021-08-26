@@ -1,23 +1,20 @@
 #define _TABLES_STATIC_ENABLED_ 0
 #define _DATARYPES_STATIC_ENABLED_ 0
 
-#include <iostream>
-#include <string>
-#include <string_view>
-#include <vector>
-
 #include <boost/foreach.hpp>
 #include <boost/optional.hpp>
 #include <boost/property_tree/exceptions.hpp>
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
+#include <iostream>
+#include <string>
+#include <string_view>
+#include <vector>
 
 #include "manager/metadata/dao/json/object_id.h"
+#include "manager/metadata/datatypes.h"
 #include "manager/metadata/error_code.h"
 #include "manager/metadata/metadata.h"
-//#include "manager/metadata/datatype_metadata.h"
-//#include "manager/metadata/table_metadata.h"
-#include "manager/metadata/datatypes.h"
 #include "manager/metadata/tables.h"
 
 using manager::metadata::db::json::ObjectId;

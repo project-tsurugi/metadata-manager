@@ -18,7 +18,6 @@
 #include <limits>
 
 #include "manager/metadata/dao/common/config.h"
-
 #include "test/utility/ut_utils.h"
 
 namespace manager::metadata::testing {

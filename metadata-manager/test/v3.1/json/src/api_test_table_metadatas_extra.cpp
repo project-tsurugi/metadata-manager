@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 #include "test/api_test_table_metadatas_extra.h"
 
 #include <gtest/gtest.h>
@@ -26,7 +25,6 @@
 #include "manager/metadata/error_code.h"
 #include "manager/metadata/metadata.h"
 #include "manager/metadata/tables.h"
-
 #include "test/api_test_table_metadatas.h"
 #include "test/utility/ut_utils.h"
 
@@ -70,8 +68,7 @@ std::vector<ptree> ApiTestTableMetadataExtra::make_valid_table_metadatas() {
   }
 
   // Make valid table metadatas used as test data.
-  boost::optional<ptree &> o_tables =
-      pt.get_child_optional(Tables::TABLES_NODE);
+  boost::optional<ptree&> o_tables = pt.get_child_optional(Tables::TABLES_NODE);
   if (o_tables) {
     ptree& tables = o_tables.value();
     BOOST_FOREACH (const ptree::value_type& node, tables) {

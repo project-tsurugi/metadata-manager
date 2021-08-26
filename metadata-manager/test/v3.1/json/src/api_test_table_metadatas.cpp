@@ -24,7 +24,6 @@
 
 #include "manager/metadata/error_code.h"
 #include "manager/metadata/tables.h"
-
 #include "test/api_test_table_metadatas_extra.h"
 #include "test/utility/ut_table_metadata.h"
 #include "test/utility/ut_utils.h"

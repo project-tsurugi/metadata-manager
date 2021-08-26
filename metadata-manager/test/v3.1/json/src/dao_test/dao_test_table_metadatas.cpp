@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 #include "test/dao_test/dao_test_table_metadatas.h"
 
 #include <gtest/gtest.h>
@@ -28,7 +27,6 @@
 #include "manager/metadata/dao/tables_dao.h"
 #include "manager/metadata/error_code.h"
 #include "manager/metadata/tables.h"
-
 #include "test/api_test_table_metadatas.h"
 #include "test/global_test_environment.h"
 #include "test/utility/ut_table_metadata.h"
@@ -253,7 +251,8 @@ void DaoTestTableMetadata::remove_table_metadata(const ObjectIdType object_id) {
   tdao = std::static_pointer_cast<TablesDAO>(t_gdao);
 
   ObjectIdType retval_object_id;
-  error = tdao->delete_table_metadata(Tables::ID, std::to_string(object_id), retval_object_id);
+  error = tdao->delete_table_metadata(Tables::ID, std::to_string(object_id),
+                                      retval_object_id);
   EXPECT_EQ(ErrorCode::OK, error);
   EXPECT_EQ(object_id, retval_object_id);
 
