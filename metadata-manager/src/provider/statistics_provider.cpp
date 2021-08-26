@@ -20,7 +20,6 @@
 
 #include "manager/metadata/dao/common/message.h"
 #include "manager/metadata/statistics.h"
-#include "manager/metadata/tables.h"
 
 // =============================================================================
 namespace manager::metadata::db {
@@ -57,51 +56,17 @@ ErrorCode StatisticsProvider::init() {
 
 /**
  *  @brief  Adds or updates table statistic
- *  to the table metadata table based on the given table id.
- *  Adds table statistic if it not exists in the metadata repository.
- *  Updates table statistic if it already exists.
- *  @param  (table_id)   [in]  table id.
- *  @param  (reltuples)  [in]  the number of rows to add or update.
- *  @return  ErrorCode::OK if success, otherwise an error code.
- */
-ErrorCode StatisticsProvider::add_table_statistic(ObjectIdType table_id,
-                                                  float reltuples) {
-  // Initialization
-  ErrorCode error = init();
-  if (error != ErrorCode::OK) {
-    return error;
-  }
-
-  error = session_manager_->start_transaction();
-  if (error != ErrorCode::OK) {
-    return error;
-  }
-
-  ObjectIdType retval_object_id = 0;
-  error = tables_dao_->update_reltuples(
-      reltuples, Tables::ID, std::to_string(table_id), retval_object_id);
-  if (error == ErrorCode::OK) {
-    error = session_manager_->commit();
-  } else {
-    ErrorCode rollback_result = session_manager_->rollback();
-    if (rollback_result != ErrorCode::OK) {
-      return rollback_result;
-    }
-  }
-  return error;
-}
-
-/**
- *  @brief  Adds or updates table statistic
  *  to the table metadata table based on the given table name.
  *  Adds table statistic if it not exists in the metadata repository.
  *  Updates table statistic if it already exists.
- *  @param  (table_name) [in]  table name.
+ *  @param  (key)        [in]  key of table metadata object.
+ *  @param  (value)      [in]  value of table metadata object.
  *  @param  (reltuples)  [in]  the number of rows to add or update.
  *  @param  (table_id)   [out] table id of the row updated.
  *  @return  ErrorCode::OK if success, otherwise an error code.
  */
-ErrorCode StatisticsProvider::add_table_statistic(std::string_view table_name,
+ErrorCode StatisticsProvider::add_table_statistic(std::string_view key,
+                                                  std::string_view value,
                                                   float reltuples,
                                                   ObjectIdType* table_id) {
   // Initialization
@@ -116,8 +81,8 @@ ErrorCode StatisticsProvider::add_table_statistic(std::string_view table_name,
   }
 
   ObjectIdType retval_object_id = 0;
-  error = tables_dao_->update_reltuples(reltuples, Tables::NAME,
-                                        table_name.data(), retval_object_id);
+  error =
+      tables_dao_->update_reltuples(reltuples, key, value, retval_object_id);
   if (error == ErrorCode::OK) {
     error = session_manager_->commit();
     if ((error == ErrorCode::OK) && (table_id != nullptr)) {

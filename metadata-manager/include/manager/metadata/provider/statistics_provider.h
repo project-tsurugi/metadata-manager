@@ -33,10 +33,8 @@ namespace manager::metadata::db {
 class StatisticsProvider : public ProviderBase {
  public:
   manager::metadata::ErrorCode init();
-  manager::metadata::ErrorCode add_table_statistic(ObjectIdType table_id,
-                                                   float reltuples);
   manager::metadata::ErrorCode add_table_statistic(
-      std::string_view table_name, float reltuples,
+      std::string_view key, std::string_view value, float reltuples,
       ObjectIdType* table_id = nullptr);
   manager::metadata::ErrorCode add_column_statistic(
       ObjectIdType table_id, ObjectIdType ordinal_position,

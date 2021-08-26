@@ -106,7 +106,8 @@ ErrorCode Statistics::add_table_statistic(ObjectIdType table_id,
   }
 
   // Adds or updates the table statistic through the provider.
-  ErrorCode error = provider->add_table_statistic(table_id, reltuples);
+  ErrorCode error = provider->add_table_statistic(
+      Tables::ID, std::to_string(table_id), reltuples);
 
   // Convert the return value
   error = code_converter(error, Tables::ID);
@@ -133,8 +134,8 @@ ErrorCode Statistics::add_table_statistic(std::string_view table_name,
   }
 
   // Adds or updates the table statistic through the provider.
-  ErrorCode error =
-      provider->add_table_statistic(table_name, reltuples, table_id);
+  ErrorCode error = provider->add_table_statistic(Tables::NAME, table_name,
+                                                  reltuples, table_id);
 
   // Convert the return value
   error = code_converter(error, Tables::NAME);
