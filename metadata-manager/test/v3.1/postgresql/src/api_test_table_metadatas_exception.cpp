@@ -23,7 +23,7 @@
 #include "manager/metadata/error_code.h"
 #include "manager/metadata/metadata.h"
 #include "manager/metadata/tables.h"
-#include "test/api_test_table_metadatas.h"
+#include "test/api_test_table_metadata.h"
 #include "test/utility/ut_utils.h"
 
 using namespace manager::metadata;
@@ -38,17 +38,17 @@ class ApiTestAddTableMetadataException
     if (!global->is_open()) {
       GTEST_SKIP_("metadata repository is not started.");
     } else {
-      invalid_table_metadatas = make_invalid_table_metadatas();
+      invalid_table_metadata = make_invalid_table_metadata();
     }
   }
   static std::vector<boost::property_tree::ptree>
-  make_invalid_table_metadatas();
+  make_invalid_table_metadata();
 
  protected:
   /**
-   * @brief invalid table metadatas used as test datas.
+   * @brief invalid table metadata used as test data.
    */
-  std::vector<boost::property_tree::ptree> invalid_table_metadatas;
+  std::vector<boost::property_tree::ptree> invalid_table_metadata;
 };
 
 class ApiTestTableMetadataByTableIdException
@@ -73,20 +73,20 @@ INSTANTIATE_TEST_CASE_P(ParamtererizedTest,
                         ::testing::Values("table_name_not_exists", ""));
 
 /**
- *  @brief  Make invalid table metadatas used as test datas.
+ *  @brief  Make invalid table metadata used as test data.
  */
 std::vector<ptree>
-ApiTestAddTableMetadataException::make_invalid_table_metadatas() {
-  std::vector<ptree> invalid_table_metadatas;
+ApiTestAddTableMetadataException::make_invalid_table_metadata() {
+  std::vector<ptree> invalid_table_metadata;
 
   // empty ptree
   ptree empty_table;
-  invalid_table_metadatas.emplace_back(empty_table);
+  invalid_table_metadata.emplace_back(empty_table);
 
   // remove table name
   ptree new_table = global->testdata_table_metadata->tables;
   new_table.erase(Tables::NAME);
-  invalid_table_metadatas.emplace_back(new_table);
+  invalid_table_metadata.emplace_back(new_table);
 
   // remove all column name
   new_table = global->testdata_table_metadata->tables;
@@ -95,7 +95,7 @@ ApiTestAddTableMetadataException::make_invalid_table_metadatas() {
     ptree& column = node.second;
     column.erase(Tables::Column::NAME);
   }
-  invalid_table_metadatas.emplace_back(new_table);
+  invalid_table_metadata.emplace_back(new_table);
 
   // remove all ordinal position
   new_table = global->testdata_table_metadata->tables;
@@ -104,7 +104,7 @@ ApiTestAddTableMetadataException::make_invalid_table_metadatas() {
     ptree& column = node.second;
     column.erase(Tables::Column::ORDINAL_POSITION);
   }
-  invalid_table_metadatas.emplace_back(new_table);
+  invalid_table_metadata.emplace_back(new_table);
 
   // remove all data type id
   new_table = global->testdata_table_metadata->tables;
@@ -113,7 +113,7 @@ ApiTestAddTableMetadataException::make_invalid_table_metadatas() {
     ptree& column = node.second;
     column.erase(Tables::Column::DATA_TYPE_ID);
   }
-  invalid_table_metadatas.emplace_back(new_table);
+  invalid_table_metadata.emplace_back(new_table);
 
   // add invalid data type id
   BOOST_FOREACH (ptree::value_type& node,
@@ -122,7 +122,7 @@ ApiTestAddTableMetadataException::make_invalid_table_metadatas() {
     int invalid_data_type_id = -1;
     column.put(Tables::Column::DATA_TYPE_ID, invalid_data_type_id);
   }
-  invalid_table_metadatas.emplace_back(new_table);
+  invalid_table_metadata.emplace_back(new_table);
 
   // remove all not null constraint
   new_table = global->testdata_table_metadata->tables;
@@ -131,13 +131,13 @@ ApiTestAddTableMetadataException::make_invalid_table_metadatas() {
     ptree& column = node.second;
     column.erase(Tables::Column::NULLABLE);
   }
-  invalid_table_metadatas.emplace_back(new_table);
+  invalid_table_metadata.emplace_back(new_table);
 
-  return invalid_table_metadatas;
+  return invalid_table_metadata;
 }
 
 /**
- *  @brief  Add invalid table metadatas.
+ *  @brief  Add invalid table metadata.
  */
 TEST_F(ApiTestAddTableMetadataException, add_table_metadata) {
   auto tables = std::make_unique<Tables>(GlobalTestEnvironment::TEST_DB);
@@ -145,7 +145,7 @@ TEST_F(ApiTestAddTableMetadataException, add_table_metadata) {
   ErrorCode error = tables->init();
   EXPECT_EQ(ErrorCode::OK, error);
 
-  for (auto invalid_table : invalid_table_metadatas) {
+  for (auto invalid_table : invalid_table_metadata) {
     UTUtils::print("-- add invalid table metadata --");
     UTUtils::print(UTUtils::get_tree_string(invalid_table));
 

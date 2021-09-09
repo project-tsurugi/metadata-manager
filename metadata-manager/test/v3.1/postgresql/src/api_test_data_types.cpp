@@ -207,7 +207,7 @@ void ApiTestDataTypes::check_datatype_metadata_expected(const ptree& datatype) {
 }
 
 /**
- * @brief Happy test for getting all data type metadatas based on data type
+ * @brief Happy test for getting all data type metadata based on data type
  * name.
  */
 TEST_P(ApiTestDataTypesByName, get_datatypes_by_name) {
@@ -227,7 +227,7 @@ TEST_P(ApiTestDataTypesByName, get_datatypes_by_name) {
 }
 
 /**
- * @brief Happy test for getting all data type metadatas based on data type
+ * @brief Happy test for getting all data type metadata based on data type
  * key/value pair.
  */
 TEST_P(ApiTestDataTypesByKeyValue, get_datatypes_by_key_value) {
@@ -249,7 +249,7 @@ TEST_P(ApiTestDataTypesByKeyValue, get_datatypes_by_key_value) {
 }
 
 /**
- * @brief Exception path test for getting non-existing data type metadatas
+ * @brief Exception path test for getting non-existing data type metadata
  * based on invalid data type name.
  */
 TEST_P(ApiTestDataTypesException, get_non_existing_datatypes_by_name) {
@@ -268,7 +268,7 @@ TEST_P(ApiTestDataTypesException, get_non_existing_datatypes_by_name) {
 }
 
 /**
- * @brief Exception path test for getting non-existing data type metadatas
+ * @brief Exception path test for getting non-existing data type metadata
  * based on invalid data type key/value pair.
  */
 TEST_P(ApiTestDataTypesException, get_non_existing_datatypes_by_key_value) {

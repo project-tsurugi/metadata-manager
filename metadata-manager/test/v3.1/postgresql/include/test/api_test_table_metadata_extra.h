@@ -30,10 +30,10 @@ class ApiTestTableMetadataExtra
  public:
   void SetUp() override;
 
-  static std::vector<boost::property_tree::ptree> make_valid_table_metadatas();
+  static std::vector<boost::property_tree::ptree> make_valid_table_metadata();
 
  protected:
-  std::vector<boost::property_tree::ptree> table_metadatas;
+  std::vector<boost::property_tree::ptree> table_metadata;
 };
 
 }  // namespace manager::metadata::testing

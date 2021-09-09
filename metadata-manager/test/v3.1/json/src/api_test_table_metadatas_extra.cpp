@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "test/api_test_table_metadatas_extra.h"
+#include "test/api_test_table_metadata_extra.h"
 
 #include <gtest/gtest.h>
 #include <boost/foreach.hpp>
@@ -25,7 +25,7 @@
 #include "manager/metadata/error_code.h"
 #include "manager/metadata/metadata.h"
 #include "manager/metadata/tables.h"
-#include "test/api_test_table_metadatas.h"
+#include "test/api_test_table_metadata.h"
 #include "test/utility/ut_utils.h"
 
 using namespace manager::metadata;
@@ -38,21 +38,21 @@ void ApiTestTableMetadataExtra::SetUp() {
     GTEST_SKIP_("metadata repository is not started.");
   } else {
     // If metadata repository is opened,
-    // make valid table metadatas used as test data.
-    table_metadatas = make_valid_table_metadatas();
+    // make valid table metadata used as test data.
+    table_metadata = make_valid_table_metadata();
 
     // If valid test data could not be made, skip this test.
-    if (table_metadatas.empty()) {
+    if (table_metadata.empty()) {
       GTEST_SKIP_("could not read a json file with table metadata.");
     }
   }
 }
 
 /**
- * @brief Make valid table metadatas used as test data,
+ * @brief Make valid table metadata used as test data,
  * by reading a json file with table metadata.
  */
-std::vector<ptree> ApiTestTableMetadataExtra::make_valid_table_metadatas() {
+std::vector<ptree> ApiTestTableMetadataExtra::make_valid_table_metadata() {
   std::vector<ptree> test_data_table_metadata;
 
   ptree pt;
@@ -67,7 +67,7 @@ std::vector<ptree> ApiTestTableMetadataExtra::make_valid_table_metadatas() {
     return test_data_table_metadata;
   }
 
-  // Make valid table metadatas used as test data.
+  // Make valid table metadata used as test data.
   boost::optional<ptree&> o_tables = pt.get_child_optional(Tables::TABLES_NODE);
   if (o_tables) {
     ptree& tables = o_tables.value();
@@ -81,11 +81,11 @@ std::vector<ptree> ApiTestTableMetadataExtra::make_valid_table_metadatas() {
 }
 
 /**
- * @brief Add, get, remove valid table metadatas based on table name.
+ * @brief Add, get, remove valid table metadata based on table name.
  */
 TEST_F(ApiTestTableMetadataExtra, add_get_remove_table_metadata_by_table_name) {
-  // variable "table_metadatas" is test data set.
-  for (auto table_metadata_expected : table_metadatas) {
+  // variable "table_metadata" is test data set.
+  for (auto table_metadata_expected : table_metadata) {
     // add valid table metadata.
     ObjectIdType ret_table_id = -1;
     ApiTestTableMetadata::add_table(table_metadata_expected, &ret_table_id);
@@ -127,11 +127,11 @@ TEST_F(ApiTestTableMetadataExtra, add_get_remove_table_metadata_by_table_name) {
 }
 
 /**
- * @brief Add, get, remove valid table metadatas based on table id.
+ * @brief Add, get, remove valid table metadata based on table id.
  */
 TEST_F(ApiTestTableMetadataExtra, add_get_remove_table_metadata_by_table_id) {
-  // variable "table_metadatas" is test data set.
-  for (auto table_metadata_expected : table_metadatas) {
+  // variable "table_metadata" is test data set.
+  for (auto table_metadata_expected : table_metadata) {
     // add valid table metadata.
     ObjectIdType ret_table_id = -1;
     ApiTestTableMetadata::add_table(table_metadata_expected, &ret_table_id);

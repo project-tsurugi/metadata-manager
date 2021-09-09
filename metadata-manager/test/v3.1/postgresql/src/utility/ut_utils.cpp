@@ -170,7 +170,7 @@ void UTUtils::generate_table_metadata(
   // generate namespace.
   testdata_table_metadata->namespace_name = "namespace";
 
-  // generate three column metadatas.
+  // generate three column metadata.
   std::vector<ObjectIdType> ordinal_positions = {1, 2, 3};
   std::vector<std::string> col_names = {"col1", "col2", "col3"};
 

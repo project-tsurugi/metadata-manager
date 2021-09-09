@@ -440,7 +440,7 @@ ErrorCode TablesDAO::insert_table_metadata(boost::property_tree::ptree& table,
  *  @param  (object_key)          [in]  key. column name of a table metadata
  *  table.
  *  @param  (object_value)        [in]  value to be filtered.
- *  @param  (object)              [out] table metadatas to get,
+ *  @param  (object)              [out] table metadata to get,
  *  where the given key equals the given value.
  *  @return ErrorCode::OK if success, otherwise an error code.
  */

@@ -318,7 +318,7 @@ ErrorCode ColumnsDAO::insert_one_column_metadata(
  *  where the given key equals the given value.
  *  @param  (object_key)    [in]  key. column name of a column metadata table.
  *  @param  (object_value)  [in]  value to be filtered.
- *  @param  (object)        [out] column metadatas to get,
+ *  @param  (object)        [out] column metadata to get,
  *  where the given key equals the given value.
  *  @return ErrorCode::OK if success, otherwise an error code.
  */

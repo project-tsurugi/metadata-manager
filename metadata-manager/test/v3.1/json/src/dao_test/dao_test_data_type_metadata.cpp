@@ -40,7 +40,7 @@ class DaoTestDataTypesByKeyValue
 };
 
 /**
- * @brief Happy test for getting all data type metadatas based on data type
+ * @brief Happy test for getting all data type metadata based on data type
  * key/value pair.
  */
 TEST_P(DaoTestDataTypesByKeyValue, get_datatypes_by_key_value) {
@@ -70,7 +70,7 @@ TEST_P(DaoTestDataTypesByKeyValue, get_datatypes_by_key_value) {
 }
 
 /**
- * @brief Exception path test for getting non-existing data type metadatas
+ * @brief Exception path test for getting non-existing data type metadata
  * based on invalid data type key/value pair.
  */
 TEST_F(DaoTestDataTypesByKeyValue, get_non_existing_datatypes_by_key_value) {

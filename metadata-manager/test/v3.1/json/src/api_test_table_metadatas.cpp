@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "test/api_test_table_metadatas.h"
+#include "test/api_test_table_metadata.h"
 
 #include <gtest/gtest.h>
 #include <boost/foreach.hpp>
@@ -24,7 +24,7 @@
 
 #include "manager/metadata/error_code.h"
 #include "manager/metadata/tables.h"
-#include "test/api_test_table_metadatas_extra.h"
+#include "test/api_test_table_metadata_extra.h"
 #include "test/utility/ut_table_metadata.h"
 #include "test/utility/ut_utils.h"
 
@@ -118,7 +118,7 @@ void ApiTestTableMetadata::check_table_metadata_expected(ptree& expected,
   // primary keys
   check_metadata_expected(expected, actual, Tables::PRIMARY_KEY_NODE);
 
-  // column metadatas
+  // column metadata
   boost::optional<ptree&> o_columns_expected =
       expected.get_child_optional(Tables::COLUMNS_NODE);
   boost::optional<ptree&> o_columns_actual =
@@ -136,7 +136,7 @@ void ApiTestTableMetadata::check_table_metadata_expected(ptree& expected,
       p_columns_actual.emplace_back(column);
     }
 
-    // Verifies that the number of column metadatas is expected number.
+    // Verifies that the number of column metadata is expected number.
     EXPECT_EQ(p_columns_expected.size(), p_columns_actual.size());
 
     for (int op = 0; static_cast<size_t>(op) < p_columns_expected.size();

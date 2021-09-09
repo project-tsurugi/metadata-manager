@@ -132,7 +132,7 @@ ErrorCode TablesProvider::get_table_metadata(std::string_view key,
 
   std::string object_id = "";
   if (key == Tables::ID) {
-    error = get_all_column_metadatas(value, object);
+    error = get_all_column_metadata(value, object);
   } else if (key == Tables::NAME) {
     BOOST_FOREACH (ptree::value_type& node, object) {
       ptree& table = node.second;
@@ -144,7 +144,7 @@ ErrorCode TablesProvider::get_table_metadata(std::string_view key,
           return ErrorCode::INTERNAL_ERROR;
         }
 
-        error = get_all_column_metadatas(o_table_id.get(), object);
+        error = get_all_column_metadata(o_table_id.get(), object);
         break;
       } else {
         boost::optional<std::string> o_table_id =
@@ -153,7 +153,7 @@ ErrorCode TablesProvider::get_table_metadata(std::string_view key,
           return ErrorCode::INTERNAL_ERROR;
         }
 
-        error = get_all_column_metadatas(o_table_id.get(), table);
+        error = get_all_column_metadata(o_table_id.get(), table);
         if (error != ErrorCode::OK) {
           break;
         }
@@ -228,7 +228,7 @@ ErrorCode TablesProvider::remove_table_metadata(std::string_view key,
  * id.
  *  @return  ErrorCode::OK if success, otherwise an error code.
  */
-ErrorCode TablesProvider::get_all_column_metadatas(std::string_view table_id,
+ErrorCode TablesProvider::get_all_column_metadata(std::string_view table_id,
                                                    ptree& tables) const {
   ptree columns;
   ErrorCode error = columns_dao_->select_column_metadata(
