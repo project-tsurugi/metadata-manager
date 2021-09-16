@@ -32,9 +32,9 @@ namespace manager::metadata {
 using manager::metadata::ErrorCode;
 
 /**
- *  @brief  Constructor
- *  @param  (database) [in]  database name.
- *  @param  (component) [in]  component name.
+ * @brief Constructor
+ * @param (database)   [in]  database name.
+ * @param (component)  [in]  component name.
  */
 Tables::Tables(std::string_view database, std::string_view component)
     : Metadata(database, component) {
@@ -54,9 +54,9 @@ Tables::Tables(std::string_view database, std::string_view component)
 }
 
 /**
- *  @brief  Initialization.
- *  @param  none.
- *  @return  ErrorCode::OK if success, otherwise an error code.
+ * @brief Initialization.
+ * @param none.
+ * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode Tables::init() {
   // Initialize the provider.
@@ -66,19 +66,19 @@ ErrorCode Tables::init() {
 }
 
 /**
- *  @brief  Add table metadata to table metadata table.
- *  @param  (object) [in]  table metadata to add.
- *  @return ErrorCode::OK if success, otherwise an error code.
+ * @brief Add table metadata to table metadata table.
+ * @param (object)  [in]  table metadata to add.
+ * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode Tables::add(boost::property_tree::ptree& object) {
   return add(object, nullptr);
 }
 
 /**
- *  @brief  Add table metadata to table metadata table.
- *  @param  (object)      [in]  table metadata to add.
- *  @param  (object_id)   [out] ID of the added table metadata.
- *  @return ErrorCode::OK if success, otherwise an error code.
+ * @brief Add table metadata to table metadata table.
+ * @param (object)      [in]  table metadata to add.
+ * @param (object_id)   [out] ID of the added table metadata.
+ * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode Tables::add(boost::property_tree::ptree& object,
                       ObjectIdType* object_id) {
@@ -95,10 +95,10 @@ ErrorCode Tables::add(boost::property_tree::ptree& object,
 }
 
 /**
- *  @brief  Get table metadata.
- *  @param  (object_id) [in]  table id.
- *  @param  (object)    [out] table metadata with the specified ID.
- *  @return ErrorCode::OK if success, otherwise an error code.
+ * @brief Get table metadata.
+ * @param (object_id)  [in]  table id.
+ * @param (object)     [out] table metadata with the specified ID.
+ * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode Tables::get(const ObjectIdType object_id,
                       boost::property_tree::ptree& object) {
@@ -119,11 +119,10 @@ ErrorCode Tables::get(const ObjectIdType object_id,
 }
 
 /**
- *  @brief  Get table metadata object based on table name.
- *  @param  (object_name)   [in]  table name. (Value of "name"
- * key.)
- *  @param  (object)        [out] table metadata object with the specified name.
- *  @return ErrorCode::OK if success, otherwise an error code.
+ * @brief Get table metadata object based on table name.
+ * @param (object_name)  [in]  table name. (Value of "name" key.)
+ * @param (object)       [out] table metadata object with the specified name.
+ * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode Tables::get(std::string_view object_name,
                       boost::property_tree::ptree& object) {
@@ -143,12 +142,12 @@ ErrorCode Tables::get(std::string_view object_name,
 }
 
 /**
- *  @brief  Remove all metadata-object based on the given table id
- *  (table metadata, column metadata and column statistics)
- *  from metadata-table (the table metadata table,
- *  the column metadata table and the column statistics table).
- *  @param (object_id) [in] table id.
- *  @return ErrorCode::OK if success, otherwise an error code.
+ * @brief Remove all metadata-object based on the given table id
+ *   (table metadata, column metadata and column statistics)
+ *   from metadata-table (the table metadata table,
+ *   the column metadata table and the column statistics table).
+ * @param (object_id)  [in]  table id.
+ * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode Tables::remove(const ObjectIdType object_id) {
   // Parameter value check
@@ -167,13 +166,13 @@ ErrorCode Tables::remove(const ObjectIdType object_id) {
 }
 
 /**
- *  @brief  Remove all metadata-object based on the given table name
- *  (table metadata, column metadata and column statistics)
- *  from metadata-table (the table metadata table,
- *  the column metadata table and the column statistics table).
- *  @param (object_name) [in]  table name.
- *  @param (object_id)   [out] object id of table removed.
- *  @return ErrorCode::OK if success, otherwise an error code.
+ * @brief Remove all metadata-object based on the given table name
+ *   (table metadata, column metadata and column statistics)
+ *   from metadata-table (the table metadata table,
+ *   the column metadata table and the column statistics table).
+ * @param (object_name)  [in]  table name.
+ * @param (object_id)    [out] object id of table removed.
+ * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode Tables::remove(const char* object_name, ObjectIdType* object_id) {
   std::string_view s_object_name = std::string_view(object_name);

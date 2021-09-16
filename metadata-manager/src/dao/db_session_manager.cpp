@@ -54,12 +54,12 @@ namespace storage = manager::metadata::db::json;
 // Protected method area
 
 /**
- *  @brief  Create Dao instance for the requested table name.
- *  @param  (table_name)   [in]  unique id for the Dao.
- *  @param  (session_manager)   [in]  Data connector for the Dao.
- *  @param  (gdao)         [out] Dao instance if success.
+ * @brief Create Dao instance for the requested table name.
+ * @param (table_name)   [in]  unique id for the Dao.
+ * @param (session_manager)   [in]  Data connector for the Dao.
+ * @param (gdao)         [out] Dao instance if success.
  *     for the requested table name.
- *  @return ErrorCode::OK if success, otherwise an error code.
+ * @return ErrorCode::OK if success, otherwise an error code.
  */
 manager::metadata::ErrorCode DBSessionManager::create_dao(
     GenericDAO::TableName table_name, DBSessionManager* session_manager,

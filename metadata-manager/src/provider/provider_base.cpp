@@ -37,8 +37,8 @@ namespace storage = json;
 #endif
 
 /**
- *  @brief  Constructor
- *  @return none.
+ * @brief Constructor
+ * @return none.
  */
 ProviderBase::ProviderBase() {
   // Create an instance of the DBSessionManager class.

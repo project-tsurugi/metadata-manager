@@ -29,9 +29,9 @@ using boost::property_tree::ptree;
 using manager::metadata::ErrorCode;
 
 /**
- *  @brief  Defines all prepared data types metadata.
- *  @param  none.
- *  @return  ErrorCode::OK if success, otherwise an error code.
+ * @brief Defines all prepared data types metadata.
+ * @param none.
+ * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode DataTypesDAO::prepare() const {
   ptree datatypes;
@@ -100,12 +100,12 @@ ErrorCode DataTypesDAO::prepare() const {
 }
 
 /**
- *  @brief Get one data type metadata from the data types metadata table,
- *  where the given key equals the given value.
- *  @param  (object_key)     [in]  metadata-object key.
- *  @param  (object_value)   [in]  metadata-object value.
- *  @param  (object)         [out] metadata-object with the specified name.
- *  @return  ErrorCode::OK if success, otherwise an error code.
+ * @brief Get one data type metadata from the data types metadata table,
+ *   where the given key equals the given value.
+ * @param (object_key)    [in]  metadata-object key.
+ * @param (object_value)  [in]  metadata-object value.
+ * @param (object)        [out] metadata-object with the specified name.
+ * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode DataTypesDAO::select_one_data_type_metadata(
     std::string_view object_key, std::string_view object_value,

@@ -46,11 +46,11 @@ using manager::metadata::db::postgresql::SCHEMA_NAME;
 using manager::metadata::db::postgresql::TableName;
 
 /**
- *  @brief  Returnes an UPDATE stetement for the number of rows
- *  based on table name.
- *  @param  (column_name)  [in]  column name of metadata-table.
- *  @return an UPDATE stetement to update the number of rows
- *  based on table name.
+ * @brief Returnes an UPDATE stetement for the number of rows
+ *   based on table name.
+ * @param (column_name)  [in]  column name of metadata-table.
+ * @return an UPDATE stetement to update the number of rows
+ *   based on table name.
  */
 std::string update_reltuples(std::string_view column_name) {
   // SQL statement
@@ -63,9 +63,9 @@ std::string update_reltuples(std::string_view column_name) {
 }
 
 /**
- *  @brief  Returnes an INSERT stetement for table metadata.
- *  @param  none.
- *  @return an INSERT stetement to insert table metadata.
+ * @brief Returnes an INSERT stetement for table metadata.
+ * @param none.
+ * @return an INSERT stetement to insert table metadata.
  */
 std::string insert_table_metadata() {
   // SQL statement
@@ -82,11 +82,11 @@ std::string insert_table_metadata() {
 }
 
 /**
- * @brief  Returnes a SELECT stetement to get metadata:
+ * @brief Returnes a SELECT stetement to get metadata:
  *   select * from table_name where column_name = $1.
- * @param  (column_name)  [in]  column name of metadata-table.
+ * @param (column_name)  [in]  column name of metadata-table.
  * @return a SELECT stetement:
- *    select * from table_name where column_name = $1.
+ *   select * from table_name where column_name = $1.
  */
 std::string select_equal_to(std::string_view column_name) {
   // SQL statement
@@ -99,11 +99,11 @@ std::string select_equal_to(std::string_view column_name) {
 }
 
 /**
- * @brief  Returnes a SELECT stetement to get metadata:
- *   select * from table_name where column_name = $1.
- * @param  (column_name)  [in]  column name of metadata-table.
+ * @brief Returnes a SELECT stetement to get metadata:
+ *   delete from table_name where column_name = $1.
+ * @param (column_name)  [in]  column name of metadata-table.
  * @return a DELETE stetement:
- *    delete from table_name where column_name = $1.
+ *   delete from table_name where column_name = $1.
  */
 std::string delete_equal_to(std::string_view column_name) {
   // SQL statement
@@ -143,9 +143,9 @@ struct TableMetadataTable {
 };
 
 /**
- *  @brief  Constructor
- *  @param  (connection)  [in]  a connection to the metadata repository.
- *  @return none.
+ * @brief Constructor
+ * @param (connection)  [in]  a connection to the metadata repository.
+ * @return none.
  */
 TablesDAO::TablesDAO(DBSessionManager* session_manager)
     : connection_(session_manager->get_connection()) {
@@ -213,9 +213,9 @@ TablesDAO::TablesDAO(DBSessionManager* session_manager)
 }
 
 /**
- *  @brief  Defines all prepared statements.
- *  @param  none.
- *  @return ErrorCode::OK if success, otherwise an error code.
+ * @brief Defines all prepared statements.
+ * @param none.
+ * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode TablesDAO::prepare() const {
   ErrorCode error = ErrorCode::INTERNAL_ERROR;
@@ -265,12 +265,12 @@ ErrorCode TablesDAO::prepare() const {
 }
 
 /**
- *  @brief  Executes UPDATE statement to update the given number of rows
- *  into the table metadata table based on the given table id.
- *  @param  (reltuples)     [in]  the number of rows to update.
- *  @param  (object_key)    [in]  key. column name of a statistic table.
- *  @param  (object_value)  [in]  value to be filtered.
- *  @return  ErrorCode::OK if success, otherwise an error code.
+ * @brief Executes UPDATE statement to update the given number of rows
+ *   into the table metadata table based on the given table id.
+ * @param (reltuples)     [in]  the number of rows to update.
+ * @param (object_key)    [in]  key. column name of a statistic table.
+ * @param (object_value)  [in]  value to be filtered.
+ * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode TablesDAO::update_reltuples(float reltuples,
                                       std::string_view object_key,
@@ -317,12 +317,12 @@ ErrorCode TablesDAO::update_reltuples(float reltuples,
 }
 
 /**
- *  @brief  Executes SELECT statement to get one table statistic
- *  from the table metadata table based on the given table name.
- *  @param  (object_key)        [in]  key. column name of a statistic table.
- *  @param  (object_value)      [in]  value to be filtered.
- *  @param  (table_statistic)   [out] table statistic to get.
- *  @return ErrorCode::OK if success, otherwise an error code.
+ * @brief Executes SELECT statement to get one table statistic
+ *   from the table metadata table based on the given table name.
+ * @param (object_key)        [in]  key. column name of a statistic table.
+ * @param (object_value)      [in]  value to be filtered.
+ * @param (table_statistic)   [out] table statistic to get.
+ * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode TablesDAO::select_table_statistic(
     std::string_view object_key, std::string_view object_value,
@@ -365,11 +365,11 @@ ErrorCode TablesDAO::select_table_statistic(
 }
 
 /**
- *  @brief  Executes INSERT statement to insert the given one table metadata
- *  into the table metadata table.
- *  @param  (table)             [in]   one table metadata to add.
- *  @param  (table_id)          [out]  table id.
- *  @return ErrorCode::OK if success, otherwise an error code.
+ * @brief Executes INSERT statement to insert the given one table metadata
+ *   into the table metadata table.
+ * @param (table)     [in]  one table metadata to add.
+ * @param (table_id)  [out] table id.
+ * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode TablesDAO::insert_table_metadata(boost::property_tree::ptree& table,
                                            ObjectIdType& table_id) const {
@@ -434,15 +434,14 @@ ErrorCode TablesDAO::insert_table_metadata(boost::property_tree::ptree& table,
 }
 
 /**
- *  @brief  Executes a SELECT statement to get table metadata rows
- *  from the table metadata table,
- *  where the given key equals the given value.
- *  @param  (object_key)          [in]  key. column name of a table metadata
- *  table.
- *  @param  (object_value)        [in]  value to be filtered.
- *  @param  (object)              [out] table metadata to get,
- *  where the given key equals the given value.
- *  @return ErrorCode::OK if success, otherwise an error code.
+ * @brief Executes a SELECT statement to get table metadata rows
+ *   from the table metadata table,
+ *   where the given key equals the given value.
+ * @param (object_key)    [in]  key. column name of a table metadata table.
+ * @param (object_value)  [in]  value to be filtered.
+ * @param (object)        [out] table metadata to get,
+ *   where the given key equals the given value.
+ * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode TablesDAO::select_table_metadata(std::string_view object_key,
                                            std::string_view object_value,
@@ -494,12 +493,12 @@ ErrorCode TablesDAO::select_table_metadata(std::string_view object_key,
 }
 
 /**
- *  @brief  Executes DELETE statement to delete table metadata
- *  from the table metadata table based on the given table name.
- *  @param  (object_key)    [in]  key. column name of a table metadata table.
- *  @param  (object_value)  [in]  value to be filtered.
- *  @param  (table_id)      [out]  table id of the row deleted.
- *  @return ErrorCode::OK if success, otherwise an error code.
+ * @brief Executes DELETE statement to delete table metadata
+ *   from the table metadata table based on the given table name.
+ * @param (object_key)    [in]  key. column name of a table metadata table.
+ * @param (object_value)  [in]  value to be filtered.
+ * @param (table_id)      [out] table id of the row deleted.
+ * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode TablesDAO::delete_table_metadata(std::string_view object_key,
                                            std::string_view object_value,
@@ -551,12 +550,12 @@ ErrorCode TablesDAO::delete_table_metadata(std::string_view object_key,
 // Private method area
 
 /**
- *  @brief  Gets the TableStatistic type value
- *  converted from the given PGresult type value.
- *  @param  (res)               [in]  the result of a query.
- *  @param  (ordinal_position)  [in]  column ordinal position of PGresult.
- *  @param  (table_statistic)   [out] the TableStatistic type value.
- *  @return ErrorCode::OK if success, otherwise an error code.
+ * @brief Gets the TableStatistic type value
+ *   converted from the given PGresult type value.
+ * @param (res)               [in]  the result of a query.
+ * @param (ordinal_position)  [in]  column ordinal position of PGresult.
+ * @param (table_statistic)   [out] the TableStatistic type value.
+ * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode TablesDAO::get_table_statistic_from_p_gresult(
     PGresult*& res, int ordinal_position,
@@ -594,12 +593,12 @@ ErrorCode TablesDAO::get_table_statistic_from_p_gresult(
 }
 
 /**
- *  @brief  Gets the ptree type table metadata
- *  converted from the given PGresult type value.
- *  @param  (res)               [in]  the result of a query.
- *  @param  (ordinal_position)  [in]  column ordinal position of PGresult.
- *  @param  (table)             [out] one table metadata.
- *  @return ErrorCode::OK if success, otherwise an error code.
+ * @brief Gets the ptree type table metadata
+ *   converted from the given PGresult type value.
+ * @param (res)               [in]  the result of a query.
+ * @param (ordinal_position)  [in]  column ordinal position of PGresult.
+ * @param (table)             [out] one table metadata.
+ * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode TablesDAO::get_ptree_from_p_gresult(
     PGresult*& res, int ordinal_position,

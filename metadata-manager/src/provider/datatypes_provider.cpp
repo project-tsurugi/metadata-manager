@@ -24,8 +24,8 @@ using boost::property_tree::ptree;
 using manager::metadata::ErrorCode;
 
 /**
- *  @brief  Initialize and prepare to access the metadata repository.
- *  @return  ErrorCode::OK if success, otherwise an error code.
+ * @brief Initialize and prepare to access the metadata repository.
+ * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode DataTypesProvider::init() {
   ErrorCode error = ErrorCode::OK;
@@ -43,13 +43,13 @@ ErrorCode DataTypesProvider::init() {
 }
 
 /**
- *  @brief  Gets one data type metadata object from the data types metadata
- * repository, where key = value.
- *  @param  (key)      [in]  key of data type metadata object.
- *  @param  (value)    [in]  value of data type metadata object.
- *  @param  (object)   [out] one data type metadata object to get, where key =
- * value.
- *  @return  ErrorCode::OK if success, otherwise an error code.
+ * @brief Gets one data type metadata object from the data types
+ *   metadata repository, where key = value.
+ * @param (key)     [in]  key of data type metadata object.
+ * @param (value)   [in]  value of data type metadata object.
+ * @param (object)  [out] one data type metadata object to get,
+ *   where key = value.
+ * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode DataTypesProvider::get_datatype_metadata(std::string_view key,
                                                    std::string_view value,

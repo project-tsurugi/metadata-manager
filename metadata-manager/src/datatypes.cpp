@@ -32,9 +32,9 @@ namespace manager::metadata {
 using manager::metadata::ErrorCode;
 
 /**
- *  @brief  Constructor
- *  @param  (database) [in]  database name.
- *  @param  (component) [in]  component name.
+ * @brief Constructor
+ * @param (database)  [in]  database name.
+ * @param (component) [in]  component name.
  */
 DataTypes::DataTypes(std::string_view database, std::string_view component)
     : Metadata(database, component) {
@@ -54,9 +54,9 @@ DataTypes::DataTypes(std::string_view database, std::string_view component)
 }
 
 /**
- *  @brief  Initialization.
- *  @param  none.
- *  @return  ErrorCode::OK if success, otherwise an error code.
+ * @brief Initialization.
+ * @param none.
+ * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode DataTypes::init() {
   // Initialize the provider.
@@ -66,13 +66,12 @@ ErrorCode DataTypes::init() {
 }
 
 /**
- *  @brief  Gets one data type metadata object
- *  from the data types metadata table
- *  based on the given object_name.
- *  @param  (object_id) [in]  metadata-object ID.
- *  @param  (object)        [out] one data type metadata object to get
- *  based on the given object_name.
- *  @return  ErrorCode::OK if success, otherwise an error code.
+ * @brief Gets one data type metadata object
+ *   from the data types metadata table based on the given object_name.
+ * @param (object_id)  [in]  metadata-object ID.
+ * @param (object)     [out] one data type metadata object to get
+ *   based on the given object_name.
+ * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode DataTypes::get(const ObjectIdType object_id,
                          boost::property_tree::ptree& object) {
@@ -90,14 +89,12 @@ ErrorCode DataTypes::get(const ObjectIdType object_id,
 }
 
 /**
- *  @brief  Gets one data type metadata object
- *  from the data types metadata table
- *  based on the given object_name.
- *  @param  (object_name)   [in]  data type metadata name. (Value of "name"
- * key.)
- *  @param  (object)        [out] one data type metadata object to get
- *  based on the given object_name.
- *  @return  ErrorCode::OK if success, otherwise an error code.
+ * @brief Gets one data type metadata object
+ *   from the data types metadata table based on the given object_name.
+ * @param (object_name)  [in]  data type metadata name. (Value of "name" key.)
+ * @param (object)       [out] one data type metadata object to get
+ *   based on the given object_name.
+ * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode DataTypes::get(std::string_view object_name,
                          boost::property_tree::ptree& object) {
@@ -115,14 +112,13 @@ ErrorCode DataTypes::get(std::string_view object_name,
 }
 
 /**
- *  @brief  Gets one data type metadata object
- *  from the data types metadata table,
- *  where key = value.
- *  @param  (key)           [in]  key of data type metadata object.
- *  @param  (value)         [in]  value of data type metadata object.
- *  @param  (object)        [out] one data type metadata object to get,
- *  where key = value.
- *  @return  ErrorCode::OK if success, otherwise an error code.
+ * @brief Gets one data type metadata object
+ *   from the data types metadata table, where key = value.
+ * @param (key)           [in]  key of data type metadata object.
+ * @param (value)         [in]  value of data type metadata object.
+ * @param (object)        [out] one data type metadata object to get,
+ *   where key = value.
+ * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode DataTypes::get(const char* object_key, std::string_view object_value,
                          boost::property_tree::ptree& object) {

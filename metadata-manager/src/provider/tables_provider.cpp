@@ -28,8 +28,8 @@ using boost::property_tree::ptree;
 using manager::metadata::ErrorCode;
 
 /**
- *  @brief  Initialize and prepare to access the metadata repository.
- *  @return  ErrorCode::OK if success, otherwise an error code.
+ * @brief Initialize and prepare to access the metadata repository.
+ * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode TablesProvider::init() {
   ErrorCode error = ErrorCode::OK;
@@ -55,10 +55,10 @@ ErrorCode TablesProvider::init() {
 }
 
 /**
- *  @brief  Add table metadata to table metadata repository.
- *  @param  (object)     [in]  table metadata to add.
- *  @param  (table_id)   [out] ID of the added table metadata.
- *  @return  ErrorCode::OK if success, otherwise an error code.
+ * @brief Add table metadata to table metadata repository.
+ * @param (object)     [in]  table metadata to add.
+ * @param (table_id)   [out] ID of the added table metadata.
+ * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode TablesProvider::add_table_metadata(ptree& object,
                                              ObjectIdType& table_id) {
@@ -108,13 +108,13 @@ ErrorCode TablesProvider::add_table_metadata(ptree& object,
 }
 
 /**
- *  @brief  Gets one table metadata object from the table metadata repository,
- *  where key = value.
- *  @param  (key)      [in]  key of table metadata object.
- *  @param  (value)    [in]  value of table metadata object.
- *  @param  (object)   [out] one table metadata object to get,
- * where key = value.
- *  @return  ErrorCode::OK if success, otherwise an error code.
+ * @brief Gets one table metadata object from the table metadata repository,
+ *   where key = value.
+ * @param (key)     [in]  key of table metadata object.
+ * @param (value)   [in]  value of table metadata object.
+ * @param (object)  [out] one table metadata object to get,
+ *   where key = value.
+ * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode TablesProvider::get_table_metadata(std::string_view key,
                                              std::string_view value,
@@ -166,15 +166,15 @@ ErrorCode TablesProvider::get_table_metadata(std::string_view key,
 }
 
 /**
- *  @brief  Remove all metadata-object based on the given table name
- *  (table metadata, column metadata and column statistics)
- *  from metadata-repositorys
- *  (the table metadata repository, the column metadata repository and the
- *  column statistics repository).
- *  @param  (key)       [in]  key of table metadata object.
- *  @param  (value)     [in]  value of table metadata object.
- *  @param  (table_id)  [out] ID of the removed table metadata.
- *  @return  ErrorCode::OK if success, otherwise an error code.
+ * @brief Remove all metadata-object based on the given table name
+ *   (table metadata, column metadata and column statistics)
+ *   from metadata-repositorys
+ *   (the table metadata repository, the column metadata repository and the
+ *   column statistics repository).
+ * @param (key)       [in]  key of table metadata object.
+ * @param (value)     [in]  value of table metadata object.
+ * @param (table_id)  [out] ID of the removed table metadata.
+ * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode TablesProvider::remove_table_metadata(std::string_view key,
                                                 std::string_view value,
@@ -222,11 +222,11 @@ ErrorCode TablesProvider::remove_table_metadata(std::string_view key,
 // Private method area
 
 /**
- *  @brief  Get column metadata-object based on the given table id.
- *  @param  (table_id) [in]  table id.
- *  @param  (tables)   [out] table metadata-object with the specified table
- * id.
- *  @return  ErrorCode::OK if success, otherwise an error code.
+ * @brief Get column metadata-object based on the given table id.
+ * @param (table_id) [in]  table id.
+ * @param (tables)   [out] table metadata-object
+ *   with the specified table id.
+ * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode TablesProvider::get_all_column_metadata(std::string_view table_id,
                                                    ptree& tables) const {
@@ -243,9 +243,9 @@ ErrorCode TablesProvider::get_all_column_metadata(std::string_view table_id,
 }
 
 /**
- *  @brief  Checks if the parameters are correct.
- *  @param  (table)  [in]  metadata-object
- *  @return  ErrorCode::OK if success, otherwise an error code.
+ * @brief Checks if the parameters are correct.
+ * @param (table)  [in]  metadata-object
+ * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode TablesProvider::fill_parameters(
     boost::property_tree::ptree& table) const {

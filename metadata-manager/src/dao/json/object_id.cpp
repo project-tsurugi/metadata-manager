@@ -43,7 +43,7 @@ using manager::metadata::ErrorCode;
 static ObjectIdType INVALID_OID = 0;
 
 /**
- *  @brief  initialize object-ID metadata-table.
+ * @brief initialize object-ID metadata-table.
  */
 ErrorCode ObjectId::init() {
   // Filename of the table metadata.
@@ -68,8 +68,8 @@ ErrorCode ObjectId::init() {
 }
 
 /**
- *  @brief  current object-ID.
- *  @return ErrorCode::OK if success, otherwise an error code.
+ * @brief current object-ID.
+ * @return ErrorCode::OK if success, otherwise an error code.
  */
 ObjectIdType ObjectId::current(const std::string table_name) {
   if (ObjectId::init() != ErrorCode::OK) {
@@ -98,8 +98,8 @@ ObjectIdType ObjectId::current(const std::string table_name) {
 }
 
 /**
- *  @brief  generate new object-ID.
- *  @return ErrorCode::OK if success, otherwise an error code.
+ * @brief generate new object-ID.
+ * @return ErrorCode::OK if success, otherwise an error code.
  */
 ObjectIdType ObjectId::generate(const std::string table_name) {
   if (ObjectId::init() != ErrorCode::OK) {

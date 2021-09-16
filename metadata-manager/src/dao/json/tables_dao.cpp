@@ -33,9 +33,9 @@ using boost::property_tree::ptree;
 using manager::metadata::ErrorCode;
 
 /**
- *  @brief  Prepare to access the JSON file of table metadata.
- *  @param  none.
- *  @return  ErrorCode::OK if success, otherwise an error code.
+ * @brief Prepare to access the JSON file of table metadata.
+ * @param none.
+ * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode TablesDAO::prepare() const {
   // Filename of the table metadata.
@@ -51,12 +51,12 @@ ErrorCode TablesDAO::prepare() const {
 }
 
 /**
- *  @brief  This feature is not supported, so it will always return
- *      ErrorCode::NOT_SUPPORTED.
- *  @param  (reltuples)     [in]  the number of rows to update.
- *  @param  (object_key)    [in]  key. column name of a statistic table.
- *  @param  (object_value)  [in]  value to be filtered.
- *  @return  ErrorCode::NOT_SUPPORTED.
+ * @brief This feature is not supported, so it will always return
+ *   ErrorCode::NOT_SUPPORTED.
+ * @param (reltuples)     [in]  the number of rows to update.
+ * @param (object_key)    [in]  key. column name of a statistic table.
+ * @param (object_value)  [in]  value to be filtered.
+ * @return ErrorCode::NOT_SUPPORTED.
  */
 ErrorCode TablesDAO::update_reltuples(float reltuples,
                                       std::string_view object_key,
@@ -67,12 +67,12 @@ ErrorCode TablesDAO::update_reltuples(float reltuples,
 }
 
 /**
- *  @brief  This feature is not supported, so it will always return
- *     ErrorCode::NOT_SUPPORTED.
- *  @param  (object_key)        [in]  key. column name of a statistic table.
- *  @param  (object_value)      [in]  value to be filtered.
- *  @param  (table_statistic)   [out] table statistic to get.
- *  @return  ErrorCode::NOT_SUPPORTED.
+ * @brief This feature is not supported, so it will always return
+ *   ErrorCode::NOT_SUPPORTED.
+ * @param (object_key)        [in]  key. column name of a statistic table.
+ * @param (object_value)      [in]  value to be filtered.
+ * @param (table_statistic)   [out] table statistic to get.
+ * @return ErrorCode::NOT_SUPPORTED.
  */
 ErrorCode TablesDAO::select_table_statistic(
     std::string_view object_key, std::string_view object_value,
@@ -82,10 +82,10 @@ ErrorCode TablesDAO::select_table_statistic(
 }
 
 /**
- *  @brief  Add metadata-object to metadata-table.
- *  @param  (table)     [in]   one table metadata to add.
- *  @param  (table_id)  [out]  table id.
- *  @return  ErrorCode::OK if success, otherwise an error code.
+ * @brief Add metadata object to metadata table file.
+ * @param (table)     [in]   one table metadata to add.
+ * @param (table_id)  [out]  table id.
+ * @return ErrorCode::OK if success, otherwise an error code.
  */
 
 ErrorCode TablesDAO::insert_table_metadata(boost::property_tree::ptree& table,
@@ -135,13 +135,12 @@ ErrorCode TablesDAO::insert_table_metadata(boost::property_tree::ptree& table,
 }
 
 /**
- *  @brief  Executes a SELECT statement to get table metadata rows from the
- * table metadata table, where the given key equals the given value.
- *  @param  (object_key)    [in]  key. column name of a table metadata table.
- *  @param  (object_value)  [in]  value to be filtered.
- *  @param  (object)        [out] table metadata to get, where the given key
- * equals the given value.
- *  @return  ErrorCode::OK if success, otherwise an error code.
+ * @brief Get metadata object from a metadata table file.
+ * @param (object_key)    [in]  key. column name of a table metadata table.
+ * @param (object_value)  [in]  value to be filtered.
+ * @param (object)        [out] table metadata to get,
+ *   where the given key equals the given value.
+ * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode TablesDAO::select_table_metadata(std::string_view object_key,
                                            std::string_view object_value,
@@ -180,12 +179,11 @@ ErrorCode TablesDAO::select_table_metadata(std::string_view object_key,
 }
 
 /**
- *  @brief  Executes DELETE statement to delete table metadata from the table
- * metadata table based on the given table id.
- *  @param  (object_key)    [in]  key. column name of a table metadata table.
- *  @param  (object_value)  [in]  value to be filtered.
- *  @param  (table_id)      [out]  table id of the row deleted.
- *  @return  ErrorCode::OK if success, otherwise an error code.
+ * @brief Delete a metadata object from a metadata table file.
+ * @param (object_key)    [in]  key. column name of a table metadata table.
+ * @param (object_value)  [in]  value to be filtered.
+ * @param (table_id)      [out]  table id of the row deleted.
+ * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode TablesDAO::delete_table_metadata(std::string_view object_key,
                                            std::string_view object_value,
@@ -248,10 +246,10 @@ ErrorCode TablesDAO::delete_table_metadata(std::string_view object_key,
 // Private method area
 
 /**
- *  @brief  Get metadata-object.
- *  @param  (object_name)   [in]  metadata-object name. (Value of "name" key.)
- *  @param  (object)        [out] metadata-object with the specified name.
- *  @return  ErrorCode::OK if success, otherwise an error code.
+ * @brief Get metadata-object.
+ * @param (object_name)   [in]  metadata-object name. (Value of "name" key.)
+ * @param (object)        [out] metadata-object with the specified name.
+ * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode TablesDAO::get_metadata_object(
     std::string_view object_name, boost::property_tree::ptree& object) const {

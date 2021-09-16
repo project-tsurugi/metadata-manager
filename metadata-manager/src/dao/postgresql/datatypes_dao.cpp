@@ -41,11 +41,11 @@ using manager::metadata::db::postgresql::SCHEMA_NAME;
 using manager::metadata::db::postgresql::TableName;
 
 /**
- * @brief  Returnes a SELECT stetement to get metadata:
+ * @brief Returnes a SELECT stetement to get metadata:
  *   select * from table_name where column_name = $1.
- * @param  (column_name)  [in]  column name of metadata-table.
+ * @param (column_name)  [in]  column name of metadata-table.
  * @return a SELECT stetement:
- *    select * from table_name where column_name = $1.
+ *   select * from table_name where column_name = $1.
  */
 std::string select_equal_to(std::string_view column_name) {
   // SQL statement
@@ -82,9 +82,9 @@ struct DataTypesMetadataTable {
 };
 
 /**
- *  @brief  Constructor
- *  @param  (connection)  [in]  a connection to the metadata repository.
- *  @return none.
+ * @brief Constructor
+ * @param (connection)  [in]  a connection to the metadata repository.
+ * @return none.
  */
 DataTypesDAO::DataTypesDAO(DBSessionManager* session_manager)
     : connection_(session_manager->get_connection()) {
@@ -125,9 +125,9 @@ DataTypesDAO::DataTypesDAO(DBSessionManager* session_manager)
 };
 
 /**
- *  @brief  Defines all prepared statements.
- *  @param  none.
- *  @return ErrorCode::OK if success, otherwise an error code.
+ * @brief Defines all prepared statements.
+ * @param none.
+ * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode DataTypesDAO::prepare() const {
   ErrorCode error = ErrorCode::INTERNAL_ERROR;
@@ -145,15 +145,15 @@ ErrorCode DataTypesDAO::prepare() const {
 }
 
 /**
- *  @brief  Executes a SELECT statement to get one data type metadata
+ * @brief Executes a SELECT statement to get one data type metadata
  *  from the data types metadata table,
  *  where the given key equals the given value.
- *  @param  (object_key)          [in]  key.
+ * @param (object_key)          [in]  key.
  *  column name of the data types metadata table.
- *  @param  (object_value)        [in]  value to be filtered.
- *  @param  (object)              [out] one data type metadata to get,
+ * @param (object_value)        [in]  value to be filtered.
+ * @param (object)              [out] one data type metadata to get,
  *  where the given key equals the given value.
- *  @return ErrorCode::OK if success, otherwise an error code.
+ * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode DataTypesDAO::select_one_data_type_metadata(
     std::string_view object_key, std::string_view object_value,
@@ -197,12 +197,12 @@ ErrorCode DataTypesDAO::select_one_data_type_metadata(
 // Private method area
 
 /**
- *  @brief  Gets the ptree type data types metadata
+ * @brief Gets the ptree type data types metadata
  *  converted from the given PGresult type value.
- *  @param  (res)               [in]  the result of a query.
- *  @param  (ordinal_position)  [in]  column ordinal position of PGresult.
- *  @param  (object)            [out] one data type metadata.
- *  @return ErrorCode::OK if success, otherwise an error code.
+ * @param (res)               [in]  the result of a query.
+ * @param (ordinal_position)  [in]  column ordinal position of PGresult.
+ * @param (object)            [out] one data type metadata.
+ * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode DataTypesDAO::get_ptree_from_p_gresult(PGresult*& res,
                                                  int ordinal_position,

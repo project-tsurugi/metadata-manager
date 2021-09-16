@@ -30,7 +30,7 @@ namespace manager::metadata::db::postgresql {
 
 /**
  * @brief Is this connection open?
- * @param  (connection)   [in]  a connection.
+ * @param (connection)   [in]  a connection.
  * @return true if this connection is open, otherwise false.
  */
 bool DbcUtils::is_open(const ConnectionSPtr& connection) {
@@ -39,11 +39,11 @@ bool DbcUtils::is_open(const ConnectionSPtr& connection) {
 
 /**
  * @brief Converts boolean expression ("t" or "f") in metadata repository
- * to "true" or "false" in application.
- * @param  (string)   [in]  "t" , "f" or an other string.
+ *   to "true" or "false" in application.
+ * @param (string)   [in]  "t" , "f" or an other string.
  * @return "true" if "t" is input,
- * "false" if "f" is input,
- * otherwise an empty string.
+ *   "false" if "f" is input,
+ *   otherwise an empty string.
  */
 std::string DbcUtils::convert_boolean_expression(const char* string) {
   if (!string) {
@@ -61,11 +61,11 @@ std::string DbcUtils::convert_boolean_expression(const char* string) {
 
 /**
  * @brief call standard library function to convert string to float.
- * @param  (nptr)    [in]  C-string beginning with the representation of a
- * floating-point number.
- * @param  (endptr)   [in]  Reference to an already allocated object of type
- * char*, whose value is set by the function to the next character in nptr
- * after the numerical value.
+ * @param (nptr)    [in]  C-string beginning with the representation of a
+ *   floating-point number.
+ * @param (endptr)   [in]  Reference to an already allocated object of type
+ *   char*, whose value is set by the function to the next character in nptr
+ *   after the numerical value.
  * @return the converted floating point number as a value of type float.
  */
 template <>
@@ -82,9 +82,9 @@ template ErrorCode DbcUtils::str_to_floating_point(const char* input,
 
 /**
  * @brief Convert string to floating point.
- * @param  (input)        [in]   C-string beginning with the representation of a
- * floating-point number.
- * @param  (return_value) [out]  the converted floating point number.
+ * @param (input)        [in]   C-string beginning with the representation of a
+ *   floating-point number.
+ * @param (return_value) [out]  the converted floating point number.
  * @return ErrorCode::OK if success, otherwise an error code.
  */
 template <typename T>
@@ -107,14 +107,14 @@ template <typename T>
 
 /**
  * @brief call standard library function to convert string to unsigned long
- * integer.
- * @param  (nptr)     [in]  C-string containing the representation of an
- * integral number.
- * @param  (endptr)   [in]  Reference to an object of type char*, whose value is
- * set by the function to the next character in nptr after the numerical
- * value.
- * @param  (base)     [in]  Numerical base (radix) that determines the valid
- * characters and their interpretation.
+ *   integer.
+ * @param (nptr)     [in]  C-string containing the representation of an
+ *   integral number.
+ * @param (endptr)   [in]  Reference to an object of type char*, whose value is
+ *   set by the function to the next character in nptr after the numerical
+ *   value.
+ * @param (base)     [in]  Numerical base (radix) that determines the valid
+ *   characters and their interpretation.
  * @return converted integral number as an unsigned long int value.
  */
 template <>
@@ -125,14 +125,14 @@ template <>
 
 /**
  * @brief call standard library function to convert string to long
- * integer.
- * @param  (nptr)     [in]  C-string containing the representation of an
- * integral number.
- * @param  (endptr)   [in]  Reference to an object of type char*, whose value is
- * set by the function to the next character in nptr after the numerical
- * value.
- * @param  (base)     [in]  Numerical base (radix) that determines the valid
- * characters and their interpretation.
+ *   integer.
+ * @param (nptr)     [in]  C-string containing the representation of an
+ *   integral number.
+ * @param (endptr)   [in]  Reference to an object of type char*, whose value is
+ *   set by the function to the next character in nptr after the numerical
+ *   value.
+ * @param (base)     [in]  Numerical base (radix) that determines the valid
+ *   characters and their interpretation.
  * @return converted integral number as long int value.
  */
 template <>
@@ -154,9 +154,9 @@ template ErrorCode DbcUtils::str_to_integral(const char* str,
 
 /**
  * @brief Convert string to integr.
- * @param  (input)        [in]   C-string containing the representation of
- * decimal integer literal (base 10).
- * @param  (return_value) [out]  the converted integral number.
+ * @param (input)        [in]   C-string containing the representation of
+ *   decimal integer literal (base 10).
+ * @param (return_value) [out]  the converted integral number.
  * @return ErrorCode::OK if success, otherwise an error code.
  */
 template <typename T>
@@ -179,12 +179,12 @@ template <typename T>
 }
 /**
  * @brief Gets the number of affected rows
- * if command was INSERT, UPDATE, or DELETE.
- * @param  (res)          [in]  the result of a query.
- * @param  (return_value) [out] the number of affected rows.
+ *   if command was INSERT, UPDATE, or DELETE.
+ * @param (res)          [in]  the result of a query.
+ * @param (return_value) [out] the number of affected rows.
  * @return the number of affected rows
- * if last command was INSERT, UPDATE, or
- * DELETE. zero for all other commands.
+ *   if last command was INSERT, UPDATE, or
+ *   DELETE. zero for all other commands.
  */
 ErrorCode DbcUtils::get_number_of_rows_affected(PGresult*& res,
                                                 uint64_t& return_value) {
@@ -193,7 +193,7 @@ ErrorCode DbcUtils::get_number_of_rows_affected(PGresult*& res,
 
 /**
  * @brief Makes shared_ptr of PGconn with deleter.
- * @param  (pgconn)   [in]  a connection.
+ * @param (pgconn)   [in]  a connection.
  * @return shared_ptr of PGconn with deleter.
  */
 ConnectionSPtr DbcUtils::make_connection_sptr(PGconn* pgconn) {
@@ -203,7 +203,7 @@ ConnectionSPtr DbcUtils::make_connection_sptr(PGconn* pgconn) {
 
 /**
  * @brief Makes unique_ptr of PGresult with deleter.
- * @param  (pgres)   [in]  the result of a query.
+ * @param (pgres)   [in]  the result of a query.
  * @return unique_ptr of PGresult with deleter.
  */
 ResultUPtr DbcUtils::make_result_uptr(PGresult* pgres) {
@@ -213,9 +213,9 @@ ResultUPtr DbcUtils::make_result_uptr(PGresult* pgres) {
 
 /**
  * @brief Defines a prepared statement.
- * @param  (connection)      [in]  a connection.
- * @param  (statement_name)  [in] unique name for the new prepared statement.
- * @param  (statement)       [in] SQL statement to prepare.
+ * @param (connection)      [in]  a connection.
+ * @param (statement_name)  [in] unique name for the new prepared statement.
+ * @param (statement)       [in] SQL statement to prepare.
  * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode DbcUtils::prepare(const ConnectionSPtr& connection,
@@ -227,9 +227,9 @@ ErrorCode DbcUtils::prepare(const ConnectionSPtr& connection,
 
 /**
  * @brief Defines a prepared statement.
- * @param  (connection)      [in]  a connection.
- * @param  (statement_name)  [in]  unique name for the prepared statement.
- * @param  (statement)       [in] SQL statement to prepare.
+ * @param (connection)      [in]  a connection.
+ * @param (statement_name)  [in]  unique name for the prepared statement.
+ * @param (statement)       [in] SQL statement to prepare.
  * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode DbcUtils::prepare(const ConnectionSPtr& connection,
@@ -254,11 +254,11 @@ ErrorCode DbcUtils::prepare(const ConnectionSPtr& connection,
 
 /**
  * @brief Executes a prepared statement, with given parameters.
- * @param  (connection)      [in]  a connection.
- * @param  (statement_name)  [in]  unique name for the prepared statement.
- * @param  (param_values)    [in]  the actual values of the parameters.
+ * @param (connection)      [in]  a connection.
+ * @param (statement_name)  [in]  unique name for the prepared statement.
+ * @param (param_values)    [in]  the actual values of the parameters.
  *   A null pointer in this array means the corresponding parameter is null.
- * @param  (res)             [out] the result of a query.
+ * @param (res)             [out] the result of a query.
  * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode DbcUtils::exec_prepared(const ConnectionSPtr& connection,
@@ -271,11 +271,11 @@ ErrorCode DbcUtils::exec_prepared(const ConnectionSPtr& connection,
 
 /**
  * @brief Executes a prepared statement, with given parameters.
- * @param  (connection)      [in]  a connection.
- * @param  (statement_name)  [in]  unique name for the prepared statement.
- * @param  (param_values)    [in]  the actual values of the parameters.
+ * @param (connection)      [in]  a connection.
+ * @param (statement_name)  [in]  unique name for the prepared statement.
+ * @param (param_values)    [in]  the actual values of the parameters.
  *   A null pointer in this array means the corresponding parameter is null.
- * @param  (res)             [out] the result of a query.
+ * @param (res)             [out] the result of a query.
  * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode DbcUtils::exec_prepared(const ConnectionSPtr& connection,

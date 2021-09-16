@@ -42,11 +42,11 @@ using manager::metadata::db::postgresql::SCHEMA_NAME;
 using manager::metadata::db::postgresql::TableName;
 
 /**
- *  @brief  Returnes an UPSERT stetement for one column statistic
- *  based on table id and column ordinal position.
- *  @param  none.
- *  @return an UPSERT stetement to upsert one column statistic
- *  based on table id and column ordinal position.
+ * @brief Returnes an UPSERT stetement for one column statistic
+ *   based on table id and column ordinal position.
+ * @param none.
+ * @return an UPSERT stetement to upsert one column statistic
+ *   based on table id and column ordinal position.
  */
 std::string upsert_one_column_statistic_by_table_id_column_ordinal_position() {
   // SQL statement
@@ -63,11 +63,11 @@ std::string upsert_one_column_statistic_by_table_id_column_ordinal_position() {
 }
 
 /**
- *  @brief  Returnes a SELECT stetement for one column statistic
- *  based on table id and column ordinal position.
- *  @param  none.
- *  @return a SELECT stetement to get one column statistic
- *  based on table id and column ordinal position.
+ * @brief Returnes a SELECT stetement for one column statistic
+ *   based on table id and column ordinal position.
+ * @param none.
+ * @return a SELECT stetement to get one column statistic
+ *   based on table id and column ordinal position.
  */
 std::string select_one_column_statistic_by_table_id_column_ordinal_position() {
   // SQL statement
@@ -80,11 +80,11 @@ std::string select_one_column_statistic_by_table_id_column_ordinal_position() {
 }
 
 /**
- *  @brief  Returnes a SELECT stetement for all column statistics
- *  based on table id.
- *  @param  none.
- *  @return a SELECT stetement to get all column statistics
- *  based on table id.
+ * @brief Returnes a SELECT stetement for all column statistics
+ *   based on table id.
+ * @param none.
+ * @return a SELECT stetement to get all column statistics
+ *   based on table id.
  */
 std::string select_all_column_statistic_by_table_id() {
   // SQL statement
@@ -97,11 +97,11 @@ std::string select_all_column_statistic_by_table_id() {
 }
 
 /**
- *  @brief  Returnes a DELETE stetement for all column statistics
- *  based on table id.
- *  @param  none.
- *  @return a DELETE stetement to delete all column statistics
- *  based on table id.
+ * @brief Returnes a DELETE stetement for all column statistics
+ *   based on table id.
+ * @param none.
+ * @return a DELETE stetement to delete all column statistics
+ *   based on table id.
  */
 std::string delete_all_column_statistic_by_table_id() {
   // SQL statement
@@ -113,11 +113,11 @@ std::string delete_all_column_statistic_by_table_id() {
 }
 
 /**
- *  @brief  Returnes a DELETE stetement for one column statistic
- *  based on table id and column ordinal position.
- *  @param  none.
- *  @return a DELETE stetement to delete all column statistics
- *  based on table id and column ordinal position.
+ * @brief Returnes a DELETE stetement for one column statistic
+ *   based on table id and column ordinal position.
+ * @param none.
+ * @return a DELETE stetement to delete all column statistics
+ *   based on table id and column ordinal position.
  */
 std::string delete_one_column_statistic_by_table_id_column_ordinal_position() {
   // SQL statement
@@ -145,14 +145,14 @@ using pair_const_oit_cstats = std::pair<const ObjectIdType, ColumnStatistic>;
 /**
  * @enum ColumnOrdinalPosition
  * @brief Column ordinal position of the column statistics table
- * in the metadata repository.
+ *   in the metadata repository.
  */
 enum ColumnOrdinalPosition { TABLE_ID = 0, ORDINAL_POSITION, COLUMN_STATISTIC };
 
 /**
- *  @brief  Defines all prepared statements.
- *  @param  none.
- *  @return ErrorCode::OK if success, otherwise an error code.
+ * @brief Defines all prepared statements.
+ * @param none.
+ * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode StatisticsDAO::prepare() const {
   ErrorCode error = DbcUtils::prepare(
@@ -205,15 +205,15 @@ ErrorCode StatisticsDAO::prepare() const {
 }
 
 /**
- *  @brief  Executes UPSERT statement to upsert one column statistic
- *  into the column statistics table
- *  based on the given table id and the given column ordinal position.
- *  Executes a INSERT statement it if it not exists in the metadata repository,
- *  Executes a UPDATE statement it if it already exists.
- *  @param  (table_id)          [in]  table id.
- *  @param  (ordinal_position)  [in]  column ordinal position.
- *  @param  (column_statistic)  [in]  one column statistic to add or update.
- *  @return ErrorCode::OK if success, otherwise an error code.
+ * @brief Executes UPSERT statement to upsert one column statistic
+ *   into the column statistics table 
+ *   based on the given table id and the given column ordinal position.
+ *   Executes a INSERT statement it if it not exists in the metadata repository,
+ *   Executes a UPDATE statement it if it already exists.
+ * @param (table_id)          [in]  table id.
+ * @param (ordinal_position)  [in]  column ordinal position.
+ * @param (column_statistic)  [in]  one column statistic to add or update.
+ * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode
 StatisticsDAO::upsert_one_column_statistic_by_table_id_column_ordinal_position(
@@ -261,14 +261,14 @@ StatisticsDAO::upsert_one_column_statistic_by_table_id_column_ordinal_position(
 }
 
 /**
- *  @brief  Executes a SELECT statement to get one column statistic
- *  from the column statistics table
- *  based on the given table id and the given column ordinal position.
- *  @param  (table_id)          [in]  table id.
- *  @param  (ordinal_position)  [in]  column ordinal position.
- *  @param  (column_statistic)  [out] one column statistic
- *  with the specified table id and column ordinal position.
- *  @return ErrorCode::OK if success, otherwise an error code.
+ * @brief Executes a SELECT statement to get one column statistic
+ *   from the column statistics table
+ *   based on the given table id and the given column ordinal position.
+ * @param (table_id)          [in]  table id.
+ * @param (ordinal_position)  [in]  column ordinal position.
+ * @param (column_statistic)  [out] one column statistic
+ *   with the specified table id and column ordinal position.
+ * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode
 StatisticsDAO::select_one_column_statistic_by_table_id_column_ordinal_position(
@@ -306,14 +306,14 @@ StatisticsDAO::select_one_column_statistic_by_table_id_column_ordinal_position(
 }
 
 /**
- *  @brief  Executes a SELECT statement to get all column statistics
- *  from the column statistics table based on the given table id.
- *  @param  (table_id)           [in]  table id.
- *  @param  (column_statistics)  [out] all column statistics
- *  with the specified table id.
- *  key : column ordinal position
- *  value : one column statistic
- *  @return ErrorCode::OK if success, otherwise an error code.
+ * @brief Executes a SELECT statement to get all column statistics
+ *   from the column statistics table based on the given table id.
+ * @param (table_id)           [in]  table id.
+ * @param (column_statistics)  [out] all column statistics
+ *   with the specified table id.
+ *   key : column ordinal position
+ *   value : one column statistic
+ * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode StatisticsDAO::select_all_column_statistic_by_table_id(
     ObjectIdType table_id,
@@ -359,10 +359,10 @@ ErrorCode StatisticsDAO::select_all_column_statistic_by_table_id(
 }
 
 /**
- *  @brief  Executes DELETE statement to delete all column statistics
- *  from the column statistics table based on the given table id.
- *  @param  (table_id)          [in]  table id.
- *  @return ErrorCode::OK if success, otherwise an error code.
+ * @brief Executes DELETE statement to delete all column statistics
+ *   from the column statistics table based on the given table id.
+ * @param (table_id)  [in]  table id.
+ * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode StatisticsDAO::delete_all_column_statistic_by_table_id(
     ObjectIdType table_id) const {
@@ -395,12 +395,12 @@ ErrorCode StatisticsDAO::delete_all_column_statistic_by_table_id(
 }
 
 /**
- *  @brief  Executes DELETE statement to delete one column statistic
- *  from the column statistics table
- *  based on the given table id and the given column ordinal position.
- *  @param  (table_id)          [in]  table id.
- *  @param  (ordinal_position)  [in]  column ordinal position.
- *  @return ErrorCode::OK if success, otherwise an error code.
+ * @brief Executes DELETE statement to delete one column statistic
+ *   from the column statistics table
+ *   based on the given table id and the given column ordinal position.
+ * @param (table_id)          [in]  table id.
+ * @param (ordinal_position)  [in]  column ordinal position.
+ * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode
 StatisticsDAO::delete_one_column_statistic_by_table_id_column_ordinal_position(
@@ -439,13 +439,13 @@ StatisticsDAO::delete_one_column_statistic_by_table_id_column_ordinal_position(
 // Private method area
 
 /**
- *  @brief  Gets the ColumnStatistic type column statistic
- *  converted from the given PGresult type value.
- *  @param  (res)               [in]  the result of a query.
- *  @param  (ordinal_position)  [in]  column ordinal position of PGresult.
- *  @param  (column_statistic)  [out] one column
- * statistic (ColumnStatistic type).
- *  @return ErrorCode::OK if success, otherwise an error code.
+ * @brief Gets the ColumnStatistic type column statistic
+ *   converted from the given PGresult type value.
+ * @param (res)               [in]  the result of a query.
+ * @param (ordinal_position)  [in]  column ordinal position of PGresult.
+ * @param (column_statistic)  [out] one column
+ *   statistic (ColumnStatistic type).
+ * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode StatisticsDAO::get_column_statistic_from_p_gresult(
     PGresult*& res, int ordinal_position,

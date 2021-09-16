@@ -43,9 +43,9 @@ using manager::metadata::db::postgresql::SCHEMA_NAME;
 using manager::metadata::db::postgresql::TableName;
 
 /**
- *  @brief  Returnes an INSERT stetement for one column metadata.
- *  @param  none.
- *  @return an INSERT stetement to insert one column metadata.
+ * @brief Returnes an INSERT stetement for one column metadata.
+ * @param none.
+ * @return an INSERT stetement to insert one column metadata.
  */
 std::string insert_one_column_metadata() {
   // SQL statement
@@ -64,10 +64,9 @@ std::string insert_one_column_metadata() {
 }
 
 /**
- *  @brief  Returnes a SELECT stetement to get all column metadata
- *  from column metadata table,
- *  based on table id.
- * @param  (column_name)  [in]  column name of metadata-columns.
+ * @brief Returnes a SELECT stetement to get all column metadata
+ *  from column metadata table, based on table id.
+ * @param (column_name)  [in]  column name of metadata-columns.
  * @return a SELECT stetement to get all column metadata:
  *    select * from table_name where column_name = $1.
  */
@@ -82,10 +81,9 @@ std::string select_all_column_metadata(std::string_view column_name) {
 }
 
 /**
- *  @brief  Returnes a DELETE stetement for one column metadata
- *  from column metadata table,
- *  based on table id.
- * @param  (column_name)  [in]  column name of metadata-columns.
+ * @brief Returnes a DELETE stetement for one column metadata
+ *  from column metadata table, based on table id.
+ * @param (column_name)  [in]  column name of metadata-columns.
  * @return a DELETE stetement for one column metadata:
  *    delete from table_name where column_name = $1.
  */
@@ -131,9 +129,9 @@ struct ColumnMetadataTable {
 };
 
 /**
- *  @brief  Constructor
- *  @param  (connection)  [in]  a connection to the metadata repository.
- *  @return none.
+ * @brief Constructor
+ * @param (connection)  [in]  a connection to the metadata repository.
+ * @return none.
  */
 ColumnsDAO::ColumnsDAO(DBSessionManager* session_manager)
     : connection_(session_manager->get_connection()) {
@@ -176,9 +174,9 @@ ColumnsDAO::ColumnsDAO(DBSessionManager* session_manager)
 }
 
 /**
- *  @brief  Defines all prepared statements.
- *  @param  none.
- *  @return ErrorCode::OK if success, otherwise an error code.
+ * @brief Defines all prepared statements.
+ * @param none.
+ * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode ColumnsDAO::prepare() const {
   ErrorCode error = DbcUtils::prepare(
@@ -208,12 +206,11 @@ ErrorCode ColumnsDAO::prepare() const {
 }
 
 /**
- *  @brief  Executes INSERT statement to insert
- *  the given one column statistic
- *  into the column metadata table based on the given table id.
- *  @param  (table_id)  [in]  table id.
- *  @param  (column)    [in]  one column metadata to add.
- *  @return ErrorCode::OK if success, otherwise an error code.
+ * @brief Executes INSERT statement to insert the given one column statistic
+ *   into the column metadata table based on the given table id.
+ * @param (table_id)  [in]  table id.
+ * @param (column)    [in]  one column metadata to add.
+ * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode ColumnsDAO::insert_one_column_metadata(
     ObjectIdType table_id, boost::property_tree::ptree& column) const {
@@ -313,14 +310,14 @@ ErrorCode ColumnsDAO::insert_one_column_metadata(
 }
 
 /**
- *  @brief  Executes a SELECT statement to get column metadata rows
- *  from the column metadata table,
- *  where the given key equals the given value.
- *  @param  (object_key)    [in]  key. column name of a column metadata table.
- *  @param  (object_value)  [in]  value to be filtered.
- *  @param  (object)        [out] column metadata to get,
- *  where the given key equals the given value.
- *  @return ErrorCode::OK if success, otherwise an error code.
+ * @brief  Executes a SELECT statement to get column metadata rows
+ *   from the column metadata table,
+ *   where the given key equals the given value.
+ * @param  (object_key)    [in]  key. column name of a column metadata table.
+ * @param  (object_value)  [in]  value to be filtered.
+ * @param  (object)        [out] column metadata to get,
+ *   where the given key equals the given value.
+ * @return  ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode ColumnsDAO::select_column_metadata(
     std::string_view object_key, std::string_view object_value,
@@ -371,12 +368,12 @@ ErrorCode ColumnsDAO::select_column_metadata(
 }
 
 /**
- *  @brief  Execute DELETE statement to delete column metadata
+ * @brief Execute DELETE statement to delete column metadata
  *  from the column metadata table
  *  where the given key equals the given value.
- *  @param  (object_key)    [in]  key. column name of a column metadata table.
- *  @param  (object_value)  [in]  value to be filtered.
- *  @return ErrorCode::OK if success, otherwise an error code.
+ * @param (object_key)    [in]  key. column name of a column metadata table.
+ * @param (object_value)  [in]  value to be filtered.
+ * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode ColumnsDAO::delete_column_metadata(
     std::string_view object_key, std::string_view object_value) const {
@@ -423,12 +420,12 @@ ErrorCode ColumnsDAO::delete_column_metadata(
 // Private method area
 
 /**
- *  @brief  Gets the ptree type column metadata
+ * @brief Gets the ptree type column metadata
  *  converted from the given PGresult type value.
- *  @param  (res)               [in]  the result of a query.
- *  @param  (ordinal_position)  [in]  column ordinal position of PGresult.
- *  @param  (column)            [out] one column metadata.
- *  @return ErrorCode::OK if success, otherwise an error code.
+ * @param (res)               [in]  the result of a query.
+ * @param (ordinal_position)  [in]  column ordinal position of PGresult.
+ * @param (column)            [out] one column metadata.
+ * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode ColumnsDAO::get_ptree_from_p_gresult(PGresult*& res,
                                                int ordinal_position,

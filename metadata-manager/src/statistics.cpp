@@ -35,9 +35,9 @@ using manager::metadata::ErrorCode;
 using manager::metadata::db::Message;
 
 /**
- *  @brief  Constructor
- *  @param  (database) [in]  database name.
- *  @param  (component) [in]  component name.
+ * @brief Constructor
+ * @param (database)  [in]  database name.
+ * @param (component) [in]  component name.
  */
 Statistics::Statistics(std::string_view database, std::string_view component)
     : Metadata(database, component) {
@@ -57,9 +57,9 @@ Statistics::Statistics(std::string_view database, std::string_view component)
 }
 
 /**
- *  @brief  Initialization.
- *  @param  none.
- *  @return  ErrorCode::OK if success, otherwise an error code.
+ * @brief Initialization.
+ * @param none.
+ * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode Statistics::init() {
   // Initialize the provider.
@@ -69,15 +69,15 @@ ErrorCode Statistics::init() {
 }
 
 /**
- *  @brief  Adds or updates one column statistic
- *  to the column statistics table
- *  based on the given table id and the given column ordinal position.
- *  Adds one column statistic if it not exists in the metadata repository.
- *  Updates one column statistic if it already exists.
- *  @param  (table_id)          [in]  table id.
- *  @param  (ordinal_position)  [in]  column ordinal position.
- *  @param  (column_statistic)  [in]  one column statistic to add or update.
- *  @return ErrorCode::OK if success, otherwise an error code.
+ * @brief Adds or updates one column statistic
+ *   to the column statistics table
+ *   based on the given table id and the given column ordinal position.
+ *   Adds one column statistic if it not exists in the metadata repository.
+ *   Updates one column statistic if it already exists.
+ * @param (table_id)          [in]  table id.
+ * @param (ordinal_position)  [in]  column ordinal position.
+ * @param (column_statistic)  [in]  one column statistic to add or update.
+ * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode Statistics::add_one_column_statistic(
     ObjectIdType table_id, ObjectIdType ordinal_position,
@@ -90,13 +90,13 @@ ErrorCode Statistics::add_one_column_statistic(
 }
 
 /**
- *  @brief  Adds or updates table statistic
- *  to the table metadata table based on the given table id.
- *  Adds table statistic if it not exists in the metadata repository.
- *  Updates table statistic if it already exists.
- *  @param  (table_id)   [in]  table id.
- *  @param  (reltuples)  [in]  the number of rows to add or update.
- *  @return ErrorCode::OK if success, otherwise an error code.
+ * @brief Adds or updates table statistic
+ *   to the table metadata table based on the given table id.
+ *   Adds table statistic if it not exists in the metadata repository.
+ *   Updates table statistic if it already exists.
+ * @param (table_id)   [in]  table id.
+ * @param (reltuples)  [in]  the number of rows to add or update.
+ * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode Statistics::add_table_statistic(ObjectIdType table_id,
                                           float reltuples) {
@@ -116,14 +116,14 @@ ErrorCode Statistics::add_table_statistic(ObjectIdType table_id,
 }
 
 /**
- *  @brief  Adds or updates table statistic
- *  to the table metadata table based on the given table name.
- *  Adds table statistic if it not exists in the metadata repository.
- *  Updates table statistic if it already exists.
- *  @param  (table_name) [in]  table name.
- *  @param  (reltuples)  [in]  the number of rows to add or update.
- *  @param  (table_id)   [out] table id of the row updated.
- *  @return ErrorCode::OK if success, otherwise an error code.
+ * @brief Adds or updates table statistic
+ *   to the table metadata table based on the given table name.
+ *   Adds table statistic if it not exists in the metadata repository.
+ *   Updates table statistic if it already exists.
+ * @param (table_name) [in]  table name.
+ * @param (reltuples)  [in]  the number of rows to add or update.
+ * @param (table_id)   [out] table id of the row updated.
+ * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode Statistics::add_table_statistic(std::string_view table_name,
                                           float reltuples,
@@ -144,13 +144,13 @@ ErrorCode Statistics::add_table_statistic(std::string_view table_name,
 }
 
 /**
- *  @brief  Gets one column statistic from the column statistics table
- *  based on the given table id and the given column ordinal position.
- *  @param  (table_id)          [in]  table id.
- *  @param  (ordinal_position)  [in]  column ordinal position.
- *  @param  (column_statistic)  [out] one column statistic
- *  with the specified table id and column ordinal position.
- *  @return ErrorCode::OK if success, otherwise an error code.
+ * @brief Gets one column statistic from the column statistics table
+ *   based on the given table id and the given column ordinal position.
+ * @param (table_id)          [in]  table id.
+ * @param (ordinal_position)  [in]  column ordinal position.
+ * @param (column_statistic)  [out] one column statistic
+ *   with the specified table id and column ordinal position.
+ * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode Statistics::get_one_column_statistic(
     ObjectIdType table_id, ObjectIdType ordinal_position,
@@ -171,14 +171,14 @@ ErrorCode Statistics::get_one_column_statistic(
 }
 
 /**
- *  @brief  Gets all column statistics from the column statistics table
- *  based on the given table id.
- *  @param  (table_id)           [in]  table id.
- *  @param  (column_statistics)  [out] all column statistics
- *  with the specified table id.
- *  key : column ordinal position
- *  value : one column statistic
- *  @return ErrorCode::OK if success, otherwise an error code.
+ * @brief Gets all column statistics from the column statistics table
+ *   based on the given table id.
+ * @param (table_id)           [in]  table id.
+ * @param (column_statistics)  [out] all column statistics
+ *   with the specified table id.
+ *   key : column ordinal position
+ *   value : one column statistic
+ * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode Statistics::get_all_column_statistics(
     ObjectIdType table_id,
@@ -199,12 +199,12 @@ ErrorCode Statistics::get_all_column_statistics(
 }
 
 /**
- *  @brief  Gets one table statistic from the table metadata table
- *  based on the given table id.
- *  @param  (table_id)         [in]  table id.
- *  @param  (table_statistic)  [out] one table statistic
- *  with the specified table id.
- *  @return ErrorCode::OK if success, otherwise an error code.
+ * @brief Gets one table statistic from the table metadata table
+ *   based on the given table id.
+ * @param (table_id)         [in]  table id.
+ * @param (table_statistic)  [out] one table statistic
+ *   with the specified table id.
+ * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode Statistics::get_table_statistic(
     ObjectIdType table_id, manager::metadata::TableStatistic& table_statistic) {
@@ -224,12 +224,12 @@ ErrorCode Statistics::get_table_statistic(
 }
 
 /**
- *  @brief  Gets one table statistic from the table metadata table
- *  based on the given table name.
- *  @param  (table_name)       [in]  table name.
- *  @param  (table_statistic)  [out] one table statistic
- *  with the specified table name.
- *  @return ErrorCode::OK if success, otherwise an error code.
+ * @brief Gets one table statistic from the table metadata table
+ *   based on the given table name.
+ * @param (table_name)       [in]  table name.
+ * @param (table_statistic)  [out] one table statistic
+ *   with the specified table name.
+ * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode Statistics::get_table_statistic(
     std::string_view table_name,
@@ -250,11 +250,11 @@ ErrorCode Statistics::get_table_statistic(
 }
 
 /**
- *  @brief  Removes one column statistic from the column statistics table
- *  based on the given table id and the given column ordinal position.
- *  @param  (table_id)          [in]  table id.
- *  @param  (ordinal_position)  [in]  column ordinal position.
- *  @return ErrorCode::OK if success, otherwise an error code.
+ * @brief Removes one column statistic from the column statistics table
+ *   based on the given table id and the given column ordinal position.
+ * @param (table_id)          [in]  table id.
+ * @param (ordinal_position)  [in]  column ordinal position.
+ * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode Statistics::remove_one_column_statistic(
     ObjectIdType table_id, ObjectIdType ordinal_position) {
@@ -274,11 +274,11 @@ ErrorCode Statistics::remove_one_column_statistic(
 }
 
 /**
- *  @brief  Removes all column statistics
- *  from the column statistics table
- *  based on the given table id.
- *  @param  (table_id)          [in]  table id.
- *  @return ErrorCode::OK if success, otherwise an error code.
+ * @brief Removes all column statistics
+ *   from the column statistics table
+ *   based on the given table id.
+ * @param (table_id)  [in]  table id.
+ * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode Statistics::remove_all_column_statistics(ObjectIdType table_id) {
   // Parameter value check

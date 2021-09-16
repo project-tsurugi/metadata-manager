@@ -34,11 +34,11 @@ using manager::metadata::ErrorCode;
 using manager::metadata::Metadata;
 
 /**
- *  @brief  Gets Dao instance for the requested table name
- *  @param  (table_name)   [in]  unique id for the Dao.
- *  @param  (gdao)         [out] Dao instance if success.
- *  for the requested table name.
- *  @return ErrorCode::OK if success, otherwise an error code.
+ * @brief Gets Dao instance for the requested table name
+ * @param (table_name)   [in]  unique id for the Dao.
+ * @param (gdao)         [out] Dao instance if success.
+ *   for the requested table name.
+ * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode DBSessionManager::get_dao(GenericDAO::TableName table_name,
                                     std::shared_ptr<GenericDAO>& gdao) {
@@ -47,8 +47,8 @@ ErrorCode DBSessionManager::get_dao(GenericDAO::TableName table_name,
 }
 
 /**
- *  @brief  Starts a transaction scope managed by this DBSessionManager.
- *  @return ErrorCode::OK if success, otherwise an error code.
+ * @brief Starts a transaction scope managed by this DBSessionManager.
+ * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode DBSessionManager::start_transaction() {
   if (file_name_.empty()) {
@@ -61,9 +61,9 @@ ErrorCode DBSessionManager::start_transaction() {
 }
 
 /**
- *  @brief  Commits all transactions currently started for all DAO contexts
- *  managed by this DBSessionManager.
- *  @return ErrorCode::OK if success, otherwise an error code.
+ * @brief Commits all transactions currently started for all DAO contexts
+ *   managed by this DBSessionManager.
+ * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode DBSessionManager::commit() {
   if (file_name_.empty()) {
@@ -77,9 +77,9 @@ ErrorCode DBSessionManager::commit() {
 }
 
 /**
- *  @brief  Rollbacks all transactions currently started for all DAO contexts
- *  managed by this DBSessionManager.
- *  @return ErrorCode::OK if success, otherwise an error code.
+ * @brief Rollbacks all transactions currently started for all DAO contexts
+ *   managed by this DBSessionManager.
+ * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode DBSessionManager::rollback() {
   if (file_name_.empty()) {
@@ -92,10 +92,10 @@ ErrorCode DBSessionManager::rollback() {
 }
 
 /**
- *  @brief  Sets the file name of the metadata.
- *  @param  (file_name)  [in] file name.
- *  @param  (initial_node)  [in] Node name when initializing.
- *  @return ErrorCode::OK if success, otherwise an error code.
+ * @brief Sets the file name of the metadata.
+ * @param (file_name)  [in] file name.
+ * @param (initial_node)  [in] Node name when initializing.
+ * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode DBSessionManager::connect(std::string_view file_name,
                                     std::string_view initial_node) {
@@ -119,14 +119,14 @@ ErrorCode DBSessionManager::connect(std::string_view file_name,
 }
 
 /**
- *  @brief  Gets the metadata object.
- *  @return  metadata object.
+ * @brief Gets the metadata object.
+ * @return metadata object.
  */
 ptree* DBSessionManager::get_container() const { return meta_object_.get(); }
 
 /**
- *  @brief  Load the metadata from the file.
- *  @return ErrorCode::OK if success, otherwise an error code.
+ * @brief Load the metadata from the file.
+ * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode DBSessionManager::load_object() const {
   if (file_name_.empty()) {
@@ -150,9 +150,9 @@ ErrorCode DBSessionManager::load_object() const {
 // Private method area
 
 /**
- *  @brief  Initialize the metadata object.
+ * @brief Initialize the metadata object.
  *   access private.
- *  @return  none.
+ * @return none.
  */
 void DBSessionManager::init_meta_data() {
   meta_object_->clear();
@@ -161,8 +161,8 @@ void DBSessionManager::init_meta_data() {
 }
 
 /**
- *  @brief  Save the metadata to a file.
- *  @return ErrorCode::OK if success, otherwise an error code.
+ * @brief Save the metadata to a file.
+ * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode DBSessionManager::save_object() const {
   if (file_name_.empty()) {

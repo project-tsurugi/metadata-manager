@@ -20,20 +20,20 @@
 namespace manager::metadata {
 
 /**
- *  @brief  Read latest table-metadata from metadata-table.
- *  @return ErrorCode::OK if success, otherwise an error code.
+ * @brief Read latest table-metadata from metadata-table.
+ * @return ErrorCode::OK if success, otherwise an error code.
  */
 [[deprecated("don't use load() function.")]] ErrorCode Metadata::load() {
   return ErrorCode::OK;
 }
 
 /**
- *  @brief  Load metadata from metadata-table.
- *  @param  (database)   [in]  database name
- *  @param  (pt)         [out] property_tree object to populating metadata.
- *  @param  (generation) [in]  metadata generation to load. load latest
- * generation if NOT provided.
- *  @return ErrorCode::OK if success, otherwise an error code.
+ * @brief Load metadata from metadata-table.
+ * @param (database)   [in]  database name
+ * @param (pt)         [out] property_tree object to populating metadata.
+ * @param (generation) [in]  metadata generation to load.
+ *   load latest generation if NOT provided.
+ * @return ErrorCode::OK if success, otherwise an error code.
  */
 [[deprecated("don't use load() function.")]] ErrorCode Metadata::load(
     std::string_view database, boost::property_tree::ptree& object,
@@ -42,10 +42,10 @@ namespace manager::metadata {
 }
 
 /**
- *  @brief  Converts error codes according to the specified conditions.
- *  @param  (error_code)  [in] error code.
- *  @param  (key_name)    [in] key.
- *  @return  Converted error code.
+ * @brief Converts error codes according to the specified conditions.
+ * @param (error_code)  [in] error code.
+ * @param (key_name)    [in] key.
+ * @return Converted error code.
  */
 ErrorCode Metadata::code_converter(const ErrorCode& error_code,
                                    std::string_view key_name) {

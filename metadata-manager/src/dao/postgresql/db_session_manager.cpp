@@ -32,17 +32,17 @@ namespace manager::metadata::db::postgresql {
 using manager::metadata::ErrorCode;
 
 /**
- *  @brief  Gets Dao instance for the requested table name
- *  if all the following steps are successfully completed.
- *  1. Establishes a connection_ to the metadata repository.
- *  2. Sends a query to set always-secure search path
- *     to the metadata repository.
- *  3. Defines prepared statements for returned Dao
- *     in the metadata repository.
- *  @param  (table_name)   [in]  unique id for the Dao.
- *  @param  (gdao)         [out] Dao instance if success.
- *  for the requested table name.
- *  @return ErrorCode::OK if success, otherwise an error code.
+ * @brief Gets Dao instance for the requested table name
+ *   if all the following steps are successfully completed.
+ *   1. Establishes a connection_ to the metadata repository.
+ *   2. Sends a query to set always-secure search path
+ *      to the metadata repository.
+ *   3. Defines prepared statements for returned Dao
+ *      in the metadata repository.
+ * @param (table_name)   [in]  unique id for the Dao.
+ * @param (gdao)         [out] Dao instance if success.
+ *   for the requested table name.
+ * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode DBSessionManager::get_dao(GenericDAO::TableName table_name,
                                     std::shared_ptr<GenericDAO>& gdao) {
@@ -63,9 +63,9 @@ ErrorCode DBSessionManager::get_dao(GenericDAO::TableName table_name,
 }
 
 /**
- *  @brief  Starts a transaction scope managed by this DBSessionManager.
- *  @param  none.
- *  @return ErrorCode::OK if success, otherwise an error code.
+ * @brief Starts a transaction scope managed by this DBSessionManager.
+ * @param none.
+ * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode DBSessionManager::start_transaction() {
   if (!DbcUtils::is_open(connection_)) {
@@ -85,10 +85,10 @@ ErrorCode DBSessionManager::start_transaction() {
 }
 
 /**
- *  @brief  Commits all transactions currently started for all DAO contexts
- *  managed by this DBSessionManager.
- *  @param  none.
- *  @return ErrorCode::OK if success, otherwise an error code.
+ * @brief Commits all transactions currently started for all DAO contexts
+ *   managed by this DBSessionManager.
+ * @param none.
+ * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode DBSessionManager::commit() {
   if (!DbcUtils::is_open(connection_)) {
@@ -108,10 +108,10 @@ ErrorCode DBSessionManager::commit() {
 }
 
 /**
- *  @brief  Rollbacks all transactions currently started for all DAO contexts
- *  managed by this DBSessionManager.
- *  @param  none.
- *  @return ErrorCode::OK if success, otherwise an error code.
+ * @brief Rollbacks all transactions currently started for all DAO contexts
+ *   managed by this DBSessionManager.
+ * @param none.
+ * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode DBSessionManager::rollback() {
   if (!DbcUtils::is_open(connection_)) {
@@ -134,10 +134,10 @@ ErrorCode DBSessionManager::rollback() {
 // Private method area
 
 /**
- *  @brief  Establishes a connection_ to the metadata repository
- *  using connection_ information in a string.
- *  @param  none.
- *  @return ErrorCode::OK if success, otherwise an error code.
+ * @brief Establishes a connection_ to the metadata repository
+ *   using connection_ information in a string.
+ * @param none.
+ * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode DBSessionManager::connect() {
   connection_ = DbcUtils::make_connection_sptr(
@@ -152,10 +152,10 @@ ErrorCode DBSessionManager::connect() {
 }
 
 /**
- *  @brief  Sends a query to set always-secure search path
- *  to the metadata repository.
- *  @param  none.
- *  @return ErrorCode::OK if success, otherwise an error code.
+ * @brief Sends a query to set always-secure search path
+ *   to the metadata repository.
+ * @param none.
+ * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode DBSessionManager::set_always_secure_search_path() const {
   if (!DbcUtils::is_open(connection_)) {
