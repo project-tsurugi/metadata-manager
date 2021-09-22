@@ -30,22 +30,36 @@ namespace manager::metadata::db {
 class TablesProvider : public ProviderBase {
  public:
   manager::metadata::ErrorCode init();
+
   manager::metadata::ErrorCode add_table_metadata(
       boost::property_tree::ptree& object, ObjectIdType& table_id);
+
   manager::metadata::ErrorCode get_table_metadata(
       std::string_view key, std::string_view value,
       boost::property_tree::ptree& object);
+  manager::metadata::ErrorCode get_table_metadata(
+      std::vector<boost::property_tree::ptree>& container);
+  manager::metadata::ErrorCode get_table_statistic(
+      std::string_view key, std::string_view value,
+      boost::property_tree::ptree& object);
+
+  manager::metadata::ErrorCode set_table_statistic(
+      boost::property_tree::ptree& object, ObjectIdType& table_id);
+
   manager::metadata::ErrorCode remove_table_metadata(
       std::string_view key, std::string_view value,
-      ObjectIdType* table_id = nullptr);
+      ObjectIdType& table_id);
 
  private:
   std::shared_ptr<TablesDAO> tables_dao_ = nullptr;
   std::shared_ptr<ColumnsDAO> columns_dao_ = nullptr;
 
-  ErrorCode get_all_column_metadata(std::string_view table_id,
-                                     boost::property_tree::ptree& tables) const;
-  ErrorCode fill_parameters(boost::property_tree::ptree& table) const;
+  manager::metadata::ErrorCode get_all_column_metadata(
+      boost::property_tree::ptree& tables) const;
+  manager::metadata::ErrorCode get_column_metadata(
+      std::string_view table_id, boost::property_tree::ptree& tables) const;
+  manager::metadata::ErrorCode fill_parameters(
+      boost::property_tree::ptree& table) const;
 };  // class TablesProvider
 
 }  // namespace manager::metadata::db

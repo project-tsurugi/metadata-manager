@@ -27,6 +27,44 @@ namespace manager::metadata::db::postgresql {
 
 class DataTypesDAO : public manager::metadata::db::DataTypesDAO {
  public:
+  /**
+   * @brief Column name of the datatype table in the metadata repository.
+   */
+  class ColumnName {
+   public:
+    static constexpr const char* const kFormatVersion = "format_version";
+    static constexpr const char* const kGeneration = "generation";
+    static constexpr const char* const kId = "id";
+    static constexpr const char* const kName = "name";
+    static constexpr const char* const kPgDataType = "pg_data_type";
+    static constexpr const char* const kPgDataTypeName = "pg_data_type_name";
+    static constexpr const char* const kPgDataTypeQualifiedName =
+        "pg_data_type_qualified_name";
+  };
+
+  /**
+   * @brief Column ordinal position of the datatype table
+   *   in the metadata repository.
+   */
+  class OrdinalPosition {
+   public:
+    enum {
+      kFormatVersion = 0,
+      kGeneration,
+      kId,
+      kName,
+      kPgDataType,
+      kPgDataTypeName,
+      kPgDataTypeQualifiedName
+    };
+  };
+
+  /**
+   * @brief datatype table name.
+   */
+  static constexpr const char* const kTableName = "tsurugi_type";
+
+  //
   explicit DataTypesDAO(DBSessionManager* session_manager);
 
   manager::metadata::ErrorCode prepare() const override;
@@ -37,7 +75,6 @@ class DataTypesDAO : public manager::metadata::db::DataTypesDAO {
 
  private:
   ConnectionSPtr connection_;
-  std::vector<std::string> column_names_;
 
   manager::metadata::ErrorCode get_ptree_from_p_gresult(
       PGresult*& res, int ordinal_position,

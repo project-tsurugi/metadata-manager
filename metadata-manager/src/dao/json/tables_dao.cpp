@@ -38,47 +38,17 @@ using manager::metadata::ErrorCode;
  * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode TablesDAO::prepare() const {
+  ErrorCode error = ErrorCode::UNKNOWN;
+
   // Filename of the table metadata.
   boost::format filename = boost::format("%s/%s.json") %
                            Config::get_storage_dir_path() %
                            std::string(TablesDAO::TABLE_NAME);
 
   // Connect to the table metadata file.
-  ErrorCode error =
-      session_manager_->connect(filename.str(), Tables::TABLES_NODE);
+  error = session_manager_->connect(filename.str(), Tables::TABLES_NODE);
 
   return error;
-}
-
-/**
- * @brief This feature is not supported, so it will always return
- *   ErrorCode::NOT_SUPPORTED.
- * @param (reltuples)     [in]  the number of rows to update.
- * @param (object_key)    [in]  key. column name of a statistic table.
- * @param (object_value)  [in]  value to be filtered.
- * @return ErrorCode::NOT_SUPPORTED.
- */
-ErrorCode TablesDAO::update_reltuples(float reltuples,
-                                      std::string_view object_key,
-                                      std::string_view object_value,
-                                      ObjectIdType& table_id) const {
-  // This feature is not supported.
-  return ErrorCode::NOT_SUPPORTED;
-}
-
-/**
- * @brief This feature is not supported, so it will always return
- *   ErrorCode::NOT_SUPPORTED.
- * @param (object_key)        [in]  key. column name of a statistic table.
- * @param (object_value)      [in]  value to be filtered.
- * @param (table_statistic)   [out] table statistic to get.
- * @return ErrorCode::NOT_SUPPORTED.
- */
-ErrorCode TablesDAO::select_table_statistic(
-    std::string_view object_key, std::string_view object_value,
-    TableStatistic& table_statistic) const {
-  // This feature is not supported.
-  return ErrorCode::NOT_SUPPORTED;
 }
 
 /**
@@ -92,9 +62,8 @@ ErrorCode TablesDAO::insert_table_metadata(boost::property_tree::ptree& table,
                                            ObjectIdType& table_id) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
-  ptree table_name_searched;
-  boost::optional<std::string> name =
-      table.get_optional<std::string>(Metadata::NAME);
+  boost::optional<std::string> optional_name =
+      table.get_optional<std::string>(Tables::NAME);
 
   // Load the metadata from the JSON file.
   error = session_manager_->load_object();
@@ -102,17 +71,29 @@ ErrorCode TablesDAO::insert_table_metadata(boost::property_tree::ptree& table,
     return error;
   }
 
-  if (get_metadata_object(name.get(), table_name_searched) == ErrorCode::OK) {
-    return ErrorCode::TABLE_NAME_ALREADY_EXISTS;
+  ptree table_name_searched;
+  if (get_metadata_object(optional_name.get(), table_name_searched) ==
+      ErrorCode::OK) {
+    error = ErrorCode::TABLE_NAME_ALREADY_EXISTS;
+    return error;
   }
+
+  // Copy to the temporary area.
+  boost::property_tree::ptree tmp_table = table;
+
+  // format_version.
+  tmp_table.put(Tables::FORMAT_VERSION, Tables::format_version());
+
+  // generation.
+  tmp_table.put(Tables::GENERATION, Tables::generation());
 
   // generate the object ID of the added metadata-object.
   table_id = ObjectId::generate(TABLE_NAME);
-  table.put(Tables::ID, table_id);
+  tmp_table.put(Tables::ID, table_id);
 
   // column metadata
   BOOST_FOREACH (ptree::value_type& node,
-                 table.get_child(Tables::COLUMNS_NODE)) {
+                 tmp_table.get_child(Tables::COLUMNS_NODE)) {
     ptree& column = node.second;
     // column ID
     column.put(Tables::Column::ID, ObjectId::generate("column"));
@@ -126,7 +107,7 @@ ErrorCode TablesDAO::insert_table_metadata(boost::property_tree::ptree& table,
   // add new element.
   ptree node = meta_object->get_child(Tables::TABLES_NODE);
 
-  node.push_back(std::make_pair("", table));
+  node.push_back(std::make_pair("", tmp_table));
   meta_object->put_child(Tables::TABLES_NODE, node);
 
   error = ErrorCode::OK;
@@ -156,9 +137,7 @@ ErrorCode TablesDAO::select_table_metadata(std::string_view object_key,
   // Getting a metadata object.
   ptree* meta_object = session_manager_->get_container();
 
-  // Initialization of return value.
   error = ErrorCode::NOT_FOUND;
-
   BOOST_FOREACH (const ptree::value_type& node,
                  meta_object->get_child(Tables::TABLES_NODE)) {
     const ptree& temp_obj = node.second;
@@ -166,13 +145,42 @@ ErrorCode TablesDAO::select_table_metadata(std::string_view object_key,
     boost::optional<std::string> value =
         temp_obj.get_optional<std::string>(object_key.data());
     if (!value) {
-      return ErrorCode::NOT_FOUND;
+      error = ErrorCode::NOT_FOUND;
+      break;
     }
     if (!value.get().compare(object_value)) {
       object = temp_obj;
       error = ErrorCode::OK;
       break;
     }
+  }
+
+  return error;
+}
+
+/**
+ * @brief Get all metadata objects from a metadata table file.
+ * @param (container)  [out] all table metadata.
+ * @return ErrorCode::OK if success, otherwise an error code.
+ */
+ErrorCode TablesDAO::select_table_metadata(
+    std::vector<boost::property_tree::ptree>& container) const {
+  ErrorCode error = ErrorCode::UNKNOWN;
+
+  // TODO: This is a temporary implementation. It has not been tested yet.
+
+  // Load the meta data from the JSON file.
+  error = session_manager_->load_object();
+  if (error != ErrorCode::OK) {
+    return error;
+  }
+
+  // Getting a metadata object.
+  ptree* meta_object = session_manager_->get_container();
+
+  BOOST_FOREACH (const ptree::value_type& node,
+                 meta_object->get_child(Tables::TABLES_NODE)) {
+    container.emplace_back(node.second);
   }
 
   return error;
@@ -253,18 +261,20 @@ ErrorCode TablesDAO::delete_table_metadata(std::string_view object_key,
  */
 ErrorCode TablesDAO::get_metadata_object(
     std::string_view object_name, boost::property_tree::ptree& object) const {
-  ErrorCode error = ErrorCode::NAME_NOT_FOUND;
+  ErrorCode error = ErrorCode::UNKNOWN;
 
   ptree* meta_object = session_manager_->get_container();
 
+  error = ErrorCode::NAME_NOT_FOUND;
   BOOST_FOREACH (const ptree::value_type& node,
                  meta_object->get_child(Tables::TABLES_NODE)) {
     const ptree& temp_obj = node.second;
 
     boost::optional<std::string> name =
-        temp_obj.get_optional<std::string>(Metadata::NAME);
+        temp_obj.get_optional<std::string>(Tables::NAME);
     if (!name) {
-      return ErrorCode::NOT_FOUND;
+      error = ErrorCode::NOT_FOUND;
+      break;
     }
     if (!name.get().compare(object_name)) {
       object = temp_obj;

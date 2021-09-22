@@ -29,7 +29,7 @@ class DBSessionManager {
   virtual ~DBSessionManager(){};
 
   virtual manager::metadata::ErrorCode get_dao(
-      GenericDAO::TableName table_name, std::shared_ptr<GenericDAO>& gdao) = 0;
+      const GenericDAO::TableName table_name, std::shared_ptr<GenericDAO>& gdao) = 0;
 
   virtual manager::metadata::ErrorCode start_transaction() = 0;
   virtual manager::metadata::ErrorCode commit() = 0;
@@ -37,7 +37,7 @@ class DBSessionManager {
 
  protected:
   manager::metadata::ErrorCode create_dao(
-      GenericDAO::TableName table_name,
+      const GenericDAO::TableName table_name,
       manager::metadata::db::DBSessionManager* session_manager,
       std::shared_ptr<GenericDAO>& gdao) const;
 

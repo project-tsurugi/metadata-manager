@@ -33,14 +33,15 @@
 // =============================================================================
 namespace {
 
+std::unordered_map<std::string, std::string> column_names;
 std::unordered_map<std::string, std::string> statement_names_select;
 std::unordered_map<std::string, std::string> statement_names_delete;
 
 namespace statement {
 
 using manager::metadata::Tables;
+using manager::metadata::db::postgresql::ColumnsDAO;
 using manager::metadata::db::postgresql::SCHEMA_NAME;
-using manager::metadata::db::postgresql::TableName;
 
 /**
  * @brief Returnes an INSERT stetement for one column metadata.
@@ -51,14 +52,17 @@ std::string insert_one_column_metadata() {
   // SQL statement
   boost::format query =
       boost::format(
-          "INSERT INTO %s.%s (%s, %s, %s, %s, %s, %s, %s, %s, %s) "
-          "VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)") %
-      SCHEMA_NAME % TableName::COLUMN_METADATA_TABLE %
-      Tables::Column::TABLE_ID % Tables::Column::NAME %
-      Tables::Column::ORDINAL_POSITION % Tables::Column::DATA_TYPE_ID %
-      Tables::Column::DATA_LENGTH % Tables::Column::VARYING %
-      Tables::Column::NULLABLE % Tables::Column::DEFAULT %
-      Tables::Column::DIRECTION;
+          "INSERT INTO %1%.%2%"
+          " (%3%, %4%, %5%, %6%, %7%, %8%, %9%, %10%, %11%, %12%, %13%) "
+          " VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)") %
+      SCHEMA_NAME % ColumnsDAO::kTableName %
+      ColumnsDAO::ColumnName::kFormatVersion %
+      ColumnsDAO::ColumnName::kGeneration % ColumnsDAO::ColumnName::kTableId %
+      ColumnsDAO::ColumnName::kName % ColumnsDAO::ColumnName::kOrdinalPosition %
+      ColumnsDAO::ColumnName::kDataTypeId %
+      ColumnsDAO::ColumnName::kDataLength % ColumnsDAO::ColumnName::kVarying %
+      ColumnsDAO::ColumnName::kNullable % ColumnsDAO::ColumnName::kDefaultExpr %
+      ColumnsDAO::ColumnName::kDirection;
 
   return query.str();
 }
@@ -73,9 +77,19 @@ std::string insert_one_column_metadata() {
 std::string select_all_column_metadata(std::string_view column_name) {
   // SQL statement
   boost::format query =
-      boost::format("SELECT * FROM %s.%s WHERE %s = $1 ORDER BY %s") %
-      SCHEMA_NAME % TableName::COLUMN_METADATA_TABLE % column_name.data() %
-      Tables::Column::ORDINAL_POSITION;
+      boost::format(
+          "SELECT %3%, %4%, %5%, %6%, %7%, %8%, %9%"
+          " , %10%, %11%, %12%, %13%, %14%"
+          " FROM %1%.%2% WHERE %15% = $1 ORDER BY %8%") %
+      SCHEMA_NAME % ColumnsDAO::kTableName %
+      ColumnsDAO::ColumnName::kFormatVersion %
+      ColumnsDAO::ColumnName::kGeneration % ColumnsDAO::ColumnName::kId %
+      ColumnsDAO::ColumnName::kName % ColumnsDAO::ColumnName::kTableId %
+      ColumnsDAO::ColumnName::kOrdinalPosition %
+      ColumnsDAO::ColumnName::kDataTypeId %
+      ColumnsDAO::ColumnName::kDataLength % ColumnsDAO::ColumnName::kVarying %
+      ColumnsDAO::ColumnName::kNullable % ColumnsDAO::ColumnName::kDefaultExpr %
+      ColumnsDAO::ColumnName::kDirection % column_name.data();
 
   return query.str();
 }
@@ -89,8 +103,8 @@ std::string select_all_column_metadata(std::string_view column_name) {
  */
 std::string delete_all_column_metadata(std::string_view column_name) {
   // SQL statement
-  boost::format query = boost::format("DELETE FROM %s.%s WHERE %s = $1") %
-                        SCHEMA_NAME % TableName::COLUMN_METADATA_TABLE %
+  boost::format query = boost::format("DELETE FROM %1%.%2% WHERE %3% = $1") %
+                        SCHEMA_NAME % ColumnsDAO::kTableName %
                         column_name.data();
 
   return query.str();
@@ -109,26 +123,6 @@ using manager::metadata::ErrorCode;
 using manager::metadata::db::StatementName;
 
 /**
- * @enum ColumnMetadataTable
- * @brief Column ordinal position of the column metadata table
- * in the metadata repository.
- */
-struct ColumnMetadataTable {
-  enum ColumnOrdinalPosition {
-    ID = 0,
-    TABLE_ID,
-    NAME,
-    ORDINAL_POSITION,
-    DATA_TYPE_ID,
-    DATA_LENGTH,
-    VARYING,
-    NULLABLE,
-    DEFAULT_EXPR,
-    DIRECTION
-  };
-};
-
-/**
  * @brief Constructor
  * @param (connection)  [in]  a connection to the metadata repository.
  * @return none.
@@ -144,32 +138,26 @@ ColumnsDAO::ColumnsDAO(DBSessionManager* session_manager)
   // If column name "tableId" is added to this list,
   // later defines a prepared statement
   // "select * from where tableId = ?".
-  column_names_.emplace_back(Tables::Column::TABLE_ID);
+  column_names.emplace(Tables::Column::TABLE_ID, ColumnName::kTableId);
 
   // Creates a list of unique name
   // for the new prepared statement for each column names.
-  for (auto column : column_names_) {
+  for (auto column : column_names) {
     // Creates unique name for the new prepared statement.
     boost::format statement_name_select =
         boost::format("%1%-%2%-%3%") %
-        StatementName::COLUMNS_DAO_SELECT_ALL_COLUMN_METADATA %
-        TableName::COLUMNS % column.c_str();
-
-    // Addes this list to unique name for the new prepared statement.
-    // key : column name
-    // value : unique name for the new prepared statement.
-    statement_names_select.emplace(column, statement_name_select.str());
-
-    // Creates unique name for the new prepared statement.
+        StatementName::COLUMNS_DAO_SELECT_ALL_COLUMN_METADATA % kTableName %
+        column.first;
     boost::format statement_name_delete =
         boost::format("%1%-%2%-%3%") %
-        StatementName::COLUMNS_DAO_DELETE_ALL_COLUMN_METADATA %
-        TableName::COLUMNS % column.c_str();
+        StatementName::COLUMNS_DAO_DELETE_ALL_COLUMN_METADATA % kTableName %
+        column.first;
 
     // Addes this list to unique name for the new prepared statement.
     // key : column name
     // value : unique name for the new prepared statement.
-    statement_names_delete.emplace(column, statement_name_delete.str());
+    statement_names_select.emplace(column.first, statement_name_select.str());
+    statement_names_delete.emplace(column.first, statement_name_delete.str());
   }
 }
 
@@ -179,26 +167,30 @@ ColumnsDAO::ColumnsDAO(DBSessionManager* session_manager)
  * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode ColumnsDAO::prepare() const {
-  ErrorCode error = DbcUtils::prepare(
+  ErrorCode error = ErrorCode::UNKNOWN;
+
+  error = DbcUtils::prepare(
       connection_, StatementName::COLUMNS_DAO_INSERT_ONE_COLUMN_METADATA,
       statement::insert_one_column_metadata());
   if (error != ErrorCode::OK) {
     return error;
   }
 
-  for (const std::string& column : column_names_) {
+  for (auto column : column_names) {
     // select statement.
-    error = DbcUtils::prepare(connection_, statement_names_select.at(column),
-                              statement::select_all_column_metadata(column));
+    error =
+        DbcUtils::prepare(connection_, statement_names_select.at(column.first),
+                          statement::select_all_column_metadata(column.second));
     if (error != ErrorCode::OK) {
-      return error;
+      break;
     }
 
     // delete statement.
-    error = DbcUtils::prepare(connection_, statement_names_delete.at(column),
-                              statement::delete_all_column_metadata(column));
+    error =
+        DbcUtils::prepare(connection_, statement_names_delete.at(column.first),
+                          statement::delete_all_column_metadata(column.second));
     if (error != ErrorCode::OK) {
-      return error;
+      break;
     }
   }
 
@@ -213,29 +205,44 @@ ErrorCode ColumnsDAO::prepare() const {
  * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode ColumnsDAO::insert_one_column_metadata(
-    ObjectIdType table_id, boost::property_tree::ptree& column) const {
+    const ObjectIdType table_id, boost::property_tree::ptree& column) const {
+  ErrorCode error = ErrorCode::UNKNOWN;
   std::vector<char const*> param_values;
 
+  // format_version
+  std::string s_format_version = std::to_string(Tables::format_version());
+  param_values.emplace_back(s_format_version.c_str());
+
+  // generation
+  std::string s_generation = std::to_string(Tables::generation());
+  param_values.emplace_back(s_generation.c_str());
+
+  // table_id
   std::string s_table_id = std::to_string(table_id);
   param_values.emplace_back(s_table_id.c_str());
 
+  // name
   boost::optional<std::string> name =
       column.get_optional<std::string>(Tables::Column::NAME);
   if (!name) {
-    return ErrorCode::INVALID_PARAMETER;
+    error = ErrorCode::INVALID_PARAMETER;
+    return error;
   }
   param_values.emplace_back((name ? name.value().c_str() : nullptr));
 
+  // ordinal_position
   boost::optional<std::string> ordinal_position =
       column.get_optional<std::string>(Tables::Column::ORDINAL_POSITION);
   param_values.emplace_back(
       (ordinal_position ? ordinal_position.value().c_str() : nullptr));
 
+  // data_type_id
   boost::optional<std::string> data_type_id =
       column.get_optional<std::string>(Tables::Column::DATA_TYPE_ID);
   param_values.emplace_back(
       (data_type_id ? data_type_id.value().c_str() : nullptr));
 
+  // data_length
   boost::optional<ptree&> o_data_length =
       column.get_child_optional(Tables::Column::DATA_LENGTH);
 
@@ -253,10 +260,12 @@ ErrorCode ColumnsDAO::insert_one_column_metadata(
         json_parser::write_json(ss, p_data_length, false);
       } catch (json_parser_error& e) {
         std::cerr << Message::WRITE_JSON_FAILURE << e.what() << std::endl;
-        return ErrorCode::INTERNAL_ERROR;
+        error = ErrorCode::INVALID_PARAMETER;
+        return error;
       } catch (...) {
         std::cerr << Message::WRITE_JSON_FAILURE << std::endl;
-        return ErrorCode::INTERNAL_ERROR;
+        error = ErrorCode::INVALID_PARAMETER;
+        return error;
       }
       s_data_length = ss.str();
 
@@ -264,28 +273,33 @@ ErrorCode ColumnsDAO::insert_one_column_metadata(
     }
   }
 
+  // varying
   boost::optional<std::string> varying =
       column.get_optional<std::string>(Tables::Column::VARYING);
   param_values.emplace_back((varying ? varying.value().c_str() : nullptr));
 
+  // nullable
   boost::optional<std::string> nullable =
       column.get_optional<std::string>(Tables::Column::NULLABLE);
   if (!nullable) {
-    return ErrorCode::INVALID_PARAMETER;
+    error = ErrorCode::INVALID_PARAMETER;
+    return error;
   }
   param_values.emplace_back((nullable ? nullable.value().c_str() : nullptr));
 
+  // default_expr
   boost::optional<std::string> default_expr =
       column.get_optional<std::string>(Tables::Column::DEFAULT);
   param_values.emplace_back(
       (default_expr ? default_expr.value().c_str() : nullptr));
 
+  // directio
   boost::optional<std::string> direction =
       column.get_optional<std::string>(Tables::Column::DIRECTION);
   param_values.emplace_back((direction ? direction.value().c_str() : nullptr));
 
   PGresult* res;
-  ErrorCode error = DbcUtils::exec_prepared(
+  error = DbcUtils::exec_prepared(
       connection_, StatementName::COLUMNS_DAO_INSERT_ONE_COLUMN_METADATA,
       param_values, res);
 
@@ -295,13 +309,9 @@ ErrorCode ColumnsDAO::insert_one_column_metadata(
         DbcUtils::get_number_of_rows_affected(res, number_of_rows_affected);
 
     if (error_get != ErrorCode::OK) {
-      PQclear(res);
-      return error_get;
-    }
-
-    if (number_of_rows_affected != 1) {
-      PQclear(res);
-      return ErrorCode::INVALID_PARAMETER;
+      error = error_get;
+    } else if (number_of_rows_affected != 1) {
+      error = ErrorCode::INVALID_PARAMETER;
     }
   }
 
@@ -322,6 +332,7 @@ ErrorCode ColumnsDAO::insert_one_column_metadata(
 ErrorCode ColumnsDAO::select_column_metadata(
     std::string_view object_key, std::string_view object_value,
     boost::property_tree::ptree& object) const {
+  ErrorCode error = ErrorCode::UNKNOWN;
   std::vector<const char*> param_values;
 
   param_values.emplace_back(object_value.data());
@@ -331,32 +342,32 @@ ErrorCode ColumnsDAO::select_column_metadata(
     statement_name_found = statement_names_select.at(std::string(object_key));
   } catch (std::out_of_range& e) {
     std::cerr << Message::METADATA_KEY_NOT_FOUND << e.what() << std::endl;
-    return ErrorCode::INVALID_PARAMETER;
+    error = ErrorCode::INVALID_PARAMETER;
+    return error;
   } catch (...) {
     std::cerr << Message::METADATA_KEY_NOT_FOUND << std::endl;
-    return ErrorCode::INVALID_PARAMETER;
+    error = ErrorCode::INVALID_PARAMETER;
+    return error;
   }
 
   PGresult* res;
-  ErrorCode error = DbcUtils::exec_prepared(connection_, statement_name_found,
-                                            param_values, res);
+  error = DbcUtils::exec_prepared(connection_, statement_name_found,
+                                  param_values, res);
 
   if (error == ErrorCode::OK) {
     int nrows = PQntuples(res);
-
     if (nrows <= 0) {
       PQclear(res);
-      return ErrorCode::INVALID_PARAMETER;
+      error = ErrorCode::INVALID_PARAMETER;
+      return error;
     }
     for (int ordinal_position = 0; ordinal_position < nrows;
          ordinal_position++) {
       ptree column;
 
       error = get_ptree_from_p_gresult(res, ordinal_position, column);
-
       if (error != ErrorCode::OK) {
-        PQclear(res);
-        return error;
+        break;
       }
 
       object.push_back(std::make_pair("", column));
@@ -377,6 +388,7 @@ ErrorCode ColumnsDAO::select_column_metadata(
  */
 ErrorCode ColumnsDAO::delete_column_metadata(
     std::string_view object_key, std::string_view object_value) const {
+  ErrorCode error = ErrorCode::UNKNOWN;
   std::vector<const char*> param_values;
 
   param_values.emplace_back(object_value.data());
@@ -386,15 +398,17 @@ ErrorCode ColumnsDAO::delete_column_metadata(
     statement_name_found = statement_names_delete.at(std::string(object_key));
   } catch (std::out_of_range& e) {
     std::cerr << Message::METADATA_KEY_NOT_FOUND << e.what() << std::endl;
-    return ErrorCode::INVALID_PARAMETER;
+    error = ErrorCode::INVALID_PARAMETER;
+    return error;
   } catch (...) {
     std::cerr << Message::METADATA_KEY_NOT_FOUND << std::endl;
-    return ErrorCode::INVALID_PARAMETER;
+    error = ErrorCode::INVALID_PARAMETER;
+    return error;
   }
 
   PGresult* res;
-  ErrorCode error = DbcUtils::exec_prepared(connection_, statement_name_found,
-                                            param_values, res);
+  error = DbcUtils::exec_prepared(connection_, statement_name_found,
+                                  param_values, res);
 
   if (error == ErrorCode::OK) {
     uint64_t number_of_rows_affected = 0;
@@ -402,13 +416,9 @@ ErrorCode ColumnsDAO::delete_column_metadata(
         DbcUtils::get_number_of_rows_affected(res, number_of_rows_affected);
 
     if (error_get != ErrorCode::OK) {
-      PQclear(res);
-      return error_get;
-    }
-
-    if (number_of_rows_affected < 0) {
-      PQclear(res);
-      return ErrorCode::INVALID_PARAMETER;
+      error = error_get;
+    } else if (number_of_rows_affected < 0) {
+      error = ErrorCode::INVALID_PARAMETER;
     }
   }
 
@@ -430,28 +440,41 @@ ErrorCode ColumnsDAO::delete_column_metadata(
 ErrorCode ColumnsDAO::get_ptree_from_p_gresult(PGresult*& res,
                                                int ordinal_position,
                                                ptree& column) const {
+  ErrorCode error = ErrorCode::UNKNOWN;
+
+  // Set the value of the format_version column to ptree.
+  column.put(
+      Tables::Column::FORMAT_VERSION,
+      PQgetvalue(res, ordinal_position, OrdinalPosition::kFormatVersion));
+
+  // Set the value of the generation column to ptree.
+  column.put(Tables::Column::GENERATION,
+             PQgetvalue(res, ordinal_position, OrdinalPosition::kGeneration));
+
+  // Set the value of the id to ptree.
   column.put(Tables::Column::ID,
-             PQgetvalue(res, ordinal_position,
-                        ColumnMetadataTable::ColumnOrdinalPosition::ID));
+             PQgetvalue(res, ordinal_position, OrdinalPosition::kId));
+
+  // Set the value of the table_id to ptree.
   column.put(Tables::Column::TABLE_ID,
-             PQgetvalue(res, ordinal_position,
-                        ColumnMetadataTable::ColumnOrdinalPosition::TABLE_ID));
+             PQgetvalue(res, ordinal_position, OrdinalPosition::kTableId));
+
+  // Set the value of the name to ptree.
   column.put(Tables::Column::NAME,
-             PQgetvalue(res, ordinal_position,
-                        ColumnMetadataTable::ColumnOrdinalPosition::NAME));
+             PQgetvalue(res, ordinal_position, OrdinalPosition::kName));
+
+  // Set the value of the ordinal_position to ptree.
   column.put(
       Tables::Column::ORDINAL_POSITION,
-      PQgetvalue(res, ordinal_position,
-                 ColumnMetadataTable::ColumnOrdinalPosition::ORDINAL_POSITION));
-  column.put(
-      Tables::Column::DATA_TYPE_ID,
-      PQgetvalue(res, ordinal_position,
-                 ColumnMetadataTable::ColumnOrdinalPosition::DATA_TYPE_ID));
+      PQgetvalue(res, ordinal_position, OrdinalPosition::kOrdinalPosition));
+  // Set the value of the data_type_id to ptree.
 
+  column.put(Tables::Column::DATA_TYPE_ID,
+             PQgetvalue(res, ordinal_position, OrdinalPosition::kDataTypeId));
+
+  // Set the value of the data_length to ptree.
   std::string data_length = std::string(
-      PQgetvalue(res, ordinal_position,
-                 ColumnMetadataTable::ColumnOrdinalPosition::DATA_LENGTH));
-
+      PQgetvalue(res, ordinal_position, OrdinalPosition::kDataLength));
   if (!data_length.empty()) {
     std::stringstream ss;
     ss << data_length;
@@ -461,50 +484,47 @@ ErrorCode ColumnsDAO::get_ptree_from_p_gresult(PGresult*& res,
       json_parser::read_json(ss, p_data_length);
     } catch (json_parser_error& e) {
       std::cerr << Message::READ_JSON_FAILURE << e.what() << std::endl;
-
-      return ErrorCode::INTERNAL_ERROR;
+      error = ErrorCode::INTERNAL_ERROR;
+      return error;
     } catch (...) {
       std::cerr << Message::READ_JSON_FAILURE << std::endl;
-
-      return ErrorCode::INTERNAL_ERROR;
+      error = ErrorCode::INTERNAL_ERROR;
+      return error;
     }
 
     column.add_child(Tables::Column::DATA_LENGTH, p_data_length);
   }
 
+  // Set the value of the varying to ptree.
   std::string varying = DbcUtils::convert_boolean_expression(
-      PQgetvalue(res, ordinal_position,
-                 ColumnMetadataTable::ColumnOrdinalPosition::VARYING));
-
+      PQgetvalue(res, ordinal_position, OrdinalPosition::kVarying));
   if (!varying.empty()) {
     column.put(Tables::Column::VARYING, varying);
   }
 
+  // Set the value of the nullable to ptree.
   std::string nullable = DbcUtils::convert_boolean_expression(
-      PQgetvalue(res, ordinal_position,
-                 ColumnMetadataTable::ColumnOrdinalPosition::NULLABLE));
-
+      PQgetvalue(res, ordinal_position, OrdinalPosition::kNullable));
   if (!nullable.empty()) {
     column.put(Tables::Column::NULLABLE, nullable);
   }
 
+  // Set the value of the default_expr to ptree.
   std::string default_expr =
-      PQgetvalue(res, ordinal_position,
-                 ColumnMetadataTable::ColumnOrdinalPosition::DEFAULT_EXPR);
-
+      PQgetvalue(res, ordinal_position, OrdinalPosition::kDefaultExpr);
   if (!default_expr.empty()) {
     column.put(Tables::Column::DEFAULT, default_expr);
   }
 
+  // Set the value of the direction to ptree.
   std::string direction =
-      PQgetvalue(res, ordinal_position,
-                 ColumnMetadataTable::ColumnOrdinalPosition::DIRECTION);
-
+      PQgetvalue(res, ordinal_position, OrdinalPosition::kDirection);
   if (!direction.empty()) {
     column.put(Tables::Column::DIRECTION, direction);
   }
 
-  return ErrorCode::OK;
+  error = ErrorCode::OK;
+  return error;
 }
 
 }  // namespace manager::metadata::db::postgresql

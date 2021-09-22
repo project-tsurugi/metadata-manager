@@ -1,7 +1,7 @@
 /*
  * Copyright 2020 tsurugi project.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
+ * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
@@ -13,23 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef MANAGER_METADATA_ENTITY_TABLE_STATISTIC_H_
-#define MANAGER_METADATA_ENTITY_TABLE_STATISTIC_H_
+#ifndef API_TEST_TABLE_STATISTICS_H_
+#define API_TEST_TABLE_STATISTICS_H_
 
 #include <string>
+#include <tuple>
+#include <vector>
 
-#include "manager/metadata/metadata.h"
+namespace manager::metadata::testing {
 
-namespace manager::metadata {
+typedef std::tuple<std::string, float, float> TupleApiTestTableStatistics;
 
-class TableStatistic {
+class ApiTestTableStatistics {
  public:
-  ObjectIdType id;
-  std::string name;
-  std::string namespace_name;
-  float reltuples;
-};  // class TableStatistic
+  static std::vector<TupleApiTestTableStatistics> make_tuple_table_statistics(
+      const std::string& test_number);
+};
 
-}  // namespace manager::metadata
+}  // namespace manager::metadata::testing
 
-#endif  // MANAGER_METADATA_ENTITY_TABLE_STATISTIC_H_
+#endif  // API_TEST_TABLE_STATISTICS_H_

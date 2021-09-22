@@ -18,12 +18,8 @@
 
 #include <boost/property_tree/ptree.hpp>
 #include <string_view>
-#include <unordered_map>
 
 #include "manager/metadata/dao/statistics_dao.h"
-#include "manager/metadata/dao/tables_dao.h"
-#include "manager/metadata/entity/column_statistic.h"
-#include "manager/metadata/entity/table_statistic.h"
 #include "manager/metadata/error_code.h"
 #include "manager/metadata/metadata.h"
 #include "manager/metadata/provider/provider_base.h"
@@ -33,29 +29,36 @@ namespace manager::metadata::db {
 class StatisticsProvider : public ProviderBase {
  public:
   manager::metadata::ErrorCode init();
-  manager::metadata::ErrorCode add_table_statistic(
-      std::string_view key, std::string_view value, float reltuples,
-      ObjectIdType* table_id = nullptr);
+
   manager::metadata::ErrorCode add_column_statistic(
-      ObjectIdType table_id, ObjectIdType ordinal_position,
-      boost::property_tree::ptree& column_statistic);
-  manager::metadata::ErrorCode get_table_statistic(
-      std::string_view key, std::string_view value,
-      TableStatistic& table_statistic);
+      boost::property_tree::ptree& object, ObjectIdType& statistic_id);
+
   manager::metadata::ErrorCode get_column_statistic(
-      ObjectIdType table_id, ObjectIdType ordinal_position,
-      ColumnStatistic& column_statistic);
-  manager::metadata::ErrorCode get_all_column_statistics(
-      ObjectIdType table_id,
-      std::unordered_map<ObjectIdType, ColumnStatistic>& column_statistics);
+      std::string_view key, std::string_view value,
+      boost::property_tree::ptree& object);
+  manager::metadata::ErrorCode get_column_statistic(
+      const ObjectIdType table_id, std::string_view key, std::string_view value,
+      boost::property_tree::ptree& object);
+  manager::metadata::ErrorCode get_column_statistics(
+      std::vector<boost::property_tree::ptree>& container);
+  manager::metadata::ErrorCode get_column_statistics(
+      const ObjectIdType table_id,
+      std::vector<boost::property_tree::ptree>& container);
+
   manager::metadata::ErrorCode remove_column_statistic(
-      ObjectIdType table_id, ObjectIdType ordinal_position);
-  manager::metadata::ErrorCode remove_all_column_statistics(
-      ObjectIdType table_id);
+      std::string_view key, std::string_view value,
+      ObjectIdType* statistic_id = nullptr);
+  manager::metadata::ErrorCode remove_column_statistics(
+      const ObjectIdType table_id);
+  manager::metadata::ErrorCode remove_column_statistic(
+      const ObjectIdType table_id, std::string_view key, std::string_view value,
+      ObjectIdType* statistic_id = nullptr);
 
  private:
-  std::shared_ptr<TablesDAO> tables_dao_ = nullptr;
   std::shared_ptr<StatisticsDAO> statistics_dao_ = nullptr;
+
+  manager::metadata::ErrorCode fill_parameters(
+      boost::property_tree::ptree& object) const;
 
 };  // class StatisticsProvider
 

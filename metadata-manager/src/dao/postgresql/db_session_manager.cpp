@@ -44,10 +44,12 @@ using manager::metadata::ErrorCode;
  *   for the requested table name.
  * @return ErrorCode::OK if success, otherwise an error code.
  */
-ErrorCode DBSessionManager::get_dao(GenericDAO::TableName table_name,
+ErrorCode DBSessionManager::get_dao(const GenericDAO::TableName table_name,
                                     std::shared_ptr<GenericDAO>& gdao) {
+  ErrorCode error = ErrorCode::UNKNOWN;
+
   if (!DbcUtils::is_open(connection_)) {
-    ErrorCode error = connect();
+    error = connect();
     if (error != ErrorCode::OK) {
       return error;
     }
@@ -58,8 +60,10 @@ ErrorCode DBSessionManager::get_dao(GenericDAO::TableName table_name,
     }
   }
 
-  return create_dao(table_name, (manager::metadata::db::DBSessionManager*)this,
-                    gdao);
+  error = create_dao(table_name, (manager::metadata::db::DBSessionManager*)this,
+                     gdao);
+
+  return error;
 }
 
 /**
@@ -68,20 +72,26 @@ ErrorCode DBSessionManager::get_dao(GenericDAO::TableName table_name,
  * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode DBSessionManager::start_transaction() {
+  ErrorCode error = ErrorCode::UNKNOWN;
+
   if (!DbcUtils::is_open(connection_)) {
     std::cerr << Message::START_TRANSACTION_FAILURE << Message::NOT_INITIALIZED
               << std::endl;
-    return ErrorCode::NOT_INITIALIZED;
-  }
-  ResultUPtr res =
-      DbcUtils::make_result_uptr(PQexec(connection_.get(), "BEGIN"));
-  if (PQresultStatus(res.get()) != PGRES_COMMAND_OK) {
-    std::cerr << Message::START_TRANSACTION_FAILURE
-              << PQerrorMessage(connection_.get()) << std::endl;
-    return ErrorCode::DATABASE_ACCESS_FAILURE;
+    error = ErrorCode::NOT_INITIALIZED;
+    return error;
   }
 
-  return ErrorCode::OK;
+  ResultUPtr res =
+      DbcUtils::make_result_uptr(PQexec(connection_.get(), "BEGIN"));
+  if (PQresultStatus(res.get()) == PGRES_COMMAND_OK) {
+    error = ErrorCode::OK;
+  } else {
+    std::cerr << Message::START_TRANSACTION_FAILURE
+              << PQerrorMessage(connection_.get()) << std::endl;
+    error = ErrorCode::DATABASE_ACCESS_FAILURE;
+  }
+
+  return error;
 }
 
 /**
@@ -91,20 +101,26 @@ ErrorCode DBSessionManager::start_transaction() {
  * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode DBSessionManager::commit() {
+  ErrorCode error = ErrorCode::UNKNOWN;
+
   if (!DbcUtils::is_open(connection_)) {
     std::cerr << Message::COMMIT_FAILURE << Message::NOT_INITIALIZED
               << std::endl;
-    return ErrorCode::NOT_INITIALIZED;
-  }
-  ResultUPtr res =
-      DbcUtils::make_result_uptr(PQexec(connection_.get(), "COMMIT"));
-  if (PQresultStatus(res.get()) != PGRES_COMMAND_OK) {
-    std::cerr << Message::COMMIT_FAILURE << PQerrorMessage(connection_.get())
-              << std::endl;
-    return ErrorCode::DATABASE_ACCESS_FAILURE;
+    error = ErrorCode::NOT_INITIALIZED;
+    return error;
   }
 
-  return ErrorCode::OK;
+  ResultUPtr res =
+      DbcUtils::make_result_uptr(PQexec(connection_.get(), "COMMIT"));
+  if (PQresultStatus(res.get()) == PGRES_COMMAND_OK) {
+    error = ErrorCode::OK;
+  } else {
+    std::cerr << Message::COMMIT_FAILURE << PQerrorMessage(connection_.get())
+              << std::endl;
+    error = ErrorCode::DATABASE_ACCESS_FAILURE;
+  }
+
+  return error;
 }
 
 /**
@@ -114,20 +130,25 @@ ErrorCode DBSessionManager::commit() {
  * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode DBSessionManager::rollback() {
+  ErrorCode error = ErrorCode::UNKNOWN;
+
   if (!DbcUtils::is_open(connection_)) {
     std::cerr << Message::ROLLBACK_FAILURE << Message::NOT_INITIALIZED
               << std::endl;
-    return ErrorCode::NOT_INITIALIZED;
+    error = ErrorCode::NOT_INITIALIZED;
+    return error;
   }
   ResultUPtr res =
       DbcUtils::make_result_uptr(PQexec(connection_.get(), "ROLLBACK"));
-  if (PQresultStatus(res.get()) != PGRES_COMMAND_OK) {
+  if (PQresultStatus(res.get()) == PGRES_COMMAND_OK) {
+    error = ErrorCode::OK;
+  } else {
     std::cerr << Message::ROLLBACK_FAILURE << PQerrorMessage(connection_.get())
               << std::endl;
-    return ErrorCode::DATABASE_ACCESS_FAILURE;
+    error = ErrorCode::DATABASE_ACCESS_FAILURE;
   }
 
-  return ErrorCode::OK;
+  return error;
 }
 
 // -----------------------------------------------------------------------------
@@ -140,15 +161,19 @@ ErrorCode DBSessionManager::rollback() {
  * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode DBSessionManager::connect() {
+  ErrorCode error = ErrorCode::UNKNOWN;
+
   connection_ = DbcUtils::make_connection_sptr(
       PQconnectdb(Config::get_connection_string().c_str()));
 
-  if (!DbcUtils::is_open(connection_)) {
+  if (DbcUtils::is_open(connection_)) {
+    error = ErrorCode::OK;
+  } else {
     std::cerr << Message::CONNECT_FAILURE << std::endl;
-    return ErrorCode::DATABASE_ACCESS_FAILURE;
+    error = ErrorCode::DATABASE_ACCESS_FAILURE;
   }
 
-  return ErrorCode::OK;
+  return error;
 }
 
 /**
@@ -158,21 +183,27 @@ ErrorCode DBSessionManager::connect() {
  * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode DBSessionManager::set_always_secure_search_path() const {
+  ErrorCode error = ErrorCode::UNKNOWN;
+
   if (!DbcUtils::is_open(connection_)) {
     std::cerr << Message::SET_ALWAYS_SECURE_SEARCH_PATH
               << Message::NOT_INITIALIZED << std::endl;
-    return ErrorCode::NOT_INITIALIZED;
+    error = ErrorCode::NOT_INITIALIZED;
+    return error;
   }
+
   ResultUPtr res = DbcUtils::make_result_uptr(
       PQexec(connection_.get(),
              "SELECT pg_catalog.set_config('search_path', '', false)"));
-  if (PQresultStatus(res.get()) != PGRES_TUPLES_OK) {
+  if (PQresultStatus(res.get()) == PGRES_TUPLES_OK) {
+    error = ErrorCode::OK;
+  } else {
     std::cerr << Message::SET_ALWAYS_SECURE_SEARCH_PATH
               << PQerrorMessage(connection_.get()) << std::endl;
-    return ErrorCode::DATABASE_ACCESS_FAILURE;
+    error = ErrorCode::DATABASE_ACCESS_FAILURE;
   }
 
-  return ErrorCode::OK;
+  return error;
 }
 
 }  // namespace manager::metadata::db::postgresql

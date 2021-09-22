@@ -18,33 +18,43 @@
 
 #include <string>
 #include <string_view>
-#include <unordered_map>
 
 #include "manager/metadata/dao/generic_dao.h"
-#include "manager/metadata/entity/column_statistic.h"
 #include "manager/metadata/metadata.h"
 
 namespace manager::metadata::db {
 
 class StatisticsDAO : public GenericDAO {
  public:
-  virtual manager::metadata::ErrorCode
-  upsert_one_column_statistic_by_table_id_column_ordinal_position(
-      ObjectIdType table_id, ObjectIdType ordinal_position,
-      std::string_view column_statistic) const = 0;
-  virtual manager::metadata::ErrorCode
-  select_one_column_statistic_by_table_id_column_ordinal_position(
-      ObjectIdType table_id, ObjectIdType ordinal_position,
-      ColumnStatistic& column_statistic) const = 0;
-  virtual manager::metadata::ErrorCode select_all_column_statistic_by_table_id(
-      ObjectIdType table_id,
-      std::unordered_map<ObjectIdType, ColumnStatistic>& column_statistics)
-      const = 0;
-  virtual manager::metadata::ErrorCode delete_all_column_statistic_by_table_id(
-      ObjectIdType table_id) const = 0;
-  virtual manager::metadata::ErrorCode
-  delete_one_column_statistic_by_table_id_column_ordinal_position(
-      ObjectIdType table_id, ObjectIdType ordinal_position) const = 0;
+  virtual manager::metadata::ErrorCode upsert_column_statistic(
+      const ObjectIdType column_id, const std::string* column_name,
+      boost::property_tree::ptree* column_statistic) const = 0;
+  virtual manager::metadata::ErrorCode upsert_column_statistic(
+      const ObjectIdType table_id, std::string_view object_key,
+      std::string_view object_value, const std::string* column_name,
+      boost::property_tree::ptree* column_statistic) const = 0;
+
+  virtual manager::metadata::ErrorCode select_column_statistic(
+      std::string_view object_key, std::string_view object_value,
+      boost::property_tree::ptree& object) const = 0;
+  virtual manager::metadata::ErrorCode select_column_statistic(
+      const ObjectIdType table_id, std::string_view object_key,
+      std::string_view object_value,
+      boost::property_tree::ptree& object) const = 0;
+  virtual manager::metadata::ErrorCode select_column_statistic(
+      std::vector<boost::property_tree::ptree>& container) const = 0;
+  virtual manager::metadata::ErrorCode select_column_statistic(
+      const ObjectIdType table_id,
+      std::vector<boost::property_tree::ptree>& container) const = 0;
+
+  virtual manager::metadata::ErrorCode delete_column_statistic(
+      std::string_view object_key, std::string_view object_value,
+      ObjectIdType& statistic_id) const = 0;
+  virtual manager::metadata::ErrorCode delete_column_statistic(
+      const ObjectIdType table_id) const = 0;
+  virtual manager::metadata::ErrorCode delete_column_statistic(
+      const ObjectIdType table_id, std::string_view object_key,
+      std::string_view object_value, ObjectIdType& statistic_id) const = 0;
 };  // class StatisticsDAO
 
 }  // namespace manager::metadata::db

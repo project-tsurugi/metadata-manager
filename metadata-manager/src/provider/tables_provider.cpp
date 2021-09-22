@@ -32,23 +32,33 @@ using manager::metadata::ErrorCode;
  * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode TablesProvider::init() {
-  ErrorCode error = ErrorCode::OK;
+  ErrorCode error = ErrorCode::UNKNOWN;
   std::shared_ptr<GenericDAO> gdao = nullptr;
 
-  if (tables_dao_ == nullptr) {
+  if (tables_dao_ != nullptr) {
+    // Instance of the TablesDAO class has already been obtained.
+    error = ErrorCode::OK;
+  } else {
     // Get an instance of the TablesDAO class.
     error = session_manager_->get_dao(GenericDAO::TableName::TABLES, gdao);
-    tables_dao_ = (error == ErrorCode::OK)
-                      ? std::static_pointer_cast<TablesDAO>(gdao)
-                      : nullptr;
+    if (error != ErrorCode::OK) {
+      return error;
+    }
+    // Set TablesDAO instance.
+    tables_dao_ = std::static_pointer_cast<TablesDAO>(gdao);
   }
 
-  if ((columns_dao_ == nullptr) && (error == ErrorCode::OK)) {
+  if (columns_dao_ != nullptr) {
+    // Instance of the ColumnsDAO class has already been obtained.
+    error = ErrorCode::OK;
+  } else {
     // Get an instance of the ColumnsDAO class.
     error = session_manager_->get_dao(GenericDAO::TableName::COLUMNS, gdao);
-    columns_dao_ = (error == ErrorCode::OK)
-                       ? std::static_pointer_cast<ColumnsDAO>(gdao)
-                       : nullptr;
+    if (error != ErrorCode::OK) {
+      return error;
+    }
+    // Set ColumnsDAO instance.
+    columns_dao_ = std::static_pointer_cast<ColumnsDAO>(gdao);
   }
 
   return error;
@@ -62,8 +72,10 @@ ErrorCode TablesProvider::init() {
  */
 ErrorCode TablesProvider::add_table_metadata(ptree& object,
                                              ObjectIdType& table_id) {
+  ErrorCode error = ErrorCode::UNKNOWN;
+
   // Initialization
-  ErrorCode error = init();
+  error = init();
   if (error != ErrorCode::OK) {
     return error;
   }
@@ -86,6 +98,21 @@ ErrorCode TablesProvider::add_table_metadata(ptree& object,
     if (rollback_result != ErrorCode::OK) {
       return rollback_result;
     }
+
+    // Check if it already exists.
+    ptree res_ptree;
+    boost::optional<std::string> name =
+        object.get_optional<std::string>(Tables::NAME);
+    ErrorCode rselect_result =
+        tables_dao_->select_table_metadata(Tables::NAME, name.get(), res_ptree);
+    if (rselect_result == ErrorCode::OK) {
+      boost::optional<std::int64_t> id =
+          res_ptree.get_optional<std::int64_t>(Tables::ID);
+      if (id) {
+        error = ErrorCode::TABLE_NAME_ALREADY_EXISTS;
+      }
+    }
+
     return error;
   }
 
@@ -104,6 +131,7 @@ ErrorCode TablesProvider::add_table_metadata(ptree& object,
   }
 
   error = session_manager_->commit();
+
   return error;
 }
 
@@ -119,8 +147,10 @@ ErrorCode TablesProvider::add_table_metadata(ptree& object,
 ErrorCode TablesProvider::get_table_metadata(std::string_view key,
                                              std::string_view value,
                                              ptree& object) {
+  ErrorCode error = ErrorCode::UNKNOWN;
+
   // Initialization
-  ErrorCode error = init();
+  error = init();
   if (error != ErrorCode::OK) {
     return error;
   }
@@ -132,36 +162,135 @@ ErrorCode TablesProvider::get_table_metadata(std::string_view key,
 
   std::string object_id = "";
   if (key == Tables::ID) {
-    error = get_all_column_metadata(value, object);
+    error = get_column_metadata(value, object);
   } else if (key == Tables::NAME) {
-    BOOST_FOREACH (ptree::value_type& node, object) {
-      ptree& table = node.second;
-
-      if (table.empty()) {
-        boost::optional<std::string> o_table_id =
-            object.get_optional<std::string>(Tables::ID);
-        if (!o_table_id) {
-          return ErrorCode::INTERNAL_ERROR;
-        }
-
-        error = get_all_column_metadata(o_table_id.get(), object);
-        break;
-      } else {
-        boost::optional<std::string> o_table_id =
-            table.get_optional<std::string>(Tables::ID);
-        if (!o_table_id) {
-          return ErrorCode::INTERNAL_ERROR;
-        }
-
-        error = get_all_column_metadata(o_table_id.get(), table);
-        if (error != ErrorCode::OK) {
-          break;
-        }
-      }
-    }
+    error = get_all_column_metadata(object);
   } else {
     error = ErrorCode::INVALID_PARAMETER;
   }
+  return error;
+}
+
+/**
+ * @brief Gets all table metadata object from the table metadata repository.
+ * @param (container)   [out] table metadata object to get.
+ * @return ErrorCode::OK if success, otherwise an error code.
+ */
+ErrorCode TablesProvider::get_table_metadata(std::vector<ptree>& container) {
+  ErrorCode error = ErrorCode::UNKNOWN;
+
+  // Initialization
+  error = init();
+  if (error != ErrorCode::OK) {
+    return error;
+  }
+
+  error = tables_dao_->select_table_metadata(container);
+  if (error != ErrorCode::OK) {
+    return error;
+  }
+
+  std::string object_id = "";
+  BOOST_FOREACH (auto& table_object, container) {
+    error = get_all_column_metadata(table_object);
+    if (error != ErrorCode::OK) {
+      break;
+    }
+  }
+  return error;
+}
+
+/**
+ * @brief Gets one table statistic from the table metadata repository,
+ *   where key = value.
+ * @param (key)      [in]  key of table metadata object.
+ * @param (value)    [in]  value of table metadata object.
+ * @param (object)   [out] one table metadata object to get,
+ *   where key = value.
+ * @return ErrorCode::OK if success, otherwise an error code.
+ */
+ErrorCode TablesProvider::get_table_statistic(std::string_view key,
+                                              std::string_view value,
+                                              ptree& object) {
+  ErrorCode error = ErrorCode::UNKNOWN;
+
+  // Initialization
+  error = init();
+  if (error != ErrorCode::OK) {
+    return error;
+  }
+
+  error = tables_dao_->select_table_metadata(key, value, object);
+  if (error != ErrorCode::OK) {
+    return error;
+  }
+
+  return error;
+}
+
+/**
+ * @brief Updates the table metadata table with the specified table statistics.
+ * @param (object)    [in]  Table statistic object.
+ * @param (table_id)  [out] ID of the added table metadata.
+ * @return ErrorCode::OK if success, otherwise an error code.
+ */
+ErrorCode TablesProvider::set_table_statistic(ptree& object,
+                                              ObjectIdType& table_id) {
+  ErrorCode error = ErrorCode::UNKNOWN;
+
+  // Initialization
+  error = init();
+  if (error != ErrorCode::OK) {
+    return error;
+  }
+
+  // id
+  boost::optional<std::string> optional_id =
+      object.get_optional<std::string>(Tables::ID);
+  // name
+  boost::optional<std::string> optional_name =
+      object.get_optional<std::string>(Tables::NAME);
+  // tuples
+  boost::optional<float> optional_tuples =
+      object.get_optional<float>(Tables::TUPLES);
+
+  // Parameter value check
+  if ((!optional_id && !optional_name) || (!optional_tuples)) {
+    error = ErrorCode::INVALID_PARAMETER;
+    return error;
+  }
+
+  // Set the key items and values to be updated.
+  std::string key;
+  std::string value;
+  if (optional_id) {
+    key = Tables::ID;
+    value = optional_id.get();
+  } else {
+    key = Tables::NAME;
+    value = optional_name.get();
+  }
+
+  // Set the update value.
+  float tuples = optional_tuples.get();
+
+  error = session_manager_->start_transaction();
+  if (error != ErrorCode::OK) {
+    return error;
+  }
+
+  // Update table statistics to table metadata table.
+  error = tables_dao_->update_reltuples(tuples, key, value, table_id);
+
+  if (error == ErrorCode::OK) {
+    error = session_manager_->commit();
+  } else {
+    ErrorCode rollback_result = session_manager_->rollback();
+    if (rollback_result != ErrorCode::OK) {
+      error = rollback_result;
+    }
+  }
+
   return error;
 }
 
@@ -178,9 +307,11 @@ ErrorCode TablesProvider::get_table_metadata(std::string_view key,
  */
 ErrorCode TablesProvider::remove_table_metadata(std::string_view key,
                                                 std::string_view value,
-                                                ObjectIdType* table_id) {
+                                                ObjectIdType& table_id) {
+  ErrorCode error = ErrorCode::UNKNOWN;
+
   // Initialization
-  ErrorCode error = init();
+  error = init();
   if (error != ErrorCode::OK) {
     return error;
   }
@@ -190,8 +321,7 @@ ErrorCode TablesProvider::remove_table_metadata(std::string_view key,
     return error;
   }
 
-  ObjectIdType retval_table_id;
-  error = tables_dao_->delete_table_metadata(key, value, retval_table_id);
+  error = tables_dao_->delete_table_metadata(key, value, table_id);
   if (error != ErrorCode::OK) {
     ErrorCode rollback_result = session_manager_->rollback();
     if (rollback_result != ErrorCode::OK) {
@@ -201,7 +331,7 @@ ErrorCode TablesProvider::remove_table_metadata(std::string_view key,
   }
 
   error = columns_dao_->delete_column_metadata(Tables::Column::TABLE_ID,
-                                               std::to_string(retval_table_id));
+                                               std::to_string(table_id));
   if (error == ErrorCode::OK) {
     error = session_manager_->commit();
   } else {
@@ -209,10 +339,6 @@ ErrorCode TablesProvider::remove_table_metadata(std::string_view key,
     if (rollback_result != ErrorCode::OK) {
       error = rollback_result;
     }
-  }
-  // Set a value if object_id is not null.
-  if ((error == ErrorCode::OK) && (table_id != nullptr)) {
-    *table_id = retval_table_id;
   }
 
   return error;
@@ -223,16 +349,58 @@ ErrorCode TablesProvider::remove_table_metadata(std::string_view key,
 
 /**
  * @brief Get column metadata-object based on the given table id.
+ * @param (tables)  [out] table metadata-object.
+ * @return ErrorCode::OK if success, otherwise an error code.
+ */
+ErrorCode TablesProvider::get_all_column_metadata(ptree& tables) const {
+  ErrorCode error = ErrorCode::UNKNOWN;
+
+  error = ErrorCode::OK;
+  BOOST_FOREACH (ptree::value_type& node, tables) {
+    ptree& table = node.second;
+
+    if (table.empty()) {
+      boost::optional<std::string> o_table_id =
+          tables.get_optional<std::string>(Tables::ID);
+      if (!o_table_id) {
+        error = ErrorCode::INTERNAL_ERROR;
+        return error;
+      }
+
+      error = get_column_metadata(o_table_id.get(), tables);
+      break;
+    } else {
+      boost::optional<std::string> o_table_id =
+          table.get_optional<std::string>(Tables::ID);
+      if (!o_table_id) {
+        error = ErrorCode::INTERNAL_ERROR;
+        break;
+      }
+
+      error = get_column_metadata(o_table_id.get(), table);
+      if (error != ErrorCode::OK) {
+        break;
+      }
+    }
+  }
+
+  return error;
+}
+
+/**
+ * @brief Get column metadata-object based on the given table id.
  * @param (table_id) [in]  table id.
  * @param (tables)   [out] table metadata-object
  *   with the specified table id.
  * @return ErrorCode::OK if success, otherwise an error code.
  */
-ErrorCode TablesProvider::get_all_column_metadata(std::string_view table_id,
-                                                   ptree& tables) const {
+ErrorCode TablesProvider::get_column_metadata(std::string_view table_id,
+                                              ptree& tables) const {
+  ErrorCode error = ErrorCode::UNKNOWN;
   ptree columns;
-  ErrorCode error = columns_dao_->select_column_metadata(
-      Tables::Column::TABLE_ID, table_id, columns);
+
+  error = columns_dao_->select_column_metadata(Tables::Column::TABLE_ID,
+                                               table_id, columns);
 
   if ((error == ErrorCode::OK) || (error == ErrorCode::INVALID_PARAMETER)) {
     tables.add_child(Tables::COLUMNS_NODE, columns);
@@ -247,52 +415,63 @@ ErrorCode TablesProvider::get_all_column_metadata(std::string_view table_id,
  * @param (table)  [in]  metadata-object
  * @return ErrorCode::OK if success, otherwise an error code.
  */
-ErrorCode TablesProvider::fill_parameters(
-    boost::property_tree::ptree& table) const {
-  ErrorCode error = ErrorCode::OK;
+ErrorCode TablesProvider::fill_parameters(ptree& table) const {
+  ErrorCode error = ErrorCode::UNKNOWN;
 
   boost::optional<std::string> name =
       table.get_optional<std::string>(Metadata::NAME);
-  if (!name) {
-    return ErrorCode::INVALID_PARAMETER;
+  if (!name || name.get().empty()) {
+    error = ErrorCode::INVALID_PARAMETER;
+    return error;
   }
 
   // DataTypes check provider.
   db::DataTypesProvider data_type_provider;
   data_type_provider.init();
 
-  // Item name of the column metadata to check.
-  std::vector<std::string> check_columns{
-      Tables::Column::NAME, Tables::Column::ORDINAL_POSITION,
-      Tables::Column::DATA_TYPE_ID, Tables::Column::NULLABLE};
-
   //
   // column metadata
   //
+  error = ErrorCode::OK;
   BOOST_FOREACH (ptree::value_type& node,
                  table.get_child(Tables::COLUMNS_NODE)) {
     ptree& column = node.second;
 
-    // Check if the required items exists.
-    BOOST_FOREACH (std::string name, check_columns) {
-      boost::optional<std::string> item =
-          column.get_optional<std::string>(name);
-      if (!item) {
-        error = ErrorCode::INVALID_PARAMETER;
-        break;
-      }
-    }
-    if (error != ErrorCode::OK) {
+    // name
+    boost::optional<std::string> name =
+        column.get_optional<std::string>(Tables::Column::NAME);
+    if (!name || (name.get().empty())) {
+      error = ErrorCode::INVALID_PARAMETER;
       break;
     }
 
-    // Check if the datatype id are correct.
+    // ordinal position
+    boost::optional<std::int64_t> ordinal_position =
+        column.get_optional<std::int64_t>(Tables::Column::ORDINAL_POSITION);
+    if (!ordinal_position || (ordinal_position.get() <= 0)) {
+      error = ErrorCode::INVALID_PARAMETER;
+      break;
+    }
+
+    // datatype id
+    boost::optional<ObjectIdType> datatype_id =
+        column.get_optional<ObjectIdType>(Tables::Column::DATA_TYPE_ID);
+    if (!datatype_id || (datatype_id.get() < 0)) {
+      error = ErrorCode::INVALID_PARAMETER;
+      break;
+    }
     ptree object;
-    boost::optional<std::string> data_type_id =
-        column.get_optional<std::string>(Tables::Column::DATA_TYPE_ID);
     error = data_type_provider.get_datatype_metadata(
-        DataTypes::ID, data_type_id.get(), object);
+        DataTypes::ID, std::to_string(datatype_id.get()), object);
     if (error != ErrorCode::OK) {
+      error = ErrorCode::INVALID_PARAMETER;
+      break;
+    }
+
+    // nullable
+    boost::optional<std::string> nullable =
+        column.get_optional<std::string>(Tables::Column::NULLABLE);
+    if (!nullable || (nullable.get().empty())) {
       error = ErrorCode::INVALID_PARAMETER;
       break;
     }

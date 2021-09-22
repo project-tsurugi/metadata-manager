@@ -19,13 +19,13 @@
 #include <boost/property_tree/ptree.hpp>
 #include <string>
 #include <string_view>
-#include <unordered_map>
 
 #include "manager/metadata/error_code.h"
 
 namespace manager::metadata {
 
-using GenerationType = uint64_t;
+using FormatVersionType = int32_t;
+using GenerationType = int64_t;
 using ObjectIdType = int64_t;
 
 class Metadata {
@@ -49,10 +49,11 @@ class Metadata {
 
   ~Metadata() {}
 
+  static GenerationType generation() { return kGeneration; }
+  static FormatVersionType format_version() { return kFormatVersion; }
+
   std::string_view database() const { return database_; }
   std::string_view component() const { return component_; }
-  GenerationType generation() const { return generation_; }
-  uint64_t format_version() const { return format_version_; }
 
   /**
    *  @brief  Initialization.
@@ -123,6 +124,14 @@ class Metadata {
                         boost::property_tree::ptree& object) = 0;
 
   /**
+   *  @brief  Get all table metadata-objects.
+   *  @param  (container)  [out] Container for metadata-objects.
+   *  @return ErrorCode::OK if success, otherwise an error code.
+   */
+  virtual ErrorCode get_all(
+      std::vector<boost::property_tree::ptree>& container) = 0;
+
+  /**
    *  @brief  Remove metadata-object from metadata-table.
    *  @param  [in] metadata-object ID.
    *  @return ErrorCode::OK if success, otherwise an error code.
@@ -136,7 +145,7 @@ class Metadata {
    *  @param  (object_id)   [out] ID of the added metadata-object.
    *  @return ErrorCode::OK if success, otherwise an error code.
    */
-  virtual ErrorCode remove(const char* object_name,
+  virtual ErrorCode remove(std::string_view object_name,
                            ObjectIdType* object_id) = 0;
 
   Metadata(const Metadata&) = delete;
@@ -144,17 +153,13 @@ class Metadata {
 
  protected:
   static const GenerationType LATEST_VERSION = 0;
-  std::unordered_map<ErrorCode, std::unordered_map<std::string, ErrorCode>>
-      code_convert_list_;
-
-  ErrorCode code_converter(const ErrorCode& error_code,
-                           std::string_view key_name);
 
  private:
+  static constexpr GenerationType kGeneration = 1;
+  static constexpr FormatVersionType kFormatVersion = 1;
+
   std::string database_;
   std::string component_;
-  GenerationType generation_ = 1;
-  static constexpr uint64_t format_version_ = 1;
 };
 
 }  // namespace manager::metadata

@@ -16,29 +16,29 @@
 #ifndef MANAGER_METADATA_DAO_TABLES_DAO_H_
 #define MANAGER_METADATA_DAO_TABLES_DAO_H_
 
-#include <boost/property_tree/ptree.hpp>
 #include <string>
 #include <string_view>
 
 #include "manager/metadata/dao/generic_dao.h"
-#include "manager/metadata/entity/table_statistic.h"
 #include "manager/metadata/metadata.h"
 
 namespace manager::metadata::db {
 
 class TablesDAO : public GenericDAO {
  public:
-  virtual manager::metadata::ErrorCode update_reltuples(
-      float reltuples, std::string_view object_key,
-      std::string_view object_value, ObjectIdType& table_id) const = 0;
-  virtual manager::metadata::ErrorCode select_table_statistic(
-      std::string_view object_key, std::string_view object_value,
-      manager::metadata::TableStatistic& table_statistic) const = 0;
   virtual manager::metadata::ErrorCode insert_table_metadata(
       boost::property_tree::ptree& table, ObjectIdType& table_id) const = 0;
+
   virtual manager::metadata::ErrorCode select_table_metadata(
       std::string_view object_key, std::string_view object_value,
       boost::property_tree::ptree& object) const = 0;
+  virtual manager::metadata::ErrorCode select_table_metadata(
+      std::vector<boost::property_tree::ptree>& container) const = 0;
+
+  virtual manager::metadata::ErrorCode update_reltuples(
+      const float reltuples, std::string_view object_key,
+      std::string_view object_value, ObjectIdType& table_id) const = 0;
+
   virtual manager::metadata::ErrorCode delete_table_metadata(
       std::string_view object_key, std::string_view object_value,
       ObjectIdType& table_id) const = 0;

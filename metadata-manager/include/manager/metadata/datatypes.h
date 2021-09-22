@@ -23,9 +23,11 @@ namespace manager::metadata {
 class DataTypes : public Metadata {
  public:
   // root object.
-  static constexpr const char* const DATATYPES_NODE = "dataTypes";
+  static constexpr const char* const DATATYPES_NODE = "data_types";
 
   // data type metadata-object.
+  // FORMAT_VERSION is defined in base class.
+  // GENERATION is defined in base class.
   // ID is defined in base class.
   // NAME is defined in base class.
   static constexpr const char* const PG_DATA_TYPE = "pg_dataType";
@@ -65,14 +67,18 @@ class DataTypes : public Metadata {
                 boost::property_tree::ptree& object) override;
   ErrorCode get(std::string_view object_name,
                 boost::property_tree::ptree& object) override;
-  ErrorCode get(const char* object_key, std::string_view object_value,
+  ErrorCode get(std::string_view object_key, std::string_view object_value,
                 boost::property_tree::ptree& object);
+  ErrorCode get_all(std::vector<boost::property_tree::ptree>& container
+                    __attribute__((unused))) override {
+    return ErrorCode::UNKNOWN;
+  }
 
   ErrorCode remove(const ObjectIdType object_id
                    __attribute__((unused))) override {
     return ErrorCode::UNKNOWN;
   }
-  ErrorCode remove(const char* object_name __attribute__((unused)),
+  ErrorCode remove(std::string_view object_name __attribute__((unused)),
                    ObjectIdType* object_id __attribute__((unused))) override {
     return ErrorCode::UNKNOWN;
   }

@@ -46,6 +46,8 @@ static ObjectIdType INVALID_OID = 0;
  * @brief initialize object-ID metadata-table.
  */
 ErrorCode ObjectId::init() {
+  ErrorCode error = ErrorCode::UNKNOWN;
+
   // Filename of the table metadata.
   boost::format filename = boost::format("%s/%s") %
                            Config::get_storage_dir_path() %
@@ -60,11 +62,12 @@ ErrorCode ObjectId::init() {
       ptree root;
       ini_parser::write_ini(oid_file_name, root);
     }
+    error = ErrorCode::OK;
   } catch (...) {
-    return ErrorCode::UNKNOWN;
+    error = ErrorCode::INTERNAL_ERROR;
   }
 
-  return ErrorCode::OK;
+  return error;
 }
 
 /**

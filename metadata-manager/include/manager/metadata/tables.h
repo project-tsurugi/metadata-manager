@@ -26,15 +26,19 @@ class Tables : public Metadata {
   static constexpr const char* const TABLES_NODE = "tables";
 
   // table metadata-object.
+  // FORMAT_VERSION is defined in base class.
+  // GENERATION is defined in base class.
   // ID is defined in base class.
   // NAME is defined in base class.
   static constexpr const char* const NAMESPACE = "namespace";
   static constexpr const char* const COLUMNS_NODE = "columns";
   static constexpr const char* const PRIMARY_KEY_NODE = "primaryKey";
-  static constexpr const char* const RELTUPLES = "reltuples";
+  static constexpr const char* const TUPLES = "tuples";
 
   // column metadata-object.
   struct Column {
+    static constexpr const char* const FORMAT_VERSION = "formatVersion";
+    static constexpr const char* const GENERATION = "generation";
     static constexpr const char* const ID = "id";
     static constexpr const char* const TABLE_ID = "tableId";
     static constexpr const char* const NAME = "name";
@@ -74,15 +78,27 @@ class Tables : public Metadata {
   Tables& operator=(const Tables&) = delete;
 
   ErrorCode init() override;
+
   ErrorCode add(boost::property_tree::ptree& object) override;
   ErrorCode add(boost::property_tree::ptree& object,
                 ObjectIdType* object_id) override;
+
   ErrorCode get(const ObjectIdType object_id,
                 boost::property_tree::ptree& object) override;
   ErrorCode get(std::string_view object_name,
                 boost::property_tree::ptree& object) override;
+  ErrorCode get_all(
+      std::vector<boost::property_tree::ptree>& container) override;
+
+  ErrorCode get_statistic(const ObjectIdType table_id,
+                          boost::property_tree::ptree& object);
+  ErrorCode get_statistic(std::string_view table_name,
+                          boost::property_tree::ptree& object);
+  ErrorCode set_statistic(boost::property_tree::ptree& object);
+
   ErrorCode remove(const ObjectIdType object_id) override;
-  ErrorCode remove(const char* object_name, ObjectIdType* object_id) override;
+  ErrorCode remove(std::string_view object_name,
+                   ObjectIdType* object_id) override;
 };  // class Tables
 
 }  // namespace manager::metadata

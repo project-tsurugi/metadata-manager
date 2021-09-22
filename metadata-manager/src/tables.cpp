@@ -40,17 +40,6 @@ Tables::Tables(std::string_view database, std::string_view component)
     : Metadata(database, component) {
   // Create the provider.
   provider = std::make_unique<db::TablesProvider>();
-
-  // Set error code conversion list.
-  code_convert_list_ = {
-      // If ErrorCode is NOT_FOUND, "id" is converted to ID_NOT_FOUND and "name"
-      // is converted to NAME_NOT_FOUND.
-      {ErrorCode::NOT_FOUND,
-       {
-           {Tables::ID, ErrorCode::ID_NOT_FOUND},
-           {Tables::NAME, ErrorCode::NAME_NOT_FOUND},
-       }},
-  };
 }
 
 /**
@@ -59,8 +48,10 @@ Tables::Tables(std::string_view database, std::string_view component)
  * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode Tables::init() {
+  ErrorCode error = ErrorCode::UNKNOWN;
+
   // Initialize the provider.
-  ErrorCode error = provider->init();
+  error = provider->init();
 
   return error;
 }
@@ -71,7 +62,12 @@ ErrorCode Tables::init() {
  * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode Tables::add(boost::property_tree::ptree& object) {
-  return add(object, nullptr);
+  ErrorCode error = ErrorCode::UNKNOWN;
+
+  // Adds the table metadata through the class method.
+  error = add(object, nullptr);
+
+  return error;
 }
 
 /**
@@ -82,9 +78,11 @@ ErrorCode Tables::add(boost::property_tree::ptree& object) {
  */
 ErrorCode Tables::add(boost::property_tree::ptree& object,
                       ObjectIdType* object_id) {
-  // Adds the table metadata through the provider.
+  ErrorCode error = ErrorCode::UNKNOWN;
   ObjectIdType retval_object_id;
-  ErrorCode error = provider->add_table_metadata(object, retval_object_id);
+
+  // Adds the table metadata through the provider.
+  error = provider->add_table_metadata(object, retval_object_id);
 
   // Set a value if object_id is not null.
   if ((error == ErrorCode::OK) && (object_id != nullptr)) {
@@ -102,18 +100,22 @@ ErrorCode Tables::add(boost::property_tree::ptree& object,
  */
 ErrorCode Tables::get(const ObjectIdType object_id,
                       boost::property_tree::ptree& object) {
+  ErrorCode error = ErrorCode::UNKNOWN;
+
   // Parameter value check
   if (object_id <= 0) {
-    return ErrorCode::ID_NOT_FOUND;
+    error = ErrorCode::ID_NOT_FOUND;
+    return error;
   }
 
   // Get the table metadata through the provider.
   std::string s_object_id = std::to_string(object_id);
-  ErrorCode error =
-      provider->get_table_metadata(Tables::ID, s_object_id, object);
+  error = provider->get_table_metadata(Tables::ID, s_object_id, object);
 
   // Convert the return value.
-  error = code_converter(error, Tables::ID);
+  if (error == ErrorCode::NOT_FOUND) {
+    error = ErrorCode::ID_NOT_FOUND;
+  }
 
   return error;
 }
@@ -126,17 +128,125 @@ ErrorCode Tables::get(const ObjectIdType object_id,
  */
 ErrorCode Tables::get(std::string_view object_name,
                       boost::property_tree::ptree& object) {
+  ErrorCode error = ErrorCode::UNKNOWN;
+
   // Parameter value check
   if (object_name.empty()) {
-    return ErrorCode::NAME_NOT_FOUND;
+    error = ErrorCode::NAME_NOT_FOUND;
+    return error;
   }
 
   // Get the table metadata through the provider.
-  ErrorCode error =
-      provider->get_table_metadata(Tables::NAME, object_name, object);
+  error = provider->get_table_metadata(Tables::NAME, object_name, object);
 
   // Convert the return value
-  error = code_converter(error, Tables::NAME);
+  if (error == ErrorCode::NOT_FOUND) {
+    error = ErrorCode::NAME_NOT_FOUND;
+  }
+
+  return error;
+}
+
+/**
+ * @brief Gets all table metadata object from the table metadata table.
+ * @param (container)  [out] Container for metadata-objects.
+ * @return ErrorCode::OK if success, otherwise an error code.
+ */
+ErrorCode Tables::get_all(std::vector<boost::property_tree::ptree>& container) {
+  ErrorCode error = ErrorCode::UNKNOWN;
+
+  // Get the table metadata through the provider.
+  error = provider->get_table_metadata(container);
+
+  return error;
+}
+
+/**
+ * @brief Gets one table statistic from the table metadata table
+ *   based on the given table id.
+ * @param (table_id)         [in]  table id.
+ * @param (table_statistic)  [out] one table statistic
+ *   with the specified table id.
+ * @return ErrorCode::OK if success, otherwise an error code.
+ */
+ErrorCode Tables::get_statistic(const ObjectIdType table_id,
+                                boost::property_tree::ptree& object) {
+  ErrorCode error = ErrorCode::UNKNOWN;
+
+  // Parameter value check
+  if (table_id <= 0) {
+    error = ErrorCode::ID_NOT_FOUND;
+    return error;
+  }
+
+  // Get the table statistic through the provider.
+  error = provider->get_table_statistic(Tables::ID, std::to_string(table_id),
+                                        object);
+
+  // Convert the return value
+  if (error == ErrorCode::NOT_FOUND) {
+    error = ErrorCode::ID_NOT_FOUND;
+  }
+
+  return error;
+}
+
+/**
+ * @brief Gets one table statistic from the table metadata table
+ *   based on the given table name.
+ * @param (table_name)       [in]  table name.
+ * @param (table_statistic)  [out] one table statistic
+ *   with the specified table name.
+ * @return ErrorCode::OK if success, otherwise an error code.
+ */
+ErrorCode Tables::get_statistic(std::string_view table_name,
+                                boost::property_tree::ptree& object) {
+  ErrorCode error = ErrorCode::UNKNOWN;
+
+  // Parameter value check
+  if (table_name.empty()) {
+    error = ErrorCode::NAME_NOT_FOUND;
+    return error;
+  }
+
+  // Get the table statistic through the provider.
+  error = provider->get_table_statistic(Tables::NAME, table_name, object);
+
+  // Convert the return value
+  if (error == ErrorCode::NOT_FOUND) {
+    error = ErrorCode::NAME_NOT_FOUND;
+  }
+
+  return error;
+}
+
+/**
+ * @brief Set table metadata table with the specified table statistics.
+ * @param (object)  [in] Table statistic object.
+ * @return ErrorCode::OK if success, otherwise an error code.
+ */
+ErrorCode Tables::set_statistic(boost::property_tree::ptree& object) {
+  ErrorCode error = ErrorCode::UNKNOWN;
+
+  boost::optional<std::string> o_id =
+      object.get_optional<std::string>(Tables::ID);
+  boost::optional<std::string> o_name =
+      object.get_optional<std::string>(Tables::NAME);
+
+  // Parameter value check
+  if (!o_id && !o_name) {
+    error = ErrorCode::INVALID_PARAMETER;
+    return error;
+  }
+
+  ObjectIdType retval_object_id;
+  // Adds or updates the table statistic through the provider.
+  error = provider->set_table_statistic(object, retval_object_id);
+
+  // Convert the return value
+  if (error == ErrorCode::NOT_FOUND) {
+    error = (o_id ? ErrorCode::ID_NOT_FOUND : ErrorCode::NAME_NOT_FOUND);
+  }
 
   return error;
 }
@@ -150,17 +260,23 @@ ErrorCode Tables::get(std::string_view object_name,
  * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode Tables::remove(const ObjectIdType object_id) {
+  ErrorCode error = ErrorCode::UNKNOWN;
+
   // Parameter value check
   if (object_id <= 0) {
-    return ErrorCode::ID_NOT_FOUND;
+    error = ErrorCode::ID_NOT_FOUND;
+    return error;
   }
 
+  ObjectIdType retval_object_id;
   // Remove the table metadata through the provider.
-  ErrorCode error =
-      provider->remove_table_metadata(Tables::ID, std::to_string(object_id));
+  error = provider->remove_table_metadata(Tables::ID, std::to_string(object_id),
+                                          retval_object_id);
 
   // Convert the return value
-  error = code_converter(error, Tables::ID);
+  if (error == ErrorCode::NOT_FOUND) {
+    error = ErrorCode::ID_NOT_FOUND;
+  }
 
   return error;
 }
@@ -174,20 +290,31 @@ ErrorCode Tables::remove(const ObjectIdType object_id) {
  * @param (object_id)    [out] object id of table removed.
  * @return ErrorCode::OK if success, otherwise an error code.
  */
-ErrorCode Tables::remove(const char* object_name, ObjectIdType* object_id) {
+ErrorCode Tables::remove(std::string_view object_name,
+                         ObjectIdType* object_id) {
+  ErrorCode error = ErrorCode::UNKNOWN;
   std::string_view s_object_name = std::string_view(object_name);
 
   // Parameter value check
   if (s_object_name.empty()) {
-    return ErrorCode::NAME_NOT_FOUND;
+    error = ErrorCode::NAME_NOT_FOUND;
+    return error;
   }
 
+  ObjectIdType retval_object_id;
   // Remove the table metadata through the provider.
-  ErrorCode error =
-      provider->remove_table_metadata(Tables::NAME, s_object_name, object_id);
+  error = provider->remove_table_metadata(Tables::NAME, s_object_name,
+                                          retval_object_id);
 
   // Convert the return value
-  error = code_converter(error, Tables::NAME);
+  if (error == ErrorCode::NOT_FOUND) {
+    error = ErrorCode::NAME_NOT_FOUND;
+  }
+
+  // Set a value if object_id is not null.
+  if ((error == ErrorCode::OK) && (object_id != nullptr)) {
+    *object_id = retval_object_id;
+  }
 
   return error;
 }

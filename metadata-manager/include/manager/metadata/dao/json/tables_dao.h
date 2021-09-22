@@ -30,18 +30,24 @@ class TablesDAO : public manager::metadata::db::TablesDAO {
 
   manager::metadata::ErrorCode prepare() const override;
 
-  manager::metadata::ErrorCode update_reltuples(
-      float reltuples, std::string_view object_key,
-      std::string_view object_value, ObjectIdType& table_id) const override;
-  manager::metadata::ErrorCode select_table_statistic(
-      std::string_view object_key, std::string_view object_value,
-      manager::metadata::TableStatistic& table_statistic) const override;
   manager::metadata::ErrorCode insert_table_metadata(
       boost::property_tree::ptree& table,
       ObjectIdType& table_id) const override;
+
   manager::metadata::ErrorCode select_table_metadata(
       std::string_view object_key, std::string_view object_value,
       boost::property_tree::ptree& object) const override;
+  manager::metadata::ErrorCode select_table_metadata(
+      std::vector<boost::property_tree::ptree>& container) const override;
+
+  manager::metadata::ErrorCode update_reltuples(
+      const float reltuples __attribute__((unused)),
+      std::string_view object_key __attribute__((unused)),
+      std::string_view object_value __attribute__((unused)),
+      ObjectIdType& table_id __attribute__((unused))) const override {
+    return ErrorCode::NOT_SUPPORTED;
+  }
+
   manager::metadata::ErrorCode delete_table_metadata(
       std::string_view object_key, std::string_view object_value,
       ObjectIdType& table_id) const override;

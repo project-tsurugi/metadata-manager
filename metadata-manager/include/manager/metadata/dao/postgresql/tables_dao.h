@@ -16,6 +16,8 @@
 #ifndef MANAGER_METADATA_DAO_POSTGRESQL_TABLES_DAO_H_
 #define MANAGER_METADATA_DAO_POSTGRESQL_TABLES_DAO_H_
 
+#include <unordered_map>
+
 #include "manager/metadata/dao/postgresql/db_session_manager.h"
 #include "manager/metadata/dao/postgresql/dbc_utils.h"
 #include "manager/metadata/dao/tables_dao.h"
@@ -24,35 +26,72 @@ namespace manager::metadata::db::postgresql {
 
 class TablesDAO : public manager::metadata::db::TablesDAO {
  public:
+  /**
+   * @brief Column name of the table metadata table in the metadata repository.
+   */
+  class ColumnName {
+   public:
+    static constexpr const char* const kFormatVersion = "format_version";
+    static constexpr const char* const kGeneration = "generation";
+    static constexpr const char* const kId = "id";
+    static constexpr const char* const kName = "name";
+    static constexpr const char* const kNamespace = "namespace";
+    static constexpr const char* const kPrimaryKey = "primary_key";
+    static constexpr const char* const kTuples = "tuples";
+  };
+
+  /**
+   * @brief Column ordinal position of the column metadata table
+   *   in the metadata repository.
+   */
+  class OrdinalPosition {
+   public:
+    enum {
+      kFormatVersion = 0,
+      kGeneration,
+      kId,
+      kName,
+      kNamespace,
+      kPrimaryKey,
+      kTuples
+    };
+  };
+
+  /**
+   * @brief table metadata table name.
+   */
+  static constexpr const char* const kTableName = "tsurugi_class";
+
   explicit TablesDAO(DBSessionManager* session_manager);
 
   manager::metadata::ErrorCode prepare() const override;
 
-  manager::metadata::ErrorCode update_reltuples(
-      float reltuples, std::string_view object_key,
-      std::string_view object_value, ObjectIdType& table_id) const override;
-  manager::metadata::ErrorCode select_table_statistic(
-      std::string_view object_key, std::string_view object_value,
-      TableStatistic& table_statistic) const override;
   manager::metadata::ErrorCode insert_table_metadata(
       boost::property_tree::ptree& table,
       ObjectIdType& table_id) const override;
+
   manager::metadata::ErrorCode select_table_metadata(
       std::string_view object_key, std::string_view object_value,
       boost::property_tree::ptree& object) const override;
+  manager::metadata::ErrorCode select_table_metadata(
+      std::vector<boost::property_tree::ptree>& container) const override;
+
+  manager::metadata::ErrorCode update_reltuples(
+      const float reltuples, std::string_view object_key,
+      std::string_view object_value, ObjectIdType& table_id) const override;
+
   manager::metadata::ErrorCode delete_table_metadata(
       std::string_view object_key, std::string_view object_value,
       ObjectIdType& table_id) const override;
 
  private:
   ConnectionSPtr connection_;
-  std::vector<std::string> column_names_;
 
-  manager::metadata::ErrorCode get_table_statistic_from_p_gresult(
-      PGresult*& res, int ordinal_position,
-      TableStatistic& table_statistic) const;
-  manager::metadata::ErrorCode get_ptree_from_p_gresult(
-      PGresult*& res, int ordinal_position,
+  manager::metadata::ErrorCode find_statement_name(
+      const std::unordered_map<std::string, std::string>& statement_names_map,
+      std::string_view key_value, std::string& statement_name) const;
+  manager::metadata::ErrorCode convert_pgresult_to_ptree(
+      PGresult*& res, const int ordinal_position,
       boost::property_tree::ptree& table) const;
 };  // class TablesDAO
 

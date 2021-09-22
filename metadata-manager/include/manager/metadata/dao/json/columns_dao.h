@@ -30,7 +30,7 @@ class ColumnsDAO : public manager::metadata::db::ColumnsDAO {
   manager::metadata::ErrorCode prepare() const override;
 
   manager::metadata::ErrorCode insert_one_column_metadata(
-      ObjectIdType table_id,
+      const ObjectIdType table_id,
       boost::property_tree::ptree& column) const override;
   manager::metadata::ErrorCode select_column_metadata(
       std::string_view object_key, std::string_view object_value,

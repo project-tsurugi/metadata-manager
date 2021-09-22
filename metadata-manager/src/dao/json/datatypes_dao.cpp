@@ -34,11 +34,15 @@ using manager::metadata::ErrorCode;
  * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode DataTypesDAO::prepare() const {
+  ErrorCode error = ErrorCode::UNKNOWN;
+
   ptree datatypes;
   {
     ptree datatype;
 
     // INT32 :
+    datatype.put(DataTypes::FORMAT_VERSION, DataTypes::format_version());
+    datatype.put(DataTypes::GENERATION, DataTypes::generation());
     datatype.put(DataTypes::ID,
                  static_cast<ObjectIdType>(DataTypes::DataTypesId::INT32));
     datatype.put(DataTypes::NAME, "INT32");
@@ -48,6 +52,8 @@ ErrorCode DataTypesDAO::prepare() const {
     datatypes.push_back(std::make_pair("", datatype));
 
     // INT64 :
+    datatype.put(DataTypes::FORMAT_VERSION, DataTypes::format_version());
+    datatype.put(DataTypes::GENERATION, DataTypes::generation());
     datatype.put(DataTypes::ID,
                  static_cast<ObjectIdType>(DataTypes::DataTypesId::INT64));
     datatype.put(DataTypes::NAME, "INT64");
@@ -57,6 +63,8 @@ ErrorCode DataTypesDAO::prepare() const {
     datatypes.push_back(std::make_pair("", datatype));
 
     // FLOAT32 :
+    datatype.put(DataTypes::FORMAT_VERSION, DataTypes::format_version());
+    datatype.put(DataTypes::GENERATION, DataTypes::generation());
     datatype.put(DataTypes::ID,
                  static_cast<ObjectIdType>(DataTypes::DataTypesId::FLOAT32));
     datatype.put(DataTypes::NAME, "FLOAT32");
@@ -66,6 +74,8 @@ ErrorCode DataTypesDAO::prepare() const {
     datatypes.push_back(std::make_pair("", datatype));
 
     // FLOAT64 :
+    datatype.put(DataTypes::FORMAT_VERSION, DataTypes::format_version());
+    datatype.put(DataTypes::GENERATION, DataTypes::generation());
     datatype.put(DataTypes::ID,
                  static_cast<ObjectIdType>(DataTypes::DataTypesId::FLOAT64));
     datatype.put(DataTypes::NAME, "FLOAT64");
@@ -75,6 +85,8 @@ ErrorCode DataTypesDAO::prepare() const {
     datatypes.push_back(std::make_pair("", datatype));
 
     // CHAR : character, char
+    datatype.put(DataTypes::FORMAT_VERSION, DataTypes::format_version());
+    datatype.put(DataTypes::GENERATION, DataTypes::generation());
     datatype.put(DataTypes::ID,
                  static_cast<ObjectIdType>(DataTypes::DataTypesId::CHAR));
     datatype.put(DataTypes::NAME, "CHAR");
@@ -84,6 +96,8 @@ ErrorCode DataTypesDAO::prepare() const {
     datatypes.push_back(std::make_pair("", datatype));
 
     // VARCHAR : character varying, varchar
+    datatype.put(DataTypes::FORMAT_VERSION, DataTypes::format_version());
+    datatype.put(DataTypes::GENERATION, DataTypes::generation());
     datatype.put(DataTypes::ID,
                  static_cast<ObjectIdType>(DataTypes::DataTypesId::VARCHAR));
     datatype.put(DataTypes::NAME, "VARCHAR");
@@ -96,7 +110,8 @@ ErrorCode DataTypesDAO::prepare() const {
   ptree* meta_object = session_manager_->get_container();
   meta_object->add_child(DataTypes::DATATYPES_NODE, datatypes);
 
-  return ErrorCode::OK;
+  error = ErrorCode::OK;
+  return error;
 }
 
 /**
@@ -110,11 +125,11 @@ ErrorCode DataTypesDAO::prepare() const {
 ErrorCode DataTypesDAO::select_one_data_type_metadata(
     std::string_view object_key, std::string_view object_value,
     boost::property_tree::ptree& object) const {
-  // Initialization of return value.
-  ErrorCode error = ErrorCode::NOT_FOUND;
+  ErrorCode error = ErrorCode::UNKNOWN;
 
   ptree* meta_object = session_manager_->get_container();
 
+  error = ErrorCode::NOT_FOUND;
   BOOST_FOREACH (const ptree::value_type& node,
                  meta_object->get_child(DataTypes::DATATYPES_NODE)) {
     const ptree& temp_obj = node.second;

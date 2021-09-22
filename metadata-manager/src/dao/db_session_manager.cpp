@@ -29,15 +29,12 @@
 #if defined(STORAGE_POSTGRESQL)
 #include <libpq-fe.h>
 #include "manager/metadata/dao/postgresql/columns_dao.h"
-// #include "manager/metadata/dao/postgresql/dbc_utils.h"
 #include "manager/metadata/dao/postgresql/datatypes_dao.h"
-// #include "manager/metadata/dao/postgresql/db_session_manager.h"
 #include "manager/metadata/dao/postgresql/statistics_dao.h"
 #include "manager/metadata/dao/postgresql/tables_dao.h"
 #elif defined(STORAGE_JSON)
 #include "manager/metadata/dao/json/columns_dao.h"
 #include "manager/metadata/dao/json/datatypes_dao.h"
-// #include "manager/metadata/dao/json/db_session_manager.h"
 #include "manager/metadata/dao/json/tables_dao.h"
 #endif
 
@@ -64,6 +61,8 @@ namespace storage = manager::metadata::db::json;
 manager::metadata::ErrorCode DBSessionManager::create_dao(
     GenericDAO::TableName table_name, DBSessionManager* session_manager,
     std::shared_ptr<GenericDAO>& gdao) const {
+  ErrorCode error = ErrorCode::UNKNOWN;
+
   storage::DBSessionManager* strage_session_manager =
       (storage::DBSessionManager*)session_manager;
 
@@ -96,17 +95,20 @@ manager::metadata::ErrorCode DBSessionManager::create_dao(
       break;
     }
     default: {
-      return ErrorCode::INTERNAL_ERROR;
-      break;
+      error = ErrorCode::INTERNAL_ERROR;
+      return error;
     }
   }
 
   if (gdao == nullptr) {
-    return ErrorCode::INTERNAL_ERROR;
+    error = ErrorCode::INTERNAL_ERROR;
+    return error;
   }
 
   // Prepare for DAO.
-  return gdao->prepare();
+  error = gdao->prepare();
+
+  return error;
 }
 
 }  // namespace manager::metadata::db

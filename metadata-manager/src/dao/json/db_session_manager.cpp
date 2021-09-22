@@ -40,10 +40,14 @@ using manager::metadata::Metadata;
  *   for the requested table name.
  * @return ErrorCode::OK if success, otherwise an error code.
  */
-ErrorCode DBSessionManager::get_dao(GenericDAO::TableName table_name,
+ErrorCode DBSessionManager::get_dao(const GenericDAO::TableName table_name,
                                     std::shared_ptr<GenericDAO>& gdao) {
-  return create_dao(table_name, (manager::metadata::db::DBSessionManager*)this,
-                    gdao);
+  ErrorCode error = ErrorCode::UNKNOWN;
+
+  error = create_dao(table_name, (manager::metadata::db::DBSessionManager*)this,
+                     gdao);
+
+  return error;
 }
 
 /**
@@ -51,13 +55,17 @@ ErrorCode DBSessionManager::get_dao(GenericDAO::TableName table_name,
  * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode DBSessionManager::start_transaction() {
+  ErrorCode error = ErrorCode::UNKNOWN;
+
   if (file_name_.empty()) {
-    return ErrorCode::NOT_INITIALIZED;
+    error = ErrorCode::NOT_INITIALIZED;
+    return error;
   }
 
   init_meta_data();
 
-  return ErrorCode::OK;
+  error = ErrorCode::OK;
+  return error;
 }
 
 /**
@@ -66,14 +74,18 @@ ErrorCode DBSessionManager::start_transaction() {
  * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode DBSessionManager::commit() {
+  ErrorCode error = ErrorCode::UNKNOWN;
+
   if (file_name_.empty()) {
-    return ErrorCode::NOT_INITIALIZED;
+    error = ErrorCode::NOT_INITIALIZED;
+    return error;
   }
 
   save_object();
   init_meta_data();
 
-  return ErrorCode::OK;
+  error = ErrorCode::OK;
+  return error;
 }
 
 /**
@@ -82,13 +94,17 @@ ErrorCode DBSessionManager::commit() {
  * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode DBSessionManager::rollback() {
+  ErrorCode error = ErrorCode::UNKNOWN;
+
   if (file_name_.empty()) {
-    return ErrorCode::NOT_INITIALIZED;
+    error = ErrorCode::NOT_INITIALIZED;
+    return error;
   }
 
   init_meta_data();
 
-  return ErrorCode::OK;
+  error = ErrorCode::OK;
+  return error;
 }
 
 /**
@@ -99,12 +115,15 @@ ErrorCode DBSessionManager::rollback() {
  */
 ErrorCode DBSessionManager::connect(std::string_view file_name,
                                     std::string_view initial_node) {
-  ErrorCode error = ErrorCode::OK;
+  ErrorCode error = ErrorCode::UNKNOWN;
 
   file_name_ = std::string(file_name);
 
   std::ifstream file(file_name_);
-  if (!file) {
+  if (file) {
+    // open metadata-table
+    error = ErrorCode::OK;
+  } else {
     // create metadata-table
     init_meta_data();
     meta_object_->put(initial_node.data(), "");
@@ -129,21 +148,27 @@ ptree* DBSessionManager::get_container() const { return meta_object_.get(); }
  * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode DBSessionManager::load_object() const {
+  ErrorCode error = ErrorCode::UNKNOWN;
+
   if (file_name_.empty()) {
-    return ErrorCode::NOT_INITIALIZED;
+    error = ErrorCode::NOT_INITIALIZED;
+    return error;
   }
 
   try {
     json_parser::read_json(file_name_, *(meta_object_.get()));
   } catch (json_parser_error& e) {
     std::wcout << "read_json() error. " << e.what() << std::endl;
-    return ErrorCode::UNKNOWN;
+    error = ErrorCode::INTERNAL_ERROR;
+    return error;
   } catch (...) {
     std::cout << "read_json() error." << std::endl;
-    return ErrorCode::UNKNOWN;
+    error = ErrorCode::INTERNAL_ERROR;
+    return error;
   }
 
-  return ErrorCode::OK;
+  error = ErrorCode::OK;
+  return error;
 }
 
 // -----------------------------------------------------------------------------
@@ -154,32 +179,34 @@ ErrorCode DBSessionManager::load_object() const {
  *   access private.
  * @return none.
  */
-void DBSessionManager::init_meta_data() {
-  meta_object_->clear();
-  meta_object_->put(Metadata::FORMAT_VERSION, 1);
-  meta_object_->put(Metadata::GENERATION, 1);
-}
+void DBSessionManager::init_meta_data() { meta_object_->clear(); }
 
 /**
  * @brief Save the metadata to a file.
  * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode DBSessionManager::save_object() const {
+  ErrorCode error = ErrorCode::UNKNOWN;
+
   if (file_name_.empty()) {
-    return ErrorCode::NOT_INITIALIZED;
+    error = ErrorCode::NOT_INITIALIZED;
+    return error;
   }
 
   try {
     json_parser::write_json(file_name_, *(meta_object_.get()));
   } catch (json_parser_error& e) {
     std::wcout << "write_json() error. " << e.what() << std::endl;
-    return ErrorCode::UNKNOWN;
+    error = ErrorCode::INTERNAL_ERROR;
+    return error;
   } catch (...) {
     std::cout << "write_json() error." << std::endl;
-    return ErrorCode::UNKNOWN;
+    error = ErrorCode::INTERNAL_ERROR;
+    return error;
   }
 
-  return ErrorCode::OK;
+  error = ErrorCode::OK;
+  return error;
 }
 
 }  // namespace manager::metadata::db::json

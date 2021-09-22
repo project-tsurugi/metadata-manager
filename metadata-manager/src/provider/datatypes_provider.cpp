@@ -28,15 +28,20 @@ using manager::metadata::ErrorCode;
  * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode DataTypesProvider::init() {
-  ErrorCode error = ErrorCode::OK;
+  ErrorCode error = ErrorCode::UNKNOWN;
   std::shared_ptr<GenericDAO> gdao = nullptr;
 
-  if (datatypes_dao_ == nullptr) {
+  if (datatypes_dao_ != nullptr) {
+    // Instance of the DataTypeDAO class has already been obtained.
+    error = ErrorCode::OK;
+  } else {
     // Get an instance of the DataTypeDAO class.
     error = session_manager_->get_dao(GenericDAO::TableName::DATATYPES, gdao);
-    datatypes_dao_ = (error == ErrorCode::OK)
-                         ? std::static_pointer_cast<DataTypesDAO>(gdao)
-                         : nullptr;
+    if (error != ErrorCode::OK) {
+      return error;
+    }
+    // Set DataTypesDAO instance.
+    datatypes_dao_ = std::static_pointer_cast<DataTypesDAO>(gdao);
   }
 
   return error;
@@ -54,8 +59,10 @@ ErrorCode DataTypesProvider::init() {
 ErrorCode DataTypesProvider::get_datatype_metadata(std::string_view key,
                                                    std::string_view value,
                                                    ptree& object) {
+  ErrorCode error = ErrorCode::UNKNOWN;
+
   // Initialization
-  ErrorCode error = init();
+  error = init();
   if (error != ErrorCode::OK) {
     return error;
   }

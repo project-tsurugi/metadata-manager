@@ -33,12 +33,13 @@
 // =============================================================================
 namespace {
 
+std::unordered_map<std::string, std::string> column_names;
 std::unordered_map<std::string, std::string> statement_names_select_equal_to;
 
 namespace statement {
 
+using manager::metadata::db::postgresql::DataTypesDAO;
 using manager::metadata::db::postgresql::SCHEMA_NAME;
-using manager::metadata::db::postgresql::TableName;
 
 /**
  * @brief Returnes a SELECT stetement to get metadata:
@@ -49,8 +50,17 @@ using manager::metadata::db::postgresql::TableName;
  */
 std::string select_equal_to(std::string_view column_name) {
   // SQL statement
-  boost::format query = boost::format("SELECT * FROM %s.%s WHERE %s = $1") %
-                        SCHEMA_NAME % TableName::DATA_TYPES_TABLE % column_name;
+  boost::format query =
+      boost::format(
+          "SELECT %3%, %4%, %5%, %6%, %7%, %8%, %9%"
+          " FROM %1%.%2%"
+          " WHERE %10% = $1") %
+      SCHEMA_NAME % DataTypesDAO::kTableName %
+      DataTypesDAO::ColumnName::kFormatVersion %
+      DataTypesDAO::ColumnName::kGeneration % DataTypesDAO::ColumnName::kId %
+      DataTypesDAO::ColumnName::kName % DataTypesDAO::ColumnName::kPgDataType %
+      DataTypesDAO::ColumnName::kPgDataTypeName %
+      DataTypesDAO::ColumnName::kPgDataTypeQualifiedName % column_name;
 
   return query.str();
 }
@@ -65,21 +75,6 @@ using boost::property_tree::ptree;
 using manager::metadata::DataTypes;
 using manager::metadata::ErrorCode;
 using manager::metadata::db::StatementName;
-
-/**
- * @enum DataTypesMetadataTable
- * @brief Column ordinal position of the data types metadata table
- * in the metadata repository.
- */
-struct DataTypesMetadataTable {
-  enum ColumnOrdinalPosition {
-    ID = 0,
-    NAME,
-    PG_DATA_TYPE,
-    PG_DATA_TYPE_NAME,
-    PG_DATA_TYPE_QUALIFIED_NAME
-  };
-};
 
 /**
  * @brief Constructor
@@ -97,30 +92,29 @@ DataTypesDAO::DataTypesDAO(DBSessionManager* session_manager)
   // If column name "id" is added to this list,
   // later defines a prepared statement
   // "select * from where id = ?".
-  column_names_.emplace_back(DataTypes::ID);
-  column_names_.emplace_back(DataTypes::NAME);
-  column_names_.emplace_back(DataTypes::PG_DATA_TYPE);
-  column_names_.emplace_back(DataTypes::PG_DATA_TYPE_NAME);
-  column_names_.emplace_back(DataTypes::PG_DATA_TYPE_QUALIFIED_NAME);
+  column_names.emplace(DataTypes::ID, ColumnName::kId);
+  column_names.emplace(DataTypes::NAME, ColumnName::kName);
+  column_names.emplace(DataTypes::PG_DATA_TYPE, ColumnName::kPgDataType);
+  column_names.emplace(DataTypes::PG_DATA_TYPE_NAME,
+                       ColumnName::kPgDataTypeName);
+  column_names.emplace(DataTypes::PG_DATA_TYPE_QUALIFIED_NAME,
+                       ColumnName::kPgDataTypeQualifiedName);
 
   // Creates a list of unique name
   // for the new prepared statement for each column names.
-  for (auto column : column_names_) {
+  for (auto column : column_names) {
     // Creates unique name
     // for the new prepared statement.
-    std::string statement_name;
-    statement_name.append(std::to_string(StatementName::DAO_SELECT_EQUAL_TO));
-    statement_name.append("-");
-    statement_name.append(std::to_string(TableName::DATATYPES));
-    statement_name.append("-");
-    statement_name.append(column);
+    boost::format statement_name = boost::format("%1%-%2%-%3%") %
+                                   StatementName::DAO_SELECT_EQUAL_TO %
+                                   kTableName % column.first;
 
     // Addes this list to unique name
     // for the new prepared statement
     //
     // key : column name
     // value : unique name for the new prepared statement.
-    statement_names_select_equal_to.emplace(column, statement_name);
+    statement_names_select_equal_to.emplace(column.first, statement_name.str());
   }
 };
 
@@ -130,12 +124,12 @@ DataTypesDAO::DataTypesDAO(DBSessionManager* session_manager)
  * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode DataTypesDAO::prepare() const {
-  ErrorCode error = ErrorCode::INTERNAL_ERROR;
+  ErrorCode error = ErrorCode::UNKNOWN;
 
-  for (const std::string& column : column_names_) {
+  for (auto column : column_names) {
     error = DbcUtils::prepare(connection_,
-                              statement_names_select_equal_to.at(column),
-                              statement::select_equal_to(column));
+                              statement_names_select_equal_to.at(column.first),
+                              statement::select_equal_to(column.second));
     if (error != ErrorCode::OK) {
       break;
     }
@@ -146,18 +140,19 @@ ErrorCode DataTypesDAO::prepare() const {
 
 /**
  * @brief Executes a SELECT statement to get one data type metadata
- *  from the data types metadata table,
- *  where the given key equals the given value.
+ *   from the data types metadata table,
+ *   where the given key equals the given value.
  * @param (object_key)          [in]  key.
- *  column name of the data types metadata table.
+ *   column name of the data types metadata table.
  * @param (object_value)        [in]  value to be filtered.
  * @param (object)              [out] one data type metadata to get,
- *  where the given key equals the given value.
+ *   where the given key equals the given value.
  * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode DataTypesDAO::select_one_data_type_metadata(
     std::string_view object_key, std::string_view object_value,
     ptree& object) const {
+  ErrorCode error = ErrorCode::UNKNOWN;
   std::vector<const char*> param_values;
 
   param_values.emplace_back(object_value.data());
@@ -168,15 +163,17 @@ ErrorCode DataTypesDAO::select_one_data_type_metadata(
         statement_names_select_equal_to.at(std::string(object_key));
   } catch (std::out_of_range& e) {
     std::cerr << Message::METADATA_KEY_NOT_FOUND << e.what() << std::endl;
-    return ErrorCode::INVALID_PARAMETER;
+    error = ErrorCode::INVALID_PARAMETER;
+    return error;
   } catch (...) {
     std::cerr << Message::METADATA_KEY_NOT_FOUND << std::endl;
-    return ErrorCode::INVALID_PARAMETER;
+    error = ErrorCode::INVALID_PARAMETER;
+    return error;
   }
 
   PGresult* res;
-  ErrorCode error = DbcUtils::exec_prepared(connection_, statement_name_found,
-                                            param_values, res);
+  error = DbcUtils::exec_prepared(connection_, statement_name_found,
+                                  param_values, res);
 
   if (error == ErrorCode::OK) {
     int nrows = PQntuples(res);
@@ -207,50 +204,53 @@ ErrorCode DataTypesDAO::select_one_data_type_metadata(
 ErrorCode DataTypesDAO::get_ptree_from_p_gresult(PGresult*& res,
                                                  int ordinal_position,
                                                  ptree& object) const {
-  // ID
-  ObjectIdType id = -1;
-  ErrorCode error_str_to_int = DbcUtils::str_to_integral<ObjectIdType>(
-      PQgetvalue(res, ordinal_position,
-                 DataTypesMetadataTable::ColumnOrdinalPosition::ID),
-      id);
-  if (error_str_to_int == ErrorCode::OK) {
-    object.put(DataTypes::ID, id);
-  } else {
-    return error_str_to_int;
-  }
+  ErrorCode error = ErrorCode::UNKNOWN;
 
-  // NAME
-  object.put(DataTypes::NAME,
-             std::string(PQgetvalue(
-                 res, ordinal_position,
-                 DataTypesMetadataTable::ColumnOrdinalPosition::NAME)));
-
-  // PG_DATA_TYPE
-  ObjectIdType pg_data_type = -1;
-  error_str_to_int = DbcUtils::str_to_integral<ObjectIdType>(
-      PQgetvalue(res, ordinal_position,
-                 DataTypesMetadataTable::ColumnOrdinalPosition::PG_DATA_TYPE),
-      pg_data_type);
-  if (error_str_to_int == ErrorCode::OK) {
-    object.put(DataTypes::PG_DATA_TYPE, pg_data_type);
-  } else {
-    return error_str_to_int;
-  }
-
-  // PG_DATA_TYPE_NAME
+  // Set the value of the format_version column to ptree.
   object.put(
-      DataTypes::PG_DATA_TYPE_NAME,
-      std::string(PQgetvalue(
-          res, ordinal_position,
-          DataTypesMetadataTable::ColumnOrdinalPosition::PG_DATA_TYPE_NAME)));
+      DataTypes::FORMAT_VERSION,
+      PQgetvalue(res, ordinal_position, OrdinalPosition::kFormatVersion));
 
-  // PG_DATA_TYPE_QUALIFIED_NAME
+  // Set the value of the generation column to ptree.
+  object.put(DataTypes::GENERATION,
+             PQgetvalue(res, ordinal_position, OrdinalPosition::kGeneration));
+
+  // Set the value of the id to ptree.
+  ObjectIdType id = -1;
+  error = DbcUtils::str_to_integral<ObjectIdType>(
+      PQgetvalue(res, ordinal_position, OrdinalPosition::kId), id);
+  if (error != ErrorCode::OK) {
+    return error;
+  }
+  object.put(DataTypes::ID, id);
+
+  // Set the value of the name column to ptree.
+  object.put(DataTypes::NAME, std::string(PQgetvalue(res, ordinal_position,
+                                                     OrdinalPosition::kName)));
+
+  // Set the value of the pg_data_type column to ptree.
+  int64_t pg_data_type = -1;
+  error = DbcUtils::str_to_integral<int64_t>(
+      PQgetvalue(res, ordinal_position, OrdinalPosition::kPgDataType),
+      pg_data_type);
+  if (error != ErrorCode::OK) {
+    return error;
+  }
+  object.put(DataTypes::PG_DATA_TYPE, pg_data_type);
+
+  // Set the value of the pg_data_type_name column to ptree.
+  object.put(DataTypes::PG_DATA_TYPE_NAME,
+             std::string(PQgetvalue(res, ordinal_position,
+                                    OrdinalPosition::kPgDataTypeName)));
+
+  // Set the value of the pg_data_type_qualified_name column to ptree.
   object.put(
       DataTypes::PG_DATA_TYPE_QUALIFIED_NAME,
       std::string(PQgetvalue(res, ordinal_position,
-                             DataTypesMetadataTable::ColumnOrdinalPosition::
-                                 PG_DATA_TYPE_QUALIFIED_NAME)));
-  return ErrorCode::OK;
+                             OrdinalPosition::kPgDataTypeQualifiedName)));
+  error = ErrorCode::OK;
+
+  return error;
 }
 
 }  // namespace manager::metadata::db::postgresql

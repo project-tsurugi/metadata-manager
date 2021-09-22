@@ -28,7 +28,7 @@ class DBSessionManager : public manager::metadata::db::DBSessionManager {
       : meta_object_(std::make_unique<boost::property_tree::ptree>()) {}
 
   manager::metadata::ErrorCode get_dao(
-      GenericDAO::TableName table_name,
+      const GenericDAO::TableName table_name,
       std::shared_ptr<GenericDAO>& gdao) override;
 
   manager::metadata::ErrorCode start_transaction() override;

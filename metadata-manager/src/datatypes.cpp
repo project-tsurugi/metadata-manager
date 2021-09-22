@@ -40,17 +40,6 @@ DataTypes::DataTypes(std::string_view database, std::string_view component)
     : Metadata(database, component) {
   // Create the provider.
   provider = std::make_unique<db::DataTypesProvider>();
-
-  // Set error code conversion list.
-  code_convert_list_ = {
-      // If ErrorCode is NOT_FOUND, "id" is converted to ID_NOT_FOUND and "name"
-      // is converted to NAME_NOT_FOUND.
-      {ErrorCode::NOT_FOUND,
-       {
-           {DataTypes::ID, ErrorCode::ID_NOT_FOUND},
-           {DataTypes::NAME, ErrorCode::NAME_NOT_FOUND},
-       }},
-  };
 }
 
 /**
@@ -75,15 +64,16 @@ ErrorCode DataTypes::init() {
  */
 ErrorCode DataTypes::get(const ObjectIdType object_id,
                          boost::property_tree::ptree& object) {
+  ErrorCode error = ErrorCode::UNKNOWN;
+
   // Parameter value check
   if (object_id <= 0) {
-    return ErrorCode::ID_NOT_FOUND;
+    error = ErrorCode::ID_NOT_FOUND;
+    return error;
   }
 
-  ErrorCode error = get(DataTypes::ID, std::to_string(object_id), object);
-
-  // Convert the return value
-  error = code_converter(error, DataTypes::ID);
+  // Get the data type metadata through the class method.
+  error = get(DataTypes::ID, std::to_string(object_id), object);
 
   return error;
 }
@@ -98,15 +88,16 @@ ErrorCode DataTypes::get(const ObjectIdType object_id,
  */
 ErrorCode DataTypes::get(std::string_view object_name,
                          boost::property_tree::ptree& object) {
+  ErrorCode error = ErrorCode::UNKNOWN;
+
   // Parameter value check
   if (object_name.empty()) {
-    return ErrorCode::NAME_NOT_FOUND;
+    error = ErrorCode::NAME_NOT_FOUND;
+    return error;
   }
 
-  ErrorCode error = get(DataTypes::NAME, object_name, object);
-
-  // Convert the return value
-  error = code_converter(error, DataTypes::NAME);
+  // Get the data type metadata through the class method.
+  error = get(DataTypes::NAME, object_name, object);
 
   return error;
 }
@@ -120,9 +111,10 @@ ErrorCode DataTypes::get(std::string_view object_name,
  *   where key = value.
  * @return ErrorCode::OK if success, otherwise an error code.
  */
-ErrorCode DataTypes::get(const char* object_key, std::string_view object_value,
+ErrorCode DataTypes::get(std::string_view object_key,
+                         std::string_view object_value,
                          boost::property_tree::ptree& object) {
-  ErrorCode error = ErrorCode::INTERNAL_ERROR;
+  ErrorCode error = ErrorCode::UNKNOWN;
   std::string_view s_object_key = std::string_view(object_key);
 
   if ((!s_object_key.empty()) && (!object_value.empty())) {
@@ -135,7 +127,13 @@ ErrorCode DataTypes::get(const char* object_key, std::string_view object_value,
   }
 
   // Convert the return value
-  error = code_converter(error, s_object_key);
+  if (error == ErrorCode::NOT_FOUND) {
+    if (object_key == DataTypes::ID) {
+      error = ErrorCode::ID_NOT_FOUND;
+    } else if (object_key == DataTypes::NAME) {
+      error = ErrorCode::NAME_NOT_FOUND;
+    }
+  }
 
   return error;
 }

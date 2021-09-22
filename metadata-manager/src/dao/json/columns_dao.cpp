@@ -39,7 +39,7 @@ ErrorCode ColumnsDAO::prepare() const {
  * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode ColumnsDAO::insert_one_column_metadata(
-    ObjectIdType table_id, boost::property_tree::ptree& column) const {
+    const ObjectIdType table_id, boost::property_tree::ptree& column) const {
   // Do nothing and return of ErrorCode::OK.
   return ErrorCode::OK;
 }
