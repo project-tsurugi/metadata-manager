@@ -180,7 +180,7 @@ ErrorCode DataTypesDAO::select_one_data_type_metadata(
 
     if (nrows == 1) {
       int ordinal_position = 0;
-      error = get_ptree_from_p_gresult(res, ordinal_position, object);
+      error = convert_pgresult_to_ptree(res, ordinal_position, object);
     } else {
       error = ErrorCode::NOT_FOUND;
     }
@@ -201,8 +201,8 @@ ErrorCode DataTypesDAO::select_one_data_type_metadata(
  * @param (object)            [out] one data type metadata.
  * @return ErrorCode::OK if success, otherwise an error code.
  */
-ErrorCode DataTypesDAO::get_ptree_from_p_gresult(PGresult*& res,
-                                                 int ordinal_position,
+ErrorCode DataTypesDAO::convert_pgresult_to_ptree(PGresult*& res,
+                                                 const int ordinal_position,
                                                  ptree& object) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 

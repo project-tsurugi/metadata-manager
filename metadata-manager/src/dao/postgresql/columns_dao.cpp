@@ -365,7 +365,7 @@ ErrorCode ColumnsDAO::select_column_metadata(
          ordinal_position++) {
       ptree column;
 
-      error = get_ptree_from_p_gresult(res, ordinal_position, column);
+      error = convert_pgresult_to_ptree(res, ordinal_position, column);
       if (error != ErrorCode::OK) {
         break;
       }
@@ -437,8 +437,8 @@ ErrorCode ColumnsDAO::delete_column_metadata(
  * @param (column)            [out] one column metadata.
  * @return ErrorCode::OK if success, otherwise an error code.
  */
-ErrorCode ColumnsDAO::get_ptree_from_p_gresult(PGresult*& res,
-                                               int ordinal_position,
+ErrorCode ColumnsDAO::convert_pgresult_to_ptree(PGresult*& res,
+                                               const int ordinal_position,
                                                ptree& column) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
