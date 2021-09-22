@@ -6,63 +6,75 @@ CREATE SCHEMA tsurugi_catalog;
 
 CREATE TABLE tsurugi_catalog.tsurugi_class
 (
+    format_version integer NOT NULL,
+    generation bigint NOT NULL,
     id bigserial NOT NULL,
     name text NOT NULL,
     namespace text,
-    primaryKey json,
-    reltuples float4,
-    PRIMARY KEY(id)
+    primary_key json,
+    tuples real,
+    PRIMARY KEY(id),
+    UNIQUE(namespace, name)
 );
 
 CREATE INDEX ON tsurugi_catalog.tsurugi_class ( name );
 
 CREATE TABLE tsurugi_catalog.tsurugi_type
 (
+    format_version integer NOT NULL,
+    generation bigint NOT NULL,
     id bigint NOT NULL,
     name text NOT NULL,
-    pg_dataType bigint NOT NULL,
-    pg_dataTypeName text NOT NULL,
-    pg_dataTypeQualifiedName text NOT NULL,
+    pg_data_type bigint NOT NULL,
+    pg_data_type_name text NOT NULL,
+    pg_data_type_qualified_name text NOT NULL,
     PRIMARY KEY (id)
 );
 
 CREATE TABLE tsurugi_catalog.tsurugi_attribute
 (
+    format_version integer NOT NULL,
+    generation bigint NOT NULL,
     id bigserial NOT NULL,
-    tableId bigint NOT NULL REFERENCES tsurugi_catalog.tsurugi_class (id) ON DELETE CASCADE,
     name text NOT NULL,
-    ordinalPosition bigint NOT NULL,
-    dataTypeId bigint NOT NULL REFERENCES tsurugi_catalog.tsurugi_type (id),
-    dataLength json,
+    table_id bigint NOT NULL REFERENCES tsurugi_catalog.tsurugi_class (id) ON DELETE CASCADE,
+    ordinal_position bigint NOT NULL,
+    data_type_id bigint NOT NULL REFERENCES tsurugi_catalog.tsurugi_type (id),
+    data_length json,
     varying bool,
     nullable bool NOT NULL,
-    defaultExpr text,
+    default_expr text,
     direction bigint,
-    PRIMARY KEY(id, tableId),
-    UNIQUE(tableId, name),
-    UNIQUE(tableId, ordinalPosition)
+    PRIMARY KEY(id),
+    UNIQUE(table_id, name),
+    UNIQUE(table_id, ordinal_position)
 );
+
+CREATE INDEX ON tsurugi_catalog.tsurugi_attribute ( table_id );
 
 CREATE TABLE tsurugi_catalog.tsurugi_statistic
 (
-    tableId bigint,
-    ordinalPosition bigint,
-    columnStatistic json,
-    PRIMARY KEY (tableId, ordinalPosition),
-    FOREIGN KEY (tableId, ordinalPosition) REFERENCES tsurugi_catalog.tsurugi_attribute (tableId, ordinalPosition) MATCH FULL ON DELETE CASCADE
+    format_version integer NOT NULL,
+    generation bigint NOT NULL,
+    id bigserial NOT NULL,
+    name text,
+    column_id bigint NOT NULL REFERENCES tsurugi_catalog.tsurugi_attribute (id) ON DELETE CASCADE,
+    column_statistic json,
+    PRIMARY KEY (id),
+    UNIQUE(column_id)
 );
 
 -- INT32
-INSERT INTO tsurugi_catalog.tsurugi_type (id, name, pg_dataType, pg_dataTypeName, pg_dataTypeQualifiedName) values (4, 'INT32', 23,'integer','int4');
+INSERT INTO tsurugi_catalog.tsurugi_type (format_version, generation, id, name, pg_data_type, pg_data_type_name, pg_data_type_qualified_name) values (1, 1, 4, 'INT32', 23,'integer','int4');
 -- INT64
-INSERT INTO tsurugi_catalog.tsurugi_type (id, name, pg_dataType, pg_dataTypeName, pg_dataTypeQualifiedName) values (6, 'INT64', 20,'bigint','int8');
+INSERT INTO tsurugi_catalog.tsurugi_type (format_version, generation, id, name, pg_data_type, pg_data_type_name, pg_data_type_qualified_name) values (1, 1, 6, 'INT64', 20,'bigint','int8');
 -- FLOAT32
-INSERT INTO tsurugi_catalog.tsurugi_type (id, name, pg_dataType, pg_dataTypeName, pg_dataTypeQualifiedName) values (8, 'FLOAT32', 700,'real','float4');
+INSERT INTO tsurugi_catalog.tsurugi_type (format_version, generation, id, name, pg_data_type, pg_data_type_name, pg_data_type_qualified_name) values (1, 1, 8, 'FLOAT32', 700,'real','float4');
 -- FLOAT64
-INSERT INTO tsurugi_catalog.tsurugi_type (id, name, pg_dataType, pg_dataTypeName, pg_dataTypeQualifiedName) values (9, 'FLOAT64', 701,'double precision','float8');
+INSERT INTO tsurugi_catalog.tsurugi_type (format_version, generation, id, name, pg_data_type, pg_data_type_name, pg_data_type_qualified_name) values (1, 1, 9, 'FLOAT64', 701,'double precision','float8');
 -- CHAR : character, char
-INSERT INTO tsurugi_catalog.tsurugi_type (id, name, pg_dataType, pg_dataTypeName, pg_dataTypeQualifiedName) values (13, 'CHAR', 1042,'char','bpchar');
+INSERT INTO tsurugi_catalog.tsurugi_type (format_version, generation, id, name, pg_data_type, pg_data_type_name, pg_data_type_qualified_name) values (1, 1, 13, 'CHAR', 1042,'char','bpchar');
 -- VARCHAR : character varying, varchar
-INSERT INTO tsurugi_catalog.tsurugi_type (id, name, pg_dataType, pg_dataTypeName, pg_dataTypeQualifiedName) values (14, 'VARCHAR', 1043,'varchar','varchar');
+INSERT INTO tsurugi_catalog.tsurugi_type (format_version, generation, id, name, pg_data_type, pg_data_type_name, pg_data_type_qualified_name) values (1, 1, 14, 'VARCHAR', 1043,'varchar','varchar');
 
 GRANT ALL ON ALL TABLES IN SCHEMA tsurugi_catalog To current_user;
