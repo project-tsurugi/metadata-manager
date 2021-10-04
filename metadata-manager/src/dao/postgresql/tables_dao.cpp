@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 tsurugi project.
+ * Copyright 2020-2021 tsurugi project.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@
 #include <boost/optional.hpp>
 #include <boost/property_tree/json_parser.hpp>
 #include <iostream>
+#include <regex>
 #include <string>
 #include <string_view>
 
@@ -39,22 +40,23 @@ std::unordered_map<std::string, std::string> statement_names_delete_equal_to;
 
 namespace statement {
 
-using manager::metadata::Tables;
 using manager::metadata::db::postgresql::SCHEMA_NAME;
+
+using manager::metadata::db::postgresql::PgCatalog;
 using manager::metadata::db::postgresql::TablesDAO;
 
 /**
- * @brief Returnes an INSERT stetement for table metadata.
+ * @brief Returns an INSERT statement for table metadata.
  * @param none.
- * @return an INSERT stetement to insert table metadata.
+ * @return an INSERT statement to insert table metadata.
  */
 std::string insert_table_metadata() {
   // SQL statement
   boost::format query =
       boost::format(
           "INSERT INTO %1%.%2% (%3%, %4%, %5%, %6%, %7%, %8%)"
-          "  VALUES ($1, $2, $3, $4, $5, $6)"
-          "  RETURNING %9%") %
+          " VALUES ($1, $2, $3, $4, $5, $6)"
+          " RETURNING %9%") %
       SCHEMA_NAME % TablesDAO::kTableName %
       TablesDAO::ColumnName::kFormatVersion %
       TablesDAO::ColumnName::kGeneration % TablesDAO::ColumnName::kName %
@@ -65,56 +67,65 @@ std::string insert_table_metadata() {
 }
 
 /**
- * @brief Returnes a SELECT stetement to get metadata:
+ * @brief Returns a SELECT statement to get metadata:
  *   select * from table_name.
- * @return a SELECT stetement:
+ * @return a SELECT statement:
  *   select * from table_name.
  */
 std::string select_all() {
   // SQL statement
   boost::format query =
       boost::format(
-          "SELECT %3%, %4%, %5%, %6%, %7%, %8%, %9%"
-          " FROM %1%.%2% "
+          "SELECT"
+          " tbl.%3%, tbl.%4%, tbl.%5%, tbl.%6%, tbl.%7%, tbl.%8%, tbl.%9%"
+          " , cls.%11%, cls.%12%"
+          " FROM %1%.%2% tbl LEFT JOIN %10% cls ON (tbl.%6% = cls.%13%)"
           " ORDER BY %5%") %
       SCHEMA_NAME % TablesDAO::kTableName %
       TablesDAO::ColumnName::kFormatVersion %
       TablesDAO::ColumnName::kGeneration % TablesDAO::ColumnName::kId %
       TablesDAO::ColumnName::kName % TablesDAO::ColumnName::kNamespace %
-      TablesDAO::ColumnName::kPrimaryKey % TablesDAO::ColumnName::kTuples;
+      TablesDAO::ColumnName::kPrimaryKey % TablesDAO::ColumnName::kTuples %
+      PgCatalog::PgClass::kTableName % PgCatalog::PgClass::ColumnName::kOwner %
+      PgCatalog::PgClass::ColumnName::kAcl %
+      PgCatalog::PgClass::ColumnName::kName;
 
   return query.str();
 }
 
 /**
- * @brief Returnes a SELECT stetement to get metadata:
+ * @brief Returns a SELECT statement to get metadata:
  *   select * from table_name where column_name = $1.
  * @param (column_name)  [in]  column name of metadata-table.
- * @return a SELECT stetement:
+ * @return a SELECT statement:
  *   select * from table_name where column_name = $1.
  */
 std::string select_equal_to(std::string_view column_name) {
   // SQL statement
   boost::format query =
       boost::format(
-          "SELECT %3%, %4%, %5%, %6%, %7%, %8%, %9%"
-          " FROM %1%.%2% "
-          " WHERE %10% = $1") %
+          "SELECT"
+          " tbl.%3%, tbl.%4%, tbl.%5%, tbl.%6%, tbl.%7%, tbl.%8%, tbl.%9%"
+          " , cls.%11%, cls.%12%"
+          " FROM %1%.%2% tbl LEFT JOIN %10% cls ON (tbl.%6% = cls.%13%)"
+          " WHERE tbl.%14% = $1") %
       SCHEMA_NAME % TablesDAO::kTableName %
       TablesDAO::ColumnName::kFormatVersion %
       TablesDAO::ColumnName::kGeneration % TablesDAO::ColumnName::kId %
       TablesDAO::ColumnName::kName % TablesDAO::ColumnName::kNamespace %
       TablesDAO::ColumnName::kPrimaryKey % TablesDAO::ColumnName::kTuples %
-      column_name.data();
+      PgCatalog::PgClass::kTableName % PgCatalog::PgClass::ColumnName::kOwner %
+      PgCatalog::PgClass::ColumnName::kAcl %
+      PgCatalog::PgClass::ColumnName::kName % column_name.data();
 
   return query.str();
 }
 
 /**
- * @brief Returnes an UPDATE stetement for the number of rows
+ * @brief Returns an UPDATE statement for the number of rows
  *   based on table name.
  * @param (column_name)  [in]  column name of metadata-table.
- * @return an UPDATE stetement to update the number of rows
+ * @return an UPDATE statement to update the number of rows
  *   based on table name.
  */
 std::string update_reltuples(std::string_view column_name) {
@@ -129,10 +140,10 @@ std::string update_reltuples(std::string_view column_name) {
 }
 
 /**
- * @brief Returnes a SELECT stetement to get metadata:
+ * @brief Returns a SELECT statement to get metadata:
  *   delete from table_name where column_name = $1.
  * @param (column_name)  [in]  column name of metadata-table.
- * @return a DELETE stetement:
+ * @return a DELETE statement:
  *   delete from table_name where column_name = $1.
  */
 std::string delete_equal_to(std::string_view column_name) {
@@ -181,14 +192,17 @@ TablesDAO::TablesDAO(DBSessionManager* session_manager)
   for (auto column : column_names) {
     // Creates unique name for the new prepared statement.
     boost::format statement_name_update =
-        boost::format("%1%-%2%-%3%") % StatementName::TABLES_DAO_UPDATE_TUPLES %
-        kTableName % column.first;
-    boost::format statement_name_select = boost::format("%1%-%2%-%3%") %
-                                          StatementName::DAO_SELECT_EQUAL_TO %
-                                          kTableName % column.first;
-    boost::format statement_name_delete = boost::format("%1%-%2%-%3%") %
-                                          StatementName::DAO_DELETE_EQUAL_TO %
-                                          kTableName % column.first;
+        boost::format("%1%-%2%-%3%") %
+        static_cast<int>(StatementName::TABLES_DAO_UPDATE_TUPLES) % kTableName %
+        column.first;
+    boost::format statement_name_select =
+        boost::format("%1%-%2%-%3%") %
+        static_cast<int>(StatementName::DAO_SELECT_EQUAL_TO) % kTableName %
+        column.first;
+    boost::format statement_name_delete =
+        boost::format("%1%-%2%-%3%") %
+        static_cast<int>(StatementName::DAO_DELETE_EQUAL_TO) % kTableName %
+        column.first;
 
     // Addes this list to unique name for the new prepared statement.
     // key : column name
@@ -210,6 +224,7 @@ TablesDAO::TablesDAO(DBSessionManager* session_manager)
 ErrorCode TablesDAO::prepare() const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
+  // Set the INSERT statement.
   error = DbcUtils::prepare(connection_,
                             StatementName::TABLES_DAO_INSERT_TABLE_METADATA,
                             statement::insert_table_metadata());
@@ -217,6 +232,7 @@ ErrorCode TablesDAO::prepare() const {
     return error;
   }
 
+  // Set all table metadata SELECT statement.
   error = DbcUtils::prepare(connection_,
                             StatementName::TABLES_DAO_SELECT_TABLE_METADATA_ALL,
                             statement::select_all());
@@ -224,8 +240,9 @@ ErrorCode TablesDAO::prepare() const {
     return error;
   }
 
+  // Set conditional SQL statement.
   for (auto column : column_names) {
-    // select statement.
+    // Set SELECT statement.
     error = DbcUtils::prepare(connection_,
                               statement_names_select_equal_to.at(column.first),
                               statement::select_equal_to(column.second));
@@ -233,7 +250,7 @@ ErrorCode TablesDAO::prepare() const {
       return error;
     }
 
-    // reltuples update statement.
+    // Set reltuples UPDATE statement.
     error = DbcUtils::prepare(connection_,
                               statement_names_update_reltuples.at(column.first),
                               statement::update_reltuples(column.second));
@@ -241,7 +258,7 @@ ErrorCode TablesDAO::prepare() const {
       return error;
     }
 
-    // delete statement.
+    // Set DELETE statement.
     error = DbcUtils::prepare(connection_,
                               statement_names_delete_equal_to.at(column.first),
                               statement::delete_equal_to(column.second));
@@ -260,8 +277,8 @@ ErrorCode TablesDAO::prepare() const {
  * @param (table_id)  [out] table id.
  * @return ErrorCode::OK if success, otherwise an error code.
  */
-ErrorCode TablesDAO::insert_table_metadata(
-    boost::property_tree::ptree& table, ObjectIdType& table_id) const {
+ErrorCode TablesDAO::insert_table_metadata(boost::property_tree::ptree& table,
+                                           ObjectIdType& table_id) const {
   ErrorCode error = ErrorCode::UNKNOWN;
   std::vector<char const*> param_values;
 
@@ -343,7 +360,9 @@ ErrorCode TablesDAO::insert_table_metadata(
  * @param (object_value)  [in]  value to be filtered.
  * @param (object)        [out] table metadata to get,
  *   where the given key equals the given value.
- * @return ErrorCode::OK if success, otherwise an error code.
+ * @retval ErrorCode::OK if success.
+ * @retval ErrorCode::NOT_FOUND if the table id or table name does not exist.
+ * @retval otherwise an error code.
  */
 ErrorCode TablesDAO::select_table_metadata(std::string_view object_key,
                                            std::string_view object_value,
@@ -355,8 +374,8 @@ ErrorCode TablesDAO::select_table_metadata(std::string_view object_key,
 
   // Get the name of the SQL statement to be executed.
   std::string statement_name;
-  error = find_statement_name(statement_names_select_equal_to, object_key,
-                              statement_name);
+  error = DbcUtils::find_statement_name(statement_names_select_equal_to,
+                                        object_key, statement_name);
   if (error != ErrorCode::OK) {
     return error;
   }
@@ -367,14 +386,12 @@ ErrorCode TablesDAO::select_table_metadata(std::string_view object_key,
 
   if (error == ErrorCode::OK) {
     int nrows = PQntuples(res);
-
-    if (nrows <= 0) {
-      error = ErrorCode::NOT_FOUND;
-    } else if (nrows == 1) {
+    if (nrows == 1) {
       int ordinal_position = 0;
       error = convert_pgresult_to_ptree(res, ordinal_position, object);
     } else {
-      error = ErrorCode::INVALID_PARAMETER;
+      error =
+          (nrows == 0) ? ErrorCode::NOT_FOUND : ErrorCode::INVALID_PARAMETER;
     }
   }
 
@@ -386,7 +403,9 @@ ErrorCode TablesDAO::select_table_metadata(std::string_view object_key,
  * @brief Executes a SELECT statement to get table metadata rows from the
  *   table metadata table.
  * @param (container)  [out] all table metadata.
- * @return ErrorCode::OK if success, otherwise an error code.
+ * @retval ErrorCode::OK if success.
+ * @retval ErrorCode::NOT_FOUND if the table metadata does not exist.
+ * @retval otherwise an error code.
  */
 ErrorCode TablesDAO::select_table_metadata(
     std::vector<boost::property_tree::ptree>& container) const {
@@ -402,10 +421,7 @@ ErrorCode TablesDAO::select_table_metadata(
 
   if (error == ErrorCode::OK) {
     int nrows = PQntuples(res);
-
-    if (nrows <= 0) {
-      error = ErrorCode::NOT_FOUND;
-    } else {
+    if (nrows >= 1) {
       for (int ordinal_position = 0; ordinal_position < nrows;
            ordinal_position++) {
         ptree table;
@@ -415,6 +431,9 @@ ErrorCode TablesDAO::select_table_metadata(
         }
         container.emplace_back(table);
       }
+    } else {
+      error =
+          (nrows == 0) ? ErrorCode::NOT_FOUND : ErrorCode::INVALID_PARAMETER;
     }
   }
 
@@ -429,7 +448,9 @@ ErrorCode TablesDAO::select_table_metadata(
  * @param (object_key)    [in]  key. column name of a statistic table.
  * @param (object_value)  [in]  value to be filtered.
  * @param (table_id)      [out] table id of the row deleted.
- * @return ErrorCode::OK if success, otherwise an error code.
+ * @retval ErrorCode::OK if success.
+ * @retval ErrorCode::NOT_FOUND if the table id or table name does not exist.
+ * @retval otherwise an error code.
  */
 ErrorCode TablesDAO::update_reltuples(float reltuples,
                                       std::string_view object_key,
@@ -445,8 +466,8 @@ ErrorCode TablesDAO::update_reltuples(float reltuples,
 
   // Get the name of the SQL statement to be executed.
   std::string statement_name;
-  error = find_statement_name(statement_names_update_reltuples, object_key,
-                              statement_name);
+  error = DbcUtils::find_statement_name(statement_names_update_reltuples,
+                                        object_key, statement_name);
   if (error != ErrorCode::OK) {
     return error;
   }
@@ -476,7 +497,9 @@ ErrorCode TablesDAO::update_reltuples(float reltuples,
  * @param (object_key)    [in]  key. column name of a table metadata table.
  * @param (object_value)  [in]  value to be filtered.
  * @param (table_id)      [out] table id of the row deleted.
- * @return ErrorCode::OK if success, otherwise an error code.
+ * @retval ErrorCode::OK if success.
+ * @retval ErrorCode::NOT_FOUND if the table id or table name does not exist.
+ * @retval otherwise an error code.
  */
 ErrorCode TablesDAO::delete_table_metadata(std::string_view object_key,
                                            std::string_view object_value,
@@ -488,8 +511,8 @@ ErrorCode TablesDAO::delete_table_metadata(std::string_view object_key,
 
   // Get the name of the SQL statement to be executed.
   std::string statement_name;
-  error = find_statement_name(statement_names_delete_equal_to, object_key,
-                              statement_name);
+  error = DbcUtils::find_statement_name(statement_names_delete_equal_to,
+                                        object_key, statement_name);
   if (error != ErrorCode::OK) {
     return error;
   }
@@ -511,7 +534,8 @@ ErrorCode TablesDAO::delete_table_metadata(std::string_view object_key,
       error = DbcUtils::str_to_integral<ObjectIdType>(
           PQgetvalue(res, ordinal_position, 0), table_id);
     } else {
-      error = ErrorCode::NOT_FOUND;
+      error = (number_of_rows_affected == 0) ? ErrorCode::NOT_FOUND
+                                             : ErrorCode::INVALID_PARAMETER;
     }
   }
 
@@ -521,32 +545,6 @@ ErrorCode TablesDAO::delete_table_metadata(std::string_view object_key,
 
 // -----------------------------------------------------------------------------
 // Private method area
-
-/**
- * @brief get the value of the specified key_value from the statement-names map.
- * @param (statement_names_map)  [in]  statement names map.
- * @param (key_value)            [in]  key.
- * @param (statement_name)       [out] statement name.
- * @return ErrorCode::OK if success, otherwise an error code.
- */
-ErrorCode TablesDAO::find_statement_name(
-    const std::unordered_map<std::string, std::string>& statement_names_map,
-    std::string_view key_value, std::string& statement_name) const {
-  ErrorCode error = ErrorCode::UNKNOWN;
-
-  try {
-    statement_name = statement_names_map.at(key_value.data());
-    error = ErrorCode::OK;
-  } catch (std::out_of_range& e) {
-    std::cerr << Message::METADATA_KEY_NOT_FOUND << e.what() << std::endl;
-    error = ErrorCode::INVALID_PARAMETER;
-  } catch (...) {
-    std::cerr << Message::METADATA_KEY_NOT_FOUND << std::endl;
-    error = ErrorCode::INVALID_PARAMETER;
-  }
-
-  return error;
-}
 
 /**
  * @brief Gets the ptree type table metadata
@@ -563,38 +561,31 @@ ErrorCode TablesDAO::convert_pgresult_to_ptree(
 
   // Set the value of the format_version column to ptree.
   table.put(Tables::FORMAT_VERSION,
-            PQgetvalue(res, ordinal_position, OrdinalPosition::kFormatVersion));
+            PQgetvalue(res, ordinal_position,
+                       static_cast<int>(OrdinalPosition::kFormatVersion)));
 
   // Set the value of the generation column to ptree.
   table.put(Tables::GENERATION,
-            PQgetvalue(res, ordinal_position, OrdinalPosition::kGeneration));
+            PQgetvalue(res, ordinal_position,
+                       static_cast<int>(OrdinalPosition::kGeneration)));
 
   // Set the value of the id column to ptree.
-  table.put(Tables::ID,
-            PQgetvalue(res, ordinal_position, OrdinalPosition::kId));
+  table.put(Tables::ID, PQgetvalue(res, ordinal_position,
+                                   static_cast<int>(OrdinalPosition::kId)));
 
   // Set the value of the name column to ptree.
-  table.put(Tables::NAME,
-            PQgetvalue(res, ordinal_position, OrdinalPosition::kName));
+  table.put(Tables::NAME, PQgetvalue(res, ordinal_position,
+                                     static_cast<int>(OrdinalPosition::kName)));
 
   // Set the value of the namespace column to ptree.
-  std::string namespace_name =
-      PQgetvalue(res, ordinal_position, OrdinalPosition::kNamespace);
-  if (!namespace_name.empty()) {
-    table.put(Tables::NAMESPACE, namespace_name);
-  }
-
-  // Set the value of the tuples column to ptree.
-  std::string tuples =
-      PQgetvalue(res, ordinal_position, OrdinalPosition::kTuples);
-  if (!tuples.empty()) {
-    table.put(Tables::TUPLES, tuples);
-  }
+  table.put(Tables::NAMESPACE,
+            PQgetvalue(res, ordinal_position,
+                       static_cast<int>(OrdinalPosition::kNamespace)));
 
   // Set the value of the primary_keys column to ptree.
   ptree primary_keys;
-  std::string s_primary_keys =
-      PQgetvalue(res, ordinal_position, OrdinalPosition::kPrimaryKey);
+  std::string s_primary_keys = PQgetvalue(
+      res, ordinal_position, static_cast<int>(OrdinalPosition::kPrimaryKey));
   if (!s_primary_keys.empty()) {
     std::stringstream ss;
     ss << s_primary_keys;
@@ -615,8 +606,55 @@ ErrorCode TablesDAO::convert_pgresult_to_ptree(
   //   ogawayama-server read key Tables::PRIMARY_KEY_NODE.
   table.add_child(Tables::PRIMARY_KEY_NODE, primary_keys);
 
+  // Set the value of the tuples column to ptree.
+  std::string tuples = PQgetvalue(res, ordinal_position,
+                                  static_cast<int>(OrdinalPosition::kTuples));
+  table.put(Tables::TUPLES, (tuples.empty() ? "0" : tuples.c_str()));
+
+  // Set the value of the owner_role_id column to ptree.
+  table.put(Tables::OWNER_ROLE_ID,
+            PQgetvalue(res, ordinal_position,
+                       static_cast<int>(OrdinalPosition::kOwnerRoleId)));
+
+  // Set the value of the acl column to ptree.
+  std::string s_acl = PQgetvalue(res, ordinal_position,
+                                 static_cast<int>(OrdinalPosition::kAcl));
+  std::regex regex("[{}]");
+  s_acl = std::regex_replace(s_acl, regex, "");
+
+  // Convert aclitem[] to ptree.
+  ptree ptree_acls;
+  for (const std::string s_acl : split(s_acl, ',')) {
+    ptree p_value;
+    p_value.put("", s_acl);
+    ptree_acls.push_back(std::make_pair("", p_value));
+  }
+  // NOTICE:
+  //   If it is not set, MUST add an empty ptree.
+  //   ogawayama-server read key Tables::ACL.
+  table.add_child(Tables::ACL, ptree_acls);
+
   error = ErrorCode::OK;
   return error;
+}
+
+/**
+ * Split a string with a specified delimiter.
+ * @param (source)     [in]  Source string to be split.
+ * @param (delimiter)  [in]  Delimiter to split.
+ * @return Vector of the result of the split.
+ */
+std::vector<std::string> TablesDAO::split(const std::string& source,
+                                          const char& delimiter) const {
+  std::vector<std::string> result;
+  std::stringstream stream(source);
+  std::string buffer;
+
+  while (std::getline(stream, buffer, delimiter)) {
+    result.push_back(buffer);
+  }
+
+  return result;
 }
 
 }  // namespace manager::metadata::db::postgresql

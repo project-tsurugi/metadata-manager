@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 tsurugi project.
+ * Copyright 2020-2021 tsurugi project.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,6 +53,9 @@ class TablesDAO : public manager::metadata::db::TablesDAO {
       ObjectIdType& table_id) const override;
 
  private:
+  // root node.
+  static constexpr const char* const TABLES_NODE = "tables";
+  // table name.
   static constexpr const char* const TABLE_NAME = "tables";
   DBSessionManager* session_manager_;
 

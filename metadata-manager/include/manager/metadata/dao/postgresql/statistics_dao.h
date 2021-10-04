@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 tsurugi project.
+ * Copyright 2020-2021 tsurugi project.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,26 +41,23 @@ class StatisticsDAO : public manager::metadata::db::StatisticsDAO {
     static constexpr const char* const kName = "name";
     static constexpr const char* const kColumnId = "column_id";
     static constexpr const char* const kColumnStatistic = "column_statistic";
-  };
+  };  // class ColumnName
 
   /**
    * @brief Column ordinal position of the column statistics table
    *   in the metadata repository.
    */
-  class OrdinalPosition {
-   public:
-    enum {
-      kFormatVersion = 0,
-      kGeneration,
-      kId,
-      kName,
-      kColumnId,
-      kColumnStatistic,
-      kTableId,
-      kOrdinalPosition,
-      kColumnName
-    };
-  };
+  enum class OrdinalPosition {
+    kFormatVersion = 0,
+    kGeneration,
+    kId,
+    kName,
+    kColumnId,
+    kColumnStatistic,
+    kTableId,
+    kOrdinalPosition,
+    kColumnName
+  };  // enum class OrdinalPosition
 
   /**
    * @brief column metadata table name.
@@ -104,9 +101,6 @@ class StatisticsDAO : public manager::metadata::db::StatisticsDAO {
  private:
   ConnectionSPtr connection_;
 
-  manager::metadata::ErrorCode find_statement_name(
-      const std::unordered_map<std::string, std::string>& statement_names_map,
-      std::string_view key_value, std::string& statement_name) const;
   manager::metadata::ErrorCode get_column_statistics_rows(
       std::string_view statement_name,
       const std::vector<const char*>& param_values,

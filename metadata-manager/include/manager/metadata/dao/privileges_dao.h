@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 tsurugi project.
+ * Copyright 2021 tsurugi project.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,11 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef MANAGER_METADATA_DAO_DATA_TYPES_DAO_H_
-#define MANAGER_METADATA_DAO_DATA_TYPES_DAO_H_
+#ifndef MANAGER_METADATA_DAO_PRIVILEGES_DAO_H_
+#define MANAGER_METADATA_DAO_PRIVILEGES_DAO_H_
 
 #include <boost/property_tree/ptree.hpp>
-#include <string>
 #include <string_view>
 
 #include "manager/metadata/dao/generic_dao.h"
@@ -25,13 +24,13 @@
 
 namespace manager::metadata::db {
 
-class DataTypesDAO : public GenericDAO {
+class PrivilegesDAO : public GenericDAO {
  public:
-  virtual manager::metadata::ErrorCode select_one_data_type_metadata(
+  virtual manager::metadata::ErrorCode confirm_tables_permission(
       std::string_view object_key, std::string_view object_value,
-      boost::property_tree::ptree& object) const = 0;
-};  // class DataTypesDAO
+      std::string_view permission, bool& check_result) const = 0;
+};  // class PrivilegesDAO
 
 }  // namespace manager::metadata::db
 
-#endif  // MANAGER_METADATA_DAO_DATA_TYPES_DAO_H_
+#endif  // MANAGER_METADATA_DAO_PRIVILEGES_DAO_H_

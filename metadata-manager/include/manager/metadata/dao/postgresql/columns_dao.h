@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 tsurugi project.
+ * Copyright 2020-2021 tsurugi project.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,29 +41,26 @@ class ColumnsDAO : public manager::metadata::db::ColumnsDAO {
     static constexpr const char* const kNullable = "nullable";
     static constexpr const char* const kDefaultExpr = "default_expr";
     static constexpr const char* const kDirection = "direction";
-  };
+  };  // class ColumnName
 
   /**
    * @brief Column ordinal position of the column metadata table
    *   in the metadata repository.
    */
-  class OrdinalPosition {
-   public:
-    enum {
-      kFormatVersion = 0,
-      kGeneration,
-      kId,
-      kName,
-      kTableId,
-      kOrdinalPosition,
-      kDataTypeId,
-      kDataLength,
-      kVarying,
-      kNullable,
-      kDefaultExpr,
-      kDirection
-    };
-  };
+  enum class OrdinalPosition {
+    kFormatVersion = 0,
+    kGeneration,
+    kId,
+    kName,
+    kTableId,
+    kOrdinalPosition,
+    kDataTypeId,
+    kDataLength,
+    kVarying,
+    kNullable,
+    kDefaultExpr,
+    kDirection
+  };  // enum class OrdinalPosition
 
   /**
    * @brief column metadata table name.

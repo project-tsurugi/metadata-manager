@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 tsurugi project.
+ * Copyright 2020-2021 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -96,7 +96,9 @@ ErrorCode Tables::add(boost::property_tree::ptree& object,
  * @brief Get table metadata.
  * @param (object_id)  [in]  table id.
  * @param (object)     [out] table metadata with the specified ID.
- * @return ErrorCode::OK if success, otherwise an error code.
+ * @retval ErrorCode::OK if success,
+ * @retval ErrorCode::ID_NOT_FOUND if the table id does not exist.
+ * @retval otherwise an error code.
  */
 ErrorCode Tables::get(const ObjectIdType object_id,
                       boost::property_tree::ptree& object) {
@@ -124,7 +126,9 @@ ErrorCode Tables::get(const ObjectIdType object_id,
  * @brief Get table metadata object based on table name.
  * @param (object_name)  [in]  table name. (Value of "name" key.)
  * @param (object)       [out] table metadata object with the specified name.
- * @return ErrorCode::OK if success, otherwise an error code.
+ * @retval ErrorCode::OK if success,
+ * @retval ErrorCode::NAME_NOT_FOUND if the table name does not exist.
+ * @retval otherwise an error code.
  */
 ErrorCode Tables::get(std::string_view object_name,
                       boost::property_tree::ptree& object) {
@@ -167,7 +171,9 @@ ErrorCode Tables::get_all(std::vector<boost::property_tree::ptree>& container) {
  * @param (table_id)         [in]  table id.
  * @param (table_statistic)  [out] one table statistic
  *   with the specified table id.
- * @return ErrorCode::OK if success, otherwise an error code.
+ * @retval ErrorCode::OK if success,
+ * @retval ErrorCode::ID_NOT_FOUND if the table id does not exist.
+ * @retval otherwise an error code.
  */
 ErrorCode Tables::get_statistic(const ObjectIdType table_id,
                                 boost::property_tree::ptree& object) {
@@ -197,7 +203,9 @@ ErrorCode Tables::get_statistic(const ObjectIdType table_id,
  * @param (table_name)       [in]  table name.
  * @param (table_statistic)  [out] one table statistic
  *   with the specified table name.
- * @return ErrorCode::OK if success, otherwise an error code.
+ * @retval ErrorCode::OK if success,
+ * @retval ErrorCode::NAME_NOT_FOUND if the table name does not exist.
+ * @retval otherwise an error code.
  */
 ErrorCode Tables::get_statistic(std::string_view table_name,
                                 boost::property_tree::ptree& object) {
@@ -223,7 +231,10 @@ ErrorCode Tables::get_statistic(std::string_view table_name,
 /**
  * @brief Set table metadata table with the specified table statistics.
  * @param (object)  [in] Table statistic object.
- * @return ErrorCode::OK if success, otherwise an error code.
+ * @retval ErrorCode::OK if success,
+ * @retval ErrorCode::ID_NOT_FOUND if the table id does not exist.
+ * @retval ErrorCode::NAME_NOT_FOUND if the table name does not exist.
+ * @retval otherwise an error code.
  */
 ErrorCode Tables::set_statistic(boost::property_tree::ptree& object) {
   ErrorCode error = ErrorCode::UNKNOWN;
@@ -257,7 +268,9 @@ ErrorCode Tables::set_statistic(boost::property_tree::ptree& object) {
  *   from metadata-table (the table metadata table,
  *   the column metadata table and the column statistics table).
  * @param (object_id)  [in]  table id.
- * @return ErrorCode::OK if success, otherwise an error code.
+ * @retval ErrorCode::OK if success,
+ * @retval ErrorCode::ID_NOT_FOUND if the table id does not exist.
+ * @retval otherwise an error code.
  */
 ErrorCode Tables::remove(const ObjectIdType object_id) {
   ErrorCode error = ErrorCode::UNKNOWN;
@@ -288,22 +301,23 @@ ErrorCode Tables::remove(const ObjectIdType object_id) {
  *   the column metadata table and the column statistics table).
  * @param (object_name)  [in]  table name.
  * @param (object_id)    [out] object id of table removed.
- * @return ErrorCode::OK if success, otherwise an error code.
+ * @retval ErrorCode::OK if success,
+ * @retval ErrorCode::NAME_NOT_FOUND if the table name does not exist.
+ * @retval otherwise an error code.
  */
 ErrorCode Tables::remove(std::string_view object_name,
                          ObjectIdType* object_id) {
   ErrorCode error = ErrorCode::UNKNOWN;
-  std::string_view s_object_name = std::string_view(object_name);
 
   // Parameter value check
-  if (s_object_name.empty()) {
+  if (object_name.empty()) {
     error = ErrorCode::NAME_NOT_FOUND;
     return error;
   }
 
   ObjectIdType retval_object_id;
   // Remove the table metadata through the provider.
-  error = provider->remove_table_metadata(Tables::NAME, s_object_name,
+  error = provider->remove_table_metadata(Tables::NAME, object_name,
                                           retval_object_id);
 
   // Convert the return value
@@ -315,6 +329,65 @@ ErrorCode Tables::remove(std::string_view object_name,
   if ((error == ErrorCode::OK) && (object_id != nullptr)) {
     *object_id = retval_object_id;
   }
+
+  return error;
+}
+
+/**
+ * @brief Gets whether the specified access permissions are included.
+ * @param (object_id)     [in]  role id.
+ * @param (permission)    [in]  permission.
+ * @param (check_result)  [out] presence or absence of the specified
+ *   permissions.
+ * @retval ErrorCode::OK if success.
+ * @retval ErrorCode::NOT_FOUND if the foreign table does not exist.
+ * @retval ErrorCode::ID_NOT_FOUND if the role id does not exist.
+ * @retval otherwise an error code.
+ */
+ErrorCode Tables::confirm_permission_in_acls(const ObjectIdType object_id,
+                                             const char* permission,
+                                             bool& check_result) {
+  ErrorCode error = ErrorCode::UNKNOWN;
+
+  // Parameter value check
+  if (object_id <= 0) {
+    error = ErrorCode::ID_NOT_FOUND;
+    return error;
+  }
+
+  // Get the table metadata through the provider.
+  std::string s_object_id = std::to_string(object_id);
+  error = provider->confirm_permission(Metadata::ID, s_object_id, permission,
+                                       check_result);
+
+  return error;
+}
+
+/**
+ * @brief Gets whether or not the specified permissions have been granted.
+ * @param (object_name)   [in]  role name.
+ * @param (permission)    [in]  permissions.
+ * @param (check_result)  [out] presence or absence of the specified
+ *   permissions.
+ * @retval ErrorCode::OK if success.
+ * @retval ErrorCode::NOT_FOUND if the foreign table does not exist.
+ * @retval ErrorCode::NAME_NOT_FOUND if the role name does not exist.
+ * @retval otherwise an error code.
+ */
+ErrorCode Tables::confirm_permission_in_acls(std::string_view object_name,
+                                             const char* permission,
+                                             bool& check_result) {
+  ErrorCode error = ErrorCode::UNKNOWN;
+
+  // Parameter value check
+  if (object_name.empty()) {
+    error = ErrorCode::NAME_NOT_FOUND;
+    return error;
+  }
+
+  // Get the table metadata through the provider.
+  error = provider->confirm_permission(Metadata::NAME, object_name, permission,
+                                       check_result);
 
   return error;
 }

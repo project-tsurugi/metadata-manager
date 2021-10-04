@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 tsurugi project.
+ * Copyright 2020-2021 tsurugi project.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,9 @@
 #include <functional>
 #include <memory>
 #include <string>
+#include <unordered_map>
 
+#include <libpq-fe.h>
 #include "manager/metadata/dao/common/statement_name.h"
 #include "manager/metadata/dao/postgresql/common.h"
 #include "manager/metadata/error_code.h"
@@ -46,10 +48,10 @@ class DbcUtils {
 
   static manager::metadata::ErrorCode prepare(
       const ConnectionSPtr& connection, const StatementName& statement_name,
-      std::string_view statement);
-  static manager::metadata::ErrorCode prepare(const ConnectionSPtr& connection,
-                                              std::string_view statement_name,
-                                              std::string_view statement);
+      std::string_view statement, std::vector<Oid>* param_types = nullptr);
+  static manager::metadata::ErrorCode prepare(
+      const ConnectionSPtr& connection, std::string_view statement_name,
+      std::string_view statement, std::vector<Oid>* param_types = nullptr);
 
   static manager::metadata::ErrorCode exec_prepared(
       const ConnectionSPtr& connection, const StatementName& statement_name,
@@ -57,6 +59,10 @@ class DbcUtils {
   static manager::metadata::ErrorCode exec_prepared(
       const ConnectionSPtr& connection, std::string_view statement_name,
       const std::vector<char const*>& param_values, PGresult*& res);
+
+  static manager::metadata::ErrorCode find_statement_name(
+      const std::unordered_map<std::string, std::string>& statement_names_map,
+      std::string_view key_value, std::string& statement_name);
 
  private:
   static constexpr int BASE_10 = 10;

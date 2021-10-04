@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 tsurugi project.
+ * Copyright 2020-2021 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -60,7 +60,9 @@ ErrorCode DataTypes::init() {
  * @param (object_id)  [in]  metadata-object ID.
  * @param (object)     [out] one data type metadata object to get
  *   based on the given object_name.
- * @return ErrorCode::OK if success, otherwise an error code.
+ * @retval ErrorCode::OK if success.
+ * @retval ErrorCode::ID_NOT_FOUND if the data type id does not exist.
+ * @retval otherwise an error code.
  */
 ErrorCode DataTypes::get(const ObjectIdType object_id,
                          boost::property_tree::ptree& object) {
@@ -84,7 +86,9 @@ ErrorCode DataTypes::get(const ObjectIdType object_id,
  * @param (object_name)  [in]  data type metadata name. (Value of "name" key.)
  * @param (object)       [out] one data type metadata object to get
  *   based on the given object_name.
- * @return ErrorCode::OK if success, otherwise an error code.
+ * @retval ErrorCode::OK if success.
+ * @retval ErrorCode::NAME_NOT_FOUND if the data type name does not exist.
+ * @retval otherwise an error code.
  */
 ErrorCode DataTypes::get(std::string_view object_name,
                          boost::property_tree::ptree& object) {
@@ -109,7 +113,10 @@ ErrorCode DataTypes::get(std::string_view object_name,
  * @param (value)         [in]  value of data type metadata object.
  * @param (object)        [out] one data type metadata object to get,
  *   where key = value.
- * @return ErrorCode::OK if success, otherwise an error code.
+ * @retval ErrorCode::OK if success.
+ * @retval ErrorCode::ID_NOT_FOUND if the data type id does not exist.
+ * @retval ErrorCode::NAME_NOT_FOUND if the data type name does not exist.
+ * @retval otherwise an error code.
  */
 ErrorCode DataTypes::get(std::string_view object_key,
                          std::string_view object_value,

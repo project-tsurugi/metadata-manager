@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 tsurugi project.
+ * Copyright 2021 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -61,6 +61,19 @@ ErrorCode TablesProvider::init() {
     columns_dao_ = std::static_pointer_cast<ColumnsDAO>(gdao);
   }
 
+  if (privileges_dao_ != nullptr) {
+    // Instance of the PrivilegesDAO class has already been obtained.
+    error = ErrorCode::OK;
+  } else {
+    // Get an instance of the PrivilegesDAO class.
+    error = session_manager_->get_dao(GenericDAO::TableName::PRIVILEGES, gdao);
+    if (error != ErrorCode::OK) {
+      return error;
+    }
+    // Set PrivilegesDAO instance.
+    privileges_dao_ = std::static_pointer_cast<PrivilegesDAO>(gdao);
+  }
+
   return error;
 }
 
@@ -97,20 +110,6 @@ ErrorCode TablesProvider::add_table_metadata(ptree& object,
     ErrorCode rollback_result = session_manager_->rollback();
     if (rollback_result != ErrorCode::OK) {
       return rollback_result;
-    }
-
-    // Check if it already exists.
-    ptree res_ptree;
-    boost::optional<std::string> name =
-        object.get_optional<std::string>(Tables::NAME);
-    ErrorCode rselect_result =
-        tables_dao_->select_table_metadata(Tables::NAME, name.get(), res_ptree);
-    if (rselect_result == ErrorCode::OK) {
-      boost::optional<std::int64_t> id =
-          res_ptree.get_optional<std::int64_t>(Tables::ID);
-      if (id) {
-        error = ErrorCode::TABLE_NAME_ALREADY_EXISTS;
-      }
     }
 
     return error;
@@ -160,7 +159,6 @@ ErrorCode TablesProvider::get_table_metadata(std::string_view key,
     return error;
   }
 
-  std::string object_id = "";
   if (key == Tables::ID) {
     error = get_column_metadata(value, object);
   } else if (key == Tables::NAME) {
@@ -190,7 +188,6 @@ ErrorCode TablesProvider::get_table_metadata(std::vector<ptree>& container) {
     return error;
   }
 
-  std::string object_id = "";
   BOOST_FOREACH (auto& table_object, container) {
     error = get_all_column_metadata(table_object);
     if (error != ErrorCode::OK) {
@@ -221,9 +218,6 @@ ErrorCode TablesProvider::get_table_statistic(std::string_view key,
   }
 
   error = tables_dao_->select_table_metadata(key, value, object);
-  if (error != ErrorCode::OK) {
-    return error;
-  }
 
   return error;
 }
@@ -344,6 +338,33 @@ ErrorCode TablesProvider::remove_table_metadata(std::string_view key,
   return error;
 }
 
+/**
+ * @brief Gets the presence or absence of the specified permission
+ *   from the PostgreSQL system catalog.
+ * @param (key)         [in]  key of role metadata object.
+ * @param (value)       [in]  value of role metadata object.
+ * @param (permission)  [in]  permissions.
+ * @param (result)      [out] presence or absence of the specified permissions.
+ * @return ErrorCode::OK if success, otherwise an error code.
+ */
+ErrorCode TablesProvider::confirm_permission(std::string_view key,
+                                             std::string_view value,
+                                             std::string_view permission,
+                                             bool& result) {
+  ErrorCode error = ErrorCode::UNKNOWN;
+
+  // Initialization
+  error = init();
+  if (error != ErrorCode::OK) {
+    return error;
+  }
+
+  error = privileges_dao_->confirm_tables_permission(key, value, permission,
+                                                     result);
+
+  return error;
+}
+
 //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
 // Private method area
 
@@ -419,7 +440,7 @@ ErrorCode TablesProvider::fill_parameters(ptree& table) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   boost::optional<std::string> name =
-      table.get_optional<std::string>(Metadata::NAME);
+      table.get_optional<std::string>(Tables::NAME);
   if (!name || name.get().empty()) {
     error = ErrorCode::INVALID_PARAMETER;
     return error;

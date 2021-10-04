@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 tsurugi project.
+ * Copyright 2020-2021 tsurugi project.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ namespace manager::metadata::db {
 /**
  * @brief statement name : unique name for the new prepared statement.
  */
-enum StatementName {
+enum class StatementName {
   STATISTICS_DAO_UPSERT_COLUMN_STATISTIC_BY_COLUMN_INFO = 0,
   STATISTICS_DAO_UPSERT_COLUMN_STATISTIC_BY_COLUMN_ID,
   STATISTICS_DAO_SELECT_COLUMN_STATISTIC,
@@ -38,6 +38,9 @@ enum StatementName {
   COLUMNS_DAO_INSERT_ONE_COLUMN_METADATA,
   COLUMNS_DAO_SELECT_ALL_COLUMN_METADATA,
   COLUMNS_DAO_DELETE_ALL_COLUMN_METADATA,
+  ROLES_DAO_SELECT,
+  PRIVILEGES_DAO_SELECT,
+  PRIVILEGES_DAO_CHECK_EXISTS,
   DAO_SELECT_EQUAL_TO,
   DAO_DELETE_EQUAL_TO,
 };  // enum StatementName

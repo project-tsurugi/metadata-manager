@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 tsurugi project.
+ * Copyright 2020-2021 tsurugi project.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,11 +30,14 @@
 #include <libpq-fe.h>
 #include "manager/metadata/dao/postgresql/columns_dao.h"
 #include "manager/metadata/dao/postgresql/datatypes_dao.h"
+#include "manager/metadata/dao/postgresql/privileges_dao.h"
+#include "manager/metadata/dao/postgresql/roles_dao.h"
 #include "manager/metadata/dao/postgresql/statistics_dao.h"
 #include "manager/metadata/dao/postgresql/tables_dao.h"
 #elif defined(STORAGE_JSON)
 #include "manager/metadata/dao/json/columns_dao.h"
 #include "manager/metadata/dao/json/datatypes_dao.h"
+#include "manager/metadata/dao/json/privileges_dao.h"
 #include "manager/metadata/dao/json/tables_dao.h"
 #endif
 
@@ -92,6 +95,22 @@ manager::metadata::ErrorCode DBSessionManager::create_dao(
     case GenericDAO::TableName::COLUMNS: {
       auto cdao = std::make_shared<storage::ColumnsDAO>(strage_session_manager);
       gdao = cdao;
+      break;
+    }
+    case GenericDAO::TableName::ROLES: {
+#if defined(STORAGE_POSTGRESQL)
+      auto sdao = std::make_shared<storage::RolesDAO>(strage_session_manager);
+      gdao = sdao;
+#elif defined(STORAGE_JSON)
+      // Roles are not supported in JSON.
+      return ErrorCode::NOT_SUPPORTED;
+#endif
+      break;
+    }
+    case GenericDAO::TableName::PRIVILEGES: {
+      auto sdao =
+          std::make_shared<storage::PrivilegesDAO>(strage_session_manager);
+      gdao = sdao;
       break;
     }
     default: {

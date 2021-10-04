@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 tsurugi project.
+ * Copyright 2020-2021 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -96,9 +96,11 @@ ErrorCode Statistics::add(boost::property_tree::ptree& object,
 
 /**
  * @brief Get column statistics.
- * @param (object_id) [in]  table id.
+ * @param (object_id) [in]  statistic id.
  * @param (object)    [out] column statistics with the specified ID.
- * @return ErrorCode::OK if success, otherwise an error code.
+ * @retval ErrorCode::OK if success.
+ * @retval ErrorCode::ID_NOT_FOUND if the statistic id does not exist.
+ * @retval otherwise an error code.
  */
 ErrorCode Statistics::get(const ObjectIdType object_id,
                           boost::property_tree::ptree& object) {
@@ -123,11 +125,13 @@ ErrorCode Statistics::get(const ObjectIdType object_id,
 }
 
 /**
- * @brief Get column statistics object based on table name.
- * @param  object_name)  [in]  table name. (Value of "name" key.)
+ * @brief Get column statistics object based on statistic name.
+ * @param (object_name)  [in]  statistic name. (Value of "name" key.)
  * @param (object)       [out] column statistics object
  *   with the specified name.
- * @return ErrorCode::OK if success, otherwise an error code.
+ * @retval ErrorCode::OK if success.
+ * @retval ErrorCode::NAME_NOT_FOUND if the statistic name does not exist.
+ * @retval otherwise an error code.
  */
 ErrorCode Statistics::get(std::string_view object_name,
                           boost::property_tree::ptree& object) {
@@ -156,7 +160,9 @@ ErrorCode Statistics::get(std::string_view object_name,
  * @param (column_id)  [in]  column id.
  * @param (object)     [out] one column statistic
  *   with the specified column id.
- * @return ErrorCode::OK if success, otherwise an error code.
+ * @retval ErrorCode::OK if success.
+ * @retval ErrorCode::ID_NOT_FOUND if the column id does not exist.
+ * @retval otherwise an error code.
  */
 ErrorCode Statistics::get_by_column_id(const ObjectIdType column_id,
                                        boost::property_tree::ptree& object) {
@@ -187,7 +193,9 @@ ErrorCode Statistics::get_by_column_id(const ObjectIdType column_id,
  * @param (ordinal_position)  [in]  column ordinal position.
  * @param (object)            [out] one column statistic
  *   with the specified table id and column ordinal position.
- * @return ErrorCode::OK if success, otherwise an error code.
+ * @retval ErrorCode::OK if success.
+ * @retval ErrorCode::ID_NOT_FOUND if the table id or ordinal position does not exist.
+ * @retval otherwise an error code.
  */
 ErrorCode Statistics::get_by_column_number(
     const ObjectIdType table_id, const int64_t ordinal_position,
@@ -220,7 +228,10 @@ ErrorCode Statistics::get_by_column_number(
  * @param (column_name)  [in]  column name.
  * @param (object)       [out] one column statistic
  *   with the specified table id and column name.
- * @return ErrorCode::OK if success, otherwise an error code.
+ * @retval ErrorCode::OK if success.
+ * @retval ErrorCode::ID_NOT_FOUND if the table id does not exist.
+ * @retval ErrorCode::NAME_NOT_FOUND if the column name does not exist.
+ * @retval otherwise an error code.
  */
 ErrorCode Statistics::get_by_column_name(const ObjectIdType table_id,
                                          std::string_view column_name,
@@ -272,7 +283,9 @@ ErrorCode Statistics::get_all(
  *   with the specified table id.
  *   key : column ordinal position
  *   value : one column statistic
- * @return ErrorCode::OK if success, otherwise an error code.
+ * @retval ErrorCode::OK if success.
+ * @retval ErrorCode::ID_NOT_FOUND if the table id does not exist.
+ * @retval ErrorCode::NAME_NOT_FOUND if the table name does not exist.
  */
 ErrorCode Statistics::get_all(
     const ObjectIdType table_id,
@@ -299,7 +312,9 @@ ErrorCode Statistics::get_all(
 /**
  * @brief Remove column statistics based on the given statistics id.
  * @param (object_id)  [in]  statistic id.
- * @return ErrorCode::OK if success, otherwise an error code.
+ * @retval ErrorCode::OK if success.
+ * @retval ErrorCode::ID_NOT_FOUND if the statistic id does not exist.
+ * @retval otherwise an error code.
  */
 ErrorCode Statistics::remove(const ObjectIdType object_id) {
   ErrorCode error = ErrorCode::UNKNOWN;
@@ -355,7 +370,9 @@ ErrorCode Statistics::remove(std::string_view object_name,
  * @brief Removes all column statistics
  *   from the column statistics table based on the given table id.
  * @param (table_id)  [in]  table id.
- * @return ErrorCode::OK if success, otherwise an error code.
+ * @retval ErrorCode::OK if success.
+ * @retval ErrorCode::ID_NOT_FOUND if the table id does not exist.
+ * @retval otherwise an error code.
  */
 ErrorCode Statistics::remove_by_table_id(const ObjectIdType table_id) {
   ErrorCode error = ErrorCode::UNKNOWN;
@@ -381,7 +398,9 @@ ErrorCode Statistics::remove_by_table_id(const ObjectIdType table_id) {
  * @brief Removes column statistic from the column statistics table
  *   based on the given column id.
  * @param (column_id)  [in]  column id.
- * @return ErrorCode::OK if success, otherwise an error code.
+ * @retval ErrorCode::OK if success.
+ * @retval ErrorCode::ID_NOT_FOUND if the column id does not exist.
+ * @retval otherwise an error code.
  */
 ErrorCode Statistics::remove_by_column_id(const ObjectIdType column_id) {
   ErrorCode error = ErrorCode::UNKNOWN;
@@ -409,7 +428,9 @@ ErrorCode Statistics::remove_by_column_id(const ObjectIdType column_id) {
  *   based on the given table id and the given column ordinal position.
  * @param (table_id)          [in]  table id.
  * @param (ordinal_position)  [in]  column ordinal position.
- * @return ErrorCode::OK if success, otherwise an error code.
+ * @retval ErrorCode::OK if success.
+ * @retval ErrorCode::ID_NOT_FOUND if the table id or ordinal position does not exist.
+ * @retval otherwise an error code.
  */
 ErrorCode Statistics::remove_by_column_number(const ObjectIdType table_id,
                                               const int64_t ordinal_position) {
@@ -438,7 +459,10 @@ ErrorCode Statistics::remove_by_column_number(const ObjectIdType table_id,
  *   based on the given table id and the given column ordinal position.
  * @param (table_id)     [in]  table id.
  * @param (column_name)  [in]  column name.
- * @return ErrorCode::OK if success, otherwise an error code.
+ * @retval ErrorCode::OK if success.
+ * @retval ErrorCode::ID_NOT_FOUND if the table id does not exist.
+ * @retval ErrorCode::NAME_NOT_FOUND if the column name does not exist.
+ * @retval otherwise an error code.
  */
 ErrorCode Statistics::remove_by_column_name(const ObjectIdType table_id,
                                             std::string_view column_name) {

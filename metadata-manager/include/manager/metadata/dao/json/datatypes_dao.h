@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 tsurugi project.
+ * Copyright 2020-2021 tsurugi project.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,6 +36,9 @@ class DataTypesDAO : public manager::metadata::db::DataTypesDAO {
       boost::property_tree::ptree& object) const;
 
  private:
+  // root object.
+  static constexpr const char* const DATATYPES_NODE = "data_types";
+
   DBSessionManager* session_manager_;
 };  // class DataTypesDAO
 

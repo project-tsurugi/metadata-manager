@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 tsurugi project.
+ * Copyright 2021 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@
 #include <boost/foreach.hpp>
 #include <boost/property_tree/ptree.hpp>
 
+#include "manager/metadata/dao/common/pg_type.h"
 #include "manager/metadata/datatypes.h"
 #include "manager/metadata/error_code.h"
 #include "manager/metadata/metadata.h"
@@ -27,6 +28,7 @@ namespace manager::metadata::db::json {
 
 using boost::property_tree::ptree;
 using manager::metadata::ErrorCode;
+using manager::metadata::db::PgType;
 
 /**
  * @brief Defines all prepared data types metadata.
@@ -46,9 +48,10 @@ ErrorCode DataTypesDAO::prepare() const {
     datatype.put(DataTypes::ID,
                  static_cast<ObjectIdType>(DataTypes::DataTypesId::INT32));
     datatype.put(DataTypes::NAME, "INT32");
-    datatype.put(DataTypes::PG_DATA_TYPE, 23);
+    datatype.put(DataTypes::PG_DATA_TYPE, PgType::TypeOid::kInt4);
     datatype.put(DataTypes::PG_DATA_TYPE_NAME, "integer");
-    datatype.put(DataTypes::PG_DATA_TYPE_QUALIFIED_NAME, "int4");
+    datatype.put(DataTypes::PG_DATA_TYPE_QUALIFIED_NAME,
+                 PgType::TypeName::kInt4);
     datatypes.push_back(std::make_pair("", datatype));
 
     // INT64 :
@@ -57,9 +60,10 @@ ErrorCode DataTypesDAO::prepare() const {
     datatype.put(DataTypes::ID,
                  static_cast<ObjectIdType>(DataTypes::DataTypesId::INT64));
     datatype.put(DataTypes::NAME, "INT64");
-    datatype.put(DataTypes::PG_DATA_TYPE, 20);
+    datatype.put(DataTypes::PG_DATA_TYPE, PgType::TypeOid::kInt8);
     datatype.put(DataTypes::PG_DATA_TYPE_NAME, "bigint");
-    datatype.put(DataTypes::PG_DATA_TYPE_QUALIFIED_NAME, "int8");
+    datatype.put(DataTypes::PG_DATA_TYPE_QUALIFIED_NAME,
+                 PgType::TypeName::kInt8);
     datatypes.push_back(std::make_pair("", datatype));
 
     // FLOAT32 :
@@ -68,9 +72,10 @@ ErrorCode DataTypesDAO::prepare() const {
     datatype.put(DataTypes::ID,
                  static_cast<ObjectIdType>(DataTypes::DataTypesId::FLOAT32));
     datatype.put(DataTypes::NAME, "FLOAT32");
-    datatype.put(DataTypes::PG_DATA_TYPE, 700);
+    datatype.put(DataTypes::PG_DATA_TYPE, PgType::TypeOid::kFloat4);
     datatype.put(DataTypes::PG_DATA_TYPE_NAME, "real");
-    datatype.put(DataTypes::PG_DATA_TYPE_QUALIFIED_NAME, "float4");
+    datatype.put(DataTypes::PG_DATA_TYPE_QUALIFIED_NAME,
+                 PgType::TypeName::kFloat4);
     datatypes.push_back(std::make_pair("", datatype));
 
     // FLOAT64 :
@@ -79,9 +84,10 @@ ErrorCode DataTypesDAO::prepare() const {
     datatype.put(DataTypes::ID,
                  static_cast<ObjectIdType>(DataTypes::DataTypesId::FLOAT64));
     datatype.put(DataTypes::NAME, "FLOAT64");
-    datatype.put(DataTypes::PG_DATA_TYPE, 701);
+    datatype.put(DataTypes::PG_DATA_TYPE, PgType::TypeOid::kFloat8);
     datatype.put(DataTypes::PG_DATA_TYPE_NAME, "double precision");
-    datatype.put(DataTypes::PG_DATA_TYPE_QUALIFIED_NAME, "float8");
+    datatype.put(DataTypes::PG_DATA_TYPE_QUALIFIED_NAME,
+                 PgType::TypeName::kFloat8);
     datatypes.push_back(std::make_pair("", datatype));
 
     // CHAR : character, char
@@ -90,9 +96,10 @@ ErrorCode DataTypesDAO::prepare() const {
     datatype.put(DataTypes::ID,
                  static_cast<ObjectIdType>(DataTypes::DataTypesId::CHAR));
     datatype.put(DataTypes::NAME, "CHAR");
-    datatype.put(DataTypes::PG_DATA_TYPE, 1042);
+    datatype.put(DataTypes::PG_DATA_TYPE, PgType::TypeOid::kBpchar);
     datatype.put(DataTypes::PG_DATA_TYPE_NAME, "char");
-    datatype.put(DataTypes::PG_DATA_TYPE_QUALIFIED_NAME, "bpchar");
+    datatype.put(DataTypes::PG_DATA_TYPE_QUALIFIED_NAME,
+                 PgType::TypeName::kBpchar);
     datatypes.push_back(std::make_pair("", datatype));
 
     // VARCHAR : character varying, varchar
@@ -101,14 +108,15 @@ ErrorCode DataTypesDAO::prepare() const {
     datatype.put(DataTypes::ID,
                  static_cast<ObjectIdType>(DataTypes::DataTypesId::VARCHAR));
     datatype.put(DataTypes::NAME, "VARCHAR");
-    datatype.put(DataTypes::PG_DATA_TYPE, 1043);
+    datatype.put(DataTypes::PG_DATA_TYPE, PgType::TypeOid::kVarchar);
     datatype.put(DataTypes::PG_DATA_TYPE_NAME, "varchar");
-    datatype.put(DataTypes::PG_DATA_TYPE_QUALIFIED_NAME, "varchar");
+    datatype.put(DataTypes::PG_DATA_TYPE_QUALIFIED_NAME,
+                 PgType::TypeName::kVarchar);
     datatypes.push_back(std::make_pair("", datatype));
   }
 
   ptree* meta_object = session_manager_->get_container();
-  meta_object->add_child(DataTypes::DATATYPES_NODE, datatypes);
+  meta_object->add_child(DataTypesDAO::DATATYPES_NODE, datatypes);
 
   error = ErrorCode::OK;
   return error;
@@ -120,7 +128,10 @@ ErrorCode DataTypesDAO::prepare() const {
  * @param (object_key)    [in]  metadata-object key.
  * @param (object_value)  [in]  metadata-object value.
  * @param (object)        [out] metadata-object with the specified name.
- * @return ErrorCode::OK if success, otherwise an error code.
+ * @retval ErrorCode::OK if success.
+ * @retval ErrorCode::NOT_FOUND if the data type id or data type name
+ *   does not exist.
+ * @retval otherwise an error code.
  */
 ErrorCode DataTypesDAO::select_one_data_type_metadata(
     std::string_view object_key, std::string_view object_value,
@@ -131,7 +142,7 @@ ErrorCode DataTypesDAO::select_one_data_type_metadata(
 
   error = ErrorCode::NOT_FOUND;
   BOOST_FOREACH (const ptree::value_type& node,
-                 meta_object->get_child(DataTypes::DATATYPES_NODE)) {
+                 meta_object->get_child(DataTypesDAO::DATATYPES_NODE)) {
     const ptree& temp_obj = node.second;
 
     boost::optional<std::string> value =

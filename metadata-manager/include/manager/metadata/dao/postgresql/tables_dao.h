@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 tsurugi project.
+ * Copyright 2020-2021 tsurugi project.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,24 +38,23 @@ class TablesDAO : public manager::metadata::db::TablesDAO {
     static constexpr const char* const kNamespace = "namespace";
     static constexpr const char* const kPrimaryKey = "primary_key";
     static constexpr const char* const kTuples = "tuples";
-  };
+  };  // class ColumnName
 
   /**
-   * @brief Column ordinal position of the column metadata table
+   * @brief Column ordinal position of the table metadata table
    *   in the metadata repository.
    */
-  class OrdinalPosition {
-   public:
-    enum {
-      kFormatVersion = 0,
-      kGeneration,
-      kId,
-      kName,
-      kNamespace,
-      kPrimaryKey,
-      kTuples
-    };
-  };
+  enum class OrdinalPosition {
+    kFormatVersion = 0,
+    kGeneration,
+    kId,
+    kName,
+    kNamespace,
+    kPrimaryKey,
+    kTuples,
+    kOwnerRoleId,
+    kAcl
+  };  // enum class OrdinalPosition
 
   /**
    * @brief table metadata table name.
@@ -87,12 +86,11 @@ class TablesDAO : public manager::metadata::db::TablesDAO {
  private:
   ConnectionSPtr connection_;
 
-  manager::metadata::ErrorCode find_statement_name(
-      const std::unordered_map<std::string, std::string>& statement_names_map,
-      std::string_view key_value, std::string& statement_name) const;
   manager::metadata::ErrorCode convert_pgresult_to_ptree(
       PGresult*& res, const int ordinal_position,
       boost::property_tree::ptree& table) const;
+  std::vector<std::string> split(const std::string& source,
+                                 const char& delimiter) const;
 };  // class TablesDAO
 
 }  // namespace manager::metadata::db::postgresql

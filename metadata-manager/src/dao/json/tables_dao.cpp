@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 tsurugi project.
+ * Copyright 2021 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,7 +46,7 @@ ErrorCode TablesDAO::prepare() const {
                            std::string(TablesDAO::TABLE_NAME);
 
   // Connect to the table metadata file.
-  error = session_manager_->connect(filename.str(), Tables::TABLES_NODE);
+  error = session_manager_->connect(filename.str(), TablesDAO::TABLES_NODE);
 
   return error;
 }
@@ -105,10 +105,10 @@ ErrorCode TablesDAO::insert_table_metadata(boost::property_tree::ptree& table,
   ptree* meta_object = session_manager_->get_container();
 
   // add new element.
-  ptree node = meta_object->get_child(Tables::TABLES_NODE);
+  ptree node = meta_object->get_child(TablesDAO::TABLES_NODE);
 
   node.push_back(std::make_pair("", tmp_table));
-  meta_object->put_child(Tables::TABLES_NODE, node);
+  meta_object->put_child(TablesDAO::TABLES_NODE, node);
 
   error = ErrorCode::OK;
 
@@ -121,7 +121,9 @@ ErrorCode TablesDAO::insert_table_metadata(boost::property_tree::ptree& table,
  * @param (object_value)  [in]  value to be filtered.
  * @param (object)        [out] table metadata to get,
  *   where the given key equals the given value.
- * @return ErrorCode::OK if success, otherwise an error code.
+ * @retval ErrorCode::OK if success.
+ * @retval ErrorCode::NOT_FOUND if the table id or table name does not exist.
+ * @retval otherwise an error code.
  */
 ErrorCode TablesDAO::select_table_metadata(std::string_view object_key,
                                            std::string_view object_value,
@@ -139,7 +141,7 @@ ErrorCode TablesDAO::select_table_metadata(std::string_view object_key,
 
   error = ErrorCode::NOT_FOUND;
   BOOST_FOREACH (const ptree::value_type& node,
-                 meta_object->get_child(Tables::TABLES_NODE)) {
+                 meta_object->get_child(TablesDAO::TABLES_NODE)) {
     const ptree& temp_obj = node.second;
 
     boost::optional<std::string> value =
@@ -179,7 +181,7 @@ ErrorCode TablesDAO::select_table_metadata(
   ptree* meta_object = session_manager_->get_container();
 
   BOOST_FOREACH (const ptree::value_type& node,
-                 meta_object->get_child(Tables::TABLES_NODE)) {
+                 meta_object->get_child(TablesDAO::TABLES_NODE)) {
     container.emplace_back(node.second);
   }
 
@@ -191,7 +193,9 @@ ErrorCode TablesDAO::select_table_metadata(
  * @param (object_key)    [in]  key. column name of a table metadata table.
  * @param (object_value)  [in]  value to be filtered.
  * @param (table_id)      [out]  table id of the row deleted.
- * @return ErrorCode::OK if success, otherwise an error code.
+ * @retval ErrorCode::OK if success.
+ * @retval ErrorCode::NOT_FOUND if the table id or table name does not exist.
+ * @retval otherwise an error code.
  */
 ErrorCode TablesDAO::delete_table_metadata(std::string_view object_key,
                                            std::string_view object_value,
@@ -207,7 +211,7 @@ ErrorCode TablesDAO::delete_table_metadata(std::string_view object_key,
   // Getting a metadata object.
   ptree* meta_object = session_manager_->get_container();
 
-  ptree& node = meta_object->get_child(Tables::TABLES_NODE);
+  ptree& node = meta_object->get_child(TablesDAO::TABLES_NODE);
 
   error = ErrorCode::NOT_FOUND;
   for (ptree::iterator it = node.begin(); it != node.end();) {
@@ -267,7 +271,7 @@ ErrorCode TablesDAO::get_metadata_object(
 
   error = ErrorCode::NAME_NOT_FOUND;
   BOOST_FOREACH (const ptree::value_type& node,
-                 meta_object->get_child(Tables::TABLES_NODE)) {
+                 meta_object->get_child(TablesDAO::TABLES_NODE)) {
     const ptree& temp_obj = node.second;
 
     boost::optional<std::string> name =

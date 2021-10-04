@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 tsurugi project.
+ * Copyright 2020-2021 tsurugi project.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,31 +40,27 @@ class DataTypesDAO : public manager::metadata::db::DataTypesDAO {
     static constexpr const char* const kPgDataTypeName = "pg_data_type_name";
     static constexpr const char* const kPgDataTypeQualifiedName =
         "pg_data_type_qualified_name";
-  };
+  };  // class ColumnName
 
   /**
    * @brief Column ordinal position of the datatype table
    *   in the metadata repository.
    */
-  class OrdinalPosition {
-   public:
-    enum {
-      kFormatVersion = 0,
-      kGeneration,
-      kId,
-      kName,
-      kPgDataType,
-      kPgDataTypeName,
-      kPgDataTypeQualifiedName
-    };
-  };
+  enum class OrdinalPosition {
+    kFormatVersion = 0,
+    kGeneration,
+    kId,
+    kName,
+    kPgDataType,
+    kPgDataTypeName,
+    kPgDataTypeQualifiedName
+  };  // enum class OrdinalPosition
 
   /**
    * @brief datatype table name.
    */
   static constexpr const char* const kTableName = "tsurugi_type";
 
-  //
   explicit DataTypesDAO(DBSessionManager* session_manager);
 
   manager::metadata::ErrorCode prepare() const override;

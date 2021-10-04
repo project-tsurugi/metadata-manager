@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 tsurugi project.
+ * Copyright 2021 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,7 +54,10 @@ ErrorCode DataTypesProvider::init() {
  * @param (value)   [in]  value of data type metadata object.
  * @param (object)  [out] one data type metadata object to get,
  *   where key = value.
- * @return ErrorCode::OK if success, otherwise an error code.
+ * @retval ErrorCode::OK if success.
+ * @retval ErrorCode::NOT_FOUND if the data type id or data type name
+ *   does not exist.
+ * @retval otherwise an error code.
  */
 ErrorCode DataTypesProvider::get_datatype_metadata(std::string_view key,
                                                    std::string_view value,

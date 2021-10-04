@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 tsurugi project.
+ * Copyright 2021 tsurugi project.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@
 #include <string_view>
 
 #include "manager/metadata/dao/columns_dao.h"
+#include "manager/metadata/dao/privileges_dao.h"
 #include "manager/metadata/dao/tables_dao.h"
 #include "manager/metadata/error_code.h"
 #include "manager/metadata/metadata.h"
@@ -46,13 +47,18 @@ class TablesProvider : public ProviderBase {
   manager::metadata::ErrorCode set_table_statistic(
       boost::property_tree::ptree& object, ObjectIdType& table_id);
 
-  manager::metadata::ErrorCode remove_table_metadata(
+  manager::metadata::ErrorCode remove_table_metadata(std::string_view key,
+                                                     std::string_view value,
+                                                     ObjectIdType& table_id);
+
+  manager::metadata::ErrorCode confirm_permission(
       std::string_view key, std::string_view value,
-      ObjectIdType& table_id);
+      std::string_view permission, bool& check_result);
 
  private:
   std::shared_ptr<TablesDAO> tables_dao_ = nullptr;
   std::shared_ptr<ColumnsDAO> columns_dao_ = nullptr;
+  std::shared_ptr<PrivilegesDAO> privileges_dao_ = nullptr;
 
   manager::metadata::ErrorCode get_all_column_metadata(
       boost::property_tree::ptree& tables) const;

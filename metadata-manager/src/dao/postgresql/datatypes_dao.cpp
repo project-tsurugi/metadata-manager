@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 tsurugi project.
+ * Copyright 2020-2021 tsurugi project.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,10 +42,10 @@ using manager::metadata::db::postgresql::DataTypesDAO;
 using manager::metadata::db::postgresql::SCHEMA_NAME;
 
 /**
- * @brief Returnes a SELECT stetement to get metadata:
+ * @brief Returns a SELECT statement to get metadata:
  *   select * from table_name where column_name = $1.
  * @param (column_name)  [in]  column name of metadata-table.
- * @return a SELECT stetement:
+ * @return a SELECT statement:
  *   select * from table_name where column_name = $1.
  */
 std::string select_equal_to(std::string_view column_name) {
@@ -105,9 +105,10 @@ DataTypesDAO::DataTypesDAO(DBSessionManager* session_manager)
   for (auto column : column_names) {
     // Creates unique name
     // for the new prepared statement.
-    boost::format statement_name = boost::format("%1%-%2%-%3%") %
-                                   StatementName::DAO_SELECT_EQUAL_TO %
-                                   kTableName % column.first;
+    boost::format statement_name =
+        boost::format("%1%-%2%-%3%") %
+        static_cast<int>(StatementName::DAO_SELECT_EQUAL_TO) % kTableName %
+        column.first;
 
     // Addes this list to unique name
     // for the new prepared statement
@@ -147,7 +148,10 @@ ErrorCode DataTypesDAO::prepare() const {
  * @param (object_value)        [in]  value to be filtered.
  * @param (object)              [out] one data type metadata to get,
  *   where the given key equals the given value.
- * @return ErrorCode::OK if success, otherwise an error code.
+ * @retval ErrorCode::OK if success.
+ * @retval ErrorCode::NOT_FOUND if the data type id or data type name
+ *   does not exist.
+ * @retval otherwise an error code.
  */
 ErrorCode DataTypesDAO::select_one_data_type_metadata(
     std::string_view object_key, std::string_view object_value,
@@ -157,32 +161,26 @@ ErrorCode DataTypesDAO::select_one_data_type_metadata(
 
   param_values.emplace_back(object_value.data());
 
-  std::string statement_name_found;
-  try {
-    statement_name_found =
-        statement_names_select_equal_to.at(std::string(object_key));
-  } catch (std::out_of_range& e) {
-    std::cerr << Message::METADATA_KEY_NOT_FOUND << e.what() << std::endl;
-    error = ErrorCode::INVALID_PARAMETER;
-    return error;
-  } catch (...) {
-    std::cerr << Message::METADATA_KEY_NOT_FOUND << std::endl;
-    error = ErrorCode::INVALID_PARAMETER;
+  // Get the name of the SQL statement to be executed.
+  std::string statement_name;
+  error = DbcUtils::find_statement_name(statement_names_select_equal_to,
+                                        object_key, statement_name);
+  if (error != ErrorCode::OK) {
     return error;
   }
 
   PGresult* res;
-  error = DbcUtils::exec_prepared(connection_, statement_name_found,
-                                  param_values, res);
+  error =
+      DbcUtils::exec_prepared(connection_, statement_name, param_values, res);
 
   if (error == ErrorCode::OK) {
     int nrows = PQntuples(res);
-
     if (nrows == 1) {
       int ordinal_position = 0;
       error = convert_pgresult_to_ptree(res, ordinal_position, object);
     } else {
-      error = ErrorCode::NOT_FOUND;
+      error =
+          (nrows == 0) ? ErrorCode::NOT_FOUND : ErrorCode::INVALID_PARAMETER;
     }
   }
 
@@ -202,36 +200,40 @@ ErrorCode DataTypesDAO::select_one_data_type_metadata(
  * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode DataTypesDAO::convert_pgresult_to_ptree(PGresult*& res,
-                                                 const int ordinal_position,
-                                                 ptree& object) const {
+                                                  const int ordinal_position,
+                                                  ptree& object) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   // Set the value of the format_version column to ptree.
-  object.put(
-      DataTypes::FORMAT_VERSION,
-      PQgetvalue(res, ordinal_position, OrdinalPosition::kFormatVersion));
+  object.put(DataTypes::FORMAT_VERSION,
+             PQgetvalue(res, ordinal_position,
+                        static_cast<int>(OrdinalPosition::kFormatVersion)));
 
   // Set the value of the generation column to ptree.
   object.put(DataTypes::GENERATION,
-             PQgetvalue(res, ordinal_position, OrdinalPosition::kGeneration));
+             PQgetvalue(res, ordinal_position,
+                        static_cast<int>(OrdinalPosition::kGeneration)));
 
   // Set the value of the id to ptree.
   ObjectIdType id = -1;
   error = DbcUtils::str_to_integral<ObjectIdType>(
-      PQgetvalue(res, ordinal_position, OrdinalPosition::kId), id);
+      PQgetvalue(res, ordinal_position, static_cast<int>(OrdinalPosition::kId)),
+      id);
   if (error != ErrorCode::OK) {
     return error;
   }
   object.put(DataTypes::ID, id);
 
   // Set the value of the name column to ptree.
-  object.put(DataTypes::NAME, std::string(PQgetvalue(res, ordinal_position,
-                                                     OrdinalPosition::kName)));
+  object.put(DataTypes::NAME,
+             std::string(PQgetvalue(res, ordinal_position,
+                                    static_cast<int>(OrdinalPosition::kName))));
 
   // Set the value of the pg_data_type column to ptree.
   int64_t pg_data_type = -1;
   error = DbcUtils::str_to_integral<int64_t>(
-      PQgetvalue(res, ordinal_position, OrdinalPosition::kPgDataType),
+      PQgetvalue(res, ordinal_position,
+                 static_cast<int>(OrdinalPosition::kPgDataType)),
       pg_data_type);
   if (error != ErrorCode::OK) {
     return error;
@@ -240,14 +242,15 @@ ErrorCode DataTypesDAO::convert_pgresult_to_ptree(PGresult*& res,
 
   // Set the value of the pg_data_type_name column to ptree.
   object.put(DataTypes::PG_DATA_TYPE_NAME,
-             std::string(PQgetvalue(res, ordinal_position,
-                                    OrdinalPosition::kPgDataTypeName)));
+             std::string(PQgetvalue(
+                 res, ordinal_position,
+                 static_cast<int>(OrdinalPosition::kPgDataTypeName))));
 
   // Set the value of the pg_data_type_qualified_name column to ptree.
-  object.put(
-      DataTypes::PG_DATA_TYPE_QUALIFIED_NAME,
-      std::string(PQgetvalue(res, ordinal_position,
-                             OrdinalPosition::kPgDataTypeQualifiedName)));
+  object.put(DataTypes::PG_DATA_TYPE_QUALIFIED_NAME,
+             std::string(PQgetvalue(
+                 res, ordinal_position,
+                 static_cast<int>(OrdinalPosition::kPgDataTypeQualifiedName))));
   error = ErrorCode::OK;
 
   return error;

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 tsurugi project.
+ * Copyright 2020-2021 tsurugi project.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,14 +47,13 @@ std::unordered_map<std::string, std::string> statement_names_columns_delete;
 
 namespace statement {
 
-using manager::metadata::Statistics;
 using manager::metadata::db::postgresql::SCHEMA_NAME;
 
 /**
- * @brief Returnes an UPSERT stetement for one column statistic
+ * @brief Returns an UPSERT statement for one column statistic
  *   based on column id.
  * @param none.
- * @return an UPSERT stetement to upsert one column statistic
+ * @return an UPSERT statement to upsert one column statistic
  *   based on column id.
  */
 std::string upsert_column_statistic_by_column_id() {
@@ -77,10 +76,10 @@ std::string upsert_column_statistic_by_column_id() {
 }
 
 /**
- * @brief Returnes an UPSERT stetement for one column statistic
+ * @brief Returns an UPSERT statement for one column statistic
  *   based on table id and column ordinal position.
  * @param (column_name)  [in]  column name of column statistic.
- * @return an UPSERT stetement to upsert one column statistic
+ * @return an UPSERT statement to upsert one column statistic
  *   based on table id and column ordinal position.
  */
 std::string upsert_column_statistic_by_column_info(
@@ -106,10 +105,10 @@ std::string upsert_column_statistic_by_column_info(
 }
 
 /**
- * @brief Returnes a SELECT stetement for one column statistic
+ * @brief Returns a SELECT statement for one column statistic
  *   based on id or name or column id .
  * @param (column_name)  [in]  column name of column statistics.
- * @return a SELECT stetement to get one column statistic
+ * @return a SELECT statement to get one column statistic
  *   based on id or name or column id.
  */
 std::string select_column_statistic(std::string_view column_name) {
@@ -133,10 +132,10 @@ std::string select_column_statistic(std::string_view column_name) {
 }
 
 /**
- * @brief Returnes a SELECT stetement for one column statistic
+ * @brief Returns a SELECT statement for one column statistic
  *   based on table id and column ordinal position or name.
  * @param (column_name)  [in]  column name of metadata-columns.
- * @return a SELECT stetement to get one column statistic
+ * @return a SELECT statement to get one column statistic
  *   based on table id and column ordinal position or name.
  */
 std::string select_column_statistic_by_table_id_column_info(
@@ -161,9 +160,9 @@ std::string select_column_statistic_by_table_id_column_info(
 }
 
 /**
- * @brief Returnes a SELECT stetement for all column statistics.
+ * @brief Returns a SELECT statement for all column statistics.
  * @param none.
- * @return a SELECT stetement to get all column statistics.
+ * @return a SELECT statement to get all column statistics.
  */
 std::string select_all_column_statistics() {
   // SQL statement
@@ -185,10 +184,10 @@ std::string select_all_column_statistics() {
 }
 
 /**
- * @brief Returnes a SELECT stetement for all column statistics
+ * @brief Returns a SELECT statement for all column statistics
  *   based on table id.
  * @param none.
- * @return a SELECT stetement to get all column statistics
+ * @return a SELECT statement to get all column statistics
  *   based on table id.
  */
 std::string select_all_column_statistics_by_table_id() {
@@ -212,10 +211,10 @@ std::string select_all_column_statistics_by_table_id() {
 }
 
 /**
- * @brief Returnes a DELETE stetement for all column statistics
+ * @brief Returns a DELETE statement for all column statistics
  *   based on id or name or column id.
  * @param (column_name)  [in]  column name of column statistics.
- * @return a DELETE stetement to delete all column statistics
+ * @return a DELETE statement to delete all column statistics
  *   based on id or name or column id.
  */
 std::string delete_column_statistic(std::string_view column_name) {
@@ -229,10 +228,10 @@ std::string delete_column_statistic(std::string_view column_name) {
 }
 
 /**
- * @brief Returnes a DELETE stetement for all column statistics
+ * @brief Returns a DELETE statement for all column statistics
  *   based on table id.
  * @param none.
- * @return a DELETE stetement to delete all column statistics
+ * @return a DELETE statement to delete all column statistics
  *   based on table id.
  */
 std::string delete_column_statistic_by_table_id() {
@@ -249,10 +248,10 @@ std::string delete_column_statistic_by_table_id() {
 }
 
 /**
- * @brief Returnes a DELETE stetement for one column statistic
+ * @brief Returns a DELETE statement for one column statistic
  *   based on table id and column ordinal position or name.
  * @param (column_name)  [in]  column name of metadata-columns.
- * @return a DELETE stetement to delete all column statistics
+ * @return a DELETE statement to delete all column statistics
  *   based on table id and column ordinal position or name.
  */
 std::string delete_column_statistic_by_table_id_column_info(
@@ -309,12 +308,14 @@ StatisticsDAO::StatisticsDAO(DBSessionManager* session_manager)
     // Creates unique name for the new prepared statement.
     boost::format statement_name_select =
         boost::format("%1%-%2%-%3%") %
-        StatementName::STATISTICS_DAO_SELECT_COLUMN_STATISTIC % kTableName %
-        column.first;
+        static_cast<int>(
+            StatementName::STATISTICS_DAO_SELECT_COLUMN_STATISTIC) %
+        kTableName % column.first;
     boost::format statement_name_delete =
         boost::format("%1%-%2%-%3%") %
-        StatementName::STATISTICS_DAO_DELETE_COLUMN_STATISTIC % kTableName %
-        column.first;
+        static_cast<int>(
+            StatementName::STATISTICS_DAO_DELETE_COLUMN_STATISTIC) %
+        kTableName % column.first;
 
     // Addes this list to unique name for the new prepared statement.
     // key : column name
@@ -332,15 +333,19 @@ StatisticsDAO::StatisticsDAO(DBSessionManager* session_manager)
     // Creates unique name for the new prepared statement.
     boost::format statement_name_insert =
         boost::format("%1%-%2%-%3%") %
-        StatementName::STATISTICS_DAO_UPSERT_COLUMN_STATISTIC_BY_COLUMN_INFO %
+        static_cast<int>(
+            StatementName::
+                STATISTICS_DAO_UPSERT_COLUMN_STATISTIC_BY_COLUMN_INFO) %
         ColumnsDAO::kTableName % column.first;
     boost::format statement_name_select =
         boost::format("%1%-%2%-%3%") %
-        StatementName::STATISTICS_DAO_SELECT_COLUMN_STATISTIC %
+        static_cast<int>(
+            StatementName::STATISTICS_DAO_SELECT_COLUMN_STATISTIC) %
         ColumnsDAO::kTableName % column.first;
     boost::format statement_name_delete =
         boost::format("%1%-%2%-%3%") %
-        StatementName::STATISTICS_DAO_DELETE_COLUMN_STATISTIC %
+        static_cast<int>(
+            StatementName::STATISTICS_DAO_DELETE_COLUMN_STATISTIC) %
         ColumnsDAO::kTableName % column.first;
 
     // Addes this list to unique name for the new prepared statement.
@@ -581,8 +586,8 @@ ErrorCode StatisticsDAO::upsert_column_statistic(
 
   // Get the name of the SQL statement to be executed.
   std::string statement_name;
-  error =
-      find_statement_name(statement_names_insert, object_key, statement_name);
+  error = DbcUtils::find_statement_name(statement_names_insert, object_key,
+                                        statement_name);
   if (error != ErrorCode::OK) {
     return error;
   }
@@ -614,7 +619,10 @@ ErrorCode StatisticsDAO::upsert_column_statistic(
  * @param (object_value)  [in]  value to be filtered.
  * @param (object)        [out] table metadata to get,
  *   where the given key equals the given value.
- * @return ErrorCode::OK if success, otherwise an error code.
+ * @retval ErrorCode::OK if success.
+ * @retval ErrorCode::NOT_FOUND if the statistic id or statistic name
+ *   does not exist.
+ * @retval otherwise an error code.
  */
 ErrorCode StatisticsDAO::select_column_statistic(std::string_view object_key,
                                                  std::string_view object_value,
@@ -628,8 +636,8 @@ ErrorCode StatisticsDAO::select_column_statistic(std::string_view object_key,
 
   // Get the name of the SQL statement to be executed.
   std::string statement_name;
-  error = find_statement_name(statement_names_statistics_select, object_key,
-                              statement_name);
+  error = DbcUtils::find_statement_name(statement_names_statistics_select,
+                                        object_key, statement_name);
   if (error != ErrorCode::OK) {
     return error;
   }
@@ -645,7 +653,8 @@ ErrorCode StatisticsDAO::select_column_statistic(std::string_view object_key,
     if (container.size() == 1) {
       object = container[0];
     } else {
-      error = ErrorCode::INVALID_PARAMETER;
+      error = (container.size() == 0 ? ErrorCode::NOT_FOUND
+                                     : ErrorCode::INVALID_PARAMETER);
     }
   }
 
@@ -665,8 +674,8 @@ ErrorCode StatisticsDAO::select_column_statistic(
 
   // TODO: This is a temporary implementation. It has not been tested yet.
 
-  std::string statement_name =
-      std::to_string(StatementName::STATISTICS_DAO_SELECT_COLUMN_STATISTIC_ALL);
+  std::string statement_name = std::to_string(static_cast<int>(
+      StatementName::STATISTICS_DAO_SELECT_COLUMN_STATISTIC_ALL));
 
   error = get_column_statistics_rows(statement_name, param_values, container);
 
@@ -678,7 +687,9 @@ ErrorCode StatisticsDAO::select_column_statistic(
  *   from the column statistics table based on the given table ID.
  * @param (table_id)   [in]  table id.
  * @param (container)  [out] all column statistics.
- * @return ErrorCode::OK if success, otherwise an error code.
+ * @retval ErrorCode::OK if success.
+ * @retval ErrorCode::NOT_FOUND if the table id does not exist.
+ * @retval otherwise an error code.
  */
 ErrorCode StatisticsDAO::select_column_statistic(
     const ObjectIdType table_id,
@@ -687,8 +698,8 @@ ErrorCode StatisticsDAO::select_column_statistic(
   std::vector<const char*> param_values;
   std::string s_table_id;
 
-  std::string statement_name = std::to_string(
-      StatementName::STATISTICS_DAO_SELECT_COLUMN_STATISTIC_ALL_BY_TABLE_ID);
+  std::string statement_name = std::to_string(static_cast<int>(
+      StatementName::STATISTICS_DAO_SELECT_COLUMN_STATISTIC_ALL_BY_TABLE_ID));
 
   s_table_id = std::to_string(table_id);
   param_values.emplace_back(s_table_id.c_str());
@@ -708,7 +719,10 @@ ErrorCode StatisticsDAO::select_column_statistic(
  * @param (object_value)      [in]  value to be filtered.
  * @param (column_statistic)  [out] one column statistic
  *   with the specified table id and column ordinal position.
- * @return ErrorCode::OK if success, otherwise an error code.
+ * @retval ErrorCode::OK if success.
+ * @retval ErrorCode::NOT_FOUND if the table id or column id
+ *   or culumn name or ordinal position does not exist.
+ * @retval otherwise an error code.
  */
 ErrorCode StatisticsDAO::select_column_statistic(const ObjectIdType table_id,
                                                  std::string_view object_key,
@@ -724,8 +738,8 @@ ErrorCode StatisticsDAO::select_column_statistic(const ObjectIdType table_id,
 
   // Get the name of the SQL statement to be executed.
   std::string statement_name;
-  error = find_statement_name(statement_names_columns_select, object_key,
-                              statement_name);
+  error = DbcUtils::find_statement_name(statement_names_columns_select,
+                                        object_key, statement_name);
   if (error != ErrorCode::OK) {
     return error;
   }
@@ -736,8 +750,8 @@ ErrorCode StatisticsDAO::select_column_statistic(const ObjectIdType table_id,
   if (error == ErrorCode::OK) {
     if (container.size() == 1) {
       object = container[0];
-    } else {
-      error = ErrorCode::NOT_FOUND;
+    } else if (container.size() >= 2) {
+      error = ErrorCode::INVALID_PARAMETER;
     }
   }
   return error;
@@ -749,7 +763,10 @@ ErrorCode StatisticsDAO::select_column_statistic(const ObjectIdType table_id,
  * @param (object_key)    [in]  key. column name of a column statistic table.
  * @param (object_value)  [in]  value to be filtered.
  * @param (statistic_id)  [out] statistic id of the row deleted.
- * @return ErrorCode::OK if success, otherwise an error code.
+ * @retval ErrorCode::OK if success.
+ * @retval ErrorCode::NOT_FOUND if the statistic id or statistic name
+ *   does not exist.
+ * @retval otherwise an error code.
  */
 ErrorCode StatisticsDAO::delete_column_statistic(
     std::string_view object_key, std::string_view object_value,
@@ -763,8 +780,8 @@ ErrorCode StatisticsDAO::delete_column_statistic(
 
   // Get the name of the SQL statement to be executed.
   std::string statement_name;
-  error = find_statement_name(statement_names_statistics_delete, object_key,
-                              statement_name);
+  error = DbcUtils::find_statement_name(statement_names_statistics_delete,
+                                        object_key, statement_name);
   if (error != ErrorCode::OK) {
     return error;
   }
@@ -798,7 +815,9 @@ ErrorCode StatisticsDAO::delete_column_statistic(
  * @brief Executes DELETE statement to delete all column statistics
  *   from the column statistics table based on the given table id.
  * @param (table_id)  [in]  table id.
- * @return ErrorCode::OK if success, otherwise an error code.
+ * @retval ErrorCode::OK if success.
+ * @retval ErrorCode::NOT_FOUND if the table id does not exist.
+ * @retval otherwise an error code.
  */
 ErrorCode StatisticsDAO::delete_column_statistic(
     const ObjectIdType table_id) const {
@@ -839,7 +858,10 @@ ErrorCode StatisticsDAO::delete_column_statistic(
  * @param (object_key)    [in]  key. column name of a column statistic table.
  * @param (object_value)  [in]  value to be filtered.
  * @param (statistic_id)  [out] statistic id of the row deleted.
- * @return ErrorCode::OK if success, otherwise an error code.
+ * @retval ErrorCode::OK if success.
+ * @retval ErrorCode::NOT_FOUND if the table id or column id
+ *   or culumn name or ordinal position does not exist.
+ * @retval otherwise an error code.
  */
 ErrorCode StatisticsDAO::delete_column_statistic(
     const ObjectIdType table_id, std::string_view object_key,
@@ -854,8 +876,8 @@ ErrorCode StatisticsDAO::delete_column_statistic(
 
   // Get the name of the SQL statement to be executed.
   std::string statement_name;
-  error = find_statement_name(statement_names_columns_delete, object_key,
-                              statement_name);
+  error = DbcUtils::find_statement_name(statement_names_columns_delete,
+                                        object_key, statement_name);
   if (error != ErrorCode::OK) {
     return error;
   }
@@ -889,32 +911,6 @@ ErrorCode StatisticsDAO::delete_column_statistic(
 // Private method area
 
 /**
- * @brief get the value of the specified key_value from the statement-names map.
- * @param (statement_names_map)  [in]  statement names map.
- * @param (key_value)            [in]  key.
- * @param (statement_name)       [out] statement name.
- * @return ErrorCode::OK if success, otherwise an error code.
- */
-ErrorCode StatisticsDAO::find_statement_name(
-    const std::unordered_map<std::string, std::string>& statement_names_map,
-    std::string_view key_value, std::string& statement_name) const {
-  ErrorCode error = ErrorCode::UNKNOWN;
-
-  try {
-    statement_name = statement_names_map.at(key_value.data());
-    error = ErrorCode::OK;
-  } catch (std::out_of_range& e) {
-    std::cerr << Message::METADATA_KEY_NOT_FOUND << e.what() << std::endl;
-    error = ErrorCode::INVALID_PARAMETER;
-  } catch (...) {
-    std::cerr << Message::METADATA_KEY_NOT_FOUND << std::endl;
-    error = ErrorCode::INVALID_PARAMETER;
-  }
-
-  return error;
-}
-
-/**
  * @brief Execute a SELECT statement to get column statistics rows
  *   from the column statistics table.
  * @param (statement_name)  [in]  statement name.
@@ -935,9 +931,7 @@ ErrorCode StatisticsDAO::get_column_statistics_rows(
   if (error == ErrorCode::OK) {
     int nrows = PQntuples(res);
 
-    if (nrows <= 0) {
-      error = ErrorCode::NOT_FOUND;
-    } else {
+    if (nrows >= 1) {
       for (int ordinal_position = 0; ordinal_position < nrows;
            ordinal_position++) {
         ptree table;
@@ -949,6 +943,9 @@ ErrorCode StatisticsDAO::get_column_statistics_rows(
         }
         container.emplace_back(table);
       }
+    } else {
+      error = (container.size() == 0 ? ErrorCode::NOT_FOUND
+                                     : ErrorCode::INVALID_PARAMETER);
     }
   }
 
@@ -970,45 +967,51 @@ ErrorCode StatisticsDAO::convert_pgresult_to_ptree(PGresult*& res,
   ErrorCode error = ErrorCode::UNKNOWN;
 
   // Set the value of the format_version column to ptree.
-  statistic.put(
-      Statistics::FORMAT_VERSION,
-      PQgetvalue(res, ordinal_position, OrdinalPosition::kFormatVersion));
+  statistic.put(Statistics::FORMAT_VERSION,
+                PQgetvalue(res, ordinal_position,
+                           static_cast<int>(OrdinalPosition::kFormatVersion)));
 
   // Set the value of the generation column to ptree.
-  statistic.put(
-      Statistics::GENERATION,
-      PQgetvalue(res, ordinal_position, OrdinalPosition::kGeneration));
+  statistic.put(Statistics::GENERATION,
+                PQgetvalue(res, ordinal_position,
+                           static_cast<int>(OrdinalPosition::kGeneration)));
 
   // Set the value of the id column to ptree.
   statistic.put(Statistics::ID,
-                PQgetvalue(res, ordinal_position, OrdinalPosition::kId));
+                PQgetvalue(res, ordinal_position,
+                           static_cast<int>(OrdinalPosition::kId)));
 
   // Set the value of the name column to ptree.
   statistic.put(Statistics::NAME,
-                PQgetvalue(res, ordinal_position, OrdinalPosition::kName));
+                PQgetvalue(res, ordinal_position,
+                           static_cast<int>(OrdinalPosition::kName)));
 
   // Set the value of the table id column to ptree.
   statistic.put(Statistics::TABLE_ID,
-                PQgetvalue(res, ordinal_position, OrdinalPosition::kTableId));
+                PQgetvalue(res, ordinal_position,
+                           static_cast<int>(OrdinalPosition::kTableId)));
 
   // Set the value of the ordinal position column to ptree.
   statistic.put(
       Statistics::ORDINAL_POSITION,
-      PQgetvalue(res, ordinal_position, OrdinalPosition::kOrdinalPosition));
+      PQgetvalue(res, ordinal_position,
+                 static_cast<int>(OrdinalPosition::kOrdinalPosition)));
 
   // Set the value of the column id column to ptree.
   statistic.put(Statistics::COLUMN_ID,
-                PQgetvalue(res, ordinal_position, OrdinalPosition::kColumnId));
+                PQgetvalue(res, ordinal_position,
+                           static_cast<int>(OrdinalPosition::kColumnId)));
 
   // Set the value of the column name column to ptree.
-  statistic.put(
-      Statistics::COLUMN_NAME,
-      PQgetvalue(res, ordinal_position, OrdinalPosition::kColumnName));
+  statistic.put(Statistics::COLUMN_NAME,
+                PQgetvalue(res, ordinal_position,
+                           static_cast<int>(OrdinalPosition::kColumnName)));
 
   // Set the value of the column statistic column column to ptree.
   ptree column_statistic;
   std::string s_column_statistic =
-      PQgetvalue(res, ordinal_position, OrdinalPosition::kColumnStatistic);
+      PQgetvalue(res, ordinal_position,
+                 static_cast<int>(OrdinalPosition::kColumnStatistic));
   if (!s_column_statistic.empty()) {
     std::stringstream ss;
     ss << s_column_statistic;

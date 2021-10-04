@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 tsurugi project.
+ * Copyright 2020-2021 tsurugi project.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,14 @@ namespace manager::metadata::db {
 
 class GenericDAO {
  public:
-  enum TableName { STATISTICS = 0, TABLES, DATATYPES, COLUMNS };
+  enum class TableName {
+    STATISTICS = 0,
+    TABLES,
+    DATATYPES,
+    COLUMNS,
+    ROLES,
+    PRIVILEGES
+  };
 
   virtual ~GenericDAO(){};
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 tsurugi project.
+ * Copyright 2021 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -162,7 +162,10 @@ ErrorCode StatisticsProvider::add_column_statistic(ptree& object,
  * @param (value)   [in]  value of column statistics object.
  * @param (object)  [out] one column statistics object to get,
  *   where key = value.
- * @return ErrorCode::OK if success, otherwise an error code.
+ * @retval ErrorCode::OK if success.
+ * @retval ErrorCode::NOT_FOUND if the statistic id or statistic name
+ *   does not exist.
+ * @retval otherwise an error code.
  */
 ErrorCode StatisticsProvider::get_column_statistic(
     std::string_view key, std::string_view value,
@@ -188,7 +191,10 @@ ErrorCode StatisticsProvider::get_column_statistic(
  * @param (value)     [in]  value to be filtered.
  * @param (object)    [out] one column statistics object to get,
  *   where key = value.
- * @return ErrorCode::OK if success, otherwise an error code.
+ * @retval ErrorCode::OK if success.
+ * @retval ErrorCode::NOT_FOUND if the table id or column id
+ *   or culumn name or ordinal position does not exist.
+ * @retval otherwise an error code.
  */
 ErrorCode StatisticsProvider::get_column_statistic(
     const ObjectIdType table_id, std::string_view key, std::string_view value,
