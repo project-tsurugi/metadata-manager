@@ -16,7 +16,7 @@
 ```dockerfile
 FROM ubuntu:18.04
 
-RUN apt update -y && apt install -y git build-essential cmake doxygen libboost-system-dev
+RUN apt update -y && apt install -y git build-essential cmake ninja-build doxygen libboost-system-dev
 ```
 
 ## How to build
@@ -42,8 +42,8 @@ RUN apt update -y && apt install -y git build-essential cmake doxygen libboost-s
     ```sh
     mkdir build
     cd build
-    cmake -DCMAKE_BUILD_TYPE=Debug ..
-    make
+    cmake -G Ninja -DCMAKE_BUILD_TYPE=Debug ..
+    ninja
     ```
 
 available options:
