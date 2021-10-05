@@ -32,9 +32,9 @@ namespace manager::metadata {
 using manager::metadata::ErrorCode;
 
 /**
- *  @brief  Constructor
- *  @param  (database) [in]  database name.
- *  @param  (component) [in]  component name.
+ * @brief Constructor
+ * @param (database)   [in]  database name.
+ * @param (component)  [in]  component name.
  */
 Roles::Roles(std::string_view database, std::string_view component)
     : Metadata(database, component) {
@@ -43,9 +43,9 @@ Roles::Roles(std::string_view database, std::string_view component)
 }
 
 /**
- *  @brief  Initialization.
- *  @param  none.
- *  @return  ErrorCode::OK if success, otherwise an error code.
+ * @brief Initialization.
+ * @param none.
+ * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode Roles::init() {
   // Initialize the provider.
@@ -55,9 +55,9 @@ ErrorCode Roles::init() {
 }
 
 /**
- *  @brief  Get role object based on role id.
- *  @param  (object_id) [in]  role id.
- *  @param  (object)    [out] role with the specified ID.
+ * @brief Get role object based on role id.
+ * @param (object_id)  [in]  role id.
+ * @param (object)     [out] role with the specified ID.
  * @retval ErrorCode::OK if success.
  * @retval ErrorCode::ID_NOT_FOUND if the role id does not exist.
  * @retval otherwise an error code.
@@ -73,19 +73,13 @@ ErrorCode Roles::get(const ObjectIdType object_id,
   ErrorCode error =
       provider->get_role_metadata(Roles::ROLE_OID, s_object_id, object);
 
-  // Convert the return value.
-  if (error == ErrorCode::NOT_FOUND) {
-    error = ErrorCode::ID_NOT_FOUND;
-  }
-
   return error;
 }
 
 /**
- *  @brief  Get role object based on role name.
- *  @param  (object_name)   [in]  role name.
- *  @param  (object)        [out] role object with the specified name.
- *  @return ErrorCode::OK if success, otherwise an error code.
+ * @brief Get role object based on role name.
+ * @param (object_name)   [in]  role name.
+ * @param (object)        [out] role object with the specified name.
  * @retval ErrorCode::OK if success.
  * @retval ErrorCode::NAME_NOT_FOUND if the role name does not exist.
  * @retval otherwise an error code.
@@ -99,11 +93,6 @@ ErrorCode Roles::get(std::string_view object_name,
   // Get the role metadata through the provider.
   ErrorCode error =
       provider->get_role_metadata(Roles::ROLE_ROLNAME, object_name, object);
-
-  // Convert the return value.
-  if (error == ErrorCode::NOT_FOUND) {
-    error = ErrorCode::NAME_NOT_FOUND;
-  }
 
   return error;
 }

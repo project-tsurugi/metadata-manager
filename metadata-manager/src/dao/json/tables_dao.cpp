@@ -121,8 +121,9 @@ ErrorCode TablesDAO::insert_table_metadata(boost::property_tree::ptree& table,
  * @param (object_value)  [in]  value to be filtered.
  * @param (object)        [out] table metadata to get,
  *   where the given key equals the given value.
- * @retval ErrorCode::OK if success.
- * @retval ErrorCode::NOT_FOUND if the table id or table name does not exist.
+ * @retval ErrorCode::OK if success,
+ * @retval ErrorCode::ID_NOT_FOUND if the table id does not exist.
+ * @retval ErrorCode::NAME_NOT_FOUND if the table name does not exist.
  * @retval otherwise an error code.
  */
 ErrorCode TablesDAO::select_table_metadata(std::string_view object_key,
@@ -136,10 +137,18 @@ ErrorCode TablesDAO::select_table_metadata(std::string_view object_key,
     return error;
   }
 
+  // Initialize the error code.
+  if (object_key == Tables::ID) {
+    error = ErrorCode::ID_NOT_FOUND;
+  } else if (object_key == Tables::NAME) {
+    error = ErrorCode::NAME_NOT_FOUND;
+  } else {
+    error = ErrorCode::NOT_FOUND;
+  }
+
   // Getting a metadata object.
   ptree* meta_object = session_manager_->get_container();
 
-  error = ErrorCode::NOT_FOUND;
   BOOST_FOREACH (const ptree::value_type& node,
                  meta_object->get_child(TablesDAO::TABLES_NODE)) {
     const ptree& temp_obj = node.second;
@@ -150,7 +159,7 @@ ErrorCode TablesDAO::select_table_metadata(std::string_view object_key,
       error = ErrorCode::NOT_FOUND;
       break;
     }
-    if (!value.get().compare(object_value)) {
+    if (value.get() == object_value) {
       object = temp_obj;
       error = ErrorCode::OK;
       break;
@@ -162,6 +171,7 @@ ErrorCode TablesDAO::select_table_metadata(std::string_view object_key,
 
 /**
  * @brief Get all metadata objects from a metadata table file.
+ *   If the table metadata does not exist, return the container as empty.
  * @param (container)  [out] all table metadata.
  * @return ErrorCode::OK if success, otherwise an error code.
  */
@@ -194,7 +204,8 @@ ErrorCode TablesDAO::select_table_metadata(
  * @param (object_value)  [in]  value to be filtered.
  * @param (table_id)      [out]  table id of the row deleted.
  * @retval ErrorCode::OK if success.
- * @retval ErrorCode::NOT_FOUND if the table id or table name does not exist.
+ * @retval ErrorCode::ID_NOT_FOUND if the table id does not exist.
+ * @retval ErrorCode::NAME_NOT_FOUND if the table name does not exist.
  * @retval otherwise an error code.
  */
 ErrorCode TablesDAO::delete_table_metadata(std::string_view object_key,
@@ -208,20 +219,27 @@ ErrorCode TablesDAO::delete_table_metadata(std::string_view object_key,
     return error;
   }
 
+  // Initialize the error code.
+  if (object_key == Tables::ID) {
+    error = ErrorCode::ID_NOT_FOUND;
+  } else if (object_key == Tables::NAME) {
+    error = ErrorCode::NAME_NOT_FOUND;
+  } else {
+    error = ErrorCode::NOT_FOUND;
+  }
+
   // Getting a metadata object.
   ptree* meta_object = session_manager_->get_container();
-
   ptree& node = meta_object->get_child(TablesDAO::TABLES_NODE);
 
-  error = ErrorCode::NOT_FOUND;
   for (ptree::iterator it = node.begin(); it != node.end();) {
     const ptree& temp_obj = it->second;
     boost::optional<std::string> object_id =
         temp_obj.get_optional<std::string>(Tables::ID);
 
-    if (!object_key.compare(Tables::ID)) {
+    if (object_key == Tables::ID) {
       // Delete metadata with table-id as a key.
-      if (object_id && (!object_id.get().compare(object_value))) {
+      if (object_id && (object_id.get() == object_value)) {
         it = node.erase(it);
         table_id = std::stoul(object_id.get());
         error = ErrorCode::OK;
@@ -229,12 +247,12 @@ ErrorCode TablesDAO::delete_table_metadata(std::string_view object_key,
       } else {
         ++it;
       }
-    } else if (!object_key.compare(Tables::NAME)) {
+    } else if (object_key == Tables::NAME) {
       // Delete metadata with table-name as a key.
       boost::optional<std::string> name =
           temp_obj.get_optional<std::string>(Tables::NAME);
 
-      if (name && (!name.get().compare(object_value))) {
+      if (name && (name.get() == object_value)) {
         if (object_id) {
           table_id = std::stoul(object_id.get());
           error = ErrorCode::OK;
@@ -280,7 +298,7 @@ ErrorCode TablesDAO::get_metadata_object(
       error = ErrorCode::NOT_FOUND;
       break;
     }
-    if (!name.get().compare(object_name)) {
+    if (name.get() == object_name) {
       object = temp_obj;
       error = ErrorCode::OK;
       break;

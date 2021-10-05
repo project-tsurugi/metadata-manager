@@ -100,10 +100,17 @@ class Tables : public Metadata {
                    ObjectIdType* object_id) override;
 
   ErrorCode confirm_permission_in_acls(const ObjectIdType object_id,
-                                       const char* permission, bool& check_result);
+                                       const char* permission,
+                                       bool& check_result);
   ErrorCode confirm_permission_in_acls(std::string_view object_name,
-                                       const char* permission, bool& check_result);
+                                       const char* permission,
+                                       bool& check_result);
 
+ private:
+  manager::metadata::ErrorCode param_check_metadata_add(
+      boost::property_tree::ptree& object) const;
+  manager::metadata::ErrorCode param_check_statistic_update(
+      boost::property_tree::ptree& object) const;
 };  // class Tables
 
 }  // namespace manager::metadata

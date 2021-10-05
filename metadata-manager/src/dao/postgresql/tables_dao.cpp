@@ -361,7 +361,8 @@ ErrorCode TablesDAO::insert_table_metadata(boost::property_tree::ptree& table,
  * @param (object)        [out] table metadata to get,
  *   where the given key equals the given value.
  * @retval ErrorCode::OK if success.
- * @retval ErrorCode::NOT_FOUND if the table id or table name does not exist.
+ * @retval ErrorCode::ID_NOT_FOUND if the table id does not exist.
+ * @retval ErrorCode::NAME_NOT_FOUND if the table name does not exist.
  * @retval otherwise an error code.
  */
 ErrorCode TablesDAO::select_table_metadata(std::string_view object_key,
@@ -389,9 +390,17 @@ ErrorCode TablesDAO::select_table_metadata(std::string_view object_key,
     if (nrows == 1) {
       int ordinal_position = 0;
       error = convert_pgresult_to_ptree(res, ordinal_position, object);
+    } else if (nrows == 0) {
+      // Convert the error code.
+      if (object_key == Tables::ID) {
+        error = ErrorCode::ID_NOT_FOUND;
+      } else if (object_key == Tables::NAME) {
+        error = ErrorCode::NAME_NOT_FOUND;
+      } else {
+        error = ErrorCode::NOT_FOUND;
+      }
     } else {
-      error =
-          (nrows == 0) ? ErrorCode::NOT_FOUND : ErrorCode::INVALID_PARAMETER;
+      error = ErrorCode::INVALID_PARAMETER;
     }
   }
 
@@ -402,10 +411,9 @@ ErrorCode TablesDAO::select_table_metadata(std::string_view object_key,
 /**
  * @brief Executes a SELECT statement to get table metadata rows from the
  *   table metadata table.
+ *   If the table metadata does not exist, return the container as empty.
  * @param (container)  [out] all table metadata.
- * @retval ErrorCode::OK if success.
- * @retval ErrorCode::NOT_FOUND if the table metadata does not exist.
- * @retval otherwise an error code.
+ * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode TablesDAO::select_table_metadata(
     std::vector<boost::property_tree::ptree>& container) const {
@@ -448,8 +456,9 @@ ErrorCode TablesDAO::select_table_metadata(
  * @param (object_key)    [in]  key. column name of a statistic table.
  * @param (object_value)  [in]  value to be filtered.
  * @param (table_id)      [out] table id of the row deleted.
- * @retval ErrorCode::OK if success.
- * @retval ErrorCode::NOT_FOUND if the table id or table name does not exist.
+ * @retval ErrorCode::OK if success,
+ * @retval ErrorCode::ID_NOT_FOUND if the table id does not exist.
+ * @retval ErrorCode::NAME_NOT_FOUND if the table name does not exist.
  * @retval otherwise an error code.
  */
 ErrorCode TablesDAO::update_reltuples(float reltuples,
@@ -481,9 +490,17 @@ ErrorCode TablesDAO::update_reltuples(float reltuples,
       int ordinal_position = 0;
       error = DbcUtils::str_to_integral<ObjectIdType>(
           PQgetvalue(res, ordinal_position, 0), table_id);
+    } else if (nrows == 0) {
+      // Convert the error code.
+      if (object_key == Tables::ID) {
+        error = ErrorCode::ID_NOT_FOUND;
+      } else if (object_key == Tables::NAME) {
+        error = ErrorCode::NAME_NOT_FOUND;
+      } else {
+        error = ErrorCode::NOT_FOUND;
+      }
     } else {
-      error =
-          (nrows == 0 ? ErrorCode::NOT_FOUND : ErrorCode::INVALID_PARAMETER);
+      error = ErrorCode::INVALID_PARAMETER;
     }
   }
 
@@ -498,7 +515,8 @@ ErrorCode TablesDAO::update_reltuples(float reltuples,
  * @param (object_value)  [in]  value to be filtered.
  * @param (table_id)      [out] table id of the row deleted.
  * @retval ErrorCode::OK if success.
- * @retval ErrorCode::NOT_FOUND if the table id or table name does not exist.
+ * @retval ErrorCode::ID_NOT_FOUND if the table id does not exist.
+ * @retval ErrorCode::NAME_NOT_FOUND if the table name does not exist.
  * @retval otherwise an error code.
  */
 ErrorCode TablesDAO::delete_table_metadata(std::string_view object_key,
@@ -533,9 +551,17 @@ ErrorCode TablesDAO::delete_table_metadata(std::string_view object_key,
       ObjectIdType retval_table_id = 0;
       error = DbcUtils::str_to_integral<ObjectIdType>(
           PQgetvalue(res, ordinal_position, 0), table_id);
+    } else if (number_of_rows_affected == 0) {
+      // Convert the error code.
+      if (object_key == Tables::ID) {
+        error = ErrorCode::ID_NOT_FOUND;
+      } else if (object_key == Tables::NAME) {
+        error = ErrorCode::NAME_NOT_FOUND;
+      } else {
+        error = ErrorCode::NOT_FOUND;
+      }
     } else {
-      error = (number_of_rows_affected == 0) ? ErrorCode::NOT_FOUND
-                                             : ErrorCode::INVALID_PARAMETER;
+      error = ErrorCode::INVALID_PARAMETER;
     }
   }
 

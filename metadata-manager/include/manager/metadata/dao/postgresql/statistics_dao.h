@@ -23,7 +23,6 @@
 #include "manager/metadata/dao/postgresql/db_session_manager.h"
 #include "manager/metadata/dao/postgresql/dbc_utils.h"
 #include "manager/metadata/dao/statistics_dao.h"
-#include "manager/metadata/metadata.h"
 
 namespace manager::metadata::db::postgresql {
 

@@ -72,12 +72,6 @@ ErrorCode StatisticsProvider::add_column_statistic(ptree& object,
     return error;
   }
 
-  // Parameter value check
-  error = fill_parameters(object);
-  if (error != ErrorCode::OK) {
-    return error;
-  }
-
   // column_id
   boost::optional<ObjectIdType> optional_column_id =
       object.get_optional<ObjectIdType>(Statistics::COLUMN_ID);
@@ -91,24 +85,11 @@ ErrorCode StatisticsProvider::add_column_statistic(ptree& object,
   boost::optional<std::string> optional_column_name =
       object.get_optional<std::string>(Statistics::COLUMN_NAME);
 
-  // Parameter value check
-  //   If column_id is not specified,
-  //   and table_id and column_name or ordinal_position are not specified,
-  //   it will return a parameter error.
-  if (!optional_column_id) {
-    if (!optional_table_id &&
-        (!optional_ordinal_position || !optional_column_name)) {
-      error = ErrorCode::INVALID_PARAMETER;
-      return error;
-    }
-  }
-
   // statistic_name
   boost::optional<std::string> optional_statistic_name =
       object.get_optional<std::string>(Statistics::NAME);
   std::string* statistic_name =
-      (optional_statistic_name ? optional_statistic_name.get_ptr()
-                                 : nullptr);
+      (optional_statistic_name ? optional_statistic_name.get_ptr() : nullptr);
 
   // column_statistic
   boost::optional<ptree&> optional_column_statistic =
@@ -117,6 +98,7 @@ ErrorCode StatisticsProvider::add_column_statistic(ptree& object,
       (optional_column_statistic ? optional_column_statistic.get_ptr()
                                  : nullptr);
 
+  // Start the transaction.
   error = session_manager_->start_transaction();
   if (error != ErrorCode::OK) {
     return error;
@@ -144,8 +126,10 @@ ErrorCode StatisticsProvider::add_column_statistic(ptree& object,
   }
 
   if (error == ErrorCode::OK) {
+    // Commit the transaction.
     error = session_manager_->commit();
   } else {
+    // Roll back the transaction.
     ErrorCode rollback_result = session_manager_->rollback();
     if (rollback_result != ErrorCode::OK) {
       return rollback_result;
@@ -163,8 +147,9 @@ ErrorCode StatisticsProvider::add_column_statistic(ptree& object,
  * @param (object)  [out] one column statistics object to get,
  *   where key = value.
  * @retval ErrorCode::OK if success.
- * @retval ErrorCode::NOT_FOUND if the statistic id or statistic name
+ * @retval ErrorCode::ID_NOT_FOUND if the statistic id or column id
  *   does not exist.
+ * @retval ErrorCode::NAME_NOT_FOUND if the statistic name does not exist.
  * @retval otherwise an error code.
  */
 ErrorCode StatisticsProvider::get_column_statistic(
@@ -192,8 +177,8 @@ ErrorCode StatisticsProvider::get_column_statistic(
  * @param (object)    [out] one column statistics object to get,
  *   where key = value.
  * @retval ErrorCode::OK if success.
- * @retval ErrorCode::NOT_FOUND if the table id or column id
- *   or culumn name or ordinal position does not exist.
+ * @retval ErrorCode::ID_NOT_FOUND if the ordinal position does not exist.
+ * @retval ErrorCode::NAME_NOT_FOUND if the statistic name does not exist.
  * @retval otherwise an error code.
  */
 ErrorCode StatisticsProvider::get_column_statistic(
@@ -215,6 +200,7 @@ ErrorCode StatisticsProvider::get_column_statistic(
 
 /**
  * @brief Get column statistics from the column statistics table.
+ *   If the column statistic does not exist, return the container as empty.
  * @param (container)  [out] all column statistics.
  * @return ErrorCode::OK if success, otherwise an error code.
  */
@@ -236,9 +222,12 @@ ErrorCode StatisticsProvider::get_column_statistics(
 /**
  * @brief Retrieves statistics of a column from the column statistics table
  *   based on the specified table ID.
+ *   If the column statistic does not exist, return the container as empty.
  * @param (table_id)   [in]  table id.
  * @param (container)  [out] all column statistics.
- * @return ErrorCode::OK if success, otherwise an error code.
+ * @retval ErrorCode::OK if success.
+ * @retval ErrorCode::ID_NOT_FOUND if the table id does not exist.
+ * @retval otherwise an error code.
  */
 ErrorCode StatisticsProvider::get_column_statistics(
     const ObjectIdType table_id,
@@ -262,7 +251,10 @@ ErrorCode StatisticsProvider::get_column_statistics(
  * @param (key)           [in]  key of column statistics object.
  * @param (value)         [in]  value of column statistics object.
  * @param (statistic_id)  [out] statistic id of the row deleted.
- * @return ErrorCode::OK if success, otherwise an error code.
+ * @retval ErrorCode::OK if success.
+ * @retval ErrorCode::ID_NOT_FOUND if the statistic id does not exist.
+ * @retval ErrorCode::NAME_NOT_FOUND if the statistic name does not exist.
+ * @retval otherwise an error code.
  */
 ErrorCode StatisticsProvider::remove_column_statistic(
     std::string_view key, std::string_view value, ObjectIdType* statistic_id) {
@@ -274,6 +266,7 @@ ErrorCode StatisticsProvider::remove_column_statistic(
     return error;
   }
 
+  // Start the transaction.
   error = session_manager_->start_transaction();
   if (error != ErrorCode::OK) {
     return error;
@@ -283,8 +276,10 @@ ErrorCode StatisticsProvider::remove_column_statistic(
   error =
       statistics_dao_->delete_column_statistic(key, value, retval_statistic_id);
   if (error == ErrorCode::OK) {
+    // Commit the transaction.
     error = session_manager_->commit();
   } else {
+    // Roll back the transaction.
     ErrorCode rollback_result = session_manager_->rollback();
     if (rollback_result != ErrorCode::OK) {
       error = rollback_result;
@@ -303,7 +298,9 @@ ErrorCode StatisticsProvider::remove_column_statistic(
  * @brief Removes all column statistic from the column statistics table
  *   based on the given table id.
  * @param (table_id)  [in]  table id.
- * @return ErrorCode::OK if success, otherwise an error code.
+ * @retval ErrorCode::OK if success.
+ * @retval ErrorCode::ID_NOT_FOUND if the table id does not exist.
+ * @retval otherwise an error code.
  */
 ErrorCode StatisticsProvider::remove_column_statistics(
     const ObjectIdType table_id) {
@@ -315,6 +312,7 @@ ErrorCode StatisticsProvider::remove_column_statistics(
     return error;
   }
 
+  // Start the transaction.
   error = session_manager_->start_transaction();
   if (error != ErrorCode::OK) {
     return error;
@@ -322,8 +320,10 @@ ErrorCode StatisticsProvider::remove_column_statistics(
 
   error = statistics_dao_->delete_column_statistic(table_id);
   if (error == ErrorCode::OK) {
+    // Commit the transaction.
     error = session_manager_->commit();
   } else {
+    // Roll back the transaction.
     ErrorCode rollback_result = session_manager_->rollback();
     if (rollback_result != ErrorCode::OK) {
       error = rollback_result;
@@ -340,7 +340,10 @@ ErrorCode StatisticsProvider::remove_column_statistics(
  * @param (key)           [in]  key. column name of a column statistic table.
  * @param (value)         [in]  value to be filtered.
  * @param (statistic_id)  [out] statistic id of the row deleted.
- * @return ErrorCode::OK if success, otherwise an error code.
+ * @retval ErrorCode::OK if success.
+ * @retval ErrorCode::ID_NOT_FOUND if the ordinal position does not exist.
+ * @retval ErrorCode::NAME_NOT_FOUND if the statistic name does not exist.
+ * @retval otherwise an error code.
  */
 ErrorCode StatisticsProvider::remove_column_statistic(
     const ObjectIdType table_id, std::string_view key, std::string_view value,
@@ -353,6 +356,7 @@ ErrorCode StatisticsProvider::remove_column_statistic(
     return error;
   }
 
+  // Start the transaction.
   error = session_manager_->start_transaction();
   if (error != ErrorCode::OK) {
     return error;
@@ -362,8 +366,10 @@ ErrorCode StatisticsProvider::remove_column_statistic(
   error = statistics_dao_->delete_column_statistic(table_id, key, value,
                                                    retval_statistic_id);
   if (error == ErrorCode::OK) {
+    // Commit the transaction.
     error = session_manager_->commit();
   } else {
+    // Roll back the transaction.
     ErrorCode rollback_result = session_manager_->rollback();
     if (rollback_result != ErrorCode::OK) {
       error = rollback_result;
@@ -373,60 +379,6 @@ ErrorCode StatisticsProvider::remove_column_statistic(
   // Set a value if statistic_id is not null.
   if ((error == ErrorCode::OK) && (statistic_id != nullptr)) {
     *statistic_id = retval_statistic_id;
-  }
-
-  return error;
-}
-
-//_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
-// Private method area
-
-/**
- * @brief Checks if the parameters are correct.
- * @param (table)  [in]  metadata-object
- * @return ErrorCode::OK if success, otherwise an error code.
- */
-ErrorCode StatisticsProvider::fill_parameters(ptree& object) const {
-  ErrorCode error = ErrorCode::UNKNOWN;
-
-  // Check the specified parameters.
-  // column_id
-  boost::optional<ObjectIdType> column_id =
-      object.get_optional<ObjectIdType>(Statistics::COLUMN_ID);
-  bool specified_column_id = (column_id && (column_id.get() > 0));
-
-  // table_id
-  boost::optional<ObjectIdType> table_id =
-      object.get_optional<ObjectIdType>(Statistics::TABLE_ID);
-  bool specified_table_id = (table_id && (table_id.get() > 0));
-
-  // ordinal_position
-  boost::optional<std::int64_t> ordinal_position =
-      object.get_optional<std::int64_t>(Statistics::ORDINAL_POSITION);
-  bool specified_ordinal_position =
-      (ordinal_position && (ordinal_position.get() > 0));
-
-  // column_name
-  boost::optional<std::string> column_name =
-      object.get_optional<std::string>(Statistics::COLUMN_NAME);
-  bool specified_column_name = (column_name && !(column_name.get().empty()));
-
-  // Check for required parameters.
-  if (specified_column_id) {
-    // column_id is specified.
-    error = ErrorCode::OK;
-  } else if (specified_table_id) {
-    // table_id is specified.
-    if (specified_ordinal_position || specified_column_name) {
-      // ordinal_position or column_name is specified.
-      error = ErrorCode::OK;
-    } else {
-      // ordinal_position and column_name is not specified.
-      error = ErrorCode::INVALID_PARAMETER;
-    }
-  } else {
-    // column_id and table_id is not specified.
-    error = ErrorCode::INVALID_PARAMETER;
   }
 
   return error;

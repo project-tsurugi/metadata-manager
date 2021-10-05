@@ -59,7 +59,8 @@ ErrorCode RolesProvider::init() {
  * @param (object)  [out] one role metadata object to get,
  *   where key = value.
  * @retval ErrorCode::OK if success.
- * @retval ErrorCode::NOT_FOUND if the role id or role name does not exist.
+ * @retval ErrorCode::ID_NOT_FOUND if the role id does not exist.
+ * @retval ErrorCode::NAME_NOT_FOUND if the role name does not exist.
  * @retval otherwise an error code.
  */
 ErrorCode RolesProvider::get_role_metadata(std::string_view key,

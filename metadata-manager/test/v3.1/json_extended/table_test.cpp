@@ -635,7 +635,7 @@ ErrorCode datatypes_test() {
 
       std::string data_type_name =
           datatype_id.get<std::string>(DataTypes::NAME);
-      if (data_type_name.compare(datatype.second) != 0) {
+      if (data_type_name != datatype.second) {
         std::cout << "DataTypes Name error. [" << datatype.first
                   << "] expected:[" << datatype.second << "], actual:["
                   << data_type_name << "]" << std::endl;
@@ -694,7 +694,7 @@ ErrorCode datatypes_static_functions_test() {
 
       std::string data_type_name =
           datatype_id.get<std::string>(DataTypes::NAME);
-      if (data_type_name.compare(datatype.second) != 0) {
+      if (data_type_name != datatype.second) {
         std::cout << "DataTypes Name error. [" << datatype.first
                   << "] expected:[" << datatype.second << "], actual:["
                   << data_type_name << "]" << std::endl;

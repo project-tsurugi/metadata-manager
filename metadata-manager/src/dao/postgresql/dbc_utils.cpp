@@ -318,7 +318,7 @@ ErrorCode DbcUtils::exec_prepared(const ConnectionSPtr& connection,
               << PQresultErrorMessage(res) << std::endl;
 
     std::string error_code(PQresultErrorField(res, PG_DIAG_SQLSTATE));
-    if (!error_code.compare(PgErrorCode::kUniqueViolation)) {
+    if (error_code == PgErrorCode::kUniqueViolation) {
       error = ErrorCode::TABLE_NAME_ALREADY_EXISTS;
     } else {
       error = ErrorCode::INVALID_PARAMETER;

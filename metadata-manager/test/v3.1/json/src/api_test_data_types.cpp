@@ -273,9 +273,9 @@ TEST_P(ApiTestDataTypesException, get_non_existing_datatypes_by_key_value) {
 
   ptree datatype;
   ErrorCode error = datatypes->get(key.c_str(), value, datatype);
-  if (!key.compare(DataTypes::ID)) {
+  if (key == DataTypes::ID) {
     EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
-  } else if (!key.compare(DataTypes::NAME)) {
+  } else if (key == DataTypes::NAME) {
     EXPECT_EQ(ErrorCode::NAME_NOT_FOUND, error);
   } else if (!key.empty() && value.empty()) {
     EXPECT_EQ(ErrorCode::NOT_FOUND, error);

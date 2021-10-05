@@ -28,7 +28,6 @@
 #include "manager/metadata/dao/common/statement_name.h"
 #include "manager/metadata/dao/postgresql/common.h"
 #include "manager/metadata/dao/postgresql/dbc_utils.h"
-#include "manager/metadata/datatypes.h"
 
 // =============================================================================
 namespace {
@@ -149,8 +148,9 @@ ErrorCode DataTypesDAO::prepare() const {
  * @param (object)              [out] one data type metadata to get,
  *   where the given key equals the given value.
  * @retval ErrorCode::OK if success.
- * @retval ErrorCode::NOT_FOUND if the data type id or data type name
- *   does not exist.
+ * @retval ErrorCode::ID_NOT_FOUND if the data types id does not exist.
+ * @retval ErrorCode::NAME_NOT_FOUND if the data types name does not exist.
+ * @retval ErrorCode::NOT_FOUND if the other data types key does not exist.
  * @retval otherwise an error code.
  */
 ErrorCode DataTypesDAO::select_one_data_type_metadata(
@@ -178,9 +178,17 @@ ErrorCode DataTypesDAO::select_one_data_type_metadata(
     if (nrows == 1) {
       int ordinal_position = 0;
       error = convert_pgresult_to_ptree(res, ordinal_position, object);
+    } else if (nrows == 0) {
+      // Convert the error code.
+      if (object_key == DataTypes::ID) {
+        error = ErrorCode::ID_NOT_FOUND;
+      } else if (object_key == DataTypes::NAME) {
+        error = ErrorCode::NAME_NOT_FOUND;
+      } else {
+        error = ErrorCode::NOT_FOUND;
+      }
     } else {
-      error =
-          (nrows == 0) ? ErrorCode::NOT_FOUND : ErrorCode::INVALID_PARAMETER;
+      error = ErrorCode::INVALID_PARAMETER;
     }
   }
 

@@ -70,6 +70,10 @@ class Statistics : public Metadata {
                                     const int64_t ordinal_position);
   ErrorCode remove_by_column_name(const ObjectIdType table_id,
                                   std::string_view column_name);
+
+ private:
+  manager::metadata::ErrorCode param_check_statistics_add(
+      boost::property_tree::ptree& object) const;
 };  // class Statistics
 
 }  // namespace manager::metadata

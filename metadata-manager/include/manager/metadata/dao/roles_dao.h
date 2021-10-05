@@ -20,7 +20,7 @@
 #include <string_view>
 
 #include "manager/metadata/dao/generic_dao.h"
-#include "manager/metadata/metadata.h"
+#include "manager/metadata/roles.h"
 
 namespace manager::metadata::db {
 

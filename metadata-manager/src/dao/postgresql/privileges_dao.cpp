@@ -176,6 +176,7 @@ ErrorCode PrivilegesDAO::prepare() const {
  * @param (check_result)  [out] presence or absence
  *   of the specified permissions.
  * @retval ErrorCode::OK if success.
+ * @retval ErrorCode::NOT_FOUND if the foreign table does not exist.
  * @retval ErrorCode::ID_NOT_FOUND if the role id does not exist.
  * @retval ErrorCode::NAME_NOT_FOUND if the role name does not exist.
  * @retval otherwise an error code.
@@ -188,7 +189,7 @@ ErrorCode PrivilegesDAO::confirm_tables_permission(
 
   // In the case of ID specification, check for the presence of the
   // specified ID.
-  if (!object_key.compare(Metadata::ID)) {
+  if (object_key == Metadata::ID) {
     bool exists_result = false;
     error = check_exists_authid(object_value, exists_result);
     if (error != ErrorCode::OK) {
@@ -248,10 +249,10 @@ ErrorCode PrivilegesDAO::confirm_tables_permission(
     // If the error code is "undefined_object", it is converted to an
     // undefined error.
     std::string error_code(PQresultErrorField(res, PG_DIAG_SQLSTATE));
-    if (!error_code.compare(PgErrorCode::kUndefinedObject)) {
-      if (!object_key.compare(Metadata::ID)) {
+    if (error_code == PgErrorCode::kUndefinedObject) {
+      if (object_key == Metadata::ID) {
         error = ErrorCode::ID_NOT_FOUND;
-      } else if (!object_key.compare(Metadata::NAME)) {
+      } else if (object_key == Metadata::NAME) {
         error = ErrorCode::NAME_NOT_FOUND;
       }
     }

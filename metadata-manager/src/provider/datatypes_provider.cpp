@@ -55,8 +55,9 @@ ErrorCode DataTypesProvider::init() {
  * @param (object)  [out] one data type metadata object to get,
  *   where key = value.
  * @retval ErrorCode::OK if success.
- * @retval ErrorCode::NOT_FOUND if the data type id or data type name
- *   does not exist.
+ * @retval ErrorCode::ID_NOT_FOUND if the data types id does not exist.
+ * @retval ErrorCode::NAME_NOT_FOUND if the data types name does not exist.
+ * @retval ErrorCode::NOT_FOUND if the other data types key does not exist.
  * @retval otherwise an error code.
  */
 ErrorCode DataTypesProvider::get_datatype_metadata(std::string_view key,

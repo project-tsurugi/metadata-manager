@@ -18,7 +18,6 @@
 #include <boost/foreach.hpp>
 
 #include "manager/metadata/datatypes.h"
-#include "manager/metadata/provider/datatypes_provider.h"
 #include "manager/metadata/tables.h"
 
 // =============================================================================
@@ -93,12 +92,7 @@ ErrorCode TablesProvider::add_table_metadata(ptree& object,
     return error;
   }
 
-  // Parameter value check
-  error = fill_parameters(object);
-  if (error != ErrorCode::OK) {
-    return error;
-  }
-
+  // Start the transaction.
   error = session_manager_->start_transaction();
   if (error != ErrorCode::OK) {
     return error;
@@ -107,6 +101,7 @@ ErrorCode TablesProvider::add_table_metadata(ptree& object,
   // Add table metadata object to table metadata table.
   error = tables_dao_->insert_table_metadata(object, table_id);
   if (error != ErrorCode::OK) {
+    // Roll back the transaction.
     ErrorCode rollback_result = session_manager_->rollback();
     if (rollback_result != ErrorCode::OK) {
       return rollback_result;
@@ -121,6 +116,7 @@ ErrorCode TablesProvider::add_table_metadata(ptree& object,
     ptree column = node.second;
     error = columns_dao_->insert_one_column_metadata(table_id, column);
     if (error != ErrorCode::OK) {
+      // Roll back the transaction.
       ErrorCode rollback_result = session_manager_->rollback();
       if (rollback_result != ErrorCode::OK) {
         error = rollback_result;
@@ -129,6 +125,7 @@ ErrorCode TablesProvider::add_table_metadata(ptree& object,
     }
   }
 
+  // Commit the transaction.
   error = session_manager_->commit();
 
   return error;
@@ -141,7 +138,10 @@ ErrorCode TablesProvider::add_table_metadata(ptree& object,
  * @param (value)   [in]  value of table metadata object.
  * @param (object)  [out] one table metadata object to get,
  *   where key = value.
- * @return ErrorCode::OK if success, otherwise an error code.
+ * @retval ErrorCode::OK if success,
+ * @retval ErrorCode::ID_NOT_FOUND if the table id does not exist.
+ * @retval ErrorCode::NAME_NOT_FOUND if the table name does not exist.
+ * @retval otherwise an error code.
  */
 ErrorCode TablesProvider::get_table_metadata(std::string_view key,
                                              std::string_view value,
@@ -154,11 +154,13 @@ ErrorCode TablesProvider::get_table_metadata(std::string_view key,
     return error;
   }
 
+  // Get table metadata.
   error = tables_dao_->select_table_metadata(key, value, object);
   if (error != ErrorCode::OK) {
     return error;
   }
 
+  // Get column metadata.
   if (key == Tables::ID) {
     error = get_column_metadata(value, object);
   } else if (key == Tables::NAME) {
@@ -166,11 +168,13 @@ ErrorCode TablesProvider::get_table_metadata(std::string_view key,
   } else {
     error = ErrorCode::INVALID_PARAMETER;
   }
+
   return error;
 }
 
 /**
  * @brief Gets all table metadata object from the table metadata repository.
+ *   If the table metadata does not exist, return the container as empty.
  * @param (container)   [out] table metadata object to get.
  * @return ErrorCode::OK if success, otherwise an error code.
  */
@@ -183,11 +187,13 @@ ErrorCode TablesProvider::get_table_metadata(std::vector<ptree>& container) {
     return error;
   }
 
+  // Get table metadata.
   error = tables_dao_->select_table_metadata(container);
   if (error != ErrorCode::OK) {
     return error;
   }
 
+  // Get column metadata.
   BOOST_FOREACH (auto& table_object, container) {
     error = get_all_column_metadata(table_object);
     if (error != ErrorCode::OK) {
@@ -204,7 +210,10 @@ ErrorCode TablesProvider::get_table_metadata(std::vector<ptree>& container) {
  * @param (value)    [in]  value of table metadata object.
  * @param (object)   [out] one table metadata object to get,
  *   where key = value.
- * @return ErrorCode::OK if success, otherwise an error code.
+ * @retval ErrorCode::OK if success,
+ * @retval ErrorCode::ID_NOT_FOUND if the table id does not exist.
+ * @retval ErrorCode::NAME_NOT_FOUND if the table name does not exist.
+ * @retval otherwise an error code.
  */
 ErrorCode TablesProvider::get_table_statistic(std::string_view key,
                                               std::string_view value,
@@ -217,6 +226,7 @@ ErrorCode TablesProvider::get_table_statistic(std::string_view key,
     return error;
   }
 
+  // Get table metadata.
   error = tables_dao_->select_table_metadata(key, value, object);
 
   return error;
@@ -226,7 +236,10 @@ ErrorCode TablesProvider::get_table_statistic(std::string_view key,
  * @brief Updates the table metadata table with the specified table statistics.
  * @param (object)    [in]  Table statistic object.
  * @param (table_id)  [out] ID of the added table metadata.
- * @return ErrorCode::OK if success, otherwise an error code.
+ * @retval ErrorCode::OK if success,
+ * @retval ErrorCode::ID_NOT_FOUND if the table id does not exist.
+ * @retval ErrorCode::NAME_NOT_FOUND if the table name does not exist.
+ * @retval otherwise an error code.
  */
 ErrorCode TablesProvider::set_table_statistic(ptree& object,
                                               ObjectIdType& table_id) {
@@ -248,12 +261,6 @@ ErrorCode TablesProvider::set_table_statistic(ptree& object,
   boost::optional<float> optional_tuples =
       object.get_optional<float>(Tables::TUPLES);
 
-  // Parameter value check
-  if ((!optional_id && !optional_name) || (!optional_tuples)) {
-    error = ErrorCode::INVALID_PARAMETER;
-    return error;
-  }
-
   // Set the key items and values to be updated.
   std::string key;
   std::string value;
@@ -268,6 +275,7 @@ ErrorCode TablesProvider::set_table_statistic(ptree& object,
   // Set the update value.
   float tuples = optional_tuples.get();
 
+  // Start the transaction.
   error = session_manager_->start_transaction();
   if (error != ErrorCode::OK) {
     return error;
@@ -277,8 +285,10 @@ ErrorCode TablesProvider::set_table_statistic(ptree& object,
   error = tables_dao_->update_reltuples(tuples, key, value, table_id);
 
   if (error == ErrorCode::OK) {
+    // Commit the transaction.
     error = session_manager_->commit();
   } else {
+    // Roll back the transaction.
     ErrorCode rollback_result = session_manager_->rollback();
     if (rollback_result != ErrorCode::OK) {
       error = rollback_result;
@@ -297,7 +307,10 @@ ErrorCode TablesProvider::set_table_statistic(ptree& object,
  * @param (key)       [in]  key of table metadata object.
  * @param (value)     [in]  value of table metadata object.
  * @param (table_id)  [out] ID of the removed table metadata.
- * @return ErrorCode::OK if success, otherwise an error code.
+ * @retval ErrorCode::OK if success.
+ * @retval ErrorCode::ID_NOT_FOUND if the table id does not exist.
+ * @retval ErrorCode::NAME_NOT_FOUND if the table name does not exist.
+ * @retval otherwise an error code.
  */
 ErrorCode TablesProvider::remove_table_metadata(std::string_view key,
                                                 std::string_view value,
@@ -310,6 +323,7 @@ ErrorCode TablesProvider::remove_table_metadata(std::string_view key,
     return error;
   }
 
+  // Start the transaction.
   error = session_manager_->start_transaction();
   if (error != ErrorCode::OK) {
     return error;
@@ -317,6 +331,7 @@ ErrorCode TablesProvider::remove_table_metadata(std::string_view key,
 
   error = tables_dao_->delete_table_metadata(key, value, table_id);
   if (error != ErrorCode::OK) {
+    // Roll back the transaction.
     ErrorCode rollback_result = session_manager_->rollback();
     if (rollback_result != ErrorCode::OK) {
       return rollback_result;
@@ -327,8 +342,10 @@ ErrorCode TablesProvider::remove_table_metadata(std::string_view key,
   error = columns_dao_->delete_column_metadata(Tables::Column::TABLE_ID,
                                                std::to_string(table_id));
   if (error == ErrorCode::OK) {
+    // Commit the transaction.
     error = session_manager_->commit();
   } else {
+    // Roll back the transaction.
     ErrorCode rollback_result = session_manager_->rollback();
     if (rollback_result != ErrorCode::OK) {
       error = rollback_result;
@@ -345,7 +362,11 @@ ErrorCode TablesProvider::remove_table_metadata(std::string_view key,
  * @param (value)       [in]  value of role metadata object.
  * @param (permission)  [in]  permissions.
  * @param (result)      [out] presence or absence of the specified permissions.
- * @return ErrorCode::OK if success, otherwise an error code.
+ * @retval ErrorCode::OK if success.
+ * @retval ErrorCode::NOT_FOUND if the foreign table does not exist.
+ * @retval ErrorCode::ID_NOT_FOUND if the role id does not exist.
+ * @retval ErrorCode::NAME_NOT_FOUND if the role name does not exist.
+ * @retval otherwise an error code.
  */
 ErrorCode TablesProvider::confirm_permission(std::string_view key,
                                              std::string_view value,
@@ -426,76 +447,6 @@ ErrorCode TablesProvider::get_column_metadata(std::string_view table_id,
   if ((error == ErrorCode::OK) || (error == ErrorCode::INVALID_PARAMETER)) {
     tables.add_child(Tables::COLUMNS_NODE, columns);
     error = ErrorCode::OK;
-  }
-
-  return error;
-}
-
-/**
- * @brief Checks if the parameters are correct.
- * @param (table)  [in]  metadata-object
- * @return ErrorCode::OK if success, otherwise an error code.
- */
-ErrorCode TablesProvider::fill_parameters(ptree& table) const {
-  ErrorCode error = ErrorCode::UNKNOWN;
-
-  boost::optional<std::string> name =
-      table.get_optional<std::string>(Tables::NAME);
-  if (!name || name.get().empty()) {
-    error = ErrorCode::INVALID_PARAMETER;
-    return error;
-  }
-
-  // DataTypes check provider.
-  db::DataTypesProvider data_type_provider;
-  data_type_provider.init();
-
-  //
-  // column metadata
-  //
-  error = ErrorCode::OK;
-  BOOST_FOREACH (ptree::value_type& node,
-                 table.get_child(Tables::COLUMNS_NODE)) {
-    ptree& column = node.second;
-
-    // name
-    boost::optional<std::string> name =
-        column.get_optional<std::string>(Tables::Column::NAME);
-    if (!name || (name.get().empty())) {
-      error = ErrorCode::INVALID_PARAMETER;
-      break;
-    }
-
-    // ordinal position
-    boost::optional<std::int64_t> ordinal_position =
-        column.get_optional<std::int64_t>(Tables::Column::ORDINAL_POSITION);
-    if (!ordinal_position || (ordinal_position.get() <= 0)) {
-      error = ErrorCode::INVALID_PARAMETER;
-      break;
-    }
-
-    // datatype id
-    boost::optional<ObjectIdType> datatype_id =
-        column.get_optional<ObjectIdType>(Tables::Column::DATA_TYPE_ID);
-    if (!datatype_id || (datatype_id.get() < 0)) {
-      error = ErrorCode::INVALID_PARAMETER;
-      break;
-    }
-    ptree object;
-    error = data_type_provider.get_datatype_metadata(
-        DataTypes::ID, std::to_string(datatype_id.get()), object);
-    if (error != ErrorCode::OK) {
-      error = ErrorCode::INVALID_PARAMETER;
-      break;
-    }
-
-    // nullable
-    boost::optional<std::string> nullable =
-        column.get_optional<std::string>(Tables::Column::NULLABLE);
-    if (!nullable || (nullable.get().empty())) {
-      error = ErrorCode::INVALID_PARAMETER;
-      break;
-    }
   }
 
   return error;

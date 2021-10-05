@@ -56,10 +56,6 @@ class StatisticsProvider : public ProviderBase {
 
  private:
   std::shared_ptr<StatisticsDAO> statistics_dao_ = nullptr;
-
-  manager::metadata::ErrorCode fill_parameters(
-      boost::property_tree::ptree& object) const;
-
 };  // class StatisticsProvider
 
 }  // namespace manager::metadata::db

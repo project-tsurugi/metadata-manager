@@ -15,8 +15,10 @@
  */
 #include "manager/metadata/tables.h"
 
+#include <boost/foreach.hpp>
 #include <memory>
 
+#include "manager/metadata/provider/datatypes_provider.h"
 #include "manager/metadata/provider/tables_provider.h"
 
 // =============================================================================
@@ -81,6 +83,12 @@ ErrorCode Tables::add(boost::property_tree::ptree& object,
   ErrorCode error = ErrorCode::UNKNOWN;
   ObjectIdType retval_object_id;
 
+  // Parameter value check.
+  error = param_check_metadata_add(object);
+  if (error != ErrorCode::OK) {
+    return error;
+  }
+
   // Adds the table metadata through the provider.
   error = provider->add_table_metadata(object, retval_object_id);
 
@@ -104,7 +112,7 @@ ErrorCode Tables::get(const ObjectIdType object_id,
                       boost::property_tree::ptree& object) {
   ErrorCode error = ErrorCode::UNKNOWN;
 
-  // Parameter value check
+  // Parameter value check.
   if (object_id <= 0) {
     error = ErrorCode::ID_NOT_FOUND;
     return error;
@@ -113,11 +121,6 @@ ErrorCode Tables::get(const ObjectIdType object_id,
   // Get the table metadata through the provider.
   std::string s_object_id = std::to_string(object_id);
   error = provider->get_table_metadata(Tables::ID, s_object_id, object);
-
-  // Convert the return value.
-  if (error == ErrorCode::NOT_FOUND) {
-    error = ErrorCode::ID_NOT_FOUND;
-  }
 
   return error;
 }
@@ -134,7 +137,7 @@ ErrorCode Tables::get(std::string_view object_name,
                       boost::property_tree::ptree& object) {
   ErrorCode error = ErrorCode::UNKNOWN;
 
-  // Parameter value check
+  // Parameter value check.
   if (object_name.empty()) {
     error = ErrorCode::NAME_NOT_FOUND;
     return error;
@@ -143,16 +146,12 @@ ErrorCode Tables::get(std::string_view object_name,
   // Get the table metadata through the provider.
   error = provider->get_table_metadata(Tables::NAME, object_name, object);
 
-  // Convert the return value
-  if (error == ErrorCode::NOT_FOUND) {
-    error = ErrorCode::NAME_NOT_FOUND;
-  }
-
   return error;
 }
 
 /**
  * @brief Gets all table metadata object from the table metadata table.
+ *   If the table metadata does not exist, return the container as empty.
  * @param (container)  [out] Container for metadata-objects.
  * @return ErrorCode::OK if success, otherwise an error code.
  */
@@ -179,7 +178,7 @@ ErrorCode Tables::get_statistic(const ObjectIdType table_id,
                                 boost::property_tree::ptree& object) {
   ErrorCode error = ErrorCode::UNKNOWN;
 
-  // Parameter value check
+  // Parameter value check.
   if (table_id <= 0) {
     error = ErrorCode::ID_NOT_FOUND;
     return error;
@@ -188,11 +187,6 @@ ErrorCode Tables::get_statistic(const ObjectIdType table_id,
   // Get the table statistic through the provider.
   error = provider->get_table_statistic(Tables::ID, std::to_string(table_id),
                                         object);
-
-  // Convert the return value
-  if (error == ErrorCode::NOT_FOUND) {
-    error = ErrorCode::ID_NOT_FOUND;
-  }
 
   return error;
 }
@@ -211,7 +205,7 @@ ErrorCode Tables::get_statistic(std::string_view table_name,
                                 boost::property_tree::ptree& object) {
   ErrorCode error = ErrorCode::UNKNOWN;
 
-  // Parameter value check
+  // Parameter value check.
   if (table_name.empty()) {
     error = ErrorCode::NAME_NOT_FOUND;
     return error;
@@ -219,11 +213,6 @@ ErrorCode Tables::get_statistic(std::string_view table_name,
 
   // Get the table statistic through the provider.
   error = provider->get_table_statistic(Tables::NAME, table_name, object);
-
-  // Convert the return value
-  if (error == ErrorCode::NOT_FOUND) {
-    error = ErrorCode::NAME_NOT_FOUND;
-  }
 
   return error;
 }
@@ -239,25 +228,15 @@ ErrorCode Tables::get_statistic(std::string_view table_name,
 ErrorCode Tables::set_statistic(boost::property_tree::ptree& object) {
   ErrorCode error = ErrorCode::UNKNOWN;
 
-  boost::optional<std::string> o_id =
-      object.get_optional<std::string>(Tables::ID);
-  boost::optional<std::string> o_name =
-      object.get_optional<std::string>(Tables::NAME);
-
-  // Parameter value check
-  if (!o_id && !o_name) {
-    error = ErrorCode::INVALID_PARAMETER;
+  // Parameter value check.
+  error = param_check_statistic_update(object);
+  if (error != ErrorCode::OK) {
     return error;
   }
 
   ObjectIdType retval_object_id;
   // Adds or updates the table statistic through the provider.
   error = provider->set_table_statistic(object, retval_object_id);
-
-  // Convert the return value
-  if (error == ErrorCode::NOT_FOUND) {
-    error = (o_id ? ErrorCode::ID_NOT_FOUND : ErrorCode::NAME_NOT_FOUND);
-  }
 
   return error;
 }
@@ -275,7 +254,7 @@ ErrorCode Tables::set_statistic(boost::property_tree::ptree& object) {
 ErrorCode Tables::remove(const ObjectIdType object_id) {
   ErrorCode error = ErrorCode::UNKNOWN;
 
-  // Parameter value check
+  // Parameter value check.
   if (object_id <= 0) {
     error = ErrorCode::ID_NOT_FOUND;
     return error;
@@ -285,11 +264,6 @@ ErrorCode Tables::remove(const ObjectIdType object_id) {
   // Remove the table metadata through the provider.
   error = provider->remove_table_metadata(Tables::ID, std::to_string(object_id),
                                           retval_object_id);
-
-  // Convert the return value
-  if (error == ErrorCode::NOT_FOUND) {
-    error = ErrorCode::ID_NOT_FOUND;
-  }
 
   return error;
 }
@@ -309,7 +283,7 @@ ErrorCode Tables::remove(std::string_view object_name,
                          ObjectIdType* object_id) {
   ErrorCode error = ErrorCode::UNKNOWN;
 
-  // Parameter value check
+  // Parameter value check.
   if (object_name.empty()) {
     error = ErrorCode::NAME_NOT_FOUND;
     return error;
@@ -319,11 +293,6 @@ ErrorCode Tables::remove(std::string_view object_name,
   // Remove the table metadata through the provider.
   error = provider->remove_table_metadata(Tables::NAME, object_name,
                                           retval_object_id);
-
-  // Convert the return value
-  if (error == ErrorCode::NOT_FOUND) {
-    error = ErrorCode::NAME_NOT_FOUND;
-  }
 
   // Set a value if object_id is not null.
   if ((error == ErrorCode::OK) && (object_id != nullptr)) {
@@ -349,7 +318,7 @@ ErrorCode Tables::confirm_permission_in_acls(const ObjectIdType object_id,
                                              bool& check_result) {
   ErrorCode error = ErrorCode::UNKNOWN;
 
-  // Parameter value check
+  // Parameter value check.
   if (object_id <= 0) {
     error = ErrorCode::ID_NOT_FOUND;
     return error;
@@ -379,7 +348,7 @@ ErrorCode Tables::confirm_permission_in_acls(std::string_view object_name,
                                              bool& check_result) {
   ErrorCode error = ErrorCode::UNKNOWN;
 
-  // Parameter value check
+  // Parameter value check.
   if (object_name.empty()) {
     error = ErrorCode::NAME_NOT_FOUND;
     return error;
@@ -388,6 +357,110 @@ ErrorCode Tables::confirm_permission_in_acls(std::string_view object_name,
   // Get the table metadata through the provider.
   error = provider->confirm_permission(Metadata::NAME, object_name, permission,
                                        check_result);
+
+  return error;
+}
+
+//_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
+// Private method area
+
+/**
+ * @brief Checks if the parameters for additional are correct.
+ * @param (object)  [in]  metadata-object
+ * @return ErrorCode::OK if success, otherwise an error code.
+ */
+ErrorCode Tables::param_check_metadata_add(
+    boost::property_tree::ptree& object) const {
+  ErrorCode error = ErrorCode::UNKNOWN;
+
+  boost::optional<std::string> name =
+      object.get_optional<std::string>(Tables::NAME);
+  if (!name || name.get().empty()) {
+    error = ErrorCode::INVALID_PARAMETER;
+    return error;
+  }
+
+  //
+  // column metadata
+  //
+  error = ErrorCode::OK;
+  BOOST_FOREACH (boost::property_tree::ptree::value_type& node,
+                 object.get_child(Tables::COLUMNS_NODE)) {
+    boost::property_tree::ptree& column = node.second;
+
+    // name
+    boost::optional<std::string> name =
+        column.get_optional<std::string>(Tables::Column::NAME);
+    if (!name || (name.get().empty())) {
+      error = ErrorCode::INVALID_PARAMETER;
+      break;
+    }
+
+    // ordinal position
+    boost::optional<std::int64_t> ordinal_position =
+        column.get_optional<std::int64_t>(Tables::Column::ORDINAL_POSITION);
+    if (!ordinal_position || (ordinal_position.get() <= 0)) {
+      error = ErrorCode::INVALID_PARAMETER;
+      break;
+    }
+
+    // datatype id
+    boost::optional<ObjectIdType> datatype_id =
+        column.get_optional<ObjectIdType>(Tables::Column::DATA_TYPE_ID);
+    if (!datatype_id || (datatype_id.get() < 0)) {
+      error = ErrorCode::INVALID_PARAMETER;
+      break;
+    }
+    // DataTypes check provider.
+    db::DataTypesProvider provider_data_types;
+    provider_data_types.init();
+
+    // Check the data types.
+    boost::property_tree::ptree object;
+    error = provider_data_types.get_datatype_metadata(
+        DataTypes::ID, std::to_string(datatype_id.get()), object);
+    if (error != ErrorCode::OK) {
+      error = ErrorCode::INVALID_PARAMETER;
+      break;
+    }
+
+    // nullable
+    boost::optional<std::string> nullable =
+        column.get_optional<std::string>(Tables::Column::NULLABLE);
+    if (!nullable || (nullable.get().empty())) {
+      error = ErrorCode::INVALID_PARAMETER;
+      break;
+    }
+  }
+
+  return error;
+}
+
+/**
+ * @brief Checks if the parameters for updating table statistics are correct.
+ * @param (object)  [in]  metadata-object
+ * @return ErrorCode::OK if success, otherwise an error code.
+ */
+ErrorCode Tables::param_check_statistic_update(
+    boost::property_tree::ptree& object) const {
+  ErrorCode error = ErrorCode::UNKNOWN;
+
+  // id
+  boost::optional<std::string> optional_id =
+      object.get_optional<std::string>(Tables::ID);
+  // name
+  boost::optional<std::string> optional_name =
+      object.get_optional<std::string>(Tables::NAME);
+  // tuples
+  boost::optional<float> optional_tuples =
+      object.get_optional<float>(Tables::TUPLES);
+
+  // Parameter value check.
+  if ((optional_id || optional_name) && (optional_tuples)) {
+    error = ErrorCode::OK;
+  } else {
+    error = ErrorCode::INVALID_PARAMETER;
+  }
 
   return error;
 }

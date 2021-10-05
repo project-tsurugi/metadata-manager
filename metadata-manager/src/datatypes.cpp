@@ -33,8 +33,8 @@ using manager::metadata::ErrorCode;
 
 /**
  * @brief Constructor
- * @param (database)  [in]  database name.
- * @param (component) [in]  component name.
+ * @param (database)   [in]  database name.
+ * @param (component)  [in]  component name.
  */
 DataTypes::DataTypes(std::string_view database, std::string_view component)
     : Metadata(database, component) {
@@ -68,7 +68,7 @@ ErrorCode DataTypes::get(const ObjectIdType object_id,
                          boost::property_tree::ptree& object) {
   ErrorCode error = ErrorCode::UNKNOWN;
 
-  // Parameter value check
+  // Parameter value check.
   if (object_id <= 0) {
     error = ErrorCode::ID_NOT_FOUND;
     return error;
@@ -94,7 +94,7 @@ ErrorCode DataTypes::get(std::string_view object_name,
                          boost::property_tree::ptree& object) {
   ErrorCode error = ErrorCode::UNKNOWN;
 
-  // Parameter value check
+  // Parameter value check.
   if (object_name.empty()) {
     error = ErrorCode::NAME_NOT_FOUND;
     return error;
@@ -109,13 +109,14 @@ ErrorCode DataTypes::get(std::string_view object_name,
 /**
  * @brief Gets one data type metadata object
  *   from the data types metadata table, where key = value.
- * @param (key)           [in]  key of data type metadata object.
- * @param (value)         [in]  value of data type metadata object.
- * @param (object)        [out] one data type metadata object to get,
+ * @param (key)     [in]  key of data type metadata object.
+ * @param (value)   [in]  value of data type metadata object.
+ * @param (object)  [out] one data type metadata object to get,
  *   where key = value.
  * @retval ErrorCode::OK if success.
- * @retval ErrorCode::ID_NOT_FOUND if the data type id does not exist.
- * @retval ErrorCode::NAME_NOT_FOUND if the data type name does not exist.
+ * @retval ErrorCode::ID_NOT_FOUND if the data types id does not exist.
+ * @retval ErrorCode::NAME_NOT_FOUND if the data types name does not exist.
+ * @retval ErrorCode::NOT_FOUND if the other data types key does not exist.
  * @retval otherwise an error code.
  */
 ErrorCode DataTypes::get(std::string_view object_key,
@@ -124,23 +125,24 @@ ErrorCode DataTypes::get(std::string_view object_key,
   ErrorCode error = ErrorCode::UNKNOWN;
   std::string_view s_object_key = std::string_view(object_key);
 
-  if ((!s_object_key.empty()) && (!object_value.empty())) {
-    // Get the data type metadata through the provider.
-    error = provider->get_datatype_metadata(s_object_key, object_value, object);
-  } else if (s_object_key.empty()) {
+  // Parameter value check.
+  if (s_object_key.empty()) {
     error = ErrorCode::INVALID_PARAMETER;
+    return error;
   } else if (object_value.empty()) {
-    error = ErrorCode::NOT_FOUND;
-  }
-
-  // Convert the return value
-  if (error == ErrorCode::NOT_FOUND) {
+    // Convert the error code.
     if (object_key == DataTypes::ID) {
       error = ErrorCode::ID_NOT_FOUND;
     } else if (object_key == DataTypes::NAME) {
       error = ErrorCode::NAME_NOT_FOUND;
+    } else {
+      error = ErrorCode::NOT_FOUND;
     }
+    return error;
   }
+
+  // Get the data type metadata through the provider.
+  error = provider->get_datatype_metadata(s_object_key, object_value, object);
 
   return error;
 }

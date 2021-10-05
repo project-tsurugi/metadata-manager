@@ -64,8 +64,6 @@ class TablesProvider : public ProviderBase {
       boost::property_tree::ptree& tables) const;
   manager::metadata::ErrorCode get_column_metadata(
       std::string_view table_id, boost::property_tree::ptree& tables) const;
-  manager::metadata::ErrorCode fill_parameters(
-      boost::property_tree::ptree& table) const;
 };  // class TablesProvider
 
 }  // namespace manager::metadata::db

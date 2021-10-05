@@ -25,7 +25,6 @@
 #include "manager/metadata/dao/common/statement_name.h"
 #include "manager/metadata/dao/postgresql/common.h"
 #include "manager/metadata/dao/postgresql/dbc_utils.h"
-#include "manager/metadata/roles.h"
 
 // =============================================================================
 namespace {
@@ -146,7 +145,8 @@ ErrorCode RolesDAO::prepare() const {
  * @param (object)        [out] role to get,
  *   where the given key equals the given value.
  * @retval ErrorCode::OK if success.
- * @retval ErrorCode::NOT_FOUND if the role id or role name does not exist.
+ * @retval ErrorCode::ID_NOT_FOUND if the role id does not exist.
+ * @retval ErrorCode::NAME_NOT_FOUND if the role name does not exist.
  * @retval otherwise an error code.
  */
 ErrorCode RolesDAO::select_role_metadata(std::string_view object_key,
@@ -175,9 +175,17 @@ ErrorCode RolesDAO::select_role_metadata(std::string_view object_key,
     if (nrows == 1) {
       int ordinal_position = 0;
       error = convert_pgresult_to_ptree(res, ordinal_position, object);
+    } else if (nrows == 0) {
+      // Convert the error code.
+      if (object_key == Roles::ROLE_OID) {
+        error = ErrorCode::ID_NOT_FOUND;
+      } else if (object_key == Roles::ROLE_ROLNAME) {
+        error = ErrorCode::NAME_NOT_FOUND;
+      } else {
+        error = ErrorCode::NOT_FOUND;
+      }
     } else {
-      error =
-          (nrows == 0) ? ErrorCode::NOT_FOUND : ErrorCode::INVALID_PARAMETER;
+      error = ErrorCode::INVALID_PARAMETER;
     }
   }
 

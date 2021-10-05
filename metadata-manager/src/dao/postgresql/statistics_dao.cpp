@@ -620,8 +620,9 @@ ErrorCode StatisticsDAO::upsert_column_statistic(
  * @param (object)        [out] table metadata to get,
  *   where the given key equals the given value.
  * @retval ErrorCode::OK if success.
- * @retval ErrorCode::NOT_FOUND if the statistic id or statistic name
+ * @retval ErrorCode::ID_NOT_FOUND if the statistic id or column id
  *   does not exist.
+ * @retval ErrorCode::NAME_NOT_FOUND if the statistic name does not exist.
  * @retval otherwise an error code.
  */
 ErrorCode StatisticsDAO::select_column_statistic(std::string_view object_key,
@@ -645,16 +646,22 @@ ErrorCode StatisticsDAO::select_column_statistic(std::string_view object_key,
   std::vector<ptree> container;
   error = get_column_statistics_rows(statement_name, param_values, container);
 
-  PGresult* res;
-  error =
-      DbcUtils::exec_prepared(connection_, statement_name, param_values, res);
-
   if (error == ErrorCode::OK) {
     if (container.size() == 1) {
       object = container[0];
+    } else if (container.size() == 0) {
+      // Convert the error code.
+      if (object_key == Statistics::ID) {
+        error = ErrorCode::ID_NOT_FOUND;
+      } else if (object_key == Statistics::NAME) {
+        error = ErrorCode::NAME_NOT_FOUND;
+      } else if (object_key == Statistics::COLUMN_ID) {
+        error = ErrorCode::ID_NOT_FOUND;
+      } else {
+        error = ErrorCode::NOT_FOUND;
+      }
     } else {
-      error = (container.size() == 0 ? ErrorCode::NOT_FOUND
-                                     : ErrorCode::INVALID_PARAMETER);
+      error = ErrorCode::INVALID_PARAMETER;
     }
   }
 
@@ -664,6 +671,7 @@ ErrorCode StatisticsDAO::select_column_statistic(std::string_view object_key,
 /**
  * @brief Execute a SELECT statement to get all column statistics rows
  *   from the column statistics table.
+ *   If the column statistic does not exist, return the container as empty.
  * @param (container)  [out] all column statistics.
  * @return ErrorCode::OK if success, otherwise an error code.
  */
@@ -688,7 +696,7 @@ ErrorCode StatisticsDAO::select_column_statistic(
  * @param (table_id)   [in]  table id.
  * @param (container)  [out] all column statistics.
  * @retval ErrorCode::OK if success.
- * @retval ErrorCode::NOT_FOUND if the table id does not exist.
+ * @retval ErrorCode::ID_NOT_FOUND if the table id does not exist.
  * @retval otherwise an error code.
  */
 ErrorCode StatisticsDAO::select_column_statistic(
@@ -706,6 +714,13 @@ ErrorCode StatisticsDAO::select_column_statistic(
 
   error = get_column_statistics_rows(statement_name, param_values, container);
 
+  if (error == ErrorCode::OK) {
+    if (container.size() == 0) {
+      // Convert the error code.
+      error = ErrorCode::ID_NOT_FOUND;
+    }
+  }
+
   return error;
 }
 
@@ -720,8 +735,8 @@ ErrorCode StatisticsDAO::select_column_statistic(
  * @param (column_statistic)  [out] one column statistic
  *   with the specified table id and column ordinal position.
  * @retval ErrorCode::OK if success.
- * @retval ErrorCode::NOT_FOUND if the table id or column id
- *   or culumn name or ordinal position does not exist.
+ * @retval ErrorCode::ID_NOT_FOUND if the ordinal position does not exist.
+ * @retval ErrorCode::NAME_NOT_FOUND if the statistic name does not exist.
  * @retval otherwise an error code.
  */
 ErrorCode StatisticsDAO::select_column_statistic(const ObjectIdType table_id,
@@ -750,7 +765,16 @@ ErrorCode StatisticsDAO::select_column_statistic(const ObjectIdType table_id,
   if (error == ErrorCode::OK) {
     if (container.size() == 1) {
       object = container[0];
-    } else if (container.size() >= 2) {
+    } else if (container.size() == 0) {
+      // Convert the error code.
+      if (object_key == Statistics::ORDINAL_POSITION) {
+        error = ErrorCode::ID_NOT_FOUND;
+      } else if (object_key == Statistics::COLUMN_NAME) {
+        error = ErrorCode::NAME_NOT_FOUND;
+      } else {
+        error = ErrorCode::NOT_FOUND;
+      }
+    } else {
       error = ErrorCode::INVALID_PARAMETER;
     }
   }
@@ -764,8 +788,8 @@ ErrorCode StatisticsDAO::select_column_statistic(const ObjectIdType table_id,
  * @param (object_value)  [in]  value to be filtered.
  * @param (statistic_id)  [out] statistic id of the row deleted.
  * @retval ErrorCode::OK if success.
- * @retval ErrorCode::NOT_FOUND if the statistic id or statistic name
- *   does not exist.
+ * @retval ErrorCode::ID_NOT_FOUND if the statistic id does not exist.
+ * @retval ErrorCode::NAME_NOT_FOUND if the statistic name does not exist.
  * @retval otherwise an error code.
  */
 ErrorCode StatisticsDAO::delete_column_statistic(
@@ -802,8 +826,17 @@ ErrorCode StatisticsDAO::delete_column_statistic(
       ObjectIdType retval_table_id = 0;
       error = DbcUtils::str_to_integral<ObjectIdType>(
           PQgetvalue(res, ordinal_position, 0), statistic_id);
+    } else if (number_of_rows_affected == 0) {
+      // Convert the error code.
+      if (object_key == Statistics::ID) {
+        error = ErrorCode::ID_NOT_FOUND;
+      } else if (object_key == Statistics::NAME) {
+        error = ErrorCode::NAME_NOT_FOUND;
+      } else {
+        error = ErrorCode::NOT_FOUND;
+      }
     } else {
-      error = ErrorCode::NOT_FOUND;
+      error = ErrorCode::INVALID_PARAMETER;
     }
   }
 
@@ -816,7 +849,7 @@ ErrorCode StatisticsDAO::delete_column_statistic(
  *   from the column statistics table based on the given table id.
  * @param (table_id)  [in]  table id.
  * @retval ErrorCode::OK if success.
- * @retval ErrorCode::NOT_FOUND if the table id does not exist.
+ * @retval ErrorCode::ID_NOT_FOUND if the table id does not exist.
  * @retval otherwise an error code.
  */
 ErrorCode StatisticsDAO::delete_column_statistic(
@@ -841,8 +874,11 @@ ErrorCode StatisticsDAO::delete_column_statistic(
 
     if (error_get != ErrorCode::OK) {
       error = error_get;
-    } else if (number_of_rows_affected <= 0) {
-      error = ErrorCode::NOT_FOUND;
+    } else if (number_of_rows_affected == 0) {
+      // Convert the error code.
+      error = ErrorCode::ID_NOT_FOUND;
+    } else if (number_of_rows_affected < 0) {
+      error = ErrorCode::INVALID_PARAMETER;
     }
   }
 
@@ -859,8 +895,8 @@ ErrorCode StatisticsDAO::delete_column_statistic(
  * @param (object_value)  [in]  value to be filtered.
  * @param (statistic_id)  [out] statistic id of the row deleted.
  * @retval ErrorCode::OK if success.
- * @retval ErrorCode::NOT_FOUND if the table id or column id
- *   or culumn name or ordinal position does not exist.
+ * @retval ErrorCode::ID_NOT_FOUND if the ordinal position does not exist.
+ * @retval ErrorCode::NAME_NOT_FOUND if the statistic name does not exist.
  * @retval otherwise an error code.
  */
 ErrorCode StatisticsDAO::delete_column_statistic(
@@ -898,8 +934,17 @@ ErrorCode StatisticsDAO::delete_column_statistic(
       ObjectIdType retval_table_id = 0;
       error = DbcUtils::str_to_integral<ObjectIdType>(
           PQgetvalue(res, ordinal_position, 0), statistic_id);
+    } else if (number_of_rows_affected == 0) {
+      // Convert the error code.
+      if (object_key == Statistics::ORDINAL_POSITION) {
+        error = ErrorCode::ID_NOT_FOUND;
+      } else if (object_key == Statistics::COLUMN_NAME) {
+        error = ErrorCode::NAME_NOT_FOUND;
+      } else {
+        error = ErrorCode::NOT_FOUND;
+      }
     } else {
-      error = ErrorCode::NOT_FOUND;
+      error = ErrorCode::INVALID_PARAMETER;
     }
   }
 
@@ -931,7 +976,7 @@ ErrorCode StatisticsDAO::get_column_statistics_rows(
   if (error == ErrorCode::OK) {
     int nrows = PQntuples(res);
 
-    if (nrows >= 1) {
+    if (nrows >= 0) {
       for (int ordinal_position = 0; ordinal_position < nrows;
            ordinal_position++) {
         ptree table;
@@ -944,8 +989,7 @@ ErrorCode StatisticsDAO::get_column_statistics_rows(
         container.emplace_back(table);
       }
     } else {
-      error = (container.size() == 0 ? ErrorCode::NOT_FOUND
-                                     : ErrorCode::INVALID_PARAMETER);
+      error = ErrorCode::INVALID_PARAMETER;
     }
   }
 

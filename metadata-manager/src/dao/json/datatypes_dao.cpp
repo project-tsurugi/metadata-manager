@@ -19,9 +19,7 @@
 #include <boost/property_tree/ptree.hpp>
 
 #include "manager/metadata/dao/common/pg_type.h"
-#include "manager/metadata/datatypes.h"
 #include "manager/metadata/error_code.h"
-#include "manager/metadata/metadata.h"
 
 // =============================================================================
 namespace manager::metadata::db::json {
@@ -140,7 +138,15 @@ ErrorCode DataTypesDAO::select_one_data_type_metadata(
 
   ptree* meta_object = session_manager_->get_container();
 
-  error = ErrorCode::NOT_FOUND;
+  // Initialize the error code.
+  if (object_key == DataTypes::ID) {
+    error = ErrorCode::ID_NOT_FOUND;
+  } else if (object_key == DataTypes::NAME) {
+    error = ErrorCode::NAME_NOT_FOUND;
+  } else {
+    error = ErrorCode::NOT_FOUND;
+  }
+
   BOOST_FOREACH (const ptree::value_type& node,
                  meta_object->get_child(DataTypesDAO::DATATYPES_NODE)) {
     const ptree& temp_obj = node.second;
@@ -151,7 +157,7 @@ ErrorCode DataTypesDAO::select_one_data_type_metadata(
       error = ErrorCode::INVALID_PARAMETER;
       break;
     }
-    if (!value.get().compare(object_value)) {
+    if (value.get() == object_value) {
       object = temp_obj;
       error = ErrorCode::OK;
       break;
