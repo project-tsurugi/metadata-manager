@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 tsurugi project.
+ * Copyright 2021 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -193,7 +193,7 @@ void DaoTestTableMetadata::get_table_metadata(
     EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);
     return;
   } else {
-    EXPECT_EQ(ErrorCode::NOT_FOUND, error);
+    EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
     return;
   }
 

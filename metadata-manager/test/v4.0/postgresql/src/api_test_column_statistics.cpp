@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 tsurugi project.
+ * Copyright 2020-2021 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -380,7 +380,6 @@ TEST_P(ApiTestColumnStatisticsAllAPIHappy, All_API_happy) {
   std::vector<ptree> all_column_statistics_removed;
   error = stats->get_all(ret_table_id, all_column_statistics_removed);
   EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
-
   EXPECT_EQ(all_column_statistics_removed.size(), 0);
 
   for (ObjectIdType ordinal_position = 1;
@@ -392,6 +391,9 @@ TEST_P(ApiTestColumnStatisticsAllAPIHappy, All_API_happy) {
                                         cs_returned);
     EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
   }
+
+  // remove table metadata.
+  ApiTestTableMetadata::remove_table(ret_table_id);
 }
 
 /**
@@ -688,7 +690,6 @@ TEST_P(ApiTestColumnStatisticsUpdateHappy, update_column_statistics) {
   std::vector<ptree> all_column_statistics_removed;
   error = stats->get_all(ret_table_id, all_column_statistics_removed);
   EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
-
   EXPECT_EQ(all_column_statistics_removed.size(), 0);
 
   for (ObjectIdType ordinal_position = 1;
@@ -701,6 +702,9 @@ TEST_P(ApiTestColumnStatisticsUpdateHappy, update_column_statistics) {
                                         cs_returned);
     EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
   }
+
+  // remove table metadata.
+  ApiTestTableMetadata::remove_table(ret_table_id);
 }
 
 /**
@@ -811,7 +815,6 @@ TEST_P(ApiTestColumnStatisticsRemoveAllHappy, remove_by_table_id) {
   std::vector<ptree> all_column_statistics_removed;
   error = stats->get_all(ret_table_id, all_column_statistics_removed);
   EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
-
   EXPECT_EQ(all_column_statistics_removed.size(), 0);
 
   for (ObjectIdType ordinal_position = 1;
@@ -823,6 +826,9 @@ TEST_P(ApiTestColumnStatisticsRemoveAllHappy, remove_by_table_id) {
                                         cs_returned);
     EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
   }
+
+  // remove table metadata.
+  ApiTestTableMetadata::remove_table(ret_table_id);
 }
 
 /**
@@ -1023,6 +1029,9 @@ TEST_P(ApiTestColumnStatisticsAllAPIException, All_API_exception) {
     error = stats->remove_by_table_id(table_id);
     EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
   }
+
+  // remove table metadata.
+  ApiTestTableMetadata::remove_table(ret_table_id);
 }
 
 /**
@@ -1271,7 +1280,6 @@ TEST_P(ApiTestColumnStatisticsAllAPIHappyWithoutInit,
   error =
       stats_remove_all_cs->get_all(ret_table_id, all_column_statistics_removed);
   EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
-
   EXPECT_EQ(all_column_statistics_removed.size(), 0);
 
   for (ObjectIdType ordinal_position = 1;
@@ -1283,6 +1291,9 @@ TEST_P(ApiTestColumnStatisticsAllAPIHappyWithoutInit,
         ret_table_id, ordinal_position, cs_returned);
     EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
   }
+
+  // remove table metadata.
+  ApiTestTableMetadata::remove_table(ret_table_id);
 }
 
 }  // namespace manager::metadata::testing

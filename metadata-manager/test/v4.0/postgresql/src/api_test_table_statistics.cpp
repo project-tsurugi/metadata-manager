@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 tsurugi project.
+ * Copyright 2020-2021 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -239,14 +239,11 @@ TEST_P(ApiTestTableStatisticsByTableIdHappy,
   EXPECT_EQ(table_name, add_metadata_name.get());
   EXPECT_EQ(testdata_table_metadata->namespace_name,
             add_metadata_namespace.get());
-  if (add_metadata_tuples) {
-    if (std::isnan(add_metadata_tuples.get())) {
-      EXPECT_TRUE(std::isnan(add_metadata_tuples.get()));
-    } else {
-      EXPECT_FLOAT_EQ(reltuples_to_add, add_metadata_tuples.get());
-    }
+  if (!optional_tuples_add) {
+    reltuples_to_add = 0;
   }
-  
+  EXPECT_FLOAT_EQ(reltuples_to_add, add_metadata_tuples.get());
+
   UTUtils::print_table_statistics(table_stats_added);
 
   // update the number of rows.
@@ -281,15 +278,17 @@ TEST_P(ApiTestTableStatisticsByTableIdHappy,
   EXPECT_EQ(table_name, upd_metadata_name.get());
   EXPECT_EQ(testdata_table_metadata->namespace_name,
             upd_metadata_namespace.get());
-  if (upd_metadata_tuples) {
-    if (std::isnan(upd_metadata_tuples.get())) {
-      EXPECT_TRUE(std::isnan(upd_metadata_tuples.get()));
-    } else {
-      EXPECT_FLOAT_EQ(reltuples_to_update, upd_metadata_tuples.get());
-    }
+  if (optional_tuples_upd) {
+    EXPECT_FLOAT_EQ(reltuples_to_update, upd_metadata_tuples.get());
+  } else {
+    EXPECT_FLOAT_EQ(reltuples_to_add, upd_metadata_tuples.get());
   }
 
   UTUtils::print_table_statistics(table_stats_updated);
+
+  // remove table metadata by table name.
+  error = tables->remove(ret_table_id);
+  EXPECT_EQ(ErrorCode::OK, error);
 }
 
 /**
@@ -351,13 +350,10 @@ TEST_P(ApiTestTableStatisticsByTableNameHappy,
   EXPECT_EQ(table_name, add_metadata_name.get());
   EXPECT_EQ(testdata_table_metadata->namespace_name,
             add_metadata_namespace.get());
-  if (add_metadata_tuples) {
-    if (std::isnan(add_metadata_tuples.get())) {
-      EXPECT_TRUE(std::isnan(add_metadata_tuples.get()));
-    } else {
-      EXPECT_FLOAT_EQ(reltuples_to_add, add_metadata_tuples.get());
-    }
+  if (!optional_tuples_add) {
+    reltuples_to_add = 0;
   }
+  EXPECT_FLOAT_EQ(reltuples_to_add, add_metadata_tuples.get());
 
   UTUtils::print_table_statistics(table_stats_added);
 
@@ -393,15 +389,17 @@ TEST_P(ApiTestTableStatisticsByTableNameHappy,
   EXPECT_EQ(table_name, upd_metadata_name.get());
   EXPECT_EQ(testdata_table_metadata->namespace_name,
             upd_metadata_namespace.get());
-  if (upd_metadata_tuples) {
-    if (std::isnan(upd_metadata_tuples.get())) {
-      EXPECT_TRUE(std::isnan(upd_metadata_tuples.get()));
-    } else {
-      EXPECT_FLOAT_EQ(reltuples_to_update, upd_metadata_tuples.get());
-    }
+  if (optional_tuples_upd) {
+    EXPECT_FLOAT_EQ(reltuples_to_update, upd_metadata_tuples.get());
+  } else {
+    EXPECT_FLOAT_EQ(reltuples_to_add, upd_metadata_tuples.get());
   }
 
   UTUtils::print_table_statistics(table_stats_updated);
+
+  // remove table metadata by table name.
+  error = tables->remove(ret_table_id);
+  EXPECT_EQ(ErrorCode::OK, error);
 }
 
 }  // namespace manager::metadata::testing

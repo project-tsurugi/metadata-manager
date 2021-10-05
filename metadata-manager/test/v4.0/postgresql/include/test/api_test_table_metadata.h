@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 tsurugi project.
+ * Copyright 2020-2021 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@
 #include <vector>
 
 #include "manager/metadata/metadata.h"
+#include "manager/metadata/tables.h"
 #include "test/global_test_environment.h"
 #include "test/utility/ut_table_metadata.h"
 
@@ -35,9 +36,14 @@ class ApiTestTableMetadata : public ::testing::Test {
                         ObjectIdType* ret_table_id);
   static void add_table(boost::property_tree::ptree new_table,
                         ObjectIdType* ret_table_id);
+  static void remove_table(const ObjectIdType table_id);
+  static void remove_table(std::string_view table_name);
   static void check_table_metadata_expected(
       boost::property_tree::ptree& expected,
       boost::property_tree::ptree& actual);
+  template <typename T>
+  static void confirm_tables_permission(T object_value,
+                                        std::unique_ptr<Tables>& tables);
   static std::vector<boost::property_tree::ptree>
   make_testdata_table_metadata();
 

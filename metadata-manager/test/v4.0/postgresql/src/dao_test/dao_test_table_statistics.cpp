@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 tsurugi project.
+ * Copyright 2020-2021 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -104,7 +104,7 @@ TEST_P(DaoTestTableStatisticsByTableIdException,
   error = tdao->update_reltuples(reltuples, Tables::ID,
                                  std::to_string(table_id_not_exists),
                                  retval_table_id);
-  EXPECT_EQ(ErrorCode::NOT_FOUND, error);
+  EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
   EXPECT_EQ(-1, retval_table_id);
 
   error = db_session_manager.rollback();
@@ -138,7 +138,7 @@ TEST_P(DaoTestTableStatisticsByTableNameException,
   ObjectIdType retval_table_id = -1;
   error = tdao->update_reltuples(reltuples, Tables::NAME, table_name_not_exists,
                                  retval_table_id);
-  EXPECT_EQ(ErrorCode::NOT_FOUND, error);
+  EXPECT_EQ(ErrorCode::NAME_NOT_FOUND, error);
   EXPECT_EQ(retval_table_id, -1);
 
   error = db_session_manager.rollback();
@@ -168,7 +168,7 @@ TEST_P(DaoTestTableStatisticsByTableIdException,
   error = tdao->select_table_metadata(
       Tables::ID, std::to_string(table_id_not_exists), table_stats);
 
-  EXPECT_EQ(ErrorCode::NOT_FOUND, error);
+  EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
   UTUtils::print_table_statistics(table_stats);
 }
 
@@ -194,7 +194,7 @@ TEST_P(DaoTestTableStatisticsByTableNameException,
   error = tdao->select_table_metadata(Tables::NAME, table_name_not_exists,
                                       table_stats);
 
-  EXPECT_EQ(ErrorCode::NOT_FOUND, error);
+  EXPECT_EQ(ErrorCode::NAME_NOT_FOUND, error);
 }
 
 /**
@@ -306,6 +306,9 @@ TEST_P(DaoTestTableStatisticsByTableIdHappy,
   }
 
   UTUtils::print_table_statistics(table_stats_updated);
+
+  // remove table metadata.
+  DaoTestTableMetadata::remove_table_metadata(ret_table_id);
 }
 
 /**
@@ -417,6 +420,9 @@ TEST_P(DaoTestTableStatisticsByTableNameHappy,
   }
 
   UTUtils::print_table_statistics(table_stats_updated);
+
+  // remove table metadata.
+  DaoTestTableMetadata::remove_table_metadata(ret_table_id);
 }
 
 }  // namespace manager::metadata::testing

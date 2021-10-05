@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 tsurugi project.
+ * Copyright 2020-2021 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -68,7 +68,7 @@ std::vector<ptree> ApiTestTableMetadataExtra::make_valid_table_metadata() {
   }
 
   // Make valid table metadata used as test data.
-  boost::optional<ptree&> o_tables = pt.get_child_optional(Tables::TABLES_NODE);
+  boost::optional<ptree&> o_tables = pt.get_child_optional("tables");
   if (o_tables) {
     ptree& tables = o_tables.value();
     BOOST_FOREACH (const ptree::value_type& node, tables) {

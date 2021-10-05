@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 tsurugi project.
+ * Copyright 2020-2021 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@
 #include <string>
 
 #include "manager/metadata/error_code.h"
+#include "manager/metadata/roles.h"
 #include "manager/metadata/tables.h"
 #include "test/api_test_table_metadata_extra.h"
 #include "test/utility/ut_table_metadata.h"
@@ -109,11 +110,16 @@ void ApiTestTableMetadata::check_table_metadata_expected(ptree& expected,
   boost::optional<std::string> o_namespace_actual =
       actual.get_optional<std::string>(Tables::NAMESPACE);
 
-  if (o_namespace_expected && o_namespace_actual) {
+  bool namespace_empty_expected =
+      (o_namespace_expected ? o_namespace_expected.value().empty() : true);
+  bool namespace_empty_actual =
+      (o_namespace_actual ? o_namespace_actual.value().empty() : true);
+
+  if (!namespace_empty_expected && !namespace_empty_actual) {
     std::string& s_namespace_expected = o_namespace_expected.value();
     std::string& s_namespace_actual = o_namespace_actual.value();
     EXPECT_EQ(s_namespace_expected, s_namespace_actual);
-  } else if (!o_namespace_expected && !o_namespace_actual) {
+  } else if (namespace_empty_actual && namespace_empty_actual) {
     ASSERT_TRUE(true);
   } else {
     ASSERT_TRUE(false);
@@ -238,6 +244,138 @@ void ApiTestTableMetadata::add_table(ptree new_table,
 }
 
 /**
+ * @brief Remove one new table metadata to table metadata table.
+ * @param (table_id)  [in]   table id of remove table metadata.
+ * @return none.
+ */
+void ApiTestTableMetadata::remove_table(const ObjectIdType table_id) {
+  UTUtils::print("-- remove table metadata --");
+
+  auto tables = std::make_unique<Tables>(GlobalTestEnvironment::TEST_DB);
+
+  ErrorCode error = tables->init();
+  EXPECT_EQ(ErrorCode::OK, error);
+
+  // remove table metadata.
+  error = tables->remove(table_id);
+  EXPECT_EQ(ErrorCode::OK, error);
+
+  UTUtils::print("  table_id: ", table_id);
+}
+
+/**
+ * @brief Remove one new table metadata to table metadata table.
+ * @param (table_name)  [in]   table name of remove table metadata.
+ * @return none.
+ */
+void ApiTestTableMetadata::remove_table(std::string_view table_name) {
+  UTUtils::print("-- remove table metadata --");
+
+  auto tables = std::make_unique<Tables>(GlobalTestEnvironment::TEST_DB);
+
+  ErrorCode error = tables->init();
+  EXPECT_EQ(ErrorCode::OK, error);
+
+  // remove table metadata.
+  error = tables->remove(table_name, nullptr);
+  EXPECT_EQ(ErrorCode::OK, error);
+
+  UTUtils::print("  table_name: ", table_name);
+}
+
+template <typename T>
+void ApiTestTableMetadata::confirm_tables_permission(
+    T object_value, std::unique_ptr<Tables>& tables) {
+  UTUtils::print("-- confirm tables permission --");
+
+  ErrorCode error = ErrorCode::UNKNOWN;
+  bool res_permission = false;
+
+  // check the table permissions by role name.
+  // SELECT
+  error = tables->confirm_permission_in_acls(object_value, "r", res_permission);
+  EXPECT_EQ(ErrorCode::OK, error);
+  EXPECT_TRUE(res_permission);
+
+  // INSERT
+  error = tables->confirm_permission_in_acls(object_value, "a", res_permission);
+  EXPECT_EQ(ErrorCode::OK, error);
+  EXPECT_TRUE(res_permission);
+
+  // UPDATE
+  error = tables->confirm_permission_in_acls(object_value, "w", res_permission);
+  EXPECT_EQ(ErrorCode::OK, error);
+  EXPECT_TRUE(res_permission);
+
+  // DELETE
+  error = tables->confirm_permission_in_acls(object_value, "d", res_permission);
+  EXPECT_EQ(ErrorCode::OK, error);
+  EXPECT_TRUE(res_permission);
+
+  // TRUNCATE
+  error = tables->confirm_permission_in_acls(object_value, "D", res_permission);
+  EXPECT_EQ(ErrorCode::OK, error);
+  EXPECT_FALSE(res_permission);
+
+  // REFERENCES
+  error = tables->confirm_permission_in_acls(object_value, "x", res_permission);
+  EXPECT_EQ(ErrorCode::OK, error);
+  EXPECT_FALSE(res_permission);
+
+  // TRIGGER
+  error = tables->confirm_permission_in_acls(object_value, "t", res_permission);
+  EXPECT_EQ(ErrorCode::OK, error);
+  EXPECT_FALSE(res_permission);
+
+  // SELECT,INSERT,UPDATE
+  error =
+      tables->confirm_permission_in_acls(object_value, "rwa", res_permission);
+  EXPECT_EQ(ErrorCode::OK, error);
+  EXPECT_TRUE(res_permission);
+
+  // SELECT,INSERT,UPDATE,DELETE
+  error =
+      tables->confirm_permission_in_acls(object_value, "rwad", res_permission);
+  EXPECT_EQ(ErrorCode::OK, error);
+  EXPECT_TRUE(res_permission);
+
+  // SELECT,INSERT,UPDATE,DELETE,TRUNCATE,REFERENCES,TRIGGER
+  error = tables->confirm_permission_in_acls(object_value, "arwdDxt",
+                                             res_permission);
+  EXPECT_EQ(ErrorCode::OK, error);
+  EXPECT_FALSE(res_permission);
+
+  // EXECUTE(Unsupported permission).
+  error = tables->confirm_permission_in_acls(object_value, "X", res_permission);
+  EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);
+
+  // USAGE(Unsupported permission).
+  error = tables->confirm_permission_in_acls(object_value, "U", res_permission);
+  EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);
+
+  // CREATE(Unsupported permission).
+  error = tables->confirm_permission_in_acls(object_value, "C", res_permission);
+  EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);
+
+  // CONNECT(Unsupported permission).
+  error = tables->confirm_permission_in_acls(object_value, "c", res_permission);
+  EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);
+
+  // TEMPORARY(Unsupported permission).
+  error = tables->confirm_permission_in_acls(object_value, "T", res_permission);
+  EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);
+
+  // *(Unsupported permission).
+  error = tables->confirm_permission_in_acls(object_value, "*", res_permission);
+  EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);
+
+  // SELECT,INSERT,UPDATE,DELETE,EXECUTE,USAGE,CREATE,CONNECT,TEMPORARY
+  error = tables->confirm_permission_in_acls(object_value, "arwdDxtXUCcT",
+                                             res_permission);
+  EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);
+}
+
+/**
  * @brief happy test for adding one new table metadata
  *  and getting it by table name.
  */
@@ -270,6 +408,9 @@ TEST_F(ApiTestTableMetadata, add_get_table_metadata_by_table_name) {
   // verifies that the returned table metadata is expected one.
   ApiTestTableMetadata::check_table_metadata_expected(new_table,
                                                       table_metadata_inserted);
+
+  // remove table metadata.
+  ApiTestTableMetadata::remove_table(ret_table_id);
 }
 
 /**
@@ -311,6 +452,9 @@ TEST_F(ApiTestTableMetadata,
                 table_metadata_inserted.get<ObjectIdType>(Tables::ID));
   ApiTestTableMetadata::check_table_metadata_expected(new_table,
                                                       table_metadata_inserted);
+
+  // remove table metadata.
+  ApiTestTableMetadata::remove_table(new_table_name);
 }
 
 /**
@@ -350,11 +494,7 @@ TEST_F(ApiTestTableMetadata, get_two_table_metadata_by_table_name) {
   UTUtils::print(UTUtils::get_tree_string(new_table));
 
   // remove table metadata by table id.
-  ptree table_metadata_inserted;
-  error = tables->remove(ret_table_id[0]);
-  EXPECT_EQ(ErrorCode::OK, error);
-
-  UTUtils::print("-- remove table metadata --");
+  ApiTestTableMetadata::remove_table(ret_table_id[0]);
 }
 
 /**
@@ -390,6 +530,9 @@ TEST_F(ApiTestTableMetadata, add_get_table_metadata_by_table_id) {
   // verifies that the returned table metadata is expected one.
   ApiTestTableMetadata::check_table_metadata_expected(new_table,
                                                       table_metadata_inserted);
+
+  // remove table metadata.
+  ApiTestTableMetadata::remove_table(ret_table_id);
 }
 
 /**
@@ -533,6 +676,120 @@ TEST_F(ApiTestTableMetadata,
       std::make_unique<Tables>(GlobalTestEnvironment::TEST_DB);
   error = tables_remove_by_id->remove(ret_table_id);
   EXPECT_EQ(ErrorCode::OK, error);
+}
+
+/**
+ * @brief happy test for confirm permissions by role name.
+ *   Testing Assumptions:
+ *     Access settings to external tables using FDW must be completed.
+ *     Role name : tsurugi_test_user_1
+ *     Foreign table : test_foreign_table_r :SELECT
+ *     Foreign table : test_foreign_table_rawd :SELECT,INSERT,UPDATE,DELETE
+ *     Foreign table : test_foreign_table_none :none
+ */
+TEST_F(ApiTestTableMetadata, confirm_tables_permission_by_role_name) {
+  ErrorCode error;
+  std::string role_name = "tsurugi_test_user_1";
+  std::string new_table_name = "test_foreign_table_rawd";
+  bool res_permission = false;
+
+  // create an instance of the Tables class.
+  auto tables = std::make_unique<Tables>(GlobalTestEnvironment::TEST_DB);
+  error = tables->init();
+  EXPECT_EQ(ErrorCode::OK, error);
+
+  // the foreign table does not exist.
+  error = tables->confirm_permission_in_acls(role_name, "r", res_permission);
+  EXPECT_EQ(ErrorCode::NOT_FOUND, error);
+
+  // prepare test data for adding table metadata.
+  UTTableMetadata testdata_table_metadata =
+      *(global->testdata_table_metadata.get());
+  ptree new_table = testdata_table_metadata.tables;
+  new_table.put(Tables::NAME, new_table_name);
+
+  // add table metadata.
+  ObjectIdType ret_table_id = -1;
+  ApiTestTableMetadata::add_table(new_table, &ret_table_id);
+
+  // basic test.
+  ApiTestTableMetadata::confirm_tables_permission(role_name, tables);
+
+  // the role name is empty.
+  error = tables->confirm_permission_in_acls("", "r", res_permission);
+  EXPECT_EQ(ErrorCode::NAME_NOT_FOUND, error);
+
+  // the role name does not exist.
+  error =
+      tables->confirm_permission_in_acls("undefined-name", "r", res_permission);
+  EXPECT_EQ(ErrorCode::NAME_NOT_FOUND, error);
+
+  // remove table metadata.
+  ApiTestTableMetadata::remove_table(ret_table_id);
+}
+
+/**
+ * @brief happy test for confirm permissions by role id.
+ *   Testing Assumptions:
+ *     Access settings to external tables using FDW must be completed.
+ *     Role name : tsurugi_test_user_1
+ *     Foreign table : test_foreign_table_r ... SELECT
+ *     Foreign table : test_foreign_table_rawd :SELECT,INSERT,UPDATE,DELETE
+ *     Foreign table : test_foreign_table_none :none
+ */
+TEST_F(ApiTestTableMetadata, confirm_tables_permission_by_role_id) {
+  ErrorCode error;
+  std::string role_name = "tsurugi_test_user_1";
+  std::string new_table_name = "test_foreign_table_rawd";
+  bool res_permission = false;
+
+  // create an instance of the Roles class.
+  auto roles = std::make_unique<Roles>(GlobalTestEnvironment::TEST_DB);
+  error = roles->init();
+  EXPECT_EQ(ErrorCode::OK, error);
+
+  // get role metadata.
+  ptree role_metadata;
+  error = roles->get(role_name, role_metadata);
+  EXPECT_EQ(ErrorCode::OK, error);
+
+  // get role id.
+  boost::optional<ObjectIdType> o_oid =
+      role_metadata.get_optional<ObjectIdType>(Roles::ROLE_OID);
+  ObjectIdType role_id = o_oid.value();
+
+  // create an instance of the Tables class.
+  auto tables = std::make_unique<Tables>(GlobalTestEnvironment::TEST_DB);
+  error = tables->init();
+  EXPECT_EQ(ErrorCode::OK, error);
+
+  // the foreign table does not exist.
+  error = tables->confirm_permission_in_acls(role_id, "r", res_permission);
+  EXPECT_EQ(ErrorCode::NOT_FOUND, error);
+
+  // prepare test data for adding table metadata.
+  UTTableMetadata testdata_table_metadata =
+      *(global->testdata_table_metadata.get());
+  ptree new_table = testdata_table_metadata.tables;
+  new_table.put(Tables::NAME, new_table_name);
+
+  // add table metadata.
+  ObjectIdType ret_table_id = -1;
+  ApiTestTableMetadata::add_table(new_table, &ret_table_id);
+
+  // basic test.
+  ApiTestTableMetadata::confirm_tables_permission(role_id, tables);
+
+  // the role id (0) does not exist.
+  error = tables->confirm_permission_in_acls(0, "r", res_permission);
+  EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
+
+  // the role id (9999999) does not exist.
+  error = tables->confirm_permission_in_acls(9999999L, "r", res_permission);
+  EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
+
+  // remove table metadata.
+  ApiTestTableMetadata::remove_table(ret_table_id);
 }
 
 }  // namespace manager::metadata::testing
