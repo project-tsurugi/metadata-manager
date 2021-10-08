@@ -32,18 +32,15 @@ class ApiTestTableMetadata : public ::testing::Test {
  public:
   void SetUp() override;
 
-  static void add_table(const std::string& table_name,
-                        ObjectIdType* ret_table_id);
+  static void add_table(std::string_view table_name,
+                        ObjectIdType* ret_table_id = nullptr);
   static void add_table(boost::property_tree::ptree new_table,
-                        ObjectIdType* ret_table_id);
+                        ObjectIdType* ret_table_id = nullptr);
   static void remove_table(const ObjectIdType table_id);
   static void remove_table(std::string_view table_name);
   static void check_table_metadata_expected(
       boost::property_tree::ptree& expected,
       boost::property_tree::ptree& actual);
-  template <typename T>
-  static void confirm_tables_permission(T object_value,
-                                        std::unique_ptr<Tables>& tables);
   static std::vector<boost::property_tree::ptree>
   make_testdata_table_metadata();
 

@@ -292,7 +292,12 @@ TEST_P(ApiTestDBAccessFailureByTableIdReltuples,
 
   error = tables->set_statistic(table_meta);
 
-  EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
+  auto optional_tuples = table_meta.get_optional<float>(Tables::TUPLES);
+  if (optional_tuples) {
+    EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
+  } else {
+    EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);
+  }
 }
 
 /**
@@ -317,7 +322,12 @@ TEST_P(ApiTestDBAccessFailureByTableNameReltuples,
 
   error = tables->set_statistic(table_meta);
 
-  EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
+  auto optional_tuples = table_meta.get_optional<float>(Tables::TUPLES);
+  if (optional_tuples) {
+    EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
+  } else {
+    EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);
+  }
 }
 
 /**
@@ -384,8 +394,8 @@ TEST_P(ApiTestDBAccessFailureByColumnStatistics, add_one_column_statistic) {
   ptree statistic;
   // name
   std::string statistic_name = "ApiTestDBAccessFailureByColumnStatistics_" +
-                                std::to_string(table_id) + "-" +
-                                std::to_string(ordinal_position);
+                               std::to_string(table_id) + "-" +
+                               std::to_string(ordinal_position);
   statistic.put(Statistics::NAME, statistic_name);
   // table_id
   statistic.put(Statistics::TABLE_ID, table_id);
@@ -395,7 +405,12 @@ TEST_P(ApiTestDBAccessFailureByColumnStatistics, add_one_column_statistic) {
   statistic.add_child(Statistics::COLUMN_STATISTIC, column_stats);
 
   error = stats->add(statistic);
-  EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
+
+  if ((table_id <= 0) || (ordinal_position <= 0)) {
+    EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);
+  } else {
+    EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
+  }
 }
 
 /**
@@ -414,8 +429,7 @@ TEST_P(ApiTestDBAccessFailureByTableIdOrdinalPosition,
   ObjectIdType ordinal_position = std::get<1>(params);
 
   ptree column_stats;
-  error =
-      stats->get_by_column_number(table_id, ordinal_position, column_stats);
+  error = stats->get_by_column_number(table_id, ordinal_position, column_stats);
   if ((table_id <= 0) || (ordinal_position <= 0)) {
     EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
   } else {

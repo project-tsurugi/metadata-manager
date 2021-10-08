@@ -212,7 +212,7 @@ TEST_P(ApiTestTableStatisticsByTableIdHappy,
 
   error = tables->set_statistic(table_statistic);
 
-  boost::optional<float> optional_tuples_add =
+  auto optional_tuples_add =
       table_statistic.get_optional<float>(Tables::TUPLES);
   if (optional_tuples_add) {
     EXPECT_EQ(ErrorCode::OK, error);
@@ -225,13 +225,13 @@ TEST_P(ApiTestTableStatisticsByTableIdHappy,
   error = tables->get_statistic(ret_table_id, table_stats_added);
   EXPECT_EQ(ErrorCode::OK, error);
 
-  boost::optional<ObjectIdType> add_metadata_id =
+  auto add_metadata_id =
       table_stats_added.get_optional<ObjectIdType>(Tables::ID);
-  boost::optional<std::string> add_metadata_name =
+  auto add_metadata_name =
       table_stats_added.get_optional<std::string>(Tables::NAME);
-  boost::optional<std::string> add_metadata_namespace =
+  auto add_metadata_namespace =
       table_stats_added.get_optional<std::string>(Tables::NAMESPACE);
-  boost::optional<float> add_metadata_tuples =
+  auto add_metadata_tuples =
       table_stats_added.get_optional<float>(Tables::TUPLES);
 
   // verifies that the returned table statistic is expected one.
@@ -252,7 +252,7 @@ TEST_P(ApiTestTableStatisticsByTableIdHappy,
 
   error = tables->set_statistic(table_statistic);
 
-  boost::optional<float> optional_tuples_upd =
+  auto optional_tuples_upd =
       table_statistic.get_optional<float>(Tables::TUPLES);
   if (optional_tuples_upd) {
     EXPECT_EQ(ErrorCode::OK, error);
@@ -264,13 +264,13 @@ TEST_P(ApiTestTableStatisticsByTableIdHappy,
   error = tables->get_statistic(ret_table_id, table_stats_updated);
   EXPECT_EQ(ErrorCode::OK, error);
 
-  boost::optional<ObjectIdType> upd_metadata_id =
+  auto upd_metadata_id =
       table_stats_updated.get_optional<ObjectIdType>(Tables::ID);
-  boost::optional<std::string> upd_metadata_name =
+  auto upd_metadata_name =
       table_stats_updated.get_optional<std::string>(Tables::NAME);
-  boost::optional<std::string> upd_metadata_namespace =
+  auto upd_metadata_namespace =
       table_stats_updated.get_optional<std::string>(Tables::NAMESPACE);
-  boost::optional<float> upd_metadata_tuples =
+  auto upd_metadata_tuples =
       table_stats_updated.get_optional<float>(Tables::TUPLES);
 
   // verifies that the returned table statistic is expected one.
@@ -323,7 +323,7 @@ TEST_P(ApiTestTableStatisticsByTableNameHappy,
 
   error = tables->set_statistic(table_statistic);
 
-  boost::optional<float> optional_tuples_add =
+  auto optional_tuples_add =
       table_statistic.get_optional<float>(Tables::TUPLES);
   if (optional_tuples_add) {
     EXPECT_EQ(ErrorCode::OK, error);
@@ -336,13 +336,13 @@ TEST_P(ApiTestTableStatisticsByTableNameHappy,
   error = tables->get_statistic(table_name, table_stats_added);
   EXPECT_EQ(ErrorCode::OK, error);
 
-  boost::optional<ObjectIdType> add_metadata_id =
+  auto add_metadata_id =
       table_stats_added.get_optional<ObjectIdType>(Tables::ID);
-  boost::optional<std::string> add_metadata_name =
+  auto add_metadata_name =
       table_stats_added.get_optional<std::string>(Tables::NAME);
-  boost::optional<std::string> add_metadata_namespace =
+  auto add_metadata_namespace =
       table_stats_added.get_optional<std::string>(Tables::NAMESPACE);
-  boost::optional<float> add_metadata_tuples =
+  auto add_metadata_tuples =
       table_stats_added.get_optional<float>(Tables::TUPLES);
 
   // verifies that the returned table statistic is expected one.
@@ -363,7 +363,7 @@ TEST_P(ApiTestTableStatisticsByTableNameHappy,
 
   error = tables->set_statistic(table_statistic);
 
-  boost::optional<float> optional_tuples_upd =
+  auto optional_tuples_upd =
       table_statistic.get_optional<float>(Tables::TUPLES);
   if (optional_tuples_upd) {
     EXPECT_EQ(ErrorCode::OK, error);
@@ -375,13 +375,13 @@ TEST_P(ApiTestTableStatisticsByTableNameHappy,
   ptree table_stats_updated;
   error = tables->get_statistic(table_name, table_stats_updated);
 
-  boost::optional<ObjectIdType> upd_metadata_id =
+  auto upd_metadata_id =
       table_stats_updated.get_optional<ObjectIdType>(Tables::ID);
-  boost::optional<std::string> upd_metadata_name =
+  auto upd_metadata_name =
       table_stats_updated.get_optional<std::string>(Tables::NAME);
-  boost::optional<std::string> upd_metadata_namespace =
+  auto upd_metadata_namespace =
       table_stats_updated.get_optional<std::string>(Tables::NAMESPACE);
-  boost::optional<float> upd_metadata_tuples =
+  auto upd_metadata_tuples =
       table_stats_updated.get_optional<float>(Tables::TUPLES);
 
   // verifies that the returned table statistic is expected one.
