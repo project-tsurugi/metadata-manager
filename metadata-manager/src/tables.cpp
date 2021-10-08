@@ -413,14 +413,19 @@ ErrorCode Tables::param_check_metadata_add(
     }
     // DataTypes check provider.
     db::DataTypesProvider provider_data_types;
-    provider_data_types.init();
+    error = provider_data_types.init();
+    if (error != ErrorCode::OK) {
+      break;
+    }
 
     // Check the data types.
     boost::property_tree::ptree object;
     error = provider_data_types.get_datatype_metadata(
         DataTypes::ID, std::to_string(datatype_id.get()), object);
     if (error != ErrorCode::OK) {
-      error = ErrorCode::INVALID_PARAMETER;
+      if (error == ErrorCode::ID_NOT_FOUND) {
+        error = ErrorCode::INVALID_PARAMETER;
+      }
       break;
     }
 
