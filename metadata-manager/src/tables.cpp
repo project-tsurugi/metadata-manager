@@ -49,7 +49,7 @@ Tables::Tables(std::string_view database, std::string_view component)
  * @param none.
  * @return ErrorCode::OK if success, otherwise an error code.
  */
-ErrorCode Tables::init() {
+ErrorCode Tables::init() const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   // Initialize the provider.
@@ -63,7 +63,7 @@ ErrorCode Tables::init() {
  * @param (object)  [in]  table metadata to add.
  * @return ErrorCode::OK if success, otherwise an error code.
  */
-ErrorCode Tables::add(boost::property_tree::ptree& object) {
+ErrorCode Tables::add(boost::property_tree::ptree& object) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   // Adds the table metadata through the class method.
@@ -79,7 +79,7 @@ ErrorCode Tables::add(boost::property_tree::ptree& object) {
  * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode Tables::add(boost::property_tree::ptree& object,
-                      ObjectIdType* object_id) {
+                      ObjectIdType* object_id) const {
   ErrorCode error = ErrorCode::UNKNOWN;
   ObjectIdType retval_object_id;
 
@@ -109,7 +109,7 @@ ErrorCode Tables::add(boost::property_tree::ptree& object,
  * @retval otherwise an error code.
  */
 ErrorCode Tables::get(const ObjectIdType object_id,
-                      boost::property_tree::ptree& object) {
+                      boost::property_tree::ptree& object) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   // Parameter value check.
@@ -134,7 +134,7 @@ ErrorCode Tables::get(const ObjectIdType object_id,
  * @retval otherwise an error code.
  */
 ErrorCode Tables::get(std::string_view object_name,
-                      boost::property_tree::ptree& object) {
+                      boost::property_tree::ptree& object) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   // Parameter value check.
@@ -155,7 +155,8 @@ ErrorCode Tables::get(std::string_view object_name,
  * @param (container)  [out] Container for metadata-objects.
  * @return ErrorCode::OK if success, otherwise an error code.
  */
-ErrorCode Tables::get_all(std::vector<boost::property_tree::ptree>& container) {
+ErrorCode Tables::get_all(
+    std::vector<boost::property_tree::ptree>& container) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   // Get the table metadata through the provider.
@@ -175,7 +176,7 @@ ErrorCode Tables::get_all(std::vector<boost::property_tree::ptree>& container) {
  * @retval otherwise an error code.
  */
 ErrorCode Tables::get_statistic(const ObjectIdType table_id,
-                                boost::property_tree::ptree& object) {
+                                boost::property_tree::ptree& object) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   // Parameter value check.
@@ -202,7 +203,7 @@ ErrorCode Tables::get_statistic(const ObjectIdType table_id,
  * @retval otherwise an error code.
  */
 ErrorCode Tables::get_statistic(std::string_view table_name,
-                                boost::property_tree::ptree& object) {
+                                boost::property_tree::ptree& object) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   // Parameter value check.
@@ -225,7 +226,7 @@ ErrorCode Tables::get_statistic(std::string_view table_name,
  * @retval ErrorCode::NAME_NOT_FOUND if the table name does not exist.
  * @retval otherwise an error code.
  */
-ErrorCode Tables::set_statistic(boost::property_tree::ptree& object) {
+ErrorCode Tables::set_statistic(boost::property_tree::ptree& object) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   // Parameter value check.
@@ -251,7 +252,7 @@ ErrorCode Tables::set_statistic(boost::property_tree::ptree& object) {
  * @retval ErrorCode::ID_NOT_FOUND if the table id does not exist.
  * @retval otherwise an error code.
  */
-ErrorCode Tables::remove(const ObjectIdType object_id) {
+ErrorCode Tables::remove(const ObjectIdType object_id) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   // Parameter value check.
@@ -280,7 +281,7 @@ ErrorCode Tables::remove(const ObjectIdType object_id) {
  * @retval otherwise an error code.
  */
 ErrorCode Tables::remove(std::string_view object_name,
-                         ObjectIdType* object_id) {
+                         ObjectIdType* object_id) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   // Parameter value check.
@@ -315,7 +316,7 @@ ErrorCode Tables::remove(std::string_view object_name,
  */
 ErrorCode Tables::confirm_permission_in_acls(const ObjectIdType object_id,
                                              const char* permission,
-                                             bool& check_result) {
+                                             bool& check_result) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   // Parameter value check.
@@ -345,7 +346,7 @@ ErrorCode Tables::confirm_permission_in_acls(const ObjectIdType object_id,
  */
 ErrorCode Tables::confirm_permission_in_acls(std::string_view object_name,
                                              const char* permission,
-                                             bool& check_result) {
+                                             bool& check_result) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   // Parameter value check.
@@ -373,9 +374,9 @@ ErrorCode Tables::param_check_metadata_add(
     boost::property_tree::ptree& object) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
-  boost::optional<std::string> name =
+  boost::optional<std::string> table_name =
       object.get_optional<std::string>(Tables::NAME);
-  if (!name || name.get().empty()) {
+  if (!table_name || table_name.get().empty()) {
     error = ErrorCode::INVALID_PARAMETER;
     return error;
   }
@@ -389,9 +390,9 @@ ErrorCode Tables::param_check_metadata_add(
     boost::property_tree::ptree& column = node.second;
 
     // name
-    boost::optional<std::string> name =
+    boost::optional<std::string> column_name =
         column.get_optional<std::string>(Tables::Column::NAME);
-    if (!name || (name.get().empty())) {
+    if (!column_name || (column_name.get().empty())) {
       error = ErrorCode::INVALID_PARAMETER;
       break;
     }
@@ -419,9 +420,9 @@ ErrorCode Tables::param_check_metadata_add(
     }
 
     // Check the data types.
-    boost::property_tree::ptree object;
+    boost::property_tree::ptree datatype_metadata;
     error = provider_data_types.get_datatype_metadata(
-        DataTypes::ID, std::to_string(datatype_id.get()), object);
+        DataTypes::ID, std::to_string(datatype_id.get()), datatype_metadata);
     if (error != ErrorCode::OK) {
       if (error == ErrorCode::ID_NOT_FOUND) {
         error = ErrorCode::INVALID_PARAMETER;

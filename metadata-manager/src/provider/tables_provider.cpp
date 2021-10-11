@@ -34,10 +34,7 @@ ErrorCode TablesProvider::init() {
   ErrorCode error = ErrorCode::UNKNOWN;
   std::shared_ptr<GenericDAO> gdao = nullptr;
 
-  if (tables_dao_ != nullptr) {
-    // Instance of the TablesDAO class has already been obtained.
-    error = ErrorCode::OK;
-  } else {
+  if (tables_dao_ == nullptr) {
     // Get an instance of the TablesDAO class.
     error = session_manager_->get_dao(GenericDAO::TableName::TABLES, gdao);
     if (error != ErrorCode::OK) {
@@ -47,10 +44,7 @@ ErrorCode TablesProvider::init() {
     tables_dao_ = std::static_pointer_cast<TablesDAO>(gdao);
   }
 
-  if (columns_dao_ != nullptr) {
-    // Instance of the ColumnsDAO class has already been obtained.
-    error = ErrorCode::OK;
-  } else {
+  if (columns_dao_ == nullptr) {
     // Get an instance of the ColumnsDAO class.
     error = session_manager_->get_dao(GenericDAO::TableName::COLUMNS, gdao);
     if (error != ErrorCode::OK) {
@@ -60,10 +54,7 @@ ErrorCode TablesProvider::init() {
     columns_dao_ = std::static_pointer_cast<ColumnsDAO>(gdao);
   }
 
-  if (privileges_dao_ != nullptr) {
-    // Instance of the PrivilegesDAO class has already been obtained.
-    error = ErrorCode::OK;
-  } else {
+  if (privileges_dao_ == nullptr) {
     // Get an instance of the PrivilegesDAO class.
     error = session_manager_->get_dao(GenericDAO::TableName::PRIVILEGES, gdao);
     if (error != ErrorCode::OK) {
@@ -73,6 +64,7 @@ ErrorCode TablesProvider::init() {
     privileges_dao_ = std::static_pointer_cast<PrivilegesDAO>(gdao);
   }
 
+  error = ErrorCode::OK;
   return error;
 }
 

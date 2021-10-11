@@ -38,38 +38,38 @@ class Statistics : public Metadata {
   Statistics(const Statistics&) = delete;
   Statistics& operator=(const Statistics&) = delete;
 
-  ErrorCode init() override;
+  ErrorCode init() const override;
 
-  ErrorCode add(boost::property_tree::ptree& object) override;
+  ErrorCode add(boost::property_tree::ptree& object) const override;
   ErrorCode add(boost::property_tree::ptree& object,
-                ObjectIdType* object_id) override;
+                ObjectIdType* object_id) const override;
 
   ErrorCode get(const ObjectIdType object_id,
-                boost::property_tree::ptree& object) override;
+                boost::property_tree::ptree& object) const override;
   ErrorCode get(std::string_view object_name,
-                boost::property_tree::ptree& object) override;
+                boost::property_tree::ptree& object) const override;
   ErrorCode get_by_column_id(const ObjectIdType column_id,
-                             boost::property_tree::ptree& object);
+                             boost::property_tree::ptree& object) const;
   ErrorCode get_by_column_number(const ObjectIdType table_id,
                                  const int64_t ordinal_position,
-                                 boost::property_tree::ptree& object);
+                                 boost::property_tree::ptree& object) const;
   ErrorCode get_by_column_name(const ObjectIdType table_id,
                                std::string_view column_name,
-                               boost::property_tree::ptree& object);
+                               boost::property_tree::ptree& object) const;
   ErrorCode get_all(
-      std::vector<boost::property_tree::ptree>& container) override;
+      std::vector<boost::property_tree::ptree>& container) const override;
   ErrorCode get_all(const ObjectIdType table_id,
-                    std::vector<boost::property_tree::ptree>& object);
+                    std::vector<boost::property_tree::ptree>& container) const;
 
-  ErrorCode remove(const ObjectIdType object_id) override;
+  ErrorCode remove(const ObjectIdType object_id) const override;
   ErrorCode remove(std::string_view object_name,
-                   ObjectIdType* object_id) override;
-  ErrorCode remove_by_table_id(const ObjectIdType table_id);
-  ErrorCode remove_by_column_id(const ObjectIdType column_id);
+                   ObjectIdType* object_id) const override;
+  ErrorCode remove_by_table_id(const ObjectIdType table_id) const;
+  ErrorCode remove_by_column_id(const ObjectIdType column_id) const;
   ErrorCode remove_by_column_number(const ObjectIdType table_id,
-                                    const int64_t ordinal_position);
+                                    const int64_t ordinal_position) const;
   ErrorCode remove_by_column_name(const ObjectIdType table_id,
-                                  std::string_view column_name);
+                                  std::string_view column_name) const;
 
  private:
   manager::metadata::ErrorCode param_check_statistics_add(

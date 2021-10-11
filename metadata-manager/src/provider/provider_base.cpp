@@ -37,12 +37,11 @@ namespace storage = json;
 #endif
 
 /**
- * @brief Constructor
+ * @brief Constructor.
+ *   Create an instance of the DBSessionManager class.
  * @return none.
  */
-ProviderBase::ProviderBase() {
-  // Create an instance of the DBSessionManager class.
-  session_manager_ = std::make_unique<storage::DBSessionManager>();
-};
+ProviderBase::ProviderBase()
+    : session_manager_(std::make_unique<storage::DBSessionManager>()){};
 
 }  // namespace manager::metadata::db

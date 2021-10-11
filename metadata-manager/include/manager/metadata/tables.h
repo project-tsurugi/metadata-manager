@@ -76,35 +76,35 @@ class Tables : public Metadata {
   Tables(const Tables&) = delete;
   Tables& operator=(const Tables&) = delete;
 
-  ErrorCode init() override;
+  ErrorCode init() const override;
 
-  ErrorCode add(boost::property_tree::ptree& object) override;
+  ErrorCode add(boost::property_tree::ptree& object) const override;
   ErrorCode add(boost::property_tree::ptree& object,
-                ObjectIdType* object_id) override;
+                ObjectIdType* object_id) const override;
 
   ErrorCode get(const ObjectIdType object_id,
-                boost::property_tree::ptree& object) override;
+                boost::property_tree::ptree& object) const override;
   ErrorCode get(std::string_view object_name,
-                boost::property_tree::ptree& object) override;
+                boost::property_tree::ptree& object) const override;
   ErrorCode get_all(
-      std::vector<boost::property_tree::ptree>& container) override;
+      std::vector<boost::property_tree::ptree>& container) const override;
 
   ErrorCode get_statistic(const ObjectIdType table_id,
-                          boost::property_tree::ptree& object);
+                          boost::property_tree::ptree& object) const;
   ErrorCode get_statistic(std::string_view table_name,
-                          boost::property_tree::ptree& object);
-  ErrorCode set_statistic(boost::property_tree::ptree& object);
+                          boost::property_tree::ptree& object) const;
+  ErrorCode set_statistic(boost::property_tree::ptree& object) const;
 
-  ErrorCode remove(const ObjectIdType object_id) override;
+  ErrorCode remove(const ObjectIdType object_id) const override;
   ErrorCode remove(std::string_view object_name,
-                   ObjectIdType* object_id) override;
+                   ObjectIdType* object_id) const override;
 
   ErrorCode confirm_permission_in_acls(const ObjectIdType object_id,
                                        const char* permission,
-                                       bool& check_result);
+                                       bool& check_result) const;
   ErrorCode confirm_permission_in_acls(std::string_view object_name,
                                        const char* permission,
-                                       bool& check_result);
+                                       bool& check_result) const;
 
  private:
   manager::metadata::ErrorCode param_check_metadata_add(

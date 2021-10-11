@@ -49,34 +49,36 @@ class DataTypes : public Metadata {
   DataTypes(const DataTypes&) = delete;
   DataTypes& operator=(const DataTypes&) = delete;
 
-  ErrorCode init() override;
+  ErrorCode init() const override;
 
   ErrorCode add(boost::property_tree::ptree& object
-                __attribute__((unused))) override {
+                __attribute__((unused))) const override {
     return ErrorCode::UNKNOWN;
   }
   ErrorCode add(boost::property_tree::ptree& object __attribute__((unused)),
-                ObjectIdType* object_id __attribute__((unused))) override {
+                ObjectIdType* object_id
+                __attribute__((unused))) const override {
     return ErrorCode::UNKNOWN;
   }
 
   ErrorCode get(const ObjectIdType object_id,
-                boost::property_tree::ptree& object) override;
+                boost::property_tree::ptree& object) const override;
   ErrorCode get(std::string_view object_name,
-                boost::property_tree::ptree& object) override;
+                boost::property_tree::ptree& object) const override;
   ErrorCode get(std::string_view object_key, std::string_view object_value,
-                boost::property_tree::ptree& object);
+                boost::property_tree::ptree& object) const;
   ErrorCode get_all(std::vector<boost::property_tree::ptree>& container
-                    __attribute__((unused))) override {
+                    __attribute__((unused))) const override {
     return ErrorCode::UNKNOWN;
   }
 
   ErrorCode remove(const ObjectIdType object_id
-                   __attribute__((unused))) override {
+                   __attribute__((unused))) const override {
     return ErrorCode::UNKNOWN;
   }
   ErrorCode remove(std::string_view object_name __attribute__((unused)),
-                   ObjectIdType* object_id __attribute__((unused))) override {
+                   ObjectIdType* object_id
+                   __attribute__((unused))) const override {
     return ErrorCode::UNKNOWN;
   }
 

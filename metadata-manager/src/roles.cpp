@@ -47,7 +47,7 @@ Roles::Roles(std::string_view database, std::string_view component)
  * @param none.
  * @return ErrorCode::OK if success, otherwise an error code.
  */
-ErrorCode Roles::init() {
+ErrorCode Roles::init() const {
   // Initialize the provider.
   ErrorCode error = provider->init();
 
@@ -63,7 +63,7 @@ ErrorCode Roles::init() {
  * @retval otherwise an error code.
  */
 ErrorCode Roles::get(const ObjectIdType object_id,
-                     boost::property_tree::ptree& object) {
+                     boost::property_tree::ptree& object) const {
   if (object_id <= 0) {
     return ErrorCode::ID_NOT_FOUND;
   }
@@ -85,7 +85,7 @@ ErrorCode Roles::get(const ObjectIdType object_id,
  * @retval otherwise an error code.
  */
 ErrorCode Roles::get(std::string_view object_name,
-                     boost::property_tree::ptree& object) {
+                     boost::property_tree::ptree& object) const {
   if (object_name.empty()) {
     return ErrorCode::NAME_NOT_FOUND;
   }

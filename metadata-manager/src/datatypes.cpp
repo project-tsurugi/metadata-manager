@@ -47,7 +47,7 @@ DataTypes::DataTypes(std::string_view database, std::string_view component)
  * @param none.
  * @return ErrorCode::OK if success, otherwise an error code.
  */
-ErrorCode DataTypes::init() {
+ErrorCode DataTypes::init() const {
   // Initialize the provider.
   ErrorCode error = provider->init();
 
@@ -65,7 +65,7 @@ ErrorCode DataTypes::init() {
  * @retval otherwise an error code.
  */
 ErrorCode DataTypes::get(const ObjectIdType object_id,
-                         boost::property_tree::ptree& object) {
+                         boost::property_tree::ptree& object) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   // Parameter value check.
@@ -91,7 +91,7 @@ ErrorCode DataTypes::get(const ObjectIdType object_id,
  * @retval otherwise an error code.
  */
 ErrorCode DataTypes::get(std::string_view object_name,
-                         boost::property_tree::ptree& object) {
+                         boost::property_tree::ptree& object) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   // Parameter value check.
@@ -121,7 +121,7 @@ ErrorCode DataTypes::get(std::string_view object_name,
  */
 ErrorCode DataTypes::get(std::string_view object_key,
                          std::string_view object_value,
-                         boost::property_tree::ptree& object) {
+                         boost::property_tree::ptree& object) const {
   ErrorCode error = ErrorCode::UNKNOWN;
   std::string_view s_object_key = std::string_view(object_key);
 

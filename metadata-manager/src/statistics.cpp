@@ -49,7 +49,7 @@ Statistics::Statistics(std::string_view database, std::string_view component)
  * @param none.
  * @return ErrorCode::OK if success, otherwise an error code.
  */
-ErrorCode Statistics::init() {
+ErrorCode Statistics::init() const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   // Initialize the provider.
@@ -63,7 +63,7 @@ ErrorCode Statistics::init() {
  * @param (object) [in]  statistics to add.
  * @return ErrorCode::OK if success, otherwise an error code.
  */
-ErrorCode Statistics::add(boost::property_tree::ptree& object) {
+ErrorCode Statistics::add(boost::property_tree::ptree& object) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   // Adds the column statistics through the class method.
@@ -79,7 +79,7 @@ ErrorCode Statistics::add(boost::property_tree::ptree& object) {
  * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode Statistics::add(boost::property_tree::ptree& object,
-                          ObjectIdType* object_id) {
+                          ObjectIdType* object_id) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   // Parameter value check.
@@ -109,7 +109,7 @@ ErrorCode Statistics::add(boost::property_tree::ptree& object,
  * @retval otherwise an error code.
  */
 ErrorCode Statistics::get(const ObjectIdType object_id,
-                          boost::property_tree::ptree& object) {
+                          boost::property_tree::ptree& object) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   // Parameter value check.
@@ -135,7 +135,7 @@ ErrorCode Statistics::get(const ObjectIdType object_id,
  * @retval otherwise an error code.
  */
 ErrorCode Statistics::get(std::string_view object_name,
-                          boost::property_tree::ptree& object) {
+                          boost::property_tree::ptree& object) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   // Parameter value check.
@@ -160,8 +160,8 @@ ErrorCode Statistics::get(std::string_view object_name,
  * @retval ErrorCode::ID_NOT_FOUND if the column id does not exist.
  * @retval otherwise an error code.
  */
-ErrorCode Statistics::get_by_column_id(const ObjectIdType column_id,
-                                       boost::property_tree::ptree& object) {
+ErrorCode Statistics::get_by_column_id(
+    const ObjectIdType column_id, boost::property_tree::ptree& object) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   // Parameter value check.
@@ -191,7 +191,7 @@ ErrorCode Statistics::get_by_column_id(const ObjectIdType column_id,
  */
 ErrorCode Statistics::get_by_column_number(
     const ObjectIdType table_id, const int64_t ordinal_position,
-    boost::property_tree::ptree& object) {
+    boost::property_tree::ptree& object) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   // Parameter value check.
@@ -220,9 +220,9 @@ ErrorCode Statistics::get_by_column_number(
  * @retval ErrorCode::NAME_NOT_FOUND if the column name does not exist.
  * @retval otherwise an error code.
  */
-ErrorCode Statistics::get_by_column_name(const ObjectIdType table_id,
-                                         std::string_view column_name,
-                                         boost::property_tree::ptree& object) {
+ErrorCode Statistics::get_by_column_name(
+    const ObjectIdType table_id, std::string_view column_name,
+    boost::property_tree::ptree& object) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   // Parameter value check.
@@ -249,7 +249,7 @@ ErrorCode Statistics::get_by_column_name(const ObjectIdType table_id,
  * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode Statistics::get_all(
-    std::vector<boost::property_tree::ptree>& container) {
+    std::vector<boost::property_tree::ptree>& container) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   // Get the column statistic through the provider.
@@ -271,7 +271,7 @@ ErrorCode Statistics::get_all(
  */
 ErrorCode Statistics::get_all(
     const ObjectIdType table_id,
-    std::vector<boost::property_tree::ptree>& container) {
+    std::vector<boost::property_tree::ptree>& container) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   // Parameter value check.
@@ -293,7 +293,7 @@ ErrorCode Statistics::get_all(
  * @retval ErrorCode::ID_NOT_FOUND if the statistic id does not exist.
  * @retval otherwise an error code.
  */
-ErrorCode Statistics::remove(const ObjectIdType object_id) {
+ErrorCode Statistics::remove(const ObjectIdType object_id) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   // Parameter value check.
@@ -318,7 +318,7 @@ ErrorCode Statistics::remove(const ObjectIdType object_id) {
  * @retval otherwise an error code.
  */
 ErrorCode Statistics::remove(std::string_view object_name,
-                             ObjectIdType* object_id) {
+                             ObjectIdType* object_id) const {
   ErrorCode error = ErrorCode::UNKNOWN;
   std::string_view s_object_name = std::string_view(object_name);
 
@@ -343,7 +343,7 @@ ErrorCode Statistics::remove(std::string_view object_name,
  * @retval ErrorCode::ID_NOT_FOUND if the table id does not exist.
  * @retval otherwise an error code.
  */
-ErrorCode Statistics::remove_by_table_id(const ObjectIdType table_id) {
+ErrorCode Statistics::remove_by_table_id(const ObjectIdType table_id) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   // Parameter value check.
@@ -366,7 +366,7 @@ ErrorCode Statistics::remove_by_table_id(const ObjectIdType table_id) {
  * @retval ErrorCode::ID_NOT_FOUND if the column id does not exist.
  * @retval otherwise an error code.
  */
-ErrorCode Statistics::remove_by_column_id(const ObjectIdType column_id) {
+ErrorCode Statistics::remove_by_column_id(const ObjectIdType column_id) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   // Parameter value check.
@@ -392,8 +392,8 @@ ErrorCode Statistics::remove_by_column_id(const ObjectIdType column_id) {
  * exist.
  * @retval otherwise an error code.
  */
-ErrorCode Statistics::remove_by_column_number(const ObjectIdType table_id,
-                                              const int64_t ordinal_position) {
+ErrorCode Statistics::remove_by_column_number(
+    const ObjectIdType table_id, const int64_t ordinal_position) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   // Parameter value check.
@@ -419,8 +419,8 @@ ErrorCode Statistics::remove_by_column_number(const ObjectIdType table_id,
  * @retval ErrorCode::NAME_NOT_FOUND if the column name does not exist.
  * @retval otherwise an error code.
  */
-ErrorCode Statistics::remove_by_column_name(const ObjectIdType table_id,
-                                            std::string_view column_name) {
+ErrorCode Statistics::remove_by_column_name(
+    const ObjectIdType table_id, std::string_view column_name) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   // Parameter value check.

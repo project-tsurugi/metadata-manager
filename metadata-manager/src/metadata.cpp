@@ -23,7 +23,7 @@ namespace manager::metadata {
  * @brief Read latest table-metadata from metadata-table.
  * @return ErrorCode::OK if success, otherwise an error code.
  */
-[[deprecated("don't use load() function.")]] ErrorCode Metadata::load() {
+[[deprecated("don't use load() function.")]] ErrorCode Metadata::load() const {
   return ErrorCode::OK;
 }
 
