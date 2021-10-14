@@ -253,7 +253,7 @@ ErrorCode Statistics::get_all(
   ErrorCode error = ErrorCode::UNKNOWN;
 
   // Get the column statistic through the provider.
-  error = provider->get_column_statistics(0, container);
+  error = provider->get_column_statistics(container);
 
   return error;
 }

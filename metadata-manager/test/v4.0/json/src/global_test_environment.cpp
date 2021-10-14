@@ -15,15 +15,18 @@
  */
 #include "test/global_test_environment.h"
 
+#include <boost/format.hpp>
 #include <limits>
 
 #include "manager/metadata/dao/common/config.h"
+#include "manager/metadata/dao/json/tables_dao.h"
 #include "test/utility/ut_utils.h"
 
 namespace manager::metadata::testing {
 
 using namespace manager::metadata;
 using namespace manager::metadata::db;
+using namespace manager::metadata::db::json;
 
 void GlobalTestEnvironment::SetUp() {
   // generate table metadata as test data.
@@ -53,6 +56,11 @@ void GlobalTestEnvironment::SetUp() {
       std::numeric_limits<ObjectIdType>::infinity(),
       -std::numeric_limits<ObjectIdType>::infinity(),
       std::numeric_limits<ObjectIdType>::quiet_NaN()};
+
+  // initialize json file.
+  boost::format filename =
+      boost::format("%s/%s.json") % Config::get_storage_dir_path() % "tables";
+  std::remove(filename.str().c_str());
 }
 
 void GlobalTestEnvironment::TearDown() {}

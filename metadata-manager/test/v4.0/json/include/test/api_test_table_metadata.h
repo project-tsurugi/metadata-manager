@@ -18,7 +18,7 @@
 
 #include <gtest/gtest.h>
 #include <boost/property_tree/ptree.hpp>
-#include <string>
+#include <string_view>
 #include <vector>
 
 #include "manager/metadata/metadata.h"
@@ -31,10 +31,10 @@ class ApiTestTableMetadata : public ::testing::Test {
  public:
   void SetUp() override;
 
-  static void add_table(const std::string& table_name,
-                        ObjectIdType* ret_table_id);
+  static void add_table(std::string_view table_name,
+                        ObjectIdType* ret_table_id = nullptr);
   static void add_table(boost::property_tree::ptree new_table,
-                        ObjectIdType* ret_table_id);
+                        ObjectIdType* ret_table_id = nullptr);
   static void check_table_metadata_expected(
       boost::property_tree::ptree& expected,
       boost::property_tree::ptree& actual);

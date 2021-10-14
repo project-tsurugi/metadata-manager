@@ -326,7 +326,8 @@ StatisticsDAO::StatisticsDAO(DBSessionManager* session_manager)
                                               statement_name_delete.str());
   }
 
-  column_names_columns.emplace(Statistics::NAME, ColumnsDAO::ColumnName::kName);
+  column_names_columns.emplace(Statistics::COLUMN_NAME,
+                               ColumnsDAO::ColumnName::kName);
   column_names_columns.emplace(Statistics::ORDINAL_POSITION,
                                ColumnsDAO::ColumnName::kOrdinalPosition);
   for (auto column : column_names_columns) {
@@ -457,15 +458,15 @@ ErrorCode StatisticsDAO::prepare() const {
  * @param (column_id)         [in]  column id.
  * @param (column_name)       [in]  column name to add or update.
  * @param (column_statistic)  [in]  one column statistic to add or update.
+ * @param (statistic_id)      [out] ID of the added column statistic.
  * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode StatisticsDAO::upsert_column_statistic(
     const ObjectIdType column_id, const std::string* column_name,
-    boost::property_tree::ptree* column_statistic) const {
+    boost::property_tree::ptree* column_statistic,
+    ObjectIdType& statistic_id) const {
   ErrorCode error = ErrorCode::UNKNOWN;
   std::vector<char const*> param_values;
-
-  // TODO: This is a temporary implementation. It has not been tested yet.
 
   // format_version
   std::string s_format_version = std::to_string(Statistics::format_version());
@@ -509,13 +510,12 @@ ErrorCode StatisticsDAO::upsert_column_statistic(
       param_values, res);
 
   if (error == ErrorCode::OK) {
-    uint64_t number_of_rows_affected = 0;
-    ErrorCode error_get =
-        DbcUtils::get_number_of_rows_affected(res, number_of_rows_affected);
-
-    if (error_get != ErrorCode::OK) {
-      error = error_get;
-    } else if (number_of_rows_affected != 1) {
+    int nrows = PQntuples(res);
+    if (nrows == 1) {
+      int ordinal_position = 0;
+      error = DbcUtils::str_to_integral<ObjectIdType>(
+          PQgetvalue(res, ordinal_position, 0), statistic_id);
+    } else {
       error = ErrorCode::INVALID_PARAMETER;
     }
   }
@@ -536,12 +536,14 @@ ErrorCode StatisticsDAO::upsert_column_statistic(
  * @param (object_value)      [in]  value to be filtered.
  * @param (column_name)       [in]  column name to add or update.
  * @param (column_statistic)  [in]  one column statistic to add or update.
+ * @param (statistic_id)      [out] ID of the added column statistic.
  * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode StatisticsDAO::upsert_column_statistic(
     const ObjectIdType table_id, std::string_view object_key,
     std::string_view object_value, const std::string* column_name,
-    boost::property_tree::ptree* column_statistic) const {
+    boost::property_tree::ptree* column_statistic,
+    ObjectIdType& statistic_id) const {
   ErrorCode error = ErrorCode::UNKNOWN;
   std::vector<char const*> param_values;
 
@@ -597,13 +599,12 @@ ErrorCode StatisticsDAO::upsert_column_statistic(
       DbcUtils::exec_prepared(connection_, statement_name, param_values, res);
 
   if (error == ErrorCode::OK) {
-    uint64_t number_of_rows_affected = 0;
-    ErrorCode error_get =
-        DbcUtils::get_number_of_rows_affected(res, number_of_rows_affected);
-
-    if (error_get != ErrorCode::OK) {
-      error = error_get;
-    } else if (number_of_rows_affected != 1) {
+    int nrows = PQntuples(res);
+    if (nrows == 1) {
+      int ordinal_position = 0;
+      error = DbcUtils::str_to_integral<ObjectIdType>(
+          PQgetvalue(res, ordinal_position, 0), statistic_id);
+    } else {
       error = ErrorCode::INVALID_PARAMETER;
     }
   }
@@ -632,8 +633,6 @@ ErrorCode StatisticsDAO::select_column_statistic(std::string_view object_key,
   std::vector<const char*> param_values;
 
   param_values.emplace_back(object_value.data());
-
-  // TODO: This is a temporary implementation. It has not been tested yet.
 
   // Get the name of the SQL statement to be executed.
   std::string statement_name;
@@ -679,8 +678,6 @@ ErrorCode StatisticsDAO::select_column_statistic(
     std::vector<boost::property_tree::ptree>& container) const {
   ErrorCode error = ErrorCode::UNKNOWN;
   std::vector<const char*> param_values;
-
-  // TODO: This is a temporary implementation. It has not been tested yet.
 
   std::string statement_name = std::to_string(static_cast<int>(
       StatementName::STATISTICS_DAO_SELECT_COLUMN_STATISTIC_ALL));
@@ -798,8 +795,6 @@ ErrorCode StatisticsDAO::delete_column_statistic(
   ErrorCode error = ErrorCode::UNKNOWN;
   std::vector<const char*> param_values;
 
-  // TODO: This is a temporary implementation. It has not been tested yet.
-
   param_values.emplace_back(object_value.data());
 
   // Get the name of the SQL statement to be executed.
@@ -832,6 +827,8 @@ ErrorCode StatisticsDAO::delete_column_statistic(
         error = ErrorCode::ID_NOT_FOUND;
       } else if (object_key == Statistics::NAME) {
         error = ErrorCode::NAME_NOT_FOUND;
+      } else if (object_key == Statistics::COLUMN_ID) {
+        error = ErrorCode::ID_NOT_FOUND;
       } else {
         error = ErrorCode::NOT_FOUND;
       }

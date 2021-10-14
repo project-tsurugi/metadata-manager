@@ -193,10 +193,8 @@ void ApiTestTableMetadata::check_table_metadata_expected(ptree& expected,
  * table metadata.
  * @return none.
  */
-void ApiTestTableMetadata::add_table(const std::string& table_name,
+void ApiTestTableMetadata::add_table(std::string_view table_name,
                                      ObjectIdType* ret_table_id) {
-  assert(ret_table_id != nullptr);
-
   // prepare test data for adding table metadata.
   UTTableMetadata* testdata_table_metadata =
       global->testdata_table_metadata.get();
@@ -209,28 +207,30 @@ void ApiTestTableMetadata::add_table(const std::string& table_name,
 
 /**
  * @brief Add one new table metadata to table metadata table.
- * @param (new_table)        [in]   new table metadata.
- * @param (ret_table_id)     [out]  table id returned from the api to add new
- * table metadata.
+ * @param (new_table)  [in]   new table metadata.
+ * @param (table_id)   [out]  table id returned from the api to
+ *   add new table metadata.
  * @return none.
  */
-void ApiTestTableMetadata::add_table(ptree new_table,
-                                     ObjectIdType* ret_table_id) {
-  assert(ret_table_id != nullptr);
-
+void ApiTestTableMetadata::add_table(ptree new_table, ObjectIdType* table_id) {
   auto tables = std::make_unique<Tables>(GlobalTestEnvironment::TEST_DB);
 
   ErrorCode error = tables->init();
   EXPECT_EQ(ErrorCode::OK, error);
 
   // add table metadata.
-  error = tables->add(new_table, ret_table_id);
+  ObjectIdType ret_table_id;
+  error = tables->add(new_table, &ret_table_id);
   EXPECT_EQ(ErrorCode::OK, error);
-  EXPECT_GT(*ret_table_id, 0);
+  EXPECT_GT(ret_table_id, 0);
 
   UTUtils::print("-- add table metadata --");
-  UTUtils::print("new table id:", *ret_table_id);
+  UTUtils::print("new table id:", ret_table_id);
   UTUtils::print(UTUtils::get_tree_string(new_table));
+
+  if (table_id != nullptr) {
+    *table_id = ret_table_id;
+  }
 }
 
 /**
@@ -243,7 +243,7 @@ TEST_F(ApiTestTableMetadata, add_get_table_metadata_by_table_name) {
       *(global->testdata_table_metadata.get());
   ptree new_table = testdata_table_metadata.tables;
   std::string new_table_name =
-      new_table.get<std::string>(Tables::NAME) + "_ApiTestTableMetadata1";
+      new_table.get<std::string>(Tables::NAME) + "_ApiTestTableMetadata1_1";
   new_table.put(Tables::NAME, new_table_name);
 
   // add table metadata.
@@ -256,6 +256,7 @@ TEST_F(ApiTestTableMetadata, add_get_table_metadata_by_table_name) {
   ErrorCode error = tables->init();
   EXPECT_EQ(ErrorCode::OK, error);
 
+  // get table metadata by table name.
   ptree table_metadata_inserted;
   error = tables->get(new_table_name, table_metadata_inserted);
   EXPECT_EQ(ErrorCode::OK, error);
@@ -404,6 +405,73 @@ TEST_F(ApiTestTableMetadata, add_get_table_metadata_by_table_id) {
 
   // cleanup
   tables->remove(new_table_name.c_str(), nullptr);
+}
+
+/**
+ * @brief happy test for all table metadata getting.
+ */
+TEST_F(ApiTestTableMetadata, get_all_table_metadata) {
+  constexpr int test_table_count = 5;
+  std::string table_name_prefix = "Table-ApiTestTableMetadata-GetAll-";
+  std::vector<ObjectIdType> table_ids = {};
+
+  // prepare test data for adding table metadata.
+  UTTableMetadata testdata_table_metadata =
+      *(global->testdata_table_metadata.get());
+  ptree expected_table = testdata_table_metadata.tables;
+
+  // add table metadata.
+  for (int count = 1; count <= test_table_count; count++) {
+    std::string table_name = table_name_prefix + std::to_string(count);
+    ObjectIdType table_id;
+    ApiTestTableMetadata::add_table(table_name, &table_id);
+    table_ids.emplace_back(table_id);
+  }
+
+  // gets all table metadata.
+  auto tables = std::make_unique<Tables>(GlobalTestEnvironment::TEST_DB);
+  ErrorCode error = tables->init();
+  EXPECT_EQ(ErrorCode::OK, error);
+
+  std::vector<boost::property_tree::ptree> container = {};
+  error = tables->get_all(container);
+  EXPECT_EQ(ErrorCode::OK, error);
+  EXPECT_EQ(test_table_count, container.size());
+
+  UTUtils::print("-- get all table metadata --");
+  for (int count = 1; count <= test_table_count; count++) {
+    ptree table_metadata = container[count - 1];
+    UTUtils::print(UTUtils::get_tree_string(table_metadata));
+
+    std::string table_name = table_name_prefix + std::to_string(count);
+    expected_table.put(Tables::ID, table_ids[count - 1]);
+    expected_table.put(Tables::NAME, table_name);
+
+    // verifies that the returned table metadata is expected one.
+    ApiTestTableMetadata::check_table_metadata_expected(expected_table,
+                                                        table_metadata);
+  }
+
+  // cleanup
+  for (ObjectIdType table_id : table_ids) {
+    error = tables->remove(table_id);
+    EXPECT_EQ(ErrorCode::OK, error);
+  }
+}
+
+/**
+ * @brief happy test for all table metadata getting.
+ */
+TEST_F(ApiTestTableMetadata, get_all_table_metadata_empty) {
+  // gets all table metadata.
+  auto tables = std::make_unique<Tables>(GlobalTestEnvironment::TEST_DB);
+  ErrorCode error = tables->init();
+  EXPECT_EQ(ErrorCode::OK, error);
+
+  std::vector<boost::property_tree::ptree> container = {};
+  error = tables->get_all(container);
+  EXPECT_EQ(ErrorCode::OK, error);
+  EXPECT_EQ(0, container.size());
 }
 
 /**

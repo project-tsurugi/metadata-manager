@@ -107,7 +107,8 @@ ErrorCode StatisticsProvider::add_column_statistic(ptree& object,
   if (optional_column_id) {
     // Register column statistics via DAO using column_id.
     error = statistics_dao_->upsert_column_statistic(
-        optional_column_id.get(), statistic_name, column_statistic);
+        optional_column_id.get(), statistic_name, column_statistic,
+        statistic_id);
   } else {
     // Set the key items and values to be register.
     std::string key;
@@ -116,13 +117,14 @@ ErrorCode StatisticsProvider::add_column_statistic(ptree& object,
       key = Statistics::ORDINAL_POSITION;
       value = std::to_string(optional_ordinal_position.get());
     } else {
-      key = Statistics::NAME;
+      key = Statistics::COLUMN_NAME;
       value = optional_column_name.get();
     }
 
     // Register column statistics via DAO.
     error = statistics_dao_->upsert_column_statistic(
-        optional_table_id.get(), key, value, statistic_name, column_statistic);
+        optional_table_id.get(), key, value, statistic_name, column_statistic,
+        statistic_id);
   }
 
   if (error == ErrorCode::OK) {

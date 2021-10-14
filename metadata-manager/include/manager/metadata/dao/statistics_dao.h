@@ -28,11 +28,13 @@ class StatisticsDAO : public GenericDAO {
  public:
   virtual manager::metadata::ErrorCode upsert_column_statistic(
       const ObjectIdType column_id, const std::string* column_name,
-      boost::property_tree::ptree* column_statistic) const = 0;
+      boost::property_tree::ptree* column_statistic,
+      ObjectIdType& statistic_id) const = 0;
   virtual manager::metadata::ErrorCode upsert_column_statistic(
       const ObjectIdType table_id, std::string_view object_key,
       std::string_view object_value, const std::string* column_name,
-      boost::property_tree::ptree* column_statistic) const = 0;
+      boost::property_tree::ptree* column_statistic,
+      ObjectIdType& statistic_id) const = 0;
 
   virtual manager::metadata::ErrorCode select_column_statistic(
       std::string_view object_key, std::string_view object_value,

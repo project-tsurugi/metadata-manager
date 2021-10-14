@@ -420,8 +420,6 @@ ErrorCode TablesDAO::select_table_metadata(
   ErrorCode error = ErrorCode::UNKNOWN;
   std::vector<const char*> param_values;
 
-  // TODO: This is a temporary implementation. It has not been tested yet.
-
   PGresult* res;
   error = DbcUtils::exec_prepared(
       connection_, StatementName::TABLES_DAO_SELECT_TABLE_METADATA_ALL,
@@ -429,7 +427,7 @@ ErrorCode TablesDAO::select_table_metadata(
 
   if (error == ErrorCode::OK) {
     int nrows = PQntuples(res);
-    if (nrows >= 1) {
+    if (nrows >= 0) {
       for (int ordinal_position = 0; ordinal_position < nrows;
            ordinal_position++) {
         ptree table;
@@ -440,8 +438,7 @@ ErrorCode TablesDAO::select_table_metadata(
         container.emplace_back(table);
       }
     } else {
-      error =
-          (nrows == 0) ? ErrorCode::NOT_FOUND : ErrorCode::INVALID_PARAMETER;
+      error = ErrorCode::INVALID_PARAMETER;
     }
   }
 

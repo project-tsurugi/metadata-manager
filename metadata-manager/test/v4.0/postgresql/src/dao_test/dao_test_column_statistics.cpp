@@ -84,7 +84,7 @@ INSTANTIATE_TEST_CASE_P(ParamtererizedTest,
 void DaoTestColumnStatistics::add_column_statistics(
     ObjectIdType table_id, std::vector<ptree> column_statistics) {
   UTUtils::print(
-      " -- add column statistics by add_one_column_statistic start --");
+      "-- add column statistics by add_one_column_statistic start --");
   UTUtils::print("id:", table_id);
 
   ErrorCode error;
@@ -97,7 +97,7 @@ void DaoTestColumnStatistics::add_column_statistics(
   }
 
   UTUtils::print(
-      " -- add column statistics by add_one_column_statistic end -- \n");
+      "-- add column statistics by add_one_column_statistic end -- \n");
 }
 
 /**
@@ -112,7 +112,7 @@ void DaoTestColumnStatistics::add_column_statistics(
  * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode DaoTestColumnStatistics::add_one_column_statistic(
-    ObjectIdType table_id, ObjectIdType ordinal_position,
+    ObjectIdType table_id, std::int64_t ordinal_position,
     boost::property_tree::ptree& column_statistic) {
   ErrorCode error = ErrorCode::INTERNAL_ERROR;
 
@@ -146,16 +146,19 @@ ErrorCode DaoTestColumnStatistics::add_one_column_statistic(
   error = db_session_manager.start_transaction();
   EXPECT_EQ(ErrorCode::OK, error);
 
-  error = sdao->upsert_column_statistic(table_id, Statistics::ORDINAL_POSITION,
-                                        std::to_string(ordinal_position),
-                                        &statistic_name, &column_statistic);
+  ObjectIdType ret_statistic_id;
+  error = sdao->upsert_column_statistic(
+      table_id, Statistics::ORDINAL_POSITION, std::to_string(ordinal_position),
+      &statistic_name, &column_statistic, ret_statistic_id);
 
   if (error == ErrorCode::OK) {
     ErrorCode commit_error = db_session_manager.commit();
     EXPECT_EQ(ErrorCode::OK, commit_error);
+    EXPECT_GT(ret_statistic_id, 0);
 
-    UTUtils::print("ordinal position:", ordinal_position);
-    UTUtils::print("column statistics:" + s_column_statistic);
+    UTUtils::print(" statistic id: ", ret_statistic_id);
+    UTUtils::print(" ordinal position: ", ordinal_position);
+    UTUtils::print(" column statistics: " + s_column_statistic);
 
   } else {
     ErrorCode rollback_error = db_session_manager.rollback();
@@ -198,11 +201,12 @@ ErrorCode DaoTestColumnStatistics::get_one_column_statistic(
                                         column_statistic);
 
   if (error == ErrorCode::OK) {
-    boost::optional<ObjectIdType> optional_ordinal_position =
-        column_statistic.get_optional<ObjectIdType>(
+    auto optional_ordinal_position =
+        column_statistic.get_optional<std::int64_t>(
             Statistics::ORDINAL_POSITION);
     EXPECT_TRUE(optional_ordinal_position);
-    boost::optional<ptree&> optional_column_statistic =
+
+    auto optional_column_statistic =
         column_statistic.get_child_optional(Statistics::COLUMN_STATISTIC);
     EXPECT_TRUE(optional_column_statistic);
 
@@ -213,8 +217,8 @@ ErrorCode DaoTestColumnStatistics::get_one_column_statistic(
 
     EXPECT_EQ(s_cs_returned, s_cs_expected);
 
-    UTUtils::print("ordinal position:", optional_ordinal_position.get());
-    UTUtils::print("column statistic:" + s_cs_returned);
+    UTUtils::print(" ordinal position: ", optional_ordinal_position.get());
+    UTUtils::print(" column statistics: " + s_cs_returned);
   }
 
   return error;
@@ -246,7 +250,7 @@ ErrorCode DaoTestColumnStatistics::get_all_column_statistics(
 
   if (error == ErrorCode::OK) {
     UTUtils::print(
-        " -- get column statistics by get_all_column_statistics start --");
+        "-- get column statistics by get_all_column_statistics start --");
 
     EXPECT_EQ(column_statistics_expected.size(), column_statistics.size());
 
@@ -255,11 +259,11 @@ ErrorCode DaoTestColumnStatistics::get_all_column_statistics(
          ordinal_position++) {
       ptree c_cs_returned = column_statistics[ordinal_position - 1];
 
-      boost::optional<ObjectIdType> optional_ordinal_position =
-          c_cs_returned.get_optional<ObjectIdType>(
-              Statistics::ORDINAL_POSITION);
+      auto optional_ordinal_position = c_cs_returned.get_optional<std::int64_t>(
+          Statistics::ORDINAL_POSITION);
       EXPECT_TRUE(optional_ordinal_position);
-      boost::optional<ptree&> optional_column_statistic =
+
+      auto optional_column_statistic =
           c_cs_returned.get_child_optional(Statistics::COLUMN_STATISTIC);
       EXPECT_TRUE(optional_column_statistic);
 
@@ -270,12 +274,12 @@ ErrorCode DaoTestColumnStatistics::get_all_column_statistics(
 
       EXPECT_EQ(s_cs_expected, s_cs_returned);
 
-      UTUtils::print("ordinal position:", optional_ordinal_position.get());
-      UTUtils::print("column statistic:" + s_cs_returned);
+      UTUtils::print(" ordinal position: ", optional_ordinal_position.get());
+      UTUtils::print(" column statistic: " + s_cs_returned);
     }
 
     UTUtils::print(
-        " -- get column statistics by get_all_column_statistics end -- \n");
+        "-- get column statistics by get_all_column_statistics end -- \n");
   } else {
     EXPECT_EQ(column_statistics.size(), 0);
   }
@@ -285,12 +289,12 @@ ErrorCode DaoTestColumnStatistics::get_all_column_statistics(
 
 /**
  * @brief Gets all column statistics from the column statistics table
- *  based on the given table id.
+ *   based on the given table id.
  * @param (table_id)                    [in] table id.
  * @param (column_statistics_expected)  [in] all column statistics
- *  expected with the specified table id.
+ *   expected with the specified table id.
  * @param (ordinal_position_removed)    [in] ordinal position of
- *  column statistics removed.
+ *   column statistics removed.
  * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode DaoTestColumnStatistics::get_all_column_statistics(
@@ -312,7 +316,7 @@ ErrorCode DaoTestColumnStatistics::get_all_column_statistics(
 
   if (error == ErrorCode::OK) {
     UTUtils::print(
-        " -- After removing ordinal position=", ordinal_position_removed,
+        "-- After removing ordinal position=", ordinal_position_removed,
         " get column statistics by get_all_column_statistics start --");
 
     int ordinal_position = 1;
@@ -331,20 +335,20 @@ ErrorCode DaoTestColumnStatistics::get_all_column_statistics(
 
       std::string s_cs_returned =
           UTUtils::get_tree_string(optional_column_statistic.get());
-      std::string s_cs_expected =
-          UTUtils::get_tree_string(column_statistics_expected[ordinal_position - 1]);
+      std::string s_cs_expected = UTUtils::get_tree_string(
+          column_statistics_expected[ordinal_position - 1]);
       ordinal_position++;
 
       EXPECT_EQ(s_cs_expected, s_cs_returned);
 
-      UTUtils::print("ordinal position:", optional_ordinal_position.get());
-      UTUtils::print("column statistic:" + s_cs_returned);
+      UTUtils::print(" ordinal position: ", optional_ordinal_position.get());
+      UTUtils::print(" column statistic: " + s_cs_returned);
     }
 
     EXPECT_EQ(column_statistics_expected.size() - 1, column_statistics.size());
 
     UTUtils::print(
-        " -- After removing ordinal position=", ordinal_position_removed,
+        "-- After removing ordinal position=", ordinal_position_removed,
         " get column statistics by get_all_column_statistics end --");
   } else {
     EXPECT_EQ(column_statistics.size(), 0);
@@ -385,7 +389,7 @@ ErrorCode DaoTestColumnStatistics::remove_one_column_statistic(
     ErrorCode commit_error = db_session_manager.commit();
 
     EXPECT_EQ(ErrorCode::OK, commit_error);
-
+    EXPECT_GT(ret_statistic_id, 0);
   } else {
     ErrorCode rollback_error = db_session_manager.rollback();
     EXPECT_EQ(ErrorCode::OK, rollback_error);
@@ -475,7 +479,7 @@ TEST_P(DaoTestColumnStatisticsAllAPIHappy, All_API_happy) {
    * based on both existing table id and column ordinal position.
    */
   UTUtils::print(
-      " -- get column statistics by get_one_column_statistic start --");
+      "-- get column statistics by get_one_column_statistic start --");
 
   ErrorCode error;
   for (ObjectIdType ordinal_position = 1;
@@ -488,7 +492,7 @@ TEST_P(DaoTestColumnStatisticsAllAPIHappy, All_API_happy) {
   }
 
   UTUtils::print(
-      " -- get column statistics by get_one_column_statistic end -- \n");
+      "-- get column statistics by get_one_column_statistic end -- \n");
 
   /**
    * get_all_column_statistics
@@ -580,7 +584,7 @@ TEST_P(DaoTestColumnStatisticsUpdateHappy, update_column_statistics) {
    */
 
   UTUtils::print(
-      " -- get column statistics by get_one_column_statistic start --");
+      "-- get column statistics by get_one_column_statistic start --");
 
   ErrorCode error;
   for (ObjectIdType ordinal_position = 1;
@@ -593,7 +597,7 @@ TEST_P(DaoTestColumnStatisticsUpdateHappy, update_column_statistics) {
   }
 
   UTUtils::print(
-      " -- get column statistics by get_one_column_statistic end -- \n");
+      "-- get column statistics by get_one_column_statistic end -- \n");
 
   error = DaoTestColumnStatistics::get_all_column_statistics(ret_table_id,
                                                              column_statistics);
@@ -611,7 +615,7 @@ TEST_P(DaoTestColumnStatisticsUpdateHappy, update_column_statistics) {
    * check if results of column statistics are expected or not.
    */
   UTUtils::print(
-      " -- After updating all column statistics, get column statistics by ",
+      "-- After updating all column statistics, get column statistics by ",
       "get_one_column_statistic start --");
 
   for (ObjectIdType ordinal_position = 1;
@@ -625,7 +629,7 @@ TEST_P(DaoTestColumnStatisticsUpdateHappy, update_column_statistics) {
   }
 
   UTUtils::print(
-      " -- After updating all column statistics, get column statistics by ",
+      "-- After updating all column statistics, get column statistics by ",
       "get_one_column_statistic end -- \n");
 
   UTUtils::print(
@@ -650,7 +654,7 @@ TEST_P(DaoTestColumnStatisticsUpdateHappy, update_column_statistics) {
   EXPECT_EQ(ErrorCode::OK, error);
 
   UTUtils::print(
-      " -- After removing ordinal position=", ordinal_position_to_remove,
+      "-- After removing ordinal position=", ordinal_position_to_remove,
       " get column statistics by get_one_column_statistic start --");
 
   for (ObjectIdType ordinal_position = 1;
@@ -669,7 +673,7 @@ TEST_P(DaoTestColumnStatisticsUpdateHappy, update_column_statistics) {
   }
 
   UTUtils::print(
-      " -- After removing ordinal position=", ordinal_position_to_remove,
+      "-- After removing ordinal position=", ordinal_position_to_remove,
       " get column statistics by get_one_column_statistic end --");
 
   error = DaoTestColumnStatistics::get_all_column_statistics(
@@ -740,7 +744,7 @@ TEST_P(DaoTestColumnStatisticsRemoveAllHappy, remove_all_column_statistics) {
    */
 
   UTUtils::print(
-      " -- get column statistics by get_one_column_statistic start --");
+      "-- get column statistics by get_one_column_statistic start --");
 
   ErrorCode error;
   for (ObjectIdType ordinal_position = 1;
@@ -799,7 +803,7 @@ TEST_P(DaoTestColumnStatisticsRemoveAllHappy, remove_all_column_statistics) {
  * -  get_all_column_statistics/remove_all_column_statistics:
  *      - based on non-existing table id.
  */
-TEST_P(DaoTestColumnStatisticsAllAPIException, All_API_exception) {
+TEST_P(DaoTestColumnStatisticsAllAPIException, all_api_exception) {
   auto param = GetParam();
   UTTableMetadata* testdata_table_metadata =
       global->testdata_table_metadata.get();
@@ -952,17 +956,21 @@ TEST_F(DaoTestColumnStatisticsAllAPIException,
   error = db_session_manager.start_transaction();
   EXPECT_EQ(ErrorCode::OK, error);
 
-  ptree *column_statistic = nullptr;
+  ptree* column_statistic = nullptr;
   std::int64_t ordinal_position = 1;
+  ObjectIdType ret_statistic_id;
 
   error = sdao->upsert_column_statistic(
       ret_table_id, Statistics::ORDINAL_POSITION,
-      std::to_string(ordinal_position), &statistic_name, column_statistic);
+      std::to_string(ordinal_position), &statistic_name, column_statistic,
+      ret_statistic_id);
 
   EXPECT_EQ(ErrorCode::OK, error);
+  EXPECT_GT(ret_statistic_id, 0);
 
-  UTUtils::print("ordinal position:", ordinal_position);
-  UTUtils::print("column statistics:null");
+  UTUtils::print(" statistic id: ", ret_statistic_id);
+  UTUtils::print(" ordinal position: ", ordinal_position);
+  UTUtils::print(" column statistics: null");
 
   ErrorCode rollback_error = db_session_manager.rollback();
   EXPECT_EQ(ErrorCode::OK, rollback_error);

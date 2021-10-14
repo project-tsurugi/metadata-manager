@@ -179,8 +179,6 @@ ErrorCode TablesDAO::select_table_metadata(
     std::vector<boost::property_tree::ptree>& container) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
-  // TODO: This is a temporary implementation. It has not been tested yet.
-
   // Load the meta data from the JSON file.
   error = session_manager_->load_object();
   if (error != ErrorCode::OK) {
