@@ -80,11 +80,11 @@ manager::metadata::ErrorCode DBSessionManager::create_dao(
       auto sdao =
           std::make_shared<storage::StatisticsDAO>(strage_session_manager);
       gdao = sdao;
+      break;
 #elif defined(STORAGE_JSON)
       // Statistics are not supported in JSON.
       return ErrorCode::NOT_SUPPORTED;
 #endif
-      break;
     }
     case GenericDAO::TableName::DATATYPES: {
       auto ddao =
@@ -101,11 +101,11 @@ manager::metadata::ErrorCode DBSessionManager::create_dao(
 #if defined(STORAGE_POSTGRESQL)
       auto sdao = std::make_shared<storage::RolesDAO>(strage_session_manager);
       gdao = sdao;
+      break;
 #elif defined(STORAGE_JSON)
       // Roles are not supported in JSON.
       return ErrorCode::NOT_SUPPORTED;
 #endif
-      break;
     }
     case GenericDAO::TableName::PRIVILEGES: {
       auto sdao =

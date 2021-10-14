@@ -33,7 +33,7 @@ class DataTypesDAO : public manager::metadata::db::DataTypesDAO {
 
   manager::metadata::ErrorCode select_one_data_type_metadata(
       std::string_view object_key, std::string_view object_value,
-      boost::property_tree::ptree& object) const;
+      boost::property_tree::ptree& object) const override;
 
  private:
   // root object.

@@ -350,10 +350,10 @@ ErrorCode TablesProvider::remove_table_metadata(std::string_view key,
 /**
  * @brief Gets the presence or absence of the specified permission
  *   from the PostgreSQL system catalog.
- * @param (key)         [in]  key of role metadata object.
- * @param (value)       [in]  value of role metadata object.
- * @param (permission)  [in]  permissions.
- * @param (result)      [out] presence or absence of the specified permissions.
+ * @param (key)           [in]  key of role metadata object.
+ * @param (value)         [in]  value of role metadata object.
+ * @param (permission)    [in]  permissions.
+ * @param (check_result)  [out] presence or absence of the specified permissions.
  * @retval ErrorCode::OK if success.
  * @retval ErrorCode::NOT_FOUND if the foreign table does not exist.
  * @retval ErrorCode::ID_NOT_FOUND if the role id does not exist.
@@ -363,7 +363,7 @@ ErrorCode TablesProvider::remove_table_metadata(std::string_view key,
 ErrorCode TablesProvider::confirm_permission(std::string_view key,
                                              std::string_view value,
                                              std::string_view permission,
-                                             bool& result) {
+                                             bool& check_result) {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   // Initialization
@@ -373,7 +373,7 @@ ErrorCode TablesProvider::confirm_permission(std::string_view key,
   }
 
   error = privileges_dao_->confirm_tables_permission(key, value, permission,
-                                                     result);
+                                                     check_result);
 
   return error;
 }

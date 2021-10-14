@@ -333,7 +333,7 @@ ErrorCode TablesDAO::insert_table_metadata(boost::property_tree::ptree& table,
       table.get_optional<std::string>(Tables::TUPLES);
   param_values.emplace_back((reltuples ? reltuples.value().c_str() : nullptr));
 
-  PGresult* res;
+  PGresult* res = nullptr;
   error = DbcUtils::exec_prepared(
       connection_, StatementName::TABLES_DAO_INSERT_TABLE_METADATA,
       param_values, res);
@@ -381,7 +381,7 @@ ErrorCode TablesDAO::select_table_metadata(std::string_view object_key,
     return error;
   }
 
-  PGresult* res;
+  PGresult* res = nullptr;
   error =
       DbcUtils::exec_prepared(connection_, statement_name, param_values, res);
 
@@ -420,7 +420,7 @@ ErrorCode TablesDAO::select_table_metadata(
   ErrorCode error = ErrorCode::UNKNOWN;
   std::vector<const char*> param_values;
 
-  PGresult* res;
+  PGresult* res = nullptr;
   error = DbcUtils::exec_prepared(
       connection_, StatementName::TABLES_DAO_SELECT_TABLE_METADATA_ALL,
       param_values, res);
@@ -478,7 +478,7 @@ ErrorCode TablesDAO::update_reltuples(float reltuples,
     return error;
   }
 
-  PGresult* res;
+  PGresult* res = nullptr;
   error =
       DbcUtils::exec_prepared(connection_, statement_name, param_values, res);
   if (error == ErrorCode::OK) {
@@ -532,7 +532,7 @@ ErrorCode TablesDAO::delete_table_metadata(std::string_view object_key,
     return error;
   }
 
-  PGresult* res;
+  PGresult* res = nullptr;
   error =
       DbcUtils::exec_prepared(connection_, statement_name, param_values, res);
 
@@ -545,7 +545,6 @@ ErrorCode TablesDAO::delete_table_metadata(std::string_view object_key,
       error = error_get;
     } else if (number_of_rows_affected == 1) {
       int ordinal_position = 0;
-      ObjectIdType retval_table_id = 0;
       error = DbcUtils::str_to_integral<ObjectIdType>(
           PQgetvalue(res, ordinal_position, 0), table_id);
     } else if (number_of_rows_affected == 0) {
@@ -579,7 +578,7 @@ ErrorCode TablesDAO::delete_table_metadata(std::string_view object_key,
  */
 ErrorCode TablesDAO::convert_pgresult_to_ptree(
     PGresult*& res, const int ordinal_position,
-    boost::property_tree::ptree& table) const {
+    boost::property_tree::ptree& table) {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   // Set the value of the format_version column to ptree.
@@ -640,16 +639,16 @@ ErrorCode TablesDAO::convert_pgresult_to_ptree(
                        static_cast<int>(OrdinalPosition::kOwnerRoleId)));
 
   // Set the value of the acl column to ptree.
-  std::string s_acl = PQgetvalue(res, ordinal_position,
+  std::string acl_db_array = PQgetvalue(res, ordinal_position,
                                  static_cast<int>(OrdinalPosition::kAcl));
   std::regex regex("[{}]");
-  s_acl = std::regex_replace(s_acl, regex, "");
+  acl_db_array = std::regex_replace(acl_db_array, regex, "");
 
   // Convert aclitem[] to ptree.
   ptree ptree_acls;
-  for (const std::string s_acl : split(s_acl, ',')) {
+  for (const std::string acl : split(acl_db_array, ',')) {
     ptree p_value;
-    p_value.put("", s_acl);
+    p_value.put("", acl);
     ptree_acls.push_back(std::make_pair("", p_value));
   }
   // NOTICE:
@@ -668,7 +667,7 @@ ErrorCode TablesDAO::convert_pgresult_to_ptree(
  * @return Vector of the result of the split.
  */
 std::vector<std::string> TablesDAO::split(const std::string& source,
-                                          const char& delimiter) const {
+                                          const char& delimiter) {
   std::vector<std::string> result;
   std::stringstream stream(source);
   std::string buffer;

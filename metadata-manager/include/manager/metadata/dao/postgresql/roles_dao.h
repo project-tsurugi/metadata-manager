@@ -56,9 +56,9 @@ class RolesDAO : public manager::metadata::db::RolesDAO {
  private:
   ConnectionSPtr connection_;
 
-  manager::metadata::ErrorCode convert_pgresult_to_ptree(
+  static manager::metadata::ErrorCode convert_pgresult_to_ptree(
       PGresult*& res, const int ordinal_position,
-      boost::property_tree::ptree& table) const;
+      boost::property_tree::ptree& role);
 };  // class RolesDAO
 
 }  // namespace manager::metadata::db::postgresql

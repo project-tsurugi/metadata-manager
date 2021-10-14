@@ -503,7 +503,7 @@ ErrorCode StatisticsDAO::upsert_column_statistic(
   param_values.emplace_back(
       (!s_column_statistic.empty() ? s_column_statistic.c_str() : nullptr));
 
-  PGresult* res;
+  PGresult* res = nullptr;
   error = DbcUtils::exec_prepared(
       connection_,
       StatementName::STATISTICS_DAO_UPSERT_COLUMN_STATISTIC_BY_COLUMN_ID,
@@ -594,7 +594,7 @@ ErrorCode StatisticsDAO::upsert_column_statistic(
     return error;
   }
 
-  PGresult* res;
+  PGresult* res = nullptr;
   error =
       DbcUtils::exec_prepared(connection_, statement_name, param_values, res);
 
@@ -805,7 +805,7 @@ ErrorCode StatisticsDAO::delete_column_statistic(
     return error;
   }
 
-  PGresult* res;
+  PGresult* res = nullptr;
   error =
       DbcUtils::exec_prepared(connection_, statement_name, param_values, res);
 
@@ -818,7 +818,6 @@ ErrorCode StatisticsDAO::delete_column_statistic(
       error = error_get;
     } else if (number_of_rows_affected == 1) {
       int ordinal_position = 0;
-      ObjectIdType retval_table_id = 0;
       error = DbcUtils::str_to_integral<ObjectIdType>(
           PQgetvalue(res, ordinal_position, 0), statistic_id);
     } else if (number_of_rows_affected == 0) {
@@ -858,7 +857,7 @@ ErrorCode StatisticsDAO::delete_column_statistic(
 
   param_values.emplace_back(s_table_id.c_str());
 
-  PGresult* res;
+  PGresult* res = nullptr;
   error = DbcUtils::exec_prepared(
       connection_,
       StatementName::STATISTICS_DAO_DELETE_COLUMN_STATISTIC_BY_TABLE_ID,
@@ -874,8 +873,6 @@ ErrorCode StatisticsDAO::delete_column_statistic(
     } else if (number_of_rows_affected == 0) {
       // Convert the error code.
       error = ErrorCode::ID_NOT_FOUND;
-    } else if (number_of_rows_affected < 0) {
-      error = ErrorCode::INVALID_PARAMETER;
     }
   }
 
@@ -915,7 +912,7 @@ ErrorCode StatisticsDAO::delete_column_statistic(
     return error;
   }
 
-  PGresult* res;
+  PGresult* res = nullptr;
   error =
       DbcUtils::exec_prepared(connection_, statement_name, param_values, res);
 
@@ -928,7 +925,6 @@ ErrorCode StatisticsDAO::delete_column_statistic(
       error = error_get;
     } else if (number_of_rows_affected == 1) {
       int ordinal_position = 0;
-      ObjectIdType retval_table_id = 0;
       error = DbcUtils::str_to_integral<ObjectIdType>(
           PQgetvalue(res, ordinal_position, 0), statistic_id);
     } else if (number_of_rows_affected == 0) {
@@ -965,9 +961,8 @@ ErrorCode StatisticsDAO::get_column_statistics_rows(
     const std::vector<const char*>& param_values,
     std::vector<boost::property_tree::ptree>& container) const {
   ErrorCode error = ErrorCode::UNKNOWN;
-  std::string s_table_id;
 
-  PGresult* res;
+  PGresult* res = nullptr;
   error =
       DbcUtils::exec_prepared(connection_, statement_name, param_values, res);
   if (error == ErrorCode::OK) {
@@ -1004,7 +999,7 @@ ErrorCode StatisticsDAO::get_column_statistics_rows(
  */
 ErrorCode StatisticsDAO::convert_pgresult_to_ptree(PGresult*& res,
                                                    const int ordinal_position,
-                                                   ptree& statistic) const {
+                                                   ptree& statistic) {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   // Set the value of the format_version column to ptree.

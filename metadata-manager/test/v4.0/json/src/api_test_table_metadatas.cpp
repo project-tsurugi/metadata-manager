@@ -436,7 +436,7 @@ TEST_F(ApiTestTableMetadata, get_all_table_metadata) {
   std::vector<boost::property_tree::ptree> container = {};
   error = tables->get_all(container);
   EXPECT_EQ(ErrorCode::OK, error);
-  EXPECT_EQ(test_table_count, container.size());
+  ASSERT_EQ(test_table_count, container.size());
 
   UTUtils::print("-- get all table metadata --");
   for (int count = 1; count <= test_table_count; count++) {

@@ -102,13 +102,14 @@ class StatisticsDAO : public manager::metadata::db::StatisticsDAO {
  private:
   ConnectionSPtr connection_;
 
+  static manager::metadata::ErrorCode convert_pgresult_to_ptree(
+      PGresult*& res, const int ordinal_position,
+      boost::property_tree::ptree& statistic);
+
   manager::metadata::ErrorCode get_column_statistics_rows(
       std::string_view statement_name,
       const std::vector<const char*>& param_values,
       std::vector<boost::property_tree::ptree>& container) const;
-  manager::metadata::ErrorCode convert_pgresult_to_ptree(
-      PGresult*& res, const int ordinal_position,
-      boost::property_tree::ptree& statistic) const;
 };  // class StatisticsDAO
 
 }  // namespace manager::metadata::db::postgresql

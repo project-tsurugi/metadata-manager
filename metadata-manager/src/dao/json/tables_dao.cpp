@@ -188,10 +188,10 @@ ErrorCode TablesDAO::select_table_metadata(
   // Getting a metadata object.
   ptree* meta_object = session_manager_->get_container();
 
-  BOOST_FOREACH (const ptree::value_type& node,
-                 meta_object->get_child(TablesDAO::TABLES_NODE)) {
-    container.emplace_back(node.second);
-  }
+  // Convert from ptree structure type to vector<ptree>.
+  auto node = meta_object->get_child(TablesDAO::TABLES_NODE);
+  std::transform(node.begin(), node.end(), std::back_inserter(container),
+                 [](ptree::value_type v) { return v.second; });
 
   return error;
 }

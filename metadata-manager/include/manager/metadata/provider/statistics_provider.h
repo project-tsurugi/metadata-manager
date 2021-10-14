@@ -47,12 +47,12 @@ class StatisticsProvider : public ProviderBase {
 
   manager::metadata::ErrorCode remove_column_statistic(
       std::string_view key, std::string_view value,
-      ObjectIdType* statistic_id = nullptr);
+      ObjectIdType& statistic_id);
   manager::metadata::ErrorCode remove_column_statistics(
       const ObjectIdType table_id);
   manager::metadata::ErrorCode remove_column_statistic(
       const ObjectIdType table_id, std::string_view key, std::string_view value,
-      ObjectIdType* statistic_id = nullptr);
+      ObjectIdType& statistic_id);
 
  private:
   std::shared_ptr<StatisticsDAO> statistics_dao_ = nullptr;

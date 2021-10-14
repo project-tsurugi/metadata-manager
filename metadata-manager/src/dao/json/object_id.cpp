@@ -74,7 +74,7 @@ ErrorCode ObjectId::init() {
  * @brief current object-ID.
  * @return ErrorCode::OK if success, otherwise an error code.
  */
-ObjectIdType ObjectId::current(const std::string table_name) {
+ObjectIdType ObjectId::current(std::string_view table_name) {
   if (ObjectId::init() != ErrorCode::OK) {
     return INVALID_OID;
   }
@@ -90,11 +90,12 @@ ObjectIdType ObjectId::current(const std::string table_name) {
     return INVALID_OID;
   }
 
-  boost::optional<ObjectIdType> oid = pt.get_optional<ObjectIdType>(table_name);
+  boost::optional<ObjectIdType> oid =
+      pt.get_optional<ObjectIdType>(table_name.data());
   if (!oid) {
     // create OID key for specified metadata.
-    pt.put(table_name, 0);
-    oid = pt.get_optional<ObjectIdType>(table_name);
+    pt.put(table_name.data(), 0);
+    oid = pt.get_optional<ObjectIdType>(table_name.data());
   }
 
   return oid.get();
@@ -104,7 +105,7 @@ ObjectIdType ObjectId::current(const std::string table_name) {
  * @brief generate new object-ID.
  * @return ErrorCode::OK if success, otherwise an error code.
  */
-ObjectIdType ObjectId::generate(const std::string table_name) {
+ObjectIdType ObjectId::generate(std::string_view table_name) {
   if (ObjectId::init() != ErrorCode::OK) {
     return INVALID_OID;
   }
@@ -120,15 +121,16 @@ ObjectIdType ObjectId::generate(const std::string table_name) {
     return INVALID_OID;
   }
 
-  boost::optional<ObjectIdType> oid = pt.get_optional<ObjectIdType>(table_name);
+  boost::optional<ObjectIdType> oid =
+      pt.get_optional<ObjectIdType>(table_name.data());
   if (!oid) {
     // create OID key for specified metadata.
-    pt.put(table_name, 0);
-    oid = pt.get_optional<ObjectIdType>(table_name);
+    pt.put(table_name.data(), 0);
+    oid = pt.get_optional<ObjectIdType>(table_name.data());
   }
 
   // generate new OID
-  pt.put(table_name, ++oid.get());
+  pt.put(table_name.data(), ++oid.get());
 
   try {
     ini_parser::write_ini(oid_file_name, pt);

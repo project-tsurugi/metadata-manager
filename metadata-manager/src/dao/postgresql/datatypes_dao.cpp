@@ -169,7 +169,7 @@ ErrorCode DataTypesDAO::select_one_data_type_metadata(
     return error;
   }
 
-  PGresult* res;
+  PGresult* res = nullptr;
   error =
       DbcUtils::exec_prepared(connection_, statement_name, param_values, res);
 

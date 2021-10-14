@@ -16,7 +16,7 @@
 #ifndef MANAGER_METADATA_DAO_JSON_OBJECT_ID_H_
 #define MANAGER_METADATA_DAO_JSON_OBJECT_ID_H_
 
-#include <string>
+#include <string_view>
 
 #include "manager/metadata/error_code.h"
 #include "manager/metadata/metadata.h"
@@ -26,8 +26,8 @@ namespace manager::metadata::db::json {
 class ObjectId {
  public:
   static manager::metadata::ErrorCode init();
-  static ObjectIdType current(const std::string table_name);
-  static ObjectIdType generate(const std::string table_name);
+  static ObjectIdType current(std::string_view table_name);
+  static ObjectIdType generate(std::string_view table_name);
 
  private:
   static constexpr const char* const OID_NAME = "oid";

@@ -81,7 +81,6 @@ ErrorCode Tables::add(boost::property_tree::ptree& object) const {
 ErrorCode Tables::add(boost::property_tree::ptree& object,
                       ObjectIdType* object_id) const {
   ErrorCode error = ErrorCode::UNKNOWN;
-  ObjectIdType retval_object_id;
 
   // Parameter value check.
   error = param_check_metadata_add(object);
@@ -89,6 +88,7 @@ ErrorCode Tables::add(boost::property_tree::ptree& object,
     return error;
   }
 
+  ObjectIdType retval_object_id = 0;
   // Adds the table metadata through the provider.
   error = provider->add_table_metadata(object, retval_object_id);
 
@@ -235,7 +235,7 @@ ErrorCode Tables::set_statistic(boost::property_tree::ptree& object) const {
     return error;
   }
 
-  ObjectIdType retval_object_id;
+  ObjectIdType retval_object_id = 0;
   // Adds or updates the table statistic through the provider.
   error = provider->set_table_statistic(object, retval_object_id);
 
@@ -261,7 +261,7 @@ ErrorCode Tables::remove(const ObjectIdType object_id) const {
     return error;
   }
 
-  ObjectIdType retval_object_id;
+  ObjectIdType retval_object_id = 0;
   // Remove the table metadata through the provider.
   error = provider->remove_table_metadata(Tables::ID, std::to_string(object_id),
                                           retval_object_id);
@@ -290,7 +290,7 @@ ErrorCode Tables::remove(std::string_view object_name,
     return error;
   }
 
-  ObjectIdType retval_object_id;
+  ObjectIdType retval_object_id = 0;
   // Remove the table metadata through the provider.
   error = provider->remove_table_metadata(Tables::NAME, object_name,
                                           retval_object_id);

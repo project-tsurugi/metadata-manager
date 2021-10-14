@@ -89,7 +89,7 @@ ErrorCode Statistics::add(boost::property_tree::ptree& object,
   }
 
   // Adds the column statistics through the provider.
-  ObjectIdType retval_object_id;
+  ObjectIdType retval_object_id = 0;
   error = provider->add_column_statistic(object, retval_object_id);
 
   // Set a value if object_id is not null.
@@ -102,8 +102,8 @@ ErrorCode Statistics::add(boost::property_tree::ptree& object,
 
 /**
  * @brief Get column statistics.
- * @param (object_id) [in]  statistic id.
- * @param (object)    [out] column statistics with the specified ID.
+ * @param (object_id)  [in]  statistic id.
+ * @param (object)     [out] column statistics with the specified ID.
  * @retval ErrorCode::OK if success.
  * @retval ErrorCode::ID_NOT_FOUND if the statistic id does not exist.
  * @retval otherwise an error code.
@@ -302,9 +302,10 @@ ErrorCode Statistics::remove(const ObjectIdType object_id) const {
     return error;
   }
 
+  ObjectIdType retval_object_id = 0;
   // Remove the all column statistics through the provider.
-  error = provider->remove_column_statistic(Statistics::ID,
-                                            std::to_string(object_id));
+  error = provider->remove_column_statistic(
+      Statistics::ID, std::to_string(object_id), retval_object_id);
 
   return error;
 }
@@ -328,9 +329,15 @@ ErrorCode Statistics::remove(std::string_view object_name,
     return error;
   }
 
+  ObjectIdType retval_object_id = 0;
   // Remove the table metadata through the provider.
   error = provider->remove_column_statistic(Statistics::NAME, s_object_name,
-                                            object_id);
+                                            retval_object_id);
+
+  // Set a value if object_id is not null.
+  if ((error == ErrorCode::OK) && (object_id != nullptr)) {
+    *object_id = retval_object_id;
+  }
 
   return error;
 }
@@ -375,9 +382,10 @@ ErrorCode Statistics::remove_by_column_id(const ObjectIdType column_id) const {
     return error;
   }
 
+  ObjectIdType retval_object_id = 0;
   // Remove the all column statistics through the provider.
-  error = provider->remove_column_statistic(Statistics::COLUMN_ID,
-                                            std::to_string(column_id));
+  error = provider->remove_column_statistic(
+      Statistics::COLUMN_ID, std::to_string(column_id), retval_object_id);
 
   return error;
 }
@@ -402,9 +410,11 @@ ErrorCode Statistics::remove_by_column_number(
     return error;
   }
 
+  ObjectIdType retval_object_id = 0;
   // Remove the column statistic through the provider.
   error = provider->remove_column_statistic(
-      table_id, Statistics::ORDINAL_POSITION, std::to_string(ordinal_position));
+      table_id, Statistics::ORDINAL_POSITION, std::to_string(ordinal_position),
+      retval_object_id);
 
   return error;
 }
@@ -433,9 +443,10 @@ ErrorCode Statistics::remove_by_column_name(
     return error;
   }
 
+  ObjectIdType retval_object_id = 0;
   // Remove the column statistic through the provider.
   error = provider->remove_column_statistic(table_id, Statistics::COLUMN_NAME,
-                                            column_name);
+                                            column_name, retval_object_id);
 
   return error;
 }

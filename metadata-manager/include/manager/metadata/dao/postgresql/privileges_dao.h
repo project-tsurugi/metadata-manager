@@ -54,12 +54,13 @@ class PrivilegesDAO : public manager::metadata::db::PrivilegesDAO {
  private:
   ConnectionSPtr connection_;
 
-  manager::metadata::ErrorCode check_of_privilege(PGresult*& res,
+  static manager::metadata::ErrorCode check_of_privilege(PGresult*& res,
                                                   const int ordinal_position,
                                                   const char* permission,
-                                                  bool& check_result) const;
-  manager::metadata::ErrorCode check_exists_authid(
-      std::string_view object_value, bool& exists_result) const;
+                                                  bool& check_result);
+
+  manager::metadata::ErrorCode check_exists_authid(std::string_view auth_id,
+                                                   bool& exists_result) const;
 };  // class PrivilegesDAO
 
 }  // namespace manager::metadata::db::postgresql

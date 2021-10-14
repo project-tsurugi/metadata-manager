@@ -212,7 +212,7 @@ ErrorCode PrivilegesDAO::confirm_tables_permission(
     return error;
   }
 
-  PGresult* res;
+  PGresult* res = nullptr;
   error =
       DbcUtils::exec_prepared(connection_, statement_name, param_values, res);
 
@@ -277,7 +277,7 @@ ErrorCode PrivilegesDAO::confirm_tables_permission(
 ErrorCode PrivilegesDAO::check_of_privilege(PGresult*& res,
                                             const int ordinal_position,
                                             const char* permission,
-                                            bool& check_result) const {
+                                            bool& check_result) {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   std::regex regex_boolean = std::regex(R"(^([tTyY].*|1)$)");
@@ -313,7 +313,7 @@ ErrorCode PrivilegesDAO::check_exists_authid(std::string_view auth_id,
   // Set the role ID as a parameter.
   param_values.emplace_back(auth_id.data());
 
-  PGresult* res;
+  PGresult* res = nullptr;
   error = DbcUtils::exec_prepared(connection_,
                                   StatementName::PRIVILEGES_DAO_CHECK_EXISTS,
                                   param_values, res);

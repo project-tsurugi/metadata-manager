@@ -298,7 +298,7 @@ ErrorCode ColumnsDAO::insert_one_column_metadata(
       column.get_optional<std::string>(Tables::Column::DIRECTION);
   param_values.emplace_back((direction ? direction.value().c_str() : nullptr));
 
-  PGresult* res;
+  PGresult* res = nullptr;
   error = DbcUtils::exec_prepared(
       connection_, StatementName::COLUMNS_DAO_INSERT_ONE_COLUMN_METADATA,
       param_values, res);
@@ -345,7 +345,7 @@ ErrorCode ColumnsDAO::select_column_metadata(
     return error;
   }
 
-  PGresult* res;
+  PGresult* res = nullptr;
   error =
       DbcUtils::exec_prepared(connection_, statement_name, param_values, res);
 
@@ -396,7 +396,7 @@ ErrorCode ColumnsDAO::delete_column_metadata(
     return error;
   }
 
-  PGresult* res;
+  PGresult* res = nullptr;
   error =
       DbcUtils::exec_prepared(connection_, statement_name, param_values, res);
 
@@ -407,8 +407,6 @@ ErrorCode ColumnsDAO::delete_column_metadata(
 
     if (error_get != ErrorCode::OK) {
       error = error_get;
-    } else if (number_of_rows_affected < 0) {
-      error = ErrorCode::INVALID_PARAMETER;
     }
   }
 
@@ -429,7 +427,7 @@ ErrorCode ColumnsDAO::delete_column_metadata(
  */
 ErrorCode ColumnsDAO::convert_pgresult_to_ptree(PGresult*& res,
                                                 const int ordinal_position,
-                                                ptree& column) const {
+                                                ptree& column) {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   // Set the value of the format_version column to ptree.

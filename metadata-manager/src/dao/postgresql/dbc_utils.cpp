@@ -341,8 +341,12 @@ ErrorCode DbcUtils::find_statement_name(
   ErrorCode error = ErrorCode::UNKNOWN;
 
   try {
-    statement_name = statement_names_map.at(key_value.data());
-    error = ErrorCode::OK;
+    if (!statement_names_map.empty()) {
+      statement_name = statement_names_map.at(key_value.data());
+      error = ErrorCode::OK;
+    } else {
+      error = ErrorCode::INVALID_PARAMETER;
+    }
   } catch (std::out_of_range& e) {
     std::cerr << Message::METADATA_KEY_NOT_FOUND << e.what() << std::endl;
     error = ErrorCode::INVALID_PARAMETER;

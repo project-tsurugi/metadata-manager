@@ -92,23 +92,23 @@ ErrorCode display_table_metadata_object(const ptree& table) {
 
   // table metadata
   std::cout << "--- table ---" << std::endl;
-  boost::optional<ObjectIdType> id =
+  boost::optional<ObjectIdType> optional_id =
       table.get_optional<ObjectIdType>(Tables::ID);
-  if (!id) {
+  if (!optional_id) {
     error = ErrorCode::NOT_FOUND;
     print_error(error, __LINE__);
     return error;
   }
-  std::cout << "id : " << id.get() << std::endl;
+  std::cout << "id : " << optional_id.get() << std::endl;
 
-  boost::optional<std::string> name =
+  boost::optional<std::string> optional_name =
       table.get_optional<std::string>(Tables::NAME);
-  if (!name) {
+  if (!optional_name) {
     error = ErrorCode::NOT_FOUND;
     print_error(error, __LINE__);
     return error;
   }
-  std::cout << "name : " << name << std::endl;
+  std::cout << "name : " << optional_name << std::endl;
 
   ptree primary_keys = table.get_child(Tables::PRIMARY_KEY_NODE);
   BOOST_FOREACH (const ptree::value_type& node, primary_keys) {
@@ -400,8 +400,8 @@ ErrorCode tables_remove_test() {
   }
 
   const char* const table_name_not_exists = "table_name_not_exists";
-  ObjectIdType object_id = 0;
-  error = tables->remove(table_name_not_exists, &object_id);
+  ObjectIdType ret_object_id = 0;
+  error = tables->remove(table_name_not_exists, &ret_object_id);
 
   if (error == ErrorCode::OK) {
     print_error(error, __LINE__);
@@ -505,14 +505,14 @@ ErrorCode read_table_metadata() {
       "table_" + std::to_string(ObjectId::current("tables"));
   error = tables->get(table_name, table);
   if (error == ErrorCode::OK) {
-    error = display_table_metadata_object(table);
+    display_table_metadata_object(table);
   }
 
   std::cout << "--- get table metadata by table id. ---" << std::endl;
   table.clear();
   error = tables->get(ObjectId::current("tables"), table);
   if (error == ErrorCode::OK) {
-    error = display_table_metadata_object(table);
+    display_table_metadata_object(table);
   }
 
   return error;

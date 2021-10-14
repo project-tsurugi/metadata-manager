@@ -259,7 +259,7 @@ ErrorCode StatisticsProvider::get_column_statistics(
  * @retval otherwise an error code.
  */
 ErrorCode StatisticsProvider::remove_column_statistic(
-    std::string_view key, std::string_view value, ObjectIdType* statistic_id) {
+    std::string_view key, std::string_view value, ObjectIdType& statistic_id) {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   // Initialization
@@ -274,9 +274,8 @@ ErrorCode StatisticsProvider::remove_column_statistic(
     return error;
   }
 
-  ObjectIdType retval_statistic_id;
   error =
-      statistics_dao_->delete_column_statistic(key, value, retval_statistic_id);
+      statistics_dao_->delete_column_statistic(key, value, statistic_id);
   if (error == ErrorCode::OK) {
     // Commit the transaction.
     error = session_manager_->commit();
@@ -286,11 +285,6 @@ ErrorCode StatisticsProvider::remove_column_statistic(
     if (rollback_result != ErrorCode::OK) {
       error = rollback_result;
     }
-  }
-
-  // Set a value if statistic_id is not null.
-  if ((error == ErrorCode::OK) && (statistic_id != nullptr)) {
-    *statistic_id = retval_statistic_id;
   }
 
   return error;
@@ -349,7 +343,7 @@ ErrorCode StatisticsProvider::remove_column_statistics(
  */
 ErrorCode StatisticsProvider::remove_column_statistic(
     const ObjectIdType table_id, std::string_view key, std::string_view value,
-    ObjectIdType* statistic_id) {
+    ObjectIdType& statistic_id) {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   // Initialization
@@ -364,9 +358,8 @@ ErrorCode StatisticsProvider::remove_column_statistic(
     return error;
   }
 
-  ObjectIdType retval_statistic_id;
   error = statistics_dao_->delete_column_statistic(table_id, key, value,
-                                                   retval_statistic_id);
+                                                   statistic_id);
   if (error == ErrorCode::OK) {
     // Commit the transaction.
     error = session_manager_->commit();
@@ -376,11 +369,6 @@ ErrorCode StatisticsProvider::remove_column_statistic(
     if (rollback_result != ErrorCode::OK) {
       error = rollback_result;
     }
-  }
-
-  // Set a value if statistic_id is not null.
-  if ((error == ErrorCode::OK) && (statistic_id != nullptr)) {
-    *statistic_id = retval_statistic_id;
   }
 
   return error;

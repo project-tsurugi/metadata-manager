@@ -64,14 +64,16 @@ ErrorCode Roles::init() const {
  */
 ErrorCode Roles::get(const ObjectIdType object_id,
                      boost::property_tree::ptree& object) const {
+  ErrorCode error = ErrorCode::UNKNOWN;
+
   if (object_id <= 0) {
-    return ErrorCode::ID_NOT_FOUND;
+    error = ErrorCode::ID_NOT_FOUND;
+    return error;
   }
 
   // Get the role metadata through the provider.
   std::string s_object_id = std::to_string(object_id);
-  ErrorCode error =
-      provider->get_role_metadata(Roles::ROLE_OID, s_object_id, object);
+  error = provider->get_role_metadata(Roles::ROLE_OID, s_object_id, object);
 
   return error;
 }
@@ -86,13 +88,15 @@ ErrorCode Roles::get(const ObjectIdType object_id,
  */
 ErrorCode Roles::get(std::string_view object_name,
                      boost::property_tree::ptree& object) const {
+  ErrorCode error = ErrorCode::UNKNOWN;
+
   if (object_name.empty()) {
-    return ErrorCode::NAME_NOT_FOUND;
+    error = ErrorCode::NAME_NOT_FOUND;
+    return error;
   }
 
   // Get the role metadata through the provider.
-  ErrorCode error =
-      provider->get_role_metadata(Roles::ROLE_ROLNAME, object_name, object);
+  error = provider->get_role_metadata(Roles::ROLE_ROLNAME, object_name, object);
 
   return error;
 }

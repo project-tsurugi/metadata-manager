@@ -203,7 +203,7 @@ void ApiTestForeignTablePrivileges::test_setup() {
 void ApiTestForeignTablePrivileges::test_teardown() {
   if (global->is_open()) {
     boost::format statement;
-    PGresult* res;
+    PGresult* res = nullptr;
 
     // remove dummy data for pg_foreign_table.
     statement =
@@ -237,7 +237,7 @@ void ApiTestForeignTablePrivileges::create_table(std::string_view table_name,
                                                  std::string_view privileges,
                                                  Oid& table_id) {
   boost::format statement;
-  PGresult* res;
+  PGresult* res = nullptr;
 
   // create dummy data for TABLE.
   statement =

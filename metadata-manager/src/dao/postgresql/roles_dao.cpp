@@ -165,7 +165,7 @@ ErrorCode RolesDAO::select_role_metadata(std::string_view object_key,
     return error;
   }
 
-  PGresult* res;
+  PGresult* res = nullptr;
   error =
       DbcUtils::exec_prepared(connection_, statement_name, param_values, res);
 
@@ -208,7 +208,7 @@ ErrorCode RolesDAO::select_role_metadata(std::string_view object_key,
  */
 ErrorCode RolesDAO::convert_pgresult_to_ptree(PGresult*& res,
                                               const int ordinal_position,
-                                              ptree& role) const {
+                                              ptree& role) {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   // Set the value of the format_version to ptree.
