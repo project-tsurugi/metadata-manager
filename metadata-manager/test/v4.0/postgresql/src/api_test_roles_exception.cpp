@@ -15,12 +15,10 @@
  */
 #include "test/api_test_roles.h"
 
-#include <gtest/gtest.h>
 #include <boost/property_tree/ptree.hpp>
 #include <memory>
 #include <string>
 
-#include "manager/metadata/error_code.h"
 #include "manager/metadata/roles.h"
 #include "test/global_test_environment.h"
 #include "test/utility/ut_utils.h"

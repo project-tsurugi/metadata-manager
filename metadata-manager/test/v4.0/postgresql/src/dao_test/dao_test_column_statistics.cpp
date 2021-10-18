@@ -15,19 +15,14 @@
  */
 #include "test/dao_test/dao_test_column_statistics.h"
 
-#include <gtest/gtest.h>
-#include <boost/property_tree/json_parser.hpp>
 #include <memory>
 #include <string>
 #include <unordered_map>
-#include <vector>
+#include <boost/property_tree/json_parser.hpp>
 
 #include "manager/metadata/dao/common/message.h"
-#include "manager/metadata/dao/generic_dao.h"
 #include "manager/metadata/dao/postgresql/db_session_manager.h"
 #include "manager/metadata/dao/statistics_dao.h"
-#include "manager/metadata/error_code.h"
-#include "manager/metadata/statistics.h"
 #include "test/api_test_column_statistics.h"
 #include "test/dao_test/dao_test_table_metadata.h"
 #include "test/global_test_environment.h"

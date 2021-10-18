@@ -362,8 +362,9 @@ ErrorCode Tables::confirm_permission_in_acls(std::string_view object_name,
   return error;
 }
 
-//_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
-// Private method area
+/* =============================================================================
+ * Private method area
+ */
 
 /**
  * @brief Checks if the parameters for additional are correct.

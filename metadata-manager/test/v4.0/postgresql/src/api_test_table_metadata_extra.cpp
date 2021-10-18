@@ -15,17 +15,14 @@
  */
 #include "test/api_test_table_metadata_extra.h"
 
-#include <gtest/gtest.h>
 #include <boost/foreach.hpp>
 #include <boost/property_tree/json_parser.hpp>
-#include <iostream>
 #include <memory>
 #include <string>
 
-#include "manager/metadata/error_code.h"
-#include "manager/metadata/metadata.h"
 #include "manager/metadata/tables.h"
 #include "test/api_test_table_metadata.h"
+#include "test/global_test_environment.h"
 #include "test/utility/ut_utils.h"
 
 using namespace manager::metadata;

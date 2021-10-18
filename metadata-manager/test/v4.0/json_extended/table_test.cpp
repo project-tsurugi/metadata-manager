@@ -40,9 +40,9 @@ void print_error(ErrorCode error, uint64_t line) {
  * @brief generate new table name.
  */
 const std::string get_tablename() {
-  std::unique_ptr<ObjectId> object_id = std::make_unique<ObjectId>();
+  std::unique_ptr<ObjectId> oid_manager = std::make_unique<ObjectId>();
 
-  ObjectIdType number = object_id->current("tables") + 1;
+  ObjectIdType number = oid_manager->current("tables") + 1;
   std::string name = "table_" + std::to_string(number);
 
   return name;
@@ -381,9 +381,9 @@ ErrorCode tables_remove_test() {
   //
   // remove table-metadata object
   //
-  std::unique_ptr<ObjectId> object_id = std::make_unique<ObjectId>();
+  std::unique_ptr<ObjectId> oid_manager = std::make_unique<ObjectId>();
 
-  ObjectIdType number = object_id->current("tables");
+  ObjectIdType number = oid_manager->current("tables");
   std::vector<std::string> table_names = {
       "table_" + std::to_string(number - 3),
       "table_" + std::to_string(number - 1),
@@ -433,7 +433,7 @@ ErrorCode tables_remove_test() {
   // remove table-metadata object
   //
 
-  number = object_id->current("tables");
+  number = oid_manager->current("tables");
   std::vector<ObjectIdType> object_ids = {number - 3, number - 1, number - 4,
                                           number - 0, number - 2};
 
@@ -501,13 +501,13 @@ ErrorCode read_table_metadata() {
   error = ErrorCode::OK;
 #endif
 
-  std::unique_ptr<ObjectId> object_id = std::make_unique<ObjectId>();
+  std::unique_ptr<ObjectId> oid_manager = std::make_unique<ObjectId>();
   ptree table;
 
   std::cout << "--- get table metadata by table name. ---" << std::endl;
   table.clear();
   std::string table_name =
-      "table_" + std::to_string(object_id->current("tables"));
+      "table_" + std::to_string(oid_manager->current("tables"));
   error = tables->get(table_name, table);
   if (error == ErrorCode::OK) {
     display_table_metadata_object(table);
@@ -515,7 +515,7 @@ ErrorCode read_table_metadata() {
 
   std::cout << "--- get table metadata by table id. ---" << std::endl;
   table.clear();
-  error = tables->get(object_id->current("tables"), table);
+  error = tables->get(oid_manager->current("tables"), table);
   if (error == ErrorCode::OK) {
     display_table_metadata_object(table);
   }

@@ -16,11 +16,10 @@
 #ifndef API_TEST_FOREIGH_TABLE_PRIVILEGES_H_
 #define API_TEST_FOREIGH_TABLE_PRIVILEGES_H_
 
-#include <memory>
-#include <string_view>
-
 #include <gtest/gtest.h>
 #include <libpq-fe.h>
+#include <memory>
+#include <string_view>
 
 namespace manager::metadata::testing {
 

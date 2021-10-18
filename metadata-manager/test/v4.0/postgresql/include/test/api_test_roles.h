@@ -16,10 +16,9 @@
 #ifndef API_TEST_ROLES_H_
 #define API_TEST_ROLES_H_
 
-#include <boost/property_tree/ptree.hpp>
-
 #include <gtest/gtest.h>
 #include <libpq-fe.h>
+#include <boost/property_tree/ptree.hpp>
 
 namespace manager::metadata::testing {
 

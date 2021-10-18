@@ -17,13 +17,9 @@
 #include <boost/property_tree/ptree.hpp>
 #include <memory>
 #include <string>
-#include <tuple>
-#include <vector>
 
 #include "manager/metadata/dao/datatypes_dao.h"
-#include "manager/metadata/dao/generic_dao.h"
 #include "manager/metadata/dao/json/db_session_manager.h"
-#include "manager/metadata/error_code.h"
 #include "test/api_test_data_types.h"
 #include "test/global_test_environment.h"
 #include "test/utility/ut_utils.h"

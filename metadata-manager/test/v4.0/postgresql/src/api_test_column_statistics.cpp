@@ -21,8 +21,8 @@
 #include <unordered_map>
 #include <vector>
 
-#include "manager/metadata/error_code.h"
 #include "manager/metadata/statistics.h"
+#include "manager/metadata/tables.h"
 #include "test/api_test_table_metadata.h"
 #include "test/global_test_environment.h"
 #include "test/utility/ut_table_metadata.h"

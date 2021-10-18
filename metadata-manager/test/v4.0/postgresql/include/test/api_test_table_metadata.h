@@ -18,13 +18,10 @@
 
 #include <gtest/gtest.h>
 #include <boost/property_tree/ptree.hpp>
-#include <string>
+#include <string_view>
 #include <vector>
 
 #include "manager/metadata/metadata.h"
-#include "manager/metadata/tables.h"
-#include "test/global_test_environment.h"
-#include "test/utility/ut_table_metadata.h"
 
 namespace manager::metadata::testing {
 

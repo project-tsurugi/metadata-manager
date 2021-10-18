@@ -16,7 +16,9 @@
 #ifndef API_TEST_TABLE_STATISTICS_H_
 #define API_TEST_TABLE_STATISTICS_H_
 
+#include <gtest/gtest.h>
 #include <string>
+#include <string_view>
 #include <tuple>
 #include <vector>
 
@@ -27,7 +29,7 @@ typedef std::tuple<std::string, float, float> TupleApiTestTableStatistics;
 class ApiTestTableStatistics {
  public:
   static std::vector<TupleApiTestTableStatistics> make_tuple_table_statistics(
-      const std::string& test_number);
+      std::string_view test_number);
 };
 
 }  // namespace manager::metadata::testing

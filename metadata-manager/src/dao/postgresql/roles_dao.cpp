@@ -15,12 +15,12 @@
  */
 #include "manager/metadata/dao/postgresql/roles_dao.h"
 
+#include <libpq-fe.h>
 #include <boost/format.hpp>
 #include <iostream>
 #include <string>
 #include <string_view>
 
-#include <libpq-fe.h>
 #include "manager/metadata/dao/common/message.h"
 #include "manager/metadata/dao/common/statement_name.h"
 #include "manager/metadata/dao/postgresql/common.h"
@@ -193,8 +193,9 @@ ErrorCode RolesDAO::select_role_metadata(std::string_view object_key,
   return error;
 }
 
-// -----------------------------------------------------------------------------
-// Private method area
+/* =============================================================================
+ * Private method area
+ */
 
 /**
  * @brief Get the role by converting

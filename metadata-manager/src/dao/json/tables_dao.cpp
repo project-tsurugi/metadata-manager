@@ -280,8 +280,9 @@ ErrorCode TablesDAO::delete_table_metadata(std::string_view object_key,
   return error;
 }
 
-// -----------------------------------------------------------------------------
-// Private method area
+/* =============================================================================
+ * Private method area
+ */
 
 /**
  * @brief Get metadata-object.

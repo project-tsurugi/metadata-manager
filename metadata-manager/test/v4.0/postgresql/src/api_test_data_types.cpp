@@ -16,14 +16,10 @@
 #include "test/api_test_data_types.h"
 
 #include <gtest/gtest.h>
-#include <boost/property_tree/ptree.hpp>
 #include <memory>
-#include <string>
 #include <tuple>
-#include <vector>
 
 #include "manager/metadata/datatypes.h"
-#include "manager/metadata/error_code.h"
 #include "test/global_test_environment.h"
 #include "test/utility/ut_utils.h"
 

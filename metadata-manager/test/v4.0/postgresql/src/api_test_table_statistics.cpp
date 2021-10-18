@@ -15,7 +15,6 @@
  */
 #include "test/api_test_table_statistics.h"
 
-#include <gtest/gtest.h>
 #include <cmath>
 #include <limits>
 #include <memory>
@@ -75,13 +74,13 @@ std::vector<float> reltuples_list = {-1,
 
 std::vector<TupleApiTestTableStatistics>
 ApiTestTableStatistics::make_tuple_table_statistics(
-    const std::string& test_number) {
+    std::string_view test_number) {
   std::vector<TupleApiTestTableStatistics> v;
   int next;
   for (int i = 0; static_cast<size_t>(i) < reltuples_list.size(); i++) {
     next = (i + 1) % reltuples_list.size();
     std::string table_name =
-        "_TableStatistic_" + test_number + "_" + std::to_string(i);
+        "_TableStatistic_" + std::string(test_number) + "_" + std::to_string(i);
     v.emplace_back(table_name, reltuples_list[i], reltuples_list[next]);
   }
   return v;

@@ -18,7 +18,6 @@
 
 #include <gtest/gtest.h>
 #include <boost/property_tree/ptree.hpp>
-#include <string>
 
 namespace manager::metadata::testing {
 
@@ -28,7 +27,7 @@ class DaoTestRolesMetadata : public ::testing::Test {
   void TearDown() override;
 
   static void check_roles_expected(const boost::property_tree::ptree& actual,
-                                    const boost::property_tree::ptree& expect);
+                                   const boost::property_tree::ptree& expect);
 };
 
 }  // namespace manager::metadata::testing

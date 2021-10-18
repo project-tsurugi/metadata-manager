@@ -17,7 +17,8 @@
 #define DAO_TEST_TABLE_METADATAS_H_
 
 #include <gtest/gtest.h>
-#include <string>
+#include <boost/property_tree/ptree.hpp>
+#include <string_view>
 
 #include "manager/metadata/metadata.h"
 #include "test/utility/ut_utils.h"
@@ -27,7 +28,7 @@ namespace manager::metadata::testing {
 class DaoTestTableMetadata : public ::testing::Test {
  public:
   void SetUp() override { UTUtils::skip_if_connection_not_opened(); }
-  static void add_table(std::string table_name, ObjectIdType* object_id);
+  static void add_table(std::string_view table_name, ObjectIdType* object_id);
   static void get_table_metadata(std::string_view object_name,
                                  boost::property_tree::ptree& object);
   static void get_table_metadata(ObjectIdType object_id,

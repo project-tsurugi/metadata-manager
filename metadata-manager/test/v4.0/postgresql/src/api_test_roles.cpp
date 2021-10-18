@@ -21,7 +21,6 @@
 
 #include "manager/metadata/dao/common/config.h"
 #include "manager/metadata/dao/postgresql/dbc_utils.h"
-#include "manager/metadata/error_code.h"
 #include "manager/metadata/roles.h"
 #include "test/global_test_environment.h"
 #include "test/utility/ut_utils.h"
@@ -77,17 +76,17 @@ void ApiTestRolesMetadata::drop_role() {
 
 /**
  * @brief Verifies that returned role metadata equals expected one.
- * @param (actual)  [in] role metadata returned from api to get
+ * @param (actual)    [in] role metadata returned from api to get
  *   role metadata
- * @param (expect)  [in] Expected role metadata.
+ * @param (expected)  [in] Expected role metadata.
  */
 void ApiTestRolesMetadata::check_roles_expected(const ptree& actual,
-                                                const ptree& expect) {
+                                                const ptree& expected) {
   // Check the value of the format_version.
   auto format_version_actual =
       actual.get<FormatVersionType>(Roles::FORMAT_VERSION);
   auto format_version_expect =
-      expect.get_optional<FormatVersionType>(Roles::FORMAT_VERSION);
+      expected.get_optional<FormatVersionType>(Roles::FORMAT_VERSION);
   if (format_version_expect) {
     EXPECT_EQ(format_version_actual, format_version_expect.value());
   }
@@ -95,14 +94,14 @@ void ApiTestRolesMetadata::check_roles_expected(const ptree& actual,
   // Check the value of the generation.
   auto generation_actual = actual.get<GenerationType>(Roles::GENERATION);
   auto generation_expect =
-      expect.get_optional<GenerationType>(Roles::GENERATION);
+      expected.get_optional<GenerationType>(Roles::GENERATION);
   if (generation_expect) {
     EXPECT_EQ(generation_actual, generation_expect.value());
   }
 
   // Check the value of the oid.
   auto oid_actual = actual.get<ObjectIdType>(Roles::ROLE_OID);
-  auto oid_expect = expect.get_optional<ObjectIdType>(Roles::ROLE_OID);
+  auto oid_expect = expected.get_optional<ObjectIdType>(Roles::ROLE_OID);
   if (oid_expect) {
     EXPECT_EQ(oid_actual, oid_expect.value());
   } else {
@@ -111,14 +110,14 @@ void ApiTestRolesMetadata::check_roles_expected(const ptree& actual,
 
   // Check the value of the rolname.
   auto name_actual = actual.get<std::string>(Roles::ROLE_ROLNAME);
-  auto name_expect = expect.get_optional<std::string>(Roles::ROLE_ROLNAME);
+  auto name_expect = expected.get_optional<std::string>(Roles::ROLE_ROLNAME);
   if (name_expect) {
     EXPECT_EQ(name_actual, name_expect.value());
   }
 
   // Check the value of the rolsuper.
   auto super_actual = actual.get<std::string>(Roles::ROLE_ROLSUPER);
-  auto super_expect = expect.get_optional<std::string>(Roles::ROLE_ROLSUPER);
+  auto super_expect = expected.get_optional<std::string>(Roles::ROLE_ROLSUPER);
   if (super_expect) {
     EXPECT_EQ(super_actual, super_expect.value());
   }
@@ -126,7 +125,7 @@ void ApiTestRolesMetadata::check_roles_expected(const ptree& actual,
   // Check the value of the rolinherit.
   auto inherit_actual = actual.get<std::string>(Roles::ROLE_ROLINHERIT);
   auto inherit_expect =
-      expect.get_optional<std::string>(Roles::ROLE_ROLINHERIT);
+      expected.get_optional<std::string>(Roles::ROLE_ROLINHERIT);
   if (inherit_expect) {
     EXPECT_EQ(inherit_actual, inherit_expect.value());
   }
@@ -134,7 +133,7 @@ void ApiTestRolesMetadata::check_roles_expected(const ptree& actual,
   // Check the value of the rolcreaterole.
   auto createrole_actual = actual.get<std::string>(Roles::ROLE_ROLCREATEROLE);
   auto createrole_expect =
-      expect.get_optional<std::string>(Roles::ROLE_ROLCREATEROLE);
+      expected.get_optional<std::string>(Roles::ROLE_ROLCREATEROLE);
   if (createrole_expect) {
     EXPECT_EQ(createrole_actual, createrole_expect.value());
   }
@@ -142,7 +141,7 @@ void ApiTestRolesMetadata::check_roles_expected(const ptree& actual,
   // Check the value of the rolcreatedb.
   auto createdb_actual = actual.get<std::string>(Roles::ROLE_ROLCREATEDB);
   auto createdb_expect =
-      expect.get_optional<std::string>(Roles::ROLE_ROLCREATEDB);
+      expected.get_optional<std::string>(Roles::ROLE_ROLCREATEDB);
   if (createdb_expect) {
     EXPECT_EQ(createdb_actual, createdb_expect.value());
   }
@@ -150,7 +149,7 @@ void ApiTestRolesMetadata::check_roles_expected(const ptree& actual,
   // Check the value of the rolcanlogin.
   auto canlogin_actual = actual.get<std::string>(Roles::ROLE_ROLCANLOGIN);
   auto canlogin_expect =
-      expect.get_optional<std::string>(Roles::ROLE_ROLCANLOGIN);
+      expected.get_optional<std::string>(Roles::ROLE_ROLCANLOGIN);
   if (canlogin_expect) {
     EXPECT_EQ(canlogin_actual, canlogin_expect.value());
   }
@@ -158,7 +157,7 @@ void ApiTestRolesMetadata::check_roles_expected(const ptree& actual,
   // Check the value of the rolreplication.
   auto replication_actual = actual.get<std::string>(Roles::ROLE_ROLREPLICATION);
   auto replication_expect =
-      expect.get_optional<std::string>(Roles::ROLE_ROLREPLICATION);
+      expected.get_optional<std::string>(Roles::ROLE_ROLREPLICATION);
   if (replication_expect) {
     EXPECT_EQ(replication_actual, replication_expect.value());
   }
@@ -166,7 +165,7 @@ void ApiTestRolesMetadata::check_roles_expected(const ptree& actual,
   // Check the value of the rolbypassrls.
   auto bypassrls_actual = actual.get<std::string>(Roles::ROLE_ROLBYPASSRLS);
   auto bypassrls_expect =
-      expect.get_optional<std::string>(Roles::ROLE_ROLBYPASSRLS);
+      expected.get_optional<std::string>(Roles::ROLE_ROLBYPASSRLS);
   if (bypassrls_expect) {
     EXPECT_EQ(bypassrls_actual, bypassrls_expect.value());
   }
@@ -174,7 +173,7 @@ void ApiTestRolesMetadata::check_roles_expected(const ptree& actual,
   // Check the value of the rolconnlimit.
   auto connlimit_actual = actual.get<std::int32_t>(Roles::ROLE_ROLCONNLIMIT);
   auto connlimit_expect =
-      expect.get_optional<std::int32_t>(Roles::ROLE_ROLCONNLIMIT);
+      expected.get_optional<std::int32_t>(Roles::ROLE_ROLCONNLIMIT);
   if (connlimit_expect) {
     EXPECT_EQ(connlimit_actual, connlimit_expect.value());
   }
@@ -182,7 +181,7 @@ void ApiTestRolesMetadata::check_roles_expected(const ptree& actual,
   // Check the value of the rolpassword.
   auto password_actual = actual.get<std::string>(Roles::ROLE_ROLPASSWORD);
   auto password_expect =
-      expect.get_optional<std::string>(Roles::ROLE_ROLPASSWORD);
+      expected.get_optional<std::string>(Roles::ROLE_ROLPASSWORD);
   if (password_expect) {
     EXPECT_EQ(password_actual, password_expect.value());
   }
@@ -190,7 +189,7 @@ void ApiTestRolesMetadata::check_roles_expected(const ptree& actual,
   // Check the value of the rolvaliduntil.
   auto validuntil_actual = actual.get<std::string>(Roles::ROLE_ROLVALIDUNTIL);
   auto validuntil_expect =
-      expect.get_optional<std::string>(Roles::ROLE_ROLVALIDUNTIL);
+      expected.get_optional<std::string>(Roles::ROLE_ROLVALIDUNTIL);
   if (validuntil_expect) {
     EXPECT_EQ(validuntil_actual, validuntil_expect.value());
   }

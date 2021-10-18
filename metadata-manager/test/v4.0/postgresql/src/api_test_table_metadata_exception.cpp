@@ -15,15 +15,13 @@
  */
 #include <gtest/gtest.h>
 #include <boost/foreach.hpp>
-#include <boost/property_tree/json_parser.hpp>
 #include <iostream>
 #include <memory>
 #include <string>
 
-#include "manager/metadata/error_code.h"
-#include "manager/metadata/metadata.h"
 #include "manager/metadata/tables.h"
 #include "test/api_test_table_metadata.h"
+#include "test/global_test_environment.h"
 #include "test/utility/ut_utils.h"
 
 using namespace manager::metadata;
@@ -41,8 +39,7 @@ class ApiTestAddTableMetadataException
       invalid_table_metadata = make_invalid_table_metadata();
     }
   }
-  static std::vector<boost::property_tree::ptree>
-  make_invalid_table_metadata();
+  static std::vector<boost::property_tree::ptree> make_invalid_table_metadata();
 
  protected:
   /**

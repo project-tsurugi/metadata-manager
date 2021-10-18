@@ -16,12 +16,12 @@
 #ifndef MANAGER_METADATA_DAO_POSTGRESQL_DBC_UTILS_H_
 #define MANAGER_METADATA_DAO_POSTGRESQL_DBC_UTILS_H_
 
+#include <libpq-fe.h>
 #include <functional>
 #include <memory>
 #include <string>
 #include <unordered_map>
 
-#include <libpq-fe.h>
 #include "manager/metadata/dao/common/statement_name.h"
 #include "manager/metadata/dao/postgresql/common.h"
 #include "manager/metadata/error_code.h"

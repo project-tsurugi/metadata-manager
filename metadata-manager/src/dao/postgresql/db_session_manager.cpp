@@ -15,9 +15,9 @@
  */
 #include "manager/metadata/dao/postgresql/db_session_manager.h"
 
+#include <libpq-fe.h>
 #include <iostream>
 
-#include <libpq-fe.h>
 #include "manager/metadata/dao/common/config.h"
 #include "manager/metadata/dao/common/message.h"
 #include "manager/metadata/dao/postgresql/columns_dao.h"
@@ -151,8 +151,9 @@ ErrorCode DBSessionManager::rollback() {
   return error;
 }
 
-// -----------------------------------------------------------------------------
-// Private method area
+/* =============================================================================
+ * Private method area
+ */
 
 /**
  * @brief Establishes a connection_ to the metadata repository

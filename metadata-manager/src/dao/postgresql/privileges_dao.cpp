@@ -15,13 +15,13 @@
  */
 #include "manager/metadata/dao/postgresql/privileges_dao.h"
 
+#include <libpq-fe.h>
 #include <boost/format.hpp>
 #include <iostream>
 #include <regex>
 #include <string>
 #include <string_view>
 
-#include <libpq-fe.h>
 #include "manager/metadata/dao/common/message.h"
 #include "manager/metadata/dao/common/pg_type.h"
 #include "manager/metadata/dao/common/statement_name.h"
@@ -262,8 +262,9 @@ ErrorCode PrivilegesDAO::confirm_tables_permission(
   return error;
 }
 
-// -----------------------------------------------------------------------------
-// Private method area
+/* =============================================================================
+ * Private method area
+ */
 
 /**
  * @brief Checks for the presence of the specified permissions.

@@ -15,6 +15,7 @@
  */
 #include "manager/metadata/dao/postgresql/columns_dao.h"
 
+#include <libpq-fe.h>
 #include <boost/format.hpp>
 #include <boost/property_tree/json_parser.hpp>
 #include <iostream>
@@ -23,7 +24,6 @@
 #include <utility>
 #include <vector>
 
-#include <libpq-fe.h>
 #include "manager/metadata/dao/common/message.h"
 #include "manager/metadata/dao/common/statement_name.h"
 #include "manager/metadata/dao/postgresql/common.h"
@@ -414,8 +414,9 @@ ErrorCode ColumnsDAO::delete_column_metadata(
   return error;
 }
 
-// -----------------------------------------------------------------------------
-// Private method area
+/* =============================================================================
+ * Private method area
+ */
 
 /**
  * @brief Gets the ptree type column metadata

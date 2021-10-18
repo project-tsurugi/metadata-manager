@@ -171,8 +171,9 @@ ErrorCode DBSessionManager::load_object() const {
   return error;
 }
 
-// -----------------------------------------------------------------------------
-// Private method area
+/* =============================================================================
+ * Private method area
+ */
 
 /**
  * @brief Initialize the metadata object.

@@ -15,6 +15,7 @@
  */
 #include "manager/metadata/dao/postgresql/tables_dao.h"
 
+#include <libpq-fe.h>
 #include <boost/format.hpp>
 #include <boost/optional.hpp>
 #include <boost/property_tree/json_parser.hpp>
@@ -23,7 +24,6 @@
 #include <string>
 #include <string_view>
 
-#include <libpq-fe.h>
 #include "manager/metadata/dao/common/message.h"
 #include "manager/metadata/dao/common/statement_name.h"
 #include "manager/metadata/dao/postgresql/common.h"
@@ -565,8 +565,9 @@ ErrorCode TablesDAO::delete_table_metadata(std::string_view object_key,
   return error;
 }
 
-// -----------------------------------------------------------------------------
-// Private method area
+/* =============================================================================
+ * Private method area
+ */
 
 /**
  * @brief Gets the ptree type table metadata

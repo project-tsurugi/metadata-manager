@@ -15,9 +15,8 @@
  */
 #include "test/dao_test/dao_test_roles.h"
 
-#include <gtest/gtest.h>
+#include <libpq-fe.h>
 #include <boost/format.hpp>
-#include <boost/property_tree/ptree.hpp>
 #include <memory>
 #include <string>
 
@@ -25,7 +24,6 @@
 #include "manager/metadata/dao/postgresql/db_session_manager.h"
 #include "manager/metadata/dao/postgresql/dbc_utils.h"
 #include "manager/metadata/dao/roles_dao.h"
-#include "manager/metadata/error_code.h"
 #include "test/global_test_environment.h"
 #include "test/utility/ut_utils.h"
 

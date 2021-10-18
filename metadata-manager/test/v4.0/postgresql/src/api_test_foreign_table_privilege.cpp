@@ -21,9 +21,9 @@
 
 #include "manager/metadata/dao/common/config.h"
 #include "manager/metadata/dao/postgresql/dbc_utils.h"
-#include "manager/metadata/error_code.h"
 #include "manager/metadata/tables.h"
 #include "test/api_test_table_metadata.h"
+#include "test/global_test_environment.h"
 #include "test/utility/ut_utils.h"
 
 namespace {
@@ -422,8 +422,7 @@ TEST_F(ApiTestForeignTableNotExists, role_does_not_exist) {
   // the role name does not exist.
   role_name = "undefined-name";
   UTUtils::print("  Test pattern: [", role_name, "]");
-  error =
-      tables->confirm_permission_in_acls(role_name, "r", res_permission);
+  error = tables->confirm_permission_in_acls(role_name, "r", res_permission);
   EXPECT_EQ(ErrorCode::NAME_NOT_FOUND, error);
 
   // remove table metadata.

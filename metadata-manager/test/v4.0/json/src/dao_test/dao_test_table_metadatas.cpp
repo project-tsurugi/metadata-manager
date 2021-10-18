@@ -15,18 +15,14 @@
  */
 #include "test/dao_test/dao_test_table_metadata.h"
 
-#include <gtest/gtest.h>
 #include <boost/foreach.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <memory>
 #include <string>
 
 #include "manager/metadata/dao/columns_dao.h"
-#include "manager/metadata/dao/generic_dao.h"
 #include "manager/metadata/dao/json/db_session_manager.h"
 #include "manager/metadata/dao/tables_dao.h"
-#include "manager/metadata/error_code.h"
-#include "manager/metadata/tables.h"
 #include "test/api_test_table_metadata.h"
 #include "test/global_test_environment.h"
 #include "test/utility/ut_table_metadata.h"
@@ -44,7 +40,7 @@ using namespace manager::metadata::db;
  * @param (object_id)   [out] ID of the added table metadata.
  * @return ErrorCode::OK if success, otherwise an error code.
  */
-void DaoTestTableMetadata::add_table(std::string table_name,
+void DaoTestTableMetadata::add_table(std::string_view table_name,
                                      ObjectIdType* object_id) {
   assert(object_id != nullptr);
 

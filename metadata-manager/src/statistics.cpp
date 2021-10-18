@@ -451,8 +451,9 @@ ErrorCode Statistics::remove_by_column_name(
   return error;
 }
 
-//_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
-// Private method area
+/* =============================================================================
+ * Private method area
+ */
 
 /**
  * @brief Checks if the parameters are correct.

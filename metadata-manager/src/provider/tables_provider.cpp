@@ -378,8 +378,9 @@ ErrorCode TablesProvider::confirm_permission(std::string_view key,
   return error;
 }
 
-//_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
-// Private method area
+/* =============================================================================
+ * Private method area
+ */
 
 /**
  * @brief Get column metadata-object based on the given table id.

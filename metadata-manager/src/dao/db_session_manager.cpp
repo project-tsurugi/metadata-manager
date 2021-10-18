@@ -28,6 +28,7 @@
 
 #if defined(STORAGE_POSTGRESQL)
 #include <libpq-fe.h>
+
 #include "manager/metadata/dao/postgresql/columns_dao.h"
 #include "manager/metadata/dao/postgresql/datatypes_dao.h"
 #include "manager/metadata/dao/postgresql/privileges_dao.h"
@@ -50,8 +51,9 @@ namespace storage = manager::metadata::db::postgresql;
 namespace storage = manager::metadata::db::json;
 #endif
 
-// -----------------------------------------------------------------------------
-// Protected method area
+/* =============================================================================
+ * Private method area
+ */
 
 /**
  * @brief Create Dao instance for the requested table name.

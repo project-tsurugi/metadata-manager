@@ -15,6 +15,7 @@
  */
 #include "manager/metadata/dao/postgresql/datatypes_dao.h"
 
+#include <libpq-fe.h>
 #include <boost/format.hpp>
 #include <iostream>
 #include <string>
@@ -23,7 +24,6 @@
 #include <utility>
 #include <vector>
 
-#include <libpq-fe.h>
 #include "manager/metadata/dao/common/message.h"
 #include "manager/metadata/dao/common/statement_name.h"
 #include "manager/metadata/dao/postgresql/common.h"
@@ -196,8 +196,9 @@ ErrorCode DataTypesDAO::select_one_data_type_metadata(
   return error;
 }
 
-// -----------------------------------------------------------------------------
-// Private method area
+/* =============================================================================
+ * Private method area
+ */
 
 /**
  * @brief Gets the ptree type data types metadata
