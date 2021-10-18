@@ -26,13 +26,6 @@
 #include "manager/metadata/dao/common/config.h"
 
 // =============================================================================
-namespace {
-
-std::string oid_file_name;
-
-}  // namespace
-
-// =============================================================================
 namespace manager::metadata::db::json {
 
 namespace ini_parser = boost::property_tree::ini_parser;
@@ -43,24 +36,28 @@ using manager::metadata::ErrorCode;
 static ObjectIdType INVALID_OID = 0;
 
 /**
+ * @brief Contractor.
+ */
+ObjectId::ObjectId() {
+  // Filename of the table metadata.
+  boost::format filename = boost::format("%s/%s") %
+                           Config::get_storage_dir_path() %
+                           std::string(ObjectId::OID_NAME);
+  oid_file_name_ = filename.str();
+}
+
+/**
  * @brief initialize object-ID metadata-table.
  */
 ErrorCode ObjectId::init() {
   ErrorCode error = ErrorCode::UNKNOWN;
 
-  // Filename of the table metadata.
-  boost::format filename = boost::format("%s/%s") %
-                           Config::get_storage_dir_path() %
-                           std::string(ObjectId::OID_NAME);
-
-  oid_file_name = filename.str();
-  std::ifstream file(oid_file_name);
-
+  std::ifstream file(oid_file_name_);
   try {
     if (!file) {
       // create oid-metadata-table.
       ptree root;
-      ini_parser::write_ini(oid_file_name, root);
+      ini_parser::write_ini(oid_file_name_, root);
     }
     error = ErrorCode::OK;
   } catch (...) {
@@ -75,13 +72,13 @@ ErrorCode ObjectId::init() {
  * @return ErrorCode::OK if success, otherwise an error code.
  */
 ObjectIdType ObjectId::current(std::string_view table_name) {
-  if (ObjectId::init() != ErrorCode::OK) {
+  if (init() != ErrorCode::OK) {
     return INVALID_OID;
   }
 
   ptree pt;
   try {
-    ini_parser::read_ini(oid_file_name, pt);
+    ini_parser::read_ini(oid_file_name_, pt);
   } catch (ini_parser_error& e) {
     std::wcout << "read_ini() error. " << e.what() << std::endl;
     return INVALID_OID;
@@ -106,13 +103,13 @@ ObjectIdType ObjectId::current(std::string_view table_name) {
  * @return ErrorCode::OK if success, otherwise an error code.
  */
 ObjectIdType ObjectId::generate(std::string_view table_name) {
-  if (ObjectId::init() != ErrorCode::OK) {
+  if (init() != ErrorCode::OK) {
     return INVALID_OID;
   }
 
   ptree pt;
   try {
-    ini_parser::read_ini(oid_file_name, pt);
+    ini_parser::read_ini(oid_file_name_, pt);
   } catch (ini_parser_error& e) {
     std::wcout << "read_ini() error. " << e.what() << std::endl;
     return INVALID_OID;
@@ -133,7 +130,7 @@ ObjectIdType ObjectId::generate(std::string_view table_name) {
   pt.put(table_name.data(), ++oid.get());
 
   try {
-    ini_parser::write_ini(oid_file_name, pt);
+    ini_parser::write_ini(oid_file_name_, pt);
   } catch (ini_parser_error& e) {
     std::wcout << "write_ini() error. " << e.what() << std::endl;
     return INVALID_OID;

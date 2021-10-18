@@ -16,6 +16,7 @@
 #ifndef MANAGER_METADATA_DAO_JSON_OBJECT_ID_H_
 #define MANAGER_METADATA_DAO_JSON_OBJECT_ID_H_
 
+#include <string>
 #include <string_view>
 
 #include "manager/metadata/error_code.h"
@@ -25,12 +26,15 @@ namespace manager::metadata::db::json {
 
 class ObjectId {
  public:
-  static manager::metadata::ErrorCode init();
-  static ObjectIdType current(std::string_view table_name);
-  static ObjectIdType generate(std::string_view table_name);
+  ObjectId();
+
+  manager::metadata::ErrorCode init();
+  ObjectIdType current(std::string_view table_name);
+  ObjectIdType generate(std::string_view table_name);
 
  private:
   static constexpr const char* const OID_NAME = "oid";
+  std::string oid_file_name_;
 };
 
 }  // namespace manager::metadata::db::json

@@ -40,7 +40,9 @@ void print_error(ErrorCode error, uint64_t line) {
  * @brief generate new table name.
  */
 const std::string get_tablename() {
-  ObjectIdType number = ObjectId::current("tables") + 1;
+  std::unique_ptr<ObjectId> object_id = std::make_unique<ObjectId>();
+
+  ObjectIdType number = object_id->current("tables") + 1;
   std::string name = "table_" + std::to_string(number);
 
   return name;
@@ -379,7 +381,9 @@ ErrorCode tables_remove_test() {
   //
   // remove table-metadata object
   //
-  ObjectIdType number = ObjectId::current("tables");
+  std::unique_ptr<ObjectId> object_id = std::make_unique<ObjectId>();
+
+  ObjectIdType number = object_id->current("tables");
   std::vector<std::string> table_names = {
       "table_" + std::to_string(number - 3),
       "table_" + std::to_string(number - 1),
@@ -429,7 +433,7 @@ ErrorCode tables_remove_test() {
   // remove table-metadata object
   //
 
-  number = ObjectId::current("tables");
+  number = object_id->current("tables");
   std::vector<ObjectIdType> object_ids = {number - 3, number - 1, number - 4,
                                           number - 0, number - 2};
 
@@ -497,12 +501,13 @@ ErrorCode read_table_metadata() {
   error = ErrorCode::OK;
 #endif
 
+  std::unique_ptr<ObjectId> object_id = std::make_unique<ObjectId>();
   ptree table;
 
   std::cout << "--- get table metadata by table name. ---" << std::endl;
   table.clear();
   std::string table_name =
-      "table_" + std::to_string(ObjectId::current("tables"));
+      "table_" + std::to_string(object_id->current("tables"));
   error = tables->get(table_name, table);
   if (error == ErrorCode::OK) {
     display_table_metadata_object(table);
@@ -510,7 +515,7 @@ ErrorCode read_table_metadata() {
 
   std::cout << "--- get table metadata by table id. ---" << std::endl;
   table.clear();
-  error = tables->get(ObjectId::current("tables"), table);
+  error = tables->get(object_id->current("tables"), table);
   if (error == ErrorCode::OK) {
     display_table_metadata_object(table);
   }

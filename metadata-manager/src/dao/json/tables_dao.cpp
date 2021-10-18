@@ -27,6 +27,13 @@
 #include "manager/metadata/tables.h"
 
 // =============================================================================
+namespace {
+
+std::unique_ptr<manager::metadata::db::json::ObjectId> object_id = nullptr;
+
+}  // namespace
+
+// =============================================================================
 namespace manager::metadata::db::json {
 
 using boost::property_tree::ptree;
@@ -47,6 +54,9 @@ ErrorCode TablesDAO::prepare() const {
 
   // Connect to the table metadata file.
   error = session_manager_->connect(filename.str(), TablesDAO::TABLES_NODE);
+
+  // Create the ObjectId.
+  object_id = std::make_unique<ObjectId>();
 
   return error;
 }
@@ -88,7 +98,7 @@ ErrorCode TablesDAO::insert_table_metadata(boost::property_tree::ptree& table,
   tmp_table.put(Tables::GENERATION, Tables::generation());
 
   // generate the object ID of the added metadata-object.
-  table_id = ObjectId::generate(TABLE_NAME);
+  table_id = object_id->generate(TABLE_NAME);
   tmp_table.put(Tables::ID, table_id);
 
   // column metadata
@@ -96,7 +106,7 @@ ErrorCode TablesDAO::insert_table_metadata(boost::property_tree::ptree& table,
                  tmp_table.get_child(Tables::COLUMNS_NODE)) {
     ptree& column = node.second;
     // column ID
-    column.put(Tables::Column::ID, ObjectId::generate("column"));
+    column.put(Tables::Column::ID, object_id->generate("column"));
     // table ID
     column.put(Tables::Column::TABLE_ID, table_id);
   }
