@@ -13,10 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef MANAGER_METADATA_PROVIDER_ROLES_PROVIDER_H_
-#define MANAGER_METADATA_PROVIDER_ROLES_PROVIDER_H_
+#ifndef MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_PROVIDER_ROLES_PROVIDER_H_
+#define MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_PROVIDER_ROLES_PROVIDER_H_
 
 #include <boost/property_tree/ptree.hpp>
+#include <memory>
 #include <string_view>
 
 #include "manager/metadata/dao/roles_dao.h"
@@ -39,4 +40,4 @@ class RolesProvider : public ProviderBase {
 
 }  // namespace manager::metadata::db
 
-#endif  // MANAGER_METADATA_PROVIDER_ROLES_PROVIDER_H_
+#endif  // MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_PROVIDER_ROLES_PROVIDER_H_

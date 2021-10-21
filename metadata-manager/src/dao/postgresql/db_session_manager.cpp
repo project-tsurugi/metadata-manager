@@ -16,6 +16,7 @@
 #include "manager/metadata/dao/postgresql/db_session_manager.h"
 
 #include <libpq-fe.h>
+
 #include <iostream>
 
 #include "manager/metadata/dao/common/config.h"
@@ -193,9 +194,10 @@ ErrorCode DBSessionManager::set_always_secure_search_path() const {
     return error;
   }
 
-  ResultUPtr res = DbcUtils::make_result_uptr(
-      PQexec(connection_.get(),
-             "SELECT pg_catalog.set_config('search_path', '', false)"));
+  std::string statement =
+      "SELECT pg_catalog.set_config('search_path', '', false)";
+  ResultUPtr res =
+      DbcUtils::make_result_uptr(PQexec(connection_.get(), statement.data()));
   if (PQresultStatus(res.get()) == PGRES_TUPLES_OK) {
     error = ErrorCode::OK;
   } else {

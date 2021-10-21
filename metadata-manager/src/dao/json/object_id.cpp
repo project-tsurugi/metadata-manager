@@ -15,13 +15,11 @@
  */
 #include "manager/metadata/dao/json/object_id.h"
 
-#include <fstream>
-#include <iostream>
-
 #include <boost/format.hpp>
-#include <boost/optional.hpp>
 #include <boost/property_tree/ini_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
+#include <fstream>
+#include <iostream>
 
 #include "manager/metadata/dao/common/config.h"
 

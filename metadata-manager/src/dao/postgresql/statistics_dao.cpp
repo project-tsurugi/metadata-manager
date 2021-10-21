@@ -16,6 +16,7 @@
 #include "manager/metadata/dao/postgresql/statistics_dao.h"
 
 #include <libpq-fe.h>
+
 #include <boost/format.hpp>
 #include <boost/property_tree/json_parser.hpp>
 #include <iostream>
@@ -463,7 +464,7 @@ ErrorCode StatisticsDAO::prepare() const {
  */
 ErrorCode StatisticsDAO::upsert_column_statistic(
     const ObjectIdType column_id, const std::string* column_name,
-    boost::property_tree::ptree* column_statistic,
+    const boost::property_tree::ptree& column_statistic,
     ObjectIdType& statistic_id) const {
   ErrorCode error = ErrorCode::UNKNOWN;
   std::vector<char const*> param_values;
@@ -485,10 +486,10 @@ ErrorCode StatisticsDAO::upsert_column_statistic(
 
   // column_statistic
   std::string s_column_statistic;
-  if (column_statistic && !(*column_statistic).empty()) {
+  if (!column_statistic.empty()) {
     std::stringstream ss;
     try {
-      json_parser::write_json(ss, *column_statistic, false);
+      json_parser::write_json(ss, column_statistic, false);
     } catch (json_parser_error& e) {
       std::cerr << Message::WRITE_JSON_FAILURE << e.what() << std::endl;
       error = ErrorCode::INVALID_PARAMETER;
@@ -542,7 +543,7 @@ ErrorCode StatisticsDAO::upsert_column_statistic(
 ErrorCode StatisticsDAO::upsert_column_statistic(
     const ObjectIdType table_id, std::string_view object_key,
     std::string_view object_value, const std::string* column_name,
-    boost::property_tree::ptree* column_statistic,
+    const boost::property_tree::ptree& column_statistic,
     ObjectIdType& statistic_id) const {
   ErrorCode error = ErrorCode::UNKNOWN;
   std::vector<char const*> param_values;
@@ -568,10 +569,10 @@ ErrorCode StatisticsDAO::upsert_column_statistic(
 
   // column_statistic
   std::string s_column_statistic;
-  if (column_statistic && !(*column_statistic).empty()) {
+  if (!column_statistic.empty()) {
     std::stringstream ss;
     try {
-      json_parser::write_json(ss, *column_statistic, false);
+      json_parser::write_json(ss, column_statistic, false);
     } catch (json_parser_error& e) {
       std::cerr << Message::WRITE_JSON_FAILURE << e.what() << std::endl;
       error = ErrorCode::INVALID_PARAMETER;
@@ -626,9 +627,9 @@ ErrorCode StatisticsDAO::upsert_column_statistic(
  * @retval ErrorCode::NAME_NOT_FOUND if the statistic name does not exist.
  * @retval otherwise an error code.
  */
-ErrorCode StatisticsDAO::select_column_statistic(std::string_view object_key,
-                                                 std::string_view object_value,
-                                                 ptree& object) const {
+ErrorCode StatisticsDAO::select_column_statistic(
+    std::string_view object_key, std::string_view object_value,
+    boost::property_tree::ptree& object) const {
   ErrorCode error = ErrorCode::UNKNOWN;
   std::vector<const char*> param_values;
 
@@ -736,10 +737,9 @@ ErrorCode StatisticsDAO::select_column_statistic(
  * @retval ErrorCode::NAME_NOT_FOUND if the statistic name does not exist.
  * @retval otherwise an error code.
  */
-ErrorCode StatisticsDAO::select_column_statistic(const ObjectIdType table_id,
-                                                 std::string_view object_key,
-                                                 std::string_view object_value,
-                                                 ptree& object) const {
+ErrorCode StatisticsDAO::select_column_statistic(
+    const ObjectIdType table_id, std::string_view object_key,
+    std::string_view object_value, boost::property_tree::ptree& object) const {
   ErrorCode error = ErrorCode::UNKNOWN;
   std::vector<const char*> param_values;
 
@@ -998,9 +998,9 @@ ErrorCode StatisticsDAO::get_column_statistics_rows(
  * @param (statistic)         [out] one column statistic.
  * @return ErrorCode::OK if success, otherwise an error code.
  */
-ErrorCode StatisticsDAO::convert_pgresult_to_ptree(PGresult*& res,
-                                                   const int ordinal_position,
-                                                   ptree& statistic) {
+ErrorCode StatisticsDAO::convert_pgresult_to_ptree(
+    const PGresult* res, const int ordinal_position,
+    boost::property_tree::ptree& statistic) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   // Set the value of the format_version column to ptree.

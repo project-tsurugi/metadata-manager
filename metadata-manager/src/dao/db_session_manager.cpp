@@ -19,16 +19,7 @@
 
 #include "manager/metadata/dao/db_session_manager.h"
 
-#include <iostream>
-#include <memory>
-#include <string>
-
-#include "manager/metadata/dao/common/config.h"
-#include "manager/metadata/dao/common/message.h"
-
 #if defined(STORAGE_POSTGRESQL)
-#include <libpq-fe.h>
-
 #include "manager/metadata/dao/postgresql/columns_dao.h"
 #include "manager/metadata/dao/postgresql/datatypes_dao.h"
 #include "manager/metadata/dao/postgresql/privileges_dao.h"
@@ -64,7 +55,7 @@ namespace storage = manager::metadata::db::json;
  * @return ErrorCode::OK if success, otherwise an error code.
  */
 manager::metadata::ErrorCode DBSessionManager::create_dao(
-    GenericDAO::TableName table_name, DBSessionManager* session_manager,
+    GenericDAO::TableName table_name, const DBSessionManager* session_manager,
     std::shared_ptr<GenericDAO>& gdao) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 

@@ -16,7 +16,6 @@
 #include "manager/metadata/provider/statistics_provider.h"
 
 #include <boost/property_tree/json_parser.hpp>
-#include <iostream>
 
 #include "manager/metadata/dao/common/message.h"
 #include "manager/metadata/statistics.h"
@@ -62,8 +61,8 @@ ErrorCode StatisticsProvider::init() {
  * @param (statistic_id)  [out] ID of the added column statistic.
  * @return ErrorCode::OK if success, otherwise an error code.
  */
-ErrorCode StatisticsProvider::add_column_statistic(ptree& object,
-                                                   ObjectIdType& statistic_id) {
+ErrorCode StatisticsProvider::add_column_statistic(
+    const boost::property_tree::ptree& object, ObjectIdType& statistic_id) {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   // Initialization
@@ -92,11 +91,12 @@ ErrorCode StatisticsProvider::add_column_statistic(ptree& object,
       (optional_statistic_name ? optional_statistic_name.get_ptr() : nullptr);
 
   // column_statistic
-  boost::optional<ptree&> optional_column_statistic =
+  boost::optional<const ptree&> optional_column_statistic =
       object.get_child_optional(Statistics::COLUMN_STATISTIC);
-  ptree* column_statistic =
-      (optional_column_statistic ? optional_column_statistic.get_ptr()
-                                 : nullptr);
+  ptree column_statistic;
+  if (optional_column_statistic) {
+    column_statistic = optional_column_statistic.value();
+  }
 
   // Start the transaction.
   error = session_manager_->start_transaction();
@@ -274,8 +274,7 @@ ErrorCode StatisticsProvider::remove_column_statistic(
     return error;
   }
 
-  error =
-      statistics_dao_->delete_column_statistic(key, value, statistic_id);
+  error = statistics_dao_->delete_column_statistic(key, value, statistic_id);
   if (error == ErrorCode::OK) {
     // Commit the transaction.
     error = session_manager_->commit();

@@ -13,22 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef MANAGER_METADATA_DAO_COLUMNS_DAO_H_
-#define MANAGER_METADATA_DAO_COLUMNS_DAO_H_
+#ifndef MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_DAO_COLUMNS_DAO_H_
+#define MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_DAO_COLUMNS_DAO_H_
 
 #include <boost/property_tree/ptree.hpp>
 #include <string>
 #include <string_view>
 
 #include "manager/metadata/dao/generic_dao.h"
+#include "manager/metadata/error_code.h"
 #include "manager/metadata/tables.h"
 
 namespace manager::metadata::db {
 
 class ColumnsDAO : public GenericDAO {
  public:
+  virtual ~ColumnsDAO() {}
+
   virtual manager::metadata::ErrorCode insert_one_column_metadata(
-      const ObjectIdType table_id, boost::property_tree::ptree& column) const = 0;
+      const ObjectIdType table_id,
+      const boost::property_tree::ptree& column) const = 0;
 
   virtual manager::metadata::ErrorCode select_column_metadata(
       std::string_view object_key, std::string_view object_value,
@@ -40,4 +44,4 @@ class ColumnsDAO : public GenericDAO {
 
 }  // namespace manager::metadata::db
 
-#endif  // MANAGER_METADATA_DAO_COLUMNS_DAO_H_
+#endif  // MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_DAO_COLUMNS_DAO_H_

@@ -74,8 +74,8 @@ ErrorCode TablesProvider::init() {
  * @param (table_id)   [out] ID of the added table metadata.
  * @return ErrorCode::OK if success, otherwise an error code.
  */
-ErrorCode TablesProvider::add_table_metadata(ptree& object,
-                                             ObjectIdType& table_id) {
+ErrorCode TablesProvider::add_table_metadata(
+    const boost::property_tree::ptree& object, ObjectIdType& table_id) {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   // Initialization
@@ -135,9 +135,9 @@ ErrorCode TablesProvider::add_table_metadata(ptree& object,
  * @retval ErrorCode::NAME_NOT_FOUND if the table name does not exist.
  * @retval otherwise an error code.
  */
-ErrorCode TablesProvider::get_table_metadata(std::string_view key,
-                                             std::string_view value,
-                                             ptree& object) {
+ErrorCode TablesProvider::get_table_metadata(
+    std::string_view key, std::string_view value,
+    boost::property_tree::ptree& object) {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   // Initialization
@@ -170,7 +170,8 @@ ErrorCode TablesProvider::get_table_metadata(std::string_view key,
  * @param (container)   [out] table metadata object to get.
  * @return ErrorCode::OK if success, otherwise an error code.
  */
-ErrorCode TablesProvider::get_table_metadata(std::vector<ptree>& container) {
+ErrorCode TablesProvider::get_table_metadata(
+    std::vector<boost::property_tree::ptree>& container) {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   // Initialization
@@ -207,9 +208,9 @@ ErrorCode TablesProvider::get_table_metadata(std::vector<ptree>& container) {
  * @retval ErrorCode::NAME_NOT_FOUND if the table name does not exist.
  * @retval otherwise an error code.
  */
-ErrorCode TablesProvider::get_table_statistic(std::string_view key,
-                                              std::string_view value,
-                                              ptree& object) {
+ErrorCode TablesProvider::get_table_statistic(
+    std::string_view key, std::string_view value,
+    boost::property_tree::ptree& object) {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   // Initialization
@@ -233,8 +234,8 @@ ErrorCode TablesProvider::get_table_statistic(std::string_view key,
  * @retval ErrorCode::NAME_NOT_FOUND if the table name does not exist.
  * @retval otherwise an error code.
  */
-ErrorCode TablesProvider::set_table_statistic(ptree& object,
-                                              ObjectIdType& table_id) {
+ErrorCode TablesProvider::set_table_statistic(
+    const boost::property_tree::ptree& object, ObjectIdType& table_id) {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   // Initialization
@@ -353,7 +354,8 @@ ErrorCode TablesProvider::remove_table_metadata(std::string_view key,
  * @param (key)           [in]  key of role metadata object.
  * @param (value)         [in]  value of role metadata object.
  * @param (permission)    [in]  permissions.
- * @param (check_result)  [out] presence or absence of the specified permissions.
+ * @param (check_result)  [out] presence or absence of the specified
+ *   permissions.
  * @retval ErrorCode::OK if success.
  * @retval ErrorCode::NOT_FOUND if the foreign table does not exist.
  * @retval ErrorCode::ID_NOT_FOUND if the role id does not exist.
@@ -387,7 +389,8 @@ ErrorCode TablesProvider::confirm_permission(std::string_view key,
  * @param (tables)  [out] table metadata-object.
  * @return ErrorCode::OK if success, otherwise an error code.
  */
-ErrorCode TablesProvider::get_all_column_metadata(ptree& tables) const {
+ErrorCode TablesProvider::get_all_column_metadata(
+    boost::property_tree::ptree& tables) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   error = ErrorCode::OK;
@@ -429,11 +432,11 @@ ErrorCode TablesProvider::get_all_column_metadata(ptree& tables) const {
  *   with the specified table id.
  * @return ErrorCode::OK if success, otherwise an error code.
  */
-ErrorCode TablesProvider::get_column_metadata(std::string_view table_id,
-                                              ptree& tables) const {
+ErrorCode TablesProvider::get_column_metadata(
+    std::string_view table_id, boost::property_tree::ptree& tables) const {
   ErrorCode error = ErrorCode::UNKNOWN;
-  ptree columns;
 
+  ptree columns;
   error = columns_dao_->select_column_metadata(Tables::Column::TABLE_ID,
                                                table_id, columns);
 

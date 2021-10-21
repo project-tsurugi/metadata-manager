@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef MANAGER_METADATA_DAO_GENERIC_DAO_H_
-#define MANAGER_METADATA_DAO_GENERIC_DAO_H_
+#ifndef MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_DAO_GENERIC_DAO_H_
+#define MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_DAO_GENERIC_DAO_H_
 
 #include "manager/metadata/error_code.h"
 
@@ -31,11 +31,11 @@ class GenericDAO {
     PRIVILEGES
   };
 
-  virtual ~GenericDAO(){};
+  virtual ~GenericDAO() {}
 
   virtual manager::metadata::ErrorCode prepare() const = 0;
 };  // class GenericDAO
 
 }  // namespace manager::metadata::db
 
-#endif  // MANAGER_METADATA_DAO_GENERIC_DAO_H_
+#endif  // MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_DAO_GENERIC_DAO_H_

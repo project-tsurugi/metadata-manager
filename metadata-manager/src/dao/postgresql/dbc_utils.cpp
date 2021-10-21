@@ -15,7 +15,8 @@
  */
 #include "manager/metadata/dao/postgresql/dbc_utils.h"
 
-#include <cassert>
+#include <libpq-fe.h>
+
 #include <cerrno>
 #include <cstdlib>
 #include <cstring>
@@ -118,7 +119,7 @@ template <typename T>
  * @return converted integral number as an unsigned long int value.
  */
 template <>
-[[nodiscard]] unsigned long DbcUtils::call_integral<unsigned long>(
+[[nodiscard]] std::uint64_t DbcUtils::call_integral<std::uint64_t>(
     const char* nptr, char** endptr, int base) {
   return std::strtoul(nptr, endptr, base);
 }
@@ -136,8 +137,8 @@ template <>
  * @return converted integral number as long int value.
  */
 template <>
-[[nodiscard]] long DbcUtils::call_integral<long>(const char* nptr,
-                                                 char** endptr, int base) {
+[[nodiscard]] std::int64_t DbcUtils::call_integral<std::int64_t>(
+    const char* nptr, char** endptr, int base) {
   return std::strtol(nptr, endptr, base);
 }
 
@@ -145,12 +146,12 @@ template <>
  * @brief Explicit Template Instantiation for str_to_integral(unsigned long).
  */
 template ErrorCode DbcUtils::str_to_integral(const char* str,
-                                             unsigned long& return_value);
+                                             std::uint64_t& return_value);
 /**
  * @brief Explicit Template Instantiation for str_to_integral(long).
  */
 template ErrorCode DbcUtils::str_to_integral(const char* str,
-                                             long& return_value);
+                                             std::int64_t& return_value);
 
 /**
  * @brief Convert string to integr.
@@ -186,9 +187,9 @@ template <typename T>
  *   if last command was INSERT, UPDATE, or
  *   DELETE. zero for all other commands.
  */
-ErrorCode DbcUtils::get_number_of_rows_affected(PGresult*& res,
+ErrorCode DbcUtils::get_number_of_rows_affected(PGresult*& pgres,
                                                 uint64_t& return_value) {
-  return str_to_integral(PQcmdTuples(res), return_value);
+  return str_to_integral(PQcmdTuples(pgres), return_value);
 }
 
 /**

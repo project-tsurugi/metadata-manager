@@ -15,8 +15,6 @@
  */
 #include "manager/metadata/metadata.h"
 
-#include <memory>
-
 namespace manager::metadata {
 
 /**

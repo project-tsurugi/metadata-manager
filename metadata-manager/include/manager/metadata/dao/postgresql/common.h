@@ -13,8 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef MANAGER_METADATA_DAO_POSTGRESQL_COMMON_H_
-#define MANAGER_METADATA_DAO_POSTGRESQL_COMMON_H_
+#ifndef MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_DAO_POSTGRESQL_COMMON_H_
+#define MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_DAO_POSTGRESQL_COMMON_H_
+
+#include <libpq-fe.h>
 
 #include <functional>
 #include <memory>
@@ -100,9 +102,8 @@ class PgCatalog {
      */
     static constexpr const char* const kTableName = "pg_foreign_table";
   };  // class PgForeignTable
-
 };  // class PgCatalog
 
 }  // namespace manager::metadata::db::postgresql
 
-#endif  // MANAGER_METADATA_DAO_POSTGRESQL_COMMON_H_
+#endif  // MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_DAO_POSTGRESQL_COMMON_H_

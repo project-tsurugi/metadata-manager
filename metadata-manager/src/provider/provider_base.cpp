@@ -42,6 +42,6 @@ namespace storage = json;
  * @return none.
  */
 ProviderBase::ProviderBase()
-    : session_manager_(std::make_unique<storage::DBSessionManager>()){};
+    : session_manager_(std::make_unique<storage::DBSessionManager>()) {}
 
 }  // namespace manager::metadata::db

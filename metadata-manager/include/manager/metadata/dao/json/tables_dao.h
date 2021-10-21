@@ -13,25 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef MANAGER_METADATA_DAO_JSON_TABLES_DAO_H_
-#define MANAGER_METADATA_DAO_JSON_TABLES_DAO_H_
+#ifndef MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_DAO_JSON_TABLES_DAO_H_
+#define MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_DAO_JSON_TABLES_DAO_H_
 
+#include <boost/property_tree/ptree.hpp>
 #include <memory>
+#include <string_view>
+#include <vector>
 
 #include "manager/metadata/dao/json/db_session_manager.h"
 #include "manager/metadata/dao/tables_dao.h"
+#include "manager/metadata/error_code.h"
 
 namespace manager::metadata::db::json {
 
 class TablesDAO : public manager::metadata::db::TablesDAO {
  public:
   explicit TablesDAO(DBSessionManager* session_manager)
-      : session_manager_(session_manager){};
+      : session_manager_(session_manager) {}
 
   manager::metadata::ErrorCode prepare() const override;
 
   manager::metadata::ErrorCode insert_table_metadata(
-      boost::property_tree::ptree& table,
+      const boost::property_tree::ptree& table,
       ObjectIdType& table_id) const override;
 
   manager::metadata::ErrorCode select_table_metadata(
@@ -60,9 +64,10 @@ class TablesDAO : public manager::metadata::db::TablesDAO {
   DBSessionManager* session_manager_;
 
   manager::metadata::ErrorCode get_metadata_object(
-      std::string_view object_name, boost::property_tree::ptree& object) const;
+      std::string_view object_key, std::string_view object_value,
+      boost::property_tree::ptree& object) const;
 };  // class TablesDAO
 
 }  // namespace manager::metadata::db::json
 
-#endif  // MANAGER_METADATA_DAO_JSON_TABLES_DAO_H_
+#endif  // MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_DAO_JSON_TABLES_DAO_H_

@@ -16,6 +16,7 @@
 #include "manager/metadata/dao/postgresql/privileges_dao.h"
 
 #include <libpq-fe.h>
+
 #include <boost/format.hpp>
 #include <iostream>
 #include <regex>
@@ -101,7 +102,6 @@ std::string exists_authid() {
 // =============================================================================
 namespace manager::metadata::db::postgresql {
 
-using boost::property_tree::ptree;
 using manager::metadata::ErrorCode;
 using manager::metadata::db::StatementName;
 
@@ -275,10 +275,10 @@ ErrorCode PrivilegesDAO::confirm_tables_permission(
  *   specified permissions.
  * @return ErrorCode::OK if success, otherwise an error code.
  */
-ErrorCode PrivilegesDAO::check_of_privilege(PGresult*& res,
+ErrorCode PrivilegesDAO::check_of_privilege(const PGresult* res,
                                             const int ordinal_position,
                                             const char* permission,
-                                            bool& check_result) {
+                                            bool& check_result) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   std::regex regex_boolean = std::regex(R"(^([tTyY].*|1)$)");

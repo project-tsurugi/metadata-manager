@@ -13,12 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef MANAGER_METADATA_DAO_JSON_DB_SESSION_MANAGER_H_
-#define MANAGER_METADATA_DAO_JSON_DB_SESSION_MANAGER_H_
+#ifndef MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_DAO_JSON_DB_SESSION_MANAGER_H_
+#define MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_DAO_JSON_DB_SESSION_MANAGER_H_
 
 #include <boost/property_tree/ptree.hpp>
+#include <memory>
+#include <string>
 
 #include "manager/metadata/dao/db_session_manager.h"
+#include "manager/metadata/error_code.h"
 
 namespace manager::metadata::db::json {
 
@@ -53,4 +56,4 @@ class DBSessionManager : public manager::metadata::db::DBSessionManager {
 
 }  // namespace manager::metadata::db::json
 
-#endif  // MANAGER_METADATA_DAO_JSON_DB_SESSION_MANAGER_H_
+#endif  // MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_DAO_JSON_DB_SESSION_MANAGER_H_

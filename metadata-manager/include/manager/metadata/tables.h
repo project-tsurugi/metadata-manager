@@ -13,9 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef MANAGER_METADATA_TABLES_H_
-#define MANAGER_METADATA_TABLES_H_
+#ifndef MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_TABLES_H_
+#define MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_TABLES_H_
 
+#include <boost/property_tree/ptree.hpp>
+#include <string_view>
+#include <vector>
+
+#include "manager/metadata/error_code.h"
 #include "manager/metadata/metadata.h"
 
 namespace manager::metadata {
@@ -53,7 +58,6 @@ class Tables : public Metadata {
      * @brief represents sort direction of elements.
      */
     enum class Direction {
-
       /**
        * @brief default order.
        */
@@ -71,15 +75,17 @@ class Tables : public Metadata {
     };
   };
 
-  Tables(std::string_view database, std::string_view component = "visitor");
+  explicit Tables(std::string_view database)
+      : Tables(database, kDefaultComponent) {}
+  Tables(std::string_view database, std::string_view component);
 
   Tables(const Tables&) = delete;
   Tables& operator=(const Tables&) = delete;
 
   ErrorCode init() const override;
 
-  ErrorCode add(boost::property_tree::ptree& object) const override;
-  ErrorCode add(boost::property_tree::ptree& object,
+  ErrorCode add(const boost::property_tree::ptree& object) const override;
+  ErrorCode add(const boost::property_tree::ptree& object,
                 ObjectIdType* object_id) const override;
 
   ErrorCode get(const ObjectIdType object_id,
@@ -108,11 +114,11 @@ class Tables : public Metadata {
 
  private:
   manager::metadata::ErrorCode param_check_metadata_add(
-      boost::property_tree::ptree& object) const;
+      const boost::property_tree::ptree& object) const;
   manager::metadata::ErrorCode param_check_statistic_update(
-      boost::property_tree::ptree& object) const;
+      const boost::property_tree::ptree& object) const;
 };  // class Tables
 
 }  // namespace manager::metadata
 
-#endif  // MANAGER_METADATA_TABLES_H_
+#endif  // MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_TABLES_H_

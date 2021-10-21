@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#ifndef MANAGER_METADATA_DAO_COMMON_CONFIG_H_
-#define MANAGER_METADATA_DAO_COMMON_CONFIG_H_
+#ifndef MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_DAO_COMMON_CONFIG_H_
+#define MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_DAO_COMMON_CONFIG_H_
 
 #include <string>
 
@@ -64,9 +64,8 @@ class Config {
    */
   static constexpr const char* const DEFAULT_TSURUGI_METADATA_DIR =
       ".local/tsurugi/metadata";
-
 };  // class Config
 
 }  // namespace manager::metadata::db
 
-#endif  // MANAGER_METADATA_DAO_COMMON_CONFIG_H_
+#endif  // MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_DAO_COMMON_CONFIG_H_

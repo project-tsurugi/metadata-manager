@@ -24,7 +24,6 @@
 // =============================================================================
 namespace manager::metadata::db {
 
-using boost::property_tree::ptree;
 using manager::metadata::ErrorCode;
 
 /**
@@ -63,8 +62,9 @@ ErrorCode RolesProvider::init() {
  * @retval ErrorCode::NAME_NOT_FOUND if the role name does not exist.
  * @retval otherwise an error code.
  */
-ErrorCode RolesProvider::get_role_metadata(std::string_view key,
-                                             std::string_view value, ptree& object) {
+ErrorCode RolesProvider::get_role_metadata(
+    std::string_view key, std::string_view value,
+    boost::property_tree::ptree& object) {
   // Initialization
   ErrorCode error = init();
   if (error != ErrorCode::OK) {

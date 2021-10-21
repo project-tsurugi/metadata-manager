@@ -13,12 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef MANAGER_METADATA_DAO_POSTGRESQL_PRIVILEGES_DAO_H_
-#define MANAGER_METADATA_DAO_POSTGRESQL_PRIVILEGES_DAO_H_
+#ifndef MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_DAO_POSTGRESQL_PRIVILEGES_DAO_H_
+#define MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_DAO_POSTGRESQL_PRIVILEGES_DAO_H_
 
 #include "manager/metadata/dao/postgresql/db_session_manager.h"
 #include "manager/metadata/dao/postgresql/dbc_utils.h"
 #include "manager/metadata/dao/privileges_dao.h"
+#include "manager/metadata/error_code.h"
 
 namespace manager::metadata::db::postgresql {
 
@@ -47,22 +48,21 @@ class PrivilegesDAO : public manager::metadata::db::PrivilegesDAO {
 
   manager::metadata::ErrorCode prepare() const override;
 
-  virtual manager::metadata::ErrorCode confirm_tables_permission(
+  manager::metadata::ErrorCode confirm_tables_permission(
       std::string_view object_key, std::string_view object_value,
       std::string_view permission, bool& check_result) const override;
 
  private:
   ConnectionSPtr connection_;
 
-  static manager::metadata::ErrorCode check_of_privilege(PGresult*& res,
-                                                  const int ordinal_position,
-                                                  const char* permission,
-                                                  bool& check_result);
+  manager::metadata::ErrorCode check_of_privilege(
+      const PGresult* res, const int ordinal_position, const char* permission,
+      bool& check_result) const;
 
-  manager::metadata::ErrorCode check_exists_authid(std::string_view auth_id,
-                                                   bool& exists_result) const;
+  manager::metadata::ErrorCode check_exists_authid(
+      std::string_view auth_id, bool& exists_result) const;
 };  // class PrivilegesDAO
 
 }  // namespace manager::metadata::db::postgresql
 
-#endif  // MANAGER_METADATA_DAO_POSTGRESQL_PRIVILEGES_DAO_H_
+#endif  // MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_DAO_POSTGRESQL_PRIVILEGES_DAO_H_

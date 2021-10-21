@@ -16,8 +16,8 @@
 #include "manager/metadata/dao/postgresql/tables_dao.h"
 
 #include <libpq-fe.h>
+
 #include <boost/format.hpp>
-#include <boost/optional.hpp>
 #include <boost/property_tree/json_parser.hpp>
 #include <iostream>
 #include <regex>
@@ -277,8 +277,8 @@ ErrorCode TablesDAO::prepare() const {
  * @param (table_id)  [out] table id.
  * @return ErrorCode::OK if success, otherwise an error code.
  */
-ErrorCode TablesDAO::insert_table_metadata(boost::property_tree::ptree& table,
-                                           ObjectIdType& table_id) const {
+ErrorCode TablesDAO::insert_table_metadata(
+    const boost::property_tree::ptree& table, ObjectIdType& table_id) const {
   ErrorCode error = ErrorCode::UNKNOWN;
   std::vector<char const*> param_values;
 
@@ -302,12 +302,12 @@ ErrorCode TablesDAO::insert_table_metadata(boost::property_tree::ptree& table,
       (namespace_name ? namespace_name.value().c_str() : ""));
 
   // primary_keys
-  boost::optional<ptree&> o_primary_keys =
+  boost::optional<const ptree&> o_primary_keys =
       table.get_child_optional(Tables::PRIMARY_KEY_NODE);
 
   std::string s_primary_keys;
   if (o_primary_keys) {
-    ptree& p_primary_keys = o_primary_keys.value();
+    const ptree& p_primary_keys = o_primary_keys.value();
 
     if (!p_primary_keys.empty()) {
       std::stringstream ss;
@@ -365,9 +365,9 @@ ErrorCode TablesDAO::insert_table_metadata(boost::property_tree::ptree& table,
  * @retval ErrorCode::NAME_NOT_FOUND if the table name does not exist.
  * @retval otherwise an error code.
  */
-ErrorCode TablesDAO::select_table_metadata(std::string_view object_key,
-                                           std::string_view object_value,
-                                           ptree& object) const {
+ErrorCode TablesDAO::select_table_metadata(
+    std::string_view object_key, std::string_view object_value,
+    boost::property_tree::ptree& object) const {
   ErrorCode error = ErrorCode::UNKNOWN;
   std::vector<const char*> param_values;
 
@@ -578,7 +578,7 @@ ErrorCode TablesDAO::delete_table_metadata(std::string_view object_key,
  * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode TablesDAO::convert_pgresult_to_ptree(
-    PGresult*& res, const int ordinal_position,
+    const PGresult* res, const int ordinal_position,
     boost::property_tree::ptree& table) {
   ErrorCode error = ErrorCode::UNKNOWN;
 
@@ -640,8 +640,8 @@ ErrorCode TablesDAO::convert_pgresult_to_ptree(
                        static_cast<int>(OrdinalPosition::kOwnerRoleId)));
 
   // Set the value of the acl column to ptree.
-  std::string acl_db_array = PQgetvalue(res, ordinal_position,
-                                 static_cast<int>(OrdinalPosition::kAcl));
+  std::string acl_db_array = PQgetvalue(
+      res, ordinal_position, static_cast<int>(OrdinalPosition::kAcl));
   std::regex regex("[{}]");
   acl_db_array = std::regex_replace(acl_db_array, regex, "");
 

@@ -47,7 +47,7 @@ std::string Config::get_storage_dir_path() {
   }
   // Returns the default value.
   boost::format storage_dir = boost::format("%s/%s") %
-                              std::string(getenv(HOME_DIR)) %
+                              std::string(std::getenv(HOME_DIR)) %
                               DEFAULT_TSURUGI_METADATA_DIR;
   return storage_dir.str();
 }

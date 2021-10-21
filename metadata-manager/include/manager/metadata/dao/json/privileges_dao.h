@@ -13,11 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef MANAGER_METADATA_DAO_JSON_PRIVILEGES_DAO_H_
-#define MANAGER_METADATA_DAO_JSON_PRIVILEGES_DAO_H_
+#ifndef MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_DAO_JSON_PRIVILEGES_DAO_H_
+#define MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_DAO_JSON_PRIVILEGES_DAO_H_
 
 #include "manager/metadata/dao/json/db_session_manager.h"
 #include "manager/metadata/dao/privileges_dao.h"
+#include "manager/metadata/error_code.h"
 
 namespace manager::metadata::db::json {
 
@@ -31,15 +32,14 @@ class PrivilegesDAO : public manager::metadata::db::PrivilegesDAO {
     return ErrorCode::OK;
   };
 
-  virtual manager::metadata::ErrorCode confirm_tables_permission(
+  manager::metadata::ErrorCode confirm_tables_permission(
       std::string_view object_key, std::string_view object_value,
       std::string_view permission, bool& check_result) const override {
     // Do nothing and return of ErrorCode::NOT_SUPPORTED.
     return ErrorCode::NOT_SUPPORTED;
   }
-
 };  // class PrivilegesDAO
 
 }  // namespace manager::metadata::db::json
 
-#endif  // MANAGER_METADATA_DAO_JSON_PRIVILEGES_DAO_H_
+#endif  // MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_DAO_JSON_PRIVILEGES_DAO_H_

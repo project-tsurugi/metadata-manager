@@ -20,7 +20,6 @@
 // =============================================================================
 namespace manager::metadata::db {
 
-using boost::property_tree::ptree;
 using manager::metadata::ErrorCode;
 
 /**
@@ -60,9 +59,9 @@ ErrorCode DataTypesProvider::init() {
  * @retval ErrorCode::NOT_FOUND if the other data types key does not exist.
  * @retval otherwise an error code.
  */
-ErrorCode DataTypesProvider::get_datatype_metadata(std::string_view key,
-                                                   std::string_view value,
-                                                   ptree& object) {
+ErrorCode DataTypesProvider::get_datatype_metadata(
+    std::string_view key, std::string_view value,
+    boost::property_tree::ptree& object) {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   // Initialization

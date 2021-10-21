@@ -13,9 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef MANAGER_METADATA_ROLES_H_
-#define MANAGER_METADATA_ROLES_H_
+#ifndef MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_ROLES_H_
+#define MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_ROLES_H_
 
+#include <boost/property_tree/ptree.hpp>
+#include <string_view>
+#include <vector>
+
+#include "manager/metadata/error_code.h"
 #include "manager/metadata/metadata.h"
 
 namespace manager::metadata {
@@ -38,18 +43,21 @@ class Roles : public Metadata {
   static constexpr const char* const ROLE_ROLPASSWORD = "password";
   static constexpr const char* const ROLE_ROLVALIDUNTIL = "validuntil";
 
-  Roles(std::string_view database, std::string_view component = "visitor");
+  explicit Roles(std::string_view database)
+      : Roles(database, kDefaultComponent) {}
+  Roles(std::string_view database, std::string_view component);
 
   Roles(const Roles&) = delete;
   Roles& operator=(const Roles&) = delete;
 
   ErrorCode init() const override;
 
-  ErrorCode add(boost::property_tree::ptree& object
+  ErrorCode add(const boost::property_tree::ptree& object
                 __attribute__((unused))) const override {
     return ErrorCode::UNKNOWN;
   }
-  ErrorCode add(boost::property_tree::ptree& object __attribute__((unused)),
+  ErrorCode add(const boost::property_tree::ptree& object
+                __attribute__((unused)),
                 ObjectIdType* object_id
                 __attribute__((unused))) const override {
     return ErrorCode::UNKNOWN;
@@ -73,9 +81,8 @@ class Roles : public Metadata {
                    __attribute__((unused))) const override {
     return ErrorCode::UNKNOWN;
   }
-
 };  // class Roles
 
 }  // namespace manager::metadata
 
-#endif  // MANAGER_METADATA_ROLES_H_
+#endif  // MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_ROLES_H_

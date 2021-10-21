@@ -13,16 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef MANAGER_METADATA_DAO_POSTGRESQL_STATISTICS_DAO_H_
-#define MANAGER_METADATA_DAO_POSTGRESQL_STATISTICS_DAO_H_
+#ifndef MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_DAO_POSTGRESQL_STATISTICS_DAO_H_
+#define MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_DAO_POSTGRESQL_STATISTICS_DAO_H_
 
+#include <boost/property_tree/ptree.hpp>
 #include <string>
 #include <string_view>
-#include <unordered_map>
+#include <vector>
 
 #include "manager/metadata/dao/postgresql/db_session_manager.h"
 #include "manager/metadata/dao/postgresql/dbc_utils.h"
 #include "manager/metadata/dao/statistics_dao.h"
+#include "manager/metadata/error_code.h"
 
 namespace manager::metadata::db::postgresql {
 
@@ -69,12 +71,12 @@ class StatisticsDAO : public manager::metadata::db::StatisticsDAO {
 
   manager::metadata::ErrorCode upsert_column_statistic(
       const ObjectIdType column_id, const std::string* column_name,
-      boost::property_tree::ptree* column_statistic,
+      const boost::property_tree::ptree& column_statistic,
       ObjectIdType& statistic_id) const override;
   manager::metadata::ErrorCode upsert_column_statistic(
       const ObjectIdType table_id, std::string_view object_key,
       std::string_view object_value, const std::string* column_name,
-      boost::property_tree::ptree* column_statistic,
+      const boost::property_tree::ptree& column_statistic,
       ObjectIdType& statistic_id) const override;
 
   manager::metadata::ErrorCode select_column_statistic(
@@ -102,9 +104,9 @@ class StatisticsDAO : public manager::metadata::db::StatisticsDAO {
  private:
   ConnectionSPtr connection_;
 
-  static manager::metadata::ErrorCode convert_pgresult_to_ptree(
-      PGresult*& res, const int ordinal_position,
-      boost::property_tree::ptree& statistic);
+  manager::metadata::ErrorCode convert_pgresult_to_ptree(
+      const PGresult* res, const int ordinal_position,
+      boost::property_tree::ptree& statistic) const;
 
   manager::metadata::ErrorCode get_column_statistics_rows(
       std::string_view statement_name,
@@ -114,4 +116,4 @@ class StatisticsDAO : public manager::metadata::db::StatisticsDAO {
 
 }  // namespace manager::metadata::db::postgresql
 
-#endif  // MANAGER_METADATA_DAO_POSTGRESQL_STATISTICS_DAO_H_
+#endif  // MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_DAO_POSTGRESQL_STATISTICS_DAO_H_

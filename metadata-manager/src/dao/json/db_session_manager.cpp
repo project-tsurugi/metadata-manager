@@ -29,7 +29,6 @@ namespace manager::metadata::db::json {
 
 namespace json_parser = boost::property_tree::json_parser;
 using boost::property_tree::json_parser_error;
-using boost::property_tree::ptree;
 using manager::metadata::ErrorCode;
 using manager::metadata::Metadata;
 
@@ -141,7 +140,9 @@ ErrorCode DBSessionManager::connect(std::string_view file_name,
  * @brief Gets the metadata object.
  * @return metadata object.
  */
-ptree* DBSessionManager::get_container() const { return meta_object_.get(); }
+boost::property_tree::ptree* DBSessionManager::get_container() const {
+  return meta_object_.get();
+}
 
 /**
  * @brief Load the metadata from the file.

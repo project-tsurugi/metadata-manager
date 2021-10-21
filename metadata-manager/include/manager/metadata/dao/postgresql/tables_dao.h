@@ -13,14 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef MANAGER_METADATA_DAO_POSTGRESQL_TABLES_DAO_H_
-#define MANAGER_METADATA_DAO_POSTGRESQL_TABLES_DAO_H_
+#ifndef MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_DAO_POSTGRESQL_TABLES_DAO_H_
+#define MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_DAO_POSTGRESQL_TABLES_DAO_H_
 
-#include <unordered_map>
+#include <boost/property_tree/ptree.hpp>
+#include <string>
+#include <vector>
 
 #include "manager/metadata/dao/postgresql/db_session_manager.h"
 #include "manager/metadata/dao/postgresql/dbc_utils.h"
 #include "manager/metadata/dao/tables_dao.h"
+#include "manager/metadata/error_code.h"
 
 namespace manager::metadata::db::postgresql {
 
@@ -66,7 +69,7 @@ class TablesDAO : public manager::metadata::db::TablesDAO {
   manager::metadata::ErrorCode prepare() const override;
 
   manager::metadata::ErrorCode insert_table_metadata(
-      boost::property_tree::ptree& table,
+      const boost::property_tree::ptree& table,
       ObjectIdType& table_id) const override;
 
   manager::metadata::ErrorCode select_table_metadata(
@@ -77,7 +80,8 @@ class TablesDAO : public manager::metadata::db::TablesDAO {
 
   manager::metadata::ErrorCode update_reltuples(
       const float reltuples, std::string_view object_key,
-      std::string_view object_value, ObjectIdType& table_id) const override;
+      std::string_view object_value,
+      ObjectIdType& table_id) const override;
 
   manager::metadata::ErrorCode delete_table_metadata(
       std::string_view object_key, std::string_view object_value,
@@ -87,7 +91,7 @@ class TablesDAO : public manager::metadata::db::TablesDAO {
   ConnectionSPtr connection_;
 
   static manager::metadata::ErrorCode convert_pgresult_to_ptree(
-      PGresult*& res, const int ordinal_position,
+      const PGresult* res, const int ordinal_position,
       boost::property_tree::ptree& table);
   static std::vector<std::string> split(const std::string& source,
                                         const char& delimiter);
@@ -95,4 +99,4 @@ class TablesDAO : public manager::metadata::db::TablesDAO {
 
 }  // namespace manager::metadata::db::postgresql
 
-#endif  // MANAGER_METADATA_DAO_POSTGRESQL_TABLES_DAO_H_
+#endif  // MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_DAO_POSTGRESQL_TABLES_DAO_H_

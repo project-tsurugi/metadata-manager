@@ -13,20 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef MANAGER_METADATA_METADATA_H_
-#define MANAGER_METADATA_METADATA_H_
+#ifndef MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_METADATA_H_
+#define MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_METADATA_H_
 
 #include <boost/property_tree/ptree.hpp>
 #include <string>
 #include <string_view>
+#include <vector>
 
 #include "manager/metadata/error_code.h"
 
 namespace manager::metadata {
 
-using FormatVersionType = int32_t;
-using GenerationType = int64_t;
-using ObjectIdType = int64_t;
+using FormatVersionType = std::int32_t;
+using GenerationType = std::int64_t;
+using ObjectIdType = std::int64_t;
 
 class Metadata {
  public:
@@ -44,7 +45,7 @@ class Metadata {
    *  @param  (component) [in]  your component name.
    *  @return none.
    */
-  Metadata(std::string_view& database, std::string_view& component)
+  Metadata(std::string_view database, std::string_view component)
       : database_(database), component_(component) {}
 
   virtual ~Metadata() {}
@@ -86,14 +87,14 @@ class Metadata {
    */
   static ErrorCode load(std::string_view database,
                         boost::property_tree::ptree& object,
-                        const GenerationType generation = LATEST_VERSION);
+                        const GenerationType generation = kLatestVersion);
 
   /**
    *  @brief  Add metadata-object to metadata-table.
    *  @param  (object) [in]  metadata-object to add.
    *  @return ErrorCode::OK if success, otherwise an error code.
    */
-  virtual ErrorCode add(boost::property_tree::ptree& object) const = 0;
+  virtual ErrorCode add(const boost::property_tree::ptree& object) const = 0;
 
   /**
    *  @brief  Add metadata-object to metadata-table.
@@ -101,7 +102,7 @@ class Metadata {
    *  @param  (object_id)   [out] ID of the added metadata-object.
    *  @return ErrorCode::OK if success, otherwise an error code.
    */
-  virtual ErrorCode add(boost::property_tree::ptree& object,
+  virtual ErrorCode add(const boost::property_tree::ptree& object,
                         ObjectIdType* object_id) const = 0;
 
   /**
@@ -152,7 +153,8 @@ class Metadata {
   Metadata& operator=(const Metadata&) = delete;
 
  protected:
-  static const GenerationType LATEST_VERSION = 0;
+  static constexpr const char* const kDefaultComponent = "visitor";
+  static const GenerationType kLatestVersion = 0;
 
  private:
   static constexpr GenerationType kGeneration = 1;
@@ -164,4 +166,4 @@ class Metadata {
 
 }  // namespace manager::metadata
 
-#endif  // MANAGER_METADATA_METADATA_H_
+#endif  // MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_METADATA_H_

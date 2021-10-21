@@ -13,8 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef MANAGER_METADATA_DAO_COMMON_PG_TYPE_H_
-#define MANAGER_METADATA_DAO_COMMON_PG_TYPE_H_
+#ifndef MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_DAO_COMMON_PG_TYPE_H_
+#define MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_DAO_COMMON_PG_TYPE_H_
+
+#include <cstdint>
 
 namespace manager::metadata::db {
 
@@ -49,4 +51,4 @@ class PgType {
 
 }  // namespace manager::metadata::db
 
-#endif  // MANAGER_METADATA_DAO_COMMON_PG_TYPE_H_
+#endif  // MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_DAO_COMMON_PG_TYPE_H_

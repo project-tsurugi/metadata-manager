@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef MANAGER_METADATA_DAO_POSTGRESQL_DBC_UTILS_H_
-#define MANAGER_METADATA_DAO_POSTGRESQL_DBC_UTILS_H_
+#ifndef MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_DAO_POSTGRESQL_DBC_UTILS_H_
+#define MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_DAO_POSTGRESQL_DBC_UTILS_H_
 
-#include <libpq-fe.h>
 #include <functional>
 #include <memory>
 #include <string>
 #include <unordered_map>
+#include <vector>
 
 #include "manager/metadata/dao/common/statement_name.h"
 #include "manager/metadata/dao/postgresql/common.h"
@@ -41,7 +41,7 @@ class DbcUtils {
                                                       T& return_value);
 
   static manager::metadata::ErrorCode get_number_of_rows_affected(
-      PGresult*& res, uint64_t& return_value);
+      PGresult*& pgres, uint64_t& return_value);
 
   static ConnectionSPtr make_connection_sptr(PGconn* pgconn);
   static ResultUPtr make_result_uptr(PGresult* pgres);
@@ -77,4 +77,4 @@ class DbcUtils {
 
 }  // namespace manager::metadata::db::postgresql
 
-#endif  // MANAGER_METADATA_DAO_POSTGRESQL_DBC_UTILS_H_
+#endif  // MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_DAO_POSTGRESQL_DBC_UTILS_H_

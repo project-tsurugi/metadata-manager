@@ -13,18 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef MANAGER_METADATA_DAO_JSON_COLUMNS_DAO_H_
-#define MANAGER_METADATA_DAO_JSON_COLUMNS_DAO_H_
+#ifndef MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_DAO_JSON_COLUMNS_DAO_H_
+#define MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_DAO_JSON_COLUMNS_DAO_H_
+
+#include <boost/property_tree/ptree.hpp>
+#include <string_view>
 
 #include "manager/metadata/dao/columns_dao.h"
 #include "manager/metadata/dao/json/db_session_manager.h"
+#include "manager/metadata/error_code.h"
 
 namespace manager::metadata::db::json {
 
 class ColumnsDAO : public manager::metadata::db::ColumnsDAO {
  public:
   explicit ColumnsDAO(DBSessionManager* session_manager
-                      __attribute__((unused))){};
+                      __attribute__((unused))) {}
 
   manager::metadata::ErrorCode prepare() const override {
     // Do nothing and return of ErrorCode::OK.
@@ -33,7 +37,7 @@ class ColumnsDAO : public manager::metadata::db::ColumnsDAO {
 
   manager::metadata::ErrorCode insert_one_column_metadata(
       const ObjectIdType table_id __attribute__((unused)),
-      boost::property_tree::ptree& column
+      const boost::property_tree::ptree& column
       __attribute__((unused))) const override {
     // Do nothing and return of ErrorCode::OK.
     return ErrorCode::OK;
@@ -58,4 +62,4 @@ class ColumnsDAO : public manager::metadata::db::ColumnsDAO {
 
 }  // namespace manager::metadata::db::json
 
-#endif  // MANAGER_METADATA_DAO_JSON_COLUMNS_DAO_H_
+#endif  // MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_DAO_JSON_COLUMNS_DAO_H_

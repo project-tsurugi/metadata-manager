@@ -31,6 +31,7 @@ std::unique_ptr<manager::metadata::db::TablesProvider> provider = nullptr;
 // =============================================================================
 namespace manager::metadata {
 
+using boost::property_tree::ptree;
 using manager::metadata::ErrorCode;
 
 /**
@@ -63,7 +64,7 @@ ErrorCode Tables::init() const {
  * @param (object)  [in]  table metadata to add.
  * @return ErrorCode::OK if success, otherwise an error code.
  */
-ErrorCode Tables::add(boost::property_tree::ptree& object) const {
+ErrorCode Tables::add(const boost::property_tree::ptree& object) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   // Adds the table metadata through the class method.
@@ -78,7 +79,7 @@ ErrorCode Tables::add(boost::property_tree::ptree& object) const {
  * @param (object_id)   [out] ID of the added table metadata.
  * @return ErrorCode::OK if success, otherwise an error code.
  */
-ErrorCode Tables::add(boost::property_tree::ptree& object,
+ErrorCode Tables::add(const boost::property_tree::ptree& object,
                       ObjectIdType* object_id) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
@@ -372,7 +373,7 @@ ErrorCode Tables::confirm_permission_in_acls(std::string_view object_name,
  * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode Tables::param_check_metadata_add(
-    boost::property_tree::ptree& object) const {
+    const boost::property_tree::ptree& object) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   boost::optional<std::string> table_name =
@@ -386,9 +387,9 @@ ErrorCode Tables::param_check_metadata_add(
   // column metadata
   //
   error = ErrorCode::OK;
-  BOOST_FOREACH (boost::property_tree::ptree::value_type& node,
+  BOOST_FOREACH (ptree::value_type node,
                  object.get_child(Tables::COLUMNS_NODE)) {
-    boost::property_tree::ptree& column = node.second;
+    auto& column = node.second;
 
     // name
     boost::optional<std::string> column_name =
@@ -449,7 +450,7 @@ ErrorCode Tables::param_check_metadata_add(
  * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode Tables::param_check_statistic_update(
-    boost::property_tree::ptree& object) const {
+    const boost::property_tree::ptree& object) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   // id

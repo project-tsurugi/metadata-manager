@@ -17,7 +17,6 @@
 
 #include <memory>
 
-#include "manager/metadata/dao/common/message.h"
 #include "manager/metadata/provider/statistics_provider.h"
 
 // =============================================================================
@@ -31,7 +30,6 @@ std::unique_ptr<manager::metadata::db::StatisticsProvider> provider = nullptr;
 namespace manager::metadata {
 
 using manager::metadata::ErrorCode;
-using manager::metadata::db::Message;
 
 /**
  * @brief Constructor
@@ -63,7 +61,7 @@ ErrorCode Statistics::init() const {
  * @param (object) [in]  statistics to add.
  * @return ErrorCode::OK if success, otherwise an error code.
  */
-ErrorCode Statistics::add(boost::property_tree::ptree& object) const {
+ErrorCode Statistics::add(const boost::property_tree::ptree& object) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   // Adds the column statistics through the class method.
@@ -78,7 +76,7 @@ ErrorCode Statistics::add(boost::property_tree::ptree& object) const {
  * @param (object_id)   [out] ID of the added statistic.
  * @return ErrorCode::OK if success, otherwise an error code.
  */
-ErrorCode Statistics::add(boost::property_tree::ptree& object,
+ErrorCode Statistics::add(const boost::property_tree::ptree& object,
                           ObjectIdType* object_id) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
@@ -457,11 +455,11 @@ ErrorCode Statistics::remove_by_column_name(
 
 /**
  * @brief Checks if the parameters are correct.
- * @param (table)  [in]  metadata-object
+ * @param (object)  [in]  metadata-object
  * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode Statistics::param_check_statistics_add(
-    boost::property_tree::ptree& object) const {
+    const boost::property_tree::ptree& object) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   // Check the specified parameters.

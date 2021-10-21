@@ -13,11 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef MANAGER_METADATA_PROVIDER_STATISTICS_PROVIDER_H_
-#define MANAGER_METADATA_PROVIDER_STATISTICS_PROVIDER_H_
+#ifndef MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_PROVIDER_STATISTICS_PROVIDER_H_
+#define MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_PROVIDER_STATISTICS_PROVIDER_H_
 
 #include <boost/property_tree/ptree.hpp>
+#include <memory>
 #include <string_view>
+#include <vector>
 
 #include "manager/metadata/dao/statistics_dao.h"
 #include "manager/metadata/error_code.h"
@@ -31,7 +33,8 @@ class StatisticsProvider : public ProviderBase {
   manager::metadata::ErrorCode init();
 
   manager::metadata::ErrorCode add_column_statistic(
-      boost::property_tree::ptree& object, ObjectIdType& statistic_id);
+      const boost::property_tree::ptree& object,
+      ObjectIdType& statistic_id);
 
   manager::metadata::ErrorCode get_column_statistic(
       std::string_view key, std::string_view value,
@@ -60,4 +63,4 @@ class StatisticsProvider : public ProviderBase {
 
 }  // namespace manager::metadata::db
 
-#endif  // MANAGER_METADATA_PROVIDER_STATISTICS_PROVIDER_H_
+#endif  // MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_PROVIDER_STATISTICS_PROVIDER_H_

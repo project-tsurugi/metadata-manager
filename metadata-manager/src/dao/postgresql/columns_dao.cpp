@@ -16,11 +16,13 @@
 #include "manager/metadata/dao/postgresql/columns_dao.h"
 
 #include <libpq-fe.h>
+
 #include <boost/format.hpp>
 #include <boost/property_tree/json_parser.hpp>
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -205,7 +207,8 @@ ErrorCode ColumnsDAO::prepare() const {
  * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode ColumnsDAO::insert_one_column_metadata(
-    const ObjectIdType table_id, boost::property_tree::ptree& column) const {
+    const ObjectIdType table_id,
+    const boost::property_tree::ptree& column) const {
   ErrorCode error = ErrorCode::UNKNOWN;
   std::vector<char const*> param_values;
 
@@ -243,14 +246,14 @@ ErrorCode ColumnsDAO::insert_one_column_metadata(
       (data_type_id ? data_type_id.value().c_str() : nullptr));
 
   // data_length
-  boost::optional<ptree&> o_data_length =
+  boost::optional<const ptree&> o_data_length =
       column.get_child_optional(Tables::Column::DATA_LENGTH);
 
   std::string s_data_length;
   if (!o_data_length) {
     param_values.emplace_back(nullptr);
   } else {
-    ptree& p_data_length = o_data_length.value();
+    const ptree& p_data_length = o_data_length.value();
 
     if (p_data_length.empty()) {
       param_values.emplace_back(p_data_length.data().c_str());
@@ -359,7 +362,6 @@ ErrorCode ColumnsDAO::select_column_metadata(
     for (int ordinal_position = 0; ordinal_position < nrows;
          ordinal_position++) {
       ptree column;
-
       error = convert_pgresult_to_ptree(res, ordinal_position, column);
       if (error != ErrorCode::OK) {
         break;
@@ -426,9 +428,9 @@ ErrorCode ColumnsDAO::delete_column_metadata(
  * @param (column)            [out] one column metadata.
  * @return ErrorCode::OK if success, otherwise an error code.
  */
-ErrorCode ColumnsDAO::convert_pgresult_to_ptree(PGresult*& res,
-                                                const int ordinal_position,
-                                                ptree& column) {
+ErrorCode ColumnsDAO::convert_pgresult_to_ptree(
+    const PGresult* res, const int ordinal_position,
+    boost::property_tree::ptree& column) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   // Set the value of the format_version column to ptree.

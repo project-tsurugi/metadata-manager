@@ -13,21 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef MANAGER_METADATA_DAO_JSON_DATA_TYPES_DAO_H_
-#define MANAGER_METADATA_DAO_JSON_DATA_TYPES_DAO_H_
+#ifndef MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_DAO_JSON_DATATYPES_DAO_H_
+#define MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_DAO_JSON_DATATYPES_DAO_H_
 
 #include <boost/property_tree/ptree.hpp>
 #include <string>
 
 #include "manager/metadata/dao/datatypes_dao.h"
 #include "manager/metadata/dao/json/db_session_manager.h"
+#include "manager/metadata/error_code.h"
 
 namespace manager::metadata::db::json {
 
 class DataTypesDAO : public manager::metadata::db::DataTypesDAO {
  public:
   explicit DataTypesDAO(DBSessionManager* session_manager)
-      : session_manager_(session_manager){};
+      : session_manager_(session_manager) {}
 
   manager::metadata::ErrorCode prepare() const override;
 
@@ -44,4 +45,4 @@ class DataTypesDAO : public manager::metadata::db::DataTypesDAO {
 
 }  // namespace manager::metadata::db::json
 
-#endif  // MANAGER_METADATA_DAO_JSON_DATA_TYPES_DAO_H_
+#endif  // MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_DAO_JSON_DATATYPES_DAO_H_

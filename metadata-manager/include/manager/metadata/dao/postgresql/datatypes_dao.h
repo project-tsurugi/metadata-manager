@@ -13,15 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef MANAGER_METADATA_DAO_POSTGRESQL_DATA_TYPES_DAO_H_
-#define MANAGER_METADATA_DAO_POSTGRESQL_DATA_TYPES_DAO_H_
+#ifndef MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_DAO_POSTGRESQL_DATATYPES_DAO_H_
+#define MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_DAO_POSTGRESQL_DATATYPES_DAO_H_
 
 #include <boost/property_tree/ptree.hpp>
 #include <string>
 
 #include "manager/metadata/dao/datatypes_dao.h"
+#include "manager/metadata/dao/postgresql/common.h"
 #include "manager/metadata/dao/postgresql/db_session_manager.h"
-#include "manager/metadata/dao/postgresql/dbc_utils.h"
+#include "manager/metadata/error_code.h"
 
 namespace manager::metadata::db::postgresql {
 
@@ -73,10 +74,10 @@ class DataTypesDAO : public manager::metadata::db::DataTypesDAO {
   ConnectionSPtr connection_;
 
   manager::metadata::ErrorCode convert_pgresult_to_ptree(
-      PGresult*& res, const int ordinal_position,
+      const PGresult* res, const int ordinal_position,
       boost::property_tree::ptree& object) const;
 };  // class DataTypesDAO
 
 }  // namespace manager::metadata::db::postgresql
 
-#endif  // MANAGER_METADATA_DAO_POSTGRESQL_DATA_TYPES_DAO_H_
+#endif  // MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_DAO_POSTGRESQL_DATATYPES_DAO_H_

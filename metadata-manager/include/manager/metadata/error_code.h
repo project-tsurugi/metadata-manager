@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef MANAGER_METADATA_ERROR_CODE_H_
-#define MANAGER_METADATA_ERROR_CODE_H_
+#ifndef MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_ERROR_CODE_H_
+#define MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_ERROR_CODE_H_
 
 namespace manager::metadata {
 
@@ -91,4 +91,4 @@ enum class ErrorCode {
 
 }  // namespace manager::metadata
 
-#endif  // MANAGER_METADATA_ERROR_CODE_H_
+#endif  // MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_ERROR_CODE_H_

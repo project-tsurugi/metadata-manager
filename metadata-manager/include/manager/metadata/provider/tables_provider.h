@@ -13,11 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef MANAGER_METADATA_PROVIDER_TABLES_PROVIDER_H_
-#define MANAGER_METADATA_PROVIDER_TABLES_PROVIDER_H_
+#ifndef MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_PROVIDER_TABLES_PROVIDER_H_
+#define MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_PROVIDER_TABLES_PROVIDER_H_
 
 #include <boost/property_tree/ptree.hpp>
+#include <memory>
 #include <string_view>
+#include <vector>
 
 #include "manager/metadata/dao/columns_dao.h"
 #include "manager/metadata/dao/privileges_dao.h"
@@ -33,7 +35,7 @@ class TablesProvider : public ProviderBase {
   manager::metadata::ErrorCode init();
 
   manager::metadata::ErrorCode add_table_metadata(
-      boost::property_tree::ptree& object, ObjectIdType& table_id);
+      const boost::property_tree::ptree& object, ObjectIdType& table_id);
 
   manager::metadata::ErrorCode get_table_metadata(
       std::string_view key, std::string_view value,
@@ -45,11 +47,11 @@ class TablesProvider : public ProviderBase {
       boost::property_tree::ptree& object);
 
   manager::metadata::ErrorCode set_table_statistic(
-      boost::property_tree::ptree& object, ObjectIdType& table_id);
+      const boost::property_tree::ptree& object, ObjectIdType& table_id);
 
-  manager::metadata::ErrorCode remove_table_metadata(std::string_view key,
-                                                     std::string_view value,
-                                                     ObjectIdType& table_id);
+  manager::metadata::ErrorCode remove_table_metadata(
+      std::string_view key, std::string_view value,
+      ObjectIdType& table_id);
 
   manager::metadata::ErrorCode confirm_permission(std::string_view key,
                                                   std::string_view value,
@@ -64,9 +66,10 @@ class TablesProvider : public ProviderBase {
   manager::metadata::ErrorCode get_all_column_metadata(
       boost::property_tree::ptree& tables) const;
   manager::metadata::ErrorCode get_column_metadata(
-      std::string_view table_id, boost::property_tree::ptree& tables) const;
+      std::string_view table_id,
+      boost::property_tree::ptree& tables) const;
 };  // class TablesProvider
 
 }  // namespace manager::metadata::db
 
-#endif  // MANAGER_METADATA_PROVIDER_TABLES_PROVIDER_H_
+#endif  // MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_PROVIDER_TABLES_PROVIDER_H_

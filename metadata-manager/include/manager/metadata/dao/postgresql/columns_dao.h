@@ -13,12 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef MANAGER_METADATA_DAO_POSTGRESQL_COLUMNS_DAO_H_
-#define MANAGER_METADATA_DAO_POSTGRESQL_COLUMNS_DAO_H_
+#ifndef MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_DAO_POSTGRESQL_COLUMNS_DAO_H_
+#define MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_DAO_POSTGRESQL_COLUMNS_DAO_H_
+
+#include <boost/property_tree/ptree.hpp>
 
 #include "manager/metadata/dao/columns_dao.h"
 #include "manager/metadata/dao/postgresql/common.h"
 #include "manager/metadata/dao/postgresql/db_session_manager.h"
+#include "manager/metadata/error_code.h"
 
 namespace manager::metadata::db::postgresql {
 
@@ -73,7 +76,7 @@ class ColumnsDAO : public manager::metadata::db::ColumnsDAO {
 
   manager::metadata::ErrorCode insert_one_column_metadata(
       const ObjectIdType table_id,
-      boost::property_tree::ptree& column) const override;
+      const boost::property_tree::ptree& column) const override;
 
   manager::metadata::ErrorCode select_column_metadata(
       std::string_view object_key, std::string_view object_value,
@@ -86,11 +89,11 @@ class ColumnsDAO : public manager::metadata::db::ColumnsDAO {
  private:
   ConnectionSPtr connection_;
 
-  static manager::metadata::ErrorCode convert_pgresult_to_ptree(
-      PGresult*& res, const int ordinal_position,
-      boost::property_tree::ptree& column);
+  manager::metadata::ErrorCode convert_pgresult_to_ptree(
+      const PGresult* res, const int ordinal_position,
+      boost::property_tree::ptree& column) const;
 };  // class ColumnsDAO
 
 }  // namespace manager::metadata::db::postgresql
 
-#endif  // MANAGER_METADATA_DAO_POSTGRESQL_COLUMNS_DAO_H_
+#endif  // MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_DAO_POSTGRESQL_COLUMNS_DAO_H_

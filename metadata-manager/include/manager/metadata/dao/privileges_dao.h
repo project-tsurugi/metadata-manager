@@ -13,18 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef MANAGER_METADATA_DAO_PRIVILEGES_DAO_H_
-#define MANAGER_METADATA_DAO_PRIVILEGES_DAO_H_
+#ifndef MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_DAO_PRIVILEGES_DAO_H_
+#define MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_DAO_PRIVILEGES_DAO_H_
 
 #include <boost/property_tree/ptree.hpp>
 #include <string_view>
 
 #include "manager/metadata/dao/generic_dao.h"
+#include "manager/metadata/error_code.h"
 
 namespace manager::metadata::db {
 
 class PrivilegesDAO : public GenericDAO {
  public:
+  virtual ~PrivilegesDAO() {}
+
   virtual manager::metadata::ErrorCode confirm_tables_permission(
       std::string_view object_key, std::string_view object_value,
       std::string_view permission, bool& check_result) const = 0;
@@ -32,4 +35,4 @@ class PrivilegesDAO : public GenericDAO {
 
 }  // namespace manager::metadata::db
 
-#endif  // MANAGER_METADATA_DAO_PRIVILEGES_DAO_H_
+#endif  // MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_DAO_PRIVILEGES_DAO_H_

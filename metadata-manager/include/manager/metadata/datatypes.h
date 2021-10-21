@@ -13,9 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef MANAGER_METADATA_DATATYPES_H_
-#define MANAGER_METADATA_DATATYPES_H_
+#ifndef MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_DATATYPES_H_
+#define MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_DATATYPES_H_
 
+#include <boost/property_tree/ptree.hpp>
+#include <string_view>
+#include <vector>
+
+#include "manager/metadata/error_code.h"
 #include "manager/metadata/metadata.h"
 
 namespace manager::metadata {
@@ -44,18 +49,21 @@ class DataTypes : public Metadata {
     VARCHAR = 14  //!< @brief VARCHAR.
   };
 
-  DataTypes(std::string_view database, std::string_view component = "visitor");
+  explicit DataTypes(std::string_view database)
+      : DataTypes(database, kDefaultComponent) {}
+  DataTypes(std::string_view database, std::string_view component);
 
   DataTypes(const DataTypes&) = delete;
   DataTypes& operator=(const DataTypes&) = delete;
 
   ErrorCode init() const override;
 
-  ErrorCode add(boost::property_tree::ptree& object
+  ErrorCode add(const boost::property_tree::ptree& object
                 __attribute__((unused))) const override {
     return ErrorCode::UNKNOWN;
   }
-  ErrorCode add(boost::property_tree::ptree& object __attribute__((unused)),
+  ErrorCode add(const boost::property_tree::ptree& object
+                __attribute__((unused)),
                 ObjectIdType* object_id
                 __attribute__((unused))) const override {
     return ErrorCode::UNKNOWN;
@@ -81,9 +89,8 @@ class DataTypes : public Metadata {
                    __attribute__((unused))) const override {
     return ErrorCode::UNKNOWN;
   }
-
 };  // class DataTypes
 
 }  // namespace manager::metadata
 
-#endif  // MANAGER_METADATA_DATATYPES_H_
+#endif  // MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_DATATYPES_H_

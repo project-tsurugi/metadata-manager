@@ -16,6 +16,7 @@
 #include "manager/metadata/dao/postgresql/roles_dao.h"
 
 #include <libpq-fe.h>
+
 #include <boost/format.hpp>
 #include <iostream>
 #include <string>
@@ -73,7 +74,6 @@ std::string select_equal_to(std::string_view column_name) {
 // =============================================================================
 namespace manager::metadata::db::postgresql {
 
-using boost::property_tree::ptree;
 using manager::metadata::ErrorCode;
 using manager::metadata::db::StatementName;
 
@@ -149,9 +149,9 @@ ErrorCode RolesDAO::prepare() const {
  * @retval ErrorCode::NAME_NOT_FOUND if the role name does not exist.
  * @retval otherwise an error code.
  */
-ErrorCode RolesDAO::select_role_metadata(std::string_view object_key,
-                                         std::string_view object_value,
-                                         ptree& object) const {
+ErrorCode RolesDAO::select_role_metadata(
+    std::string_view object_key, std::string_view object_value,
+    boost::property_tree::ptree& object) const {
   ErrorCode error = ErrorCode::UNKNOWN;
   std::vector<const char*> param_values;
 
@@ -207,9 +207,9 @@ ErrorCode RolesDAO::select_role_metadata(std::string_view object_key,
  * @param (role)              [out] one role metadata.
  * @return ErrorCode::OK if success, otherwise an error code.
  */
-ErrorCode RolesDAO::convert_pgresult_to_ptree(PGresult*& res,
-                                              const int ordinal_position,
-                                              ptree& role) {
+ErrorCode RolesDAO::convert_pgresult_to_ptree(
+    const PGresult* res, const int ordinal_position,
+    boost::property_tree::ptree& role) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   // Set the value of the format_version to ptree.

@@ -13,14 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef MANAGER_METADATA_DAO_POSTGRESQL_ROLES_DAO_H_
-#define MANAGER_METADATA_DAO_POSTGRESQL_ROLES_DAO_H_
+#ifndef MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_DAO_POSTGRESQL_ROLES_DAO_H_
+#define MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_DAO_POSTGRESQL_ROLES_DAO_H_
 
-#include <unordered_map>
+#include <boost/property_tree/ptree.hpp>
 
 #include "manager/metadata/dao/postgresql/db_session_manager.h"
 #include "manager/metadata/dao/postgresql/dbc_utils.h"
 #include "manager/metadata/dao/roles_dao.h"
+#include "manager/metadata/error_code.h"
 
 namespace manager::metadata::db::postgresql {
 
@@ -56,11 +57,11 @@ class RolesDAO : public manager::metadata::db::RolesDAO {
  private:
   ConnectionSPtr connection_;
 
-  static manager::metadata::ErrorCode convert_pgresult_to_ptree(
-      PGresult*& res, const int ordinal_position,
-      boost::property_tree::ptree& role);
+  manager::metadata::ErrorCode convert_pgresult_to_ptree(
+      const PGresult* res, const int ordinal_position,
+      boost::property_tree::ptree& role) const;
 };  // class RolesDAO
 
 }  // namespace manager::metadata::db::postgresql
 
-#endif  // MANAGER_METADATA_DAO_POSTGRESQL_ROLES_DAO_H_
+#endif  // MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_DAO_POSTGRESQL_ROLES_DAO_H_
