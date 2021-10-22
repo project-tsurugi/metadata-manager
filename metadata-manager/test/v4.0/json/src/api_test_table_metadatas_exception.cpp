@@ -13,22 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "test/api_test_table_metadata.h"
+#include <gtest/gtest.h>
 
 #include <boost/foreach.hpp>
-#include <boost/property_tree/json_parser.hpp>
-#include <iostream>
+#include <boost/property_tree/ptree.hpp>
 #include <memory>
-#include <string>
 
 #include "manager/metadata/tables.h"
 #include "test/global_test_environment.h"
 #include "test/utility/ut_utils.h"
 
-using namespace manager::metadata;
-using namespace boost::property_tree;
-
 namespace manager::metadata::testing {
+
+using boost::property_tree::ptree;
 
 class ApiTestAddTableMetadataException
     : public ::testing::TestWithParam<boost::property_tree::ptree> {
@@ -36,8 +33,70 @@ class ApiTestAddTableMetadataException
   void SetUp() override {
     invalid_table_metadata = make_invalid_table_metadata();
   }
+
+  /**
+   * @brief Make invalid table metadata used as test data.
+   */
   static std::vector<boost::property_tree::ptree>
-  make_invalid_table_metadata();
+  make_invalid_table_metadata() {
+    std::vector<ptree> invalid_table_metadata;
+
+    // empty ptree
+    ptree empty_table;
+    invalid_table_metadata.emplace_back(empty_table);
+
+    // remove table name
+    ptree new_table = global->testdata_table_metadata->tables;
+    new_table.erase(Tables::NAME);
+    invalid_table_metadata.emplace_back(new_table);
+
+    // remove all column name
+    new_table = global->testdata_table_metadata->tables;
+    BOOST_FOREACH (ptree::value_type& node,
+                   new_table.get_child(Tables::COLUMNS_NODE)) {
+      ptree& column = node.second;
+      column.erase(Tables::Column::NAME);
+    }
+    invalid_table_metadata.emplace_back(new_table);
+
+    // remove all ordinal position
+    new_table = global->testdata_table_metadata->tables;
+    BOOST_FOREACH (ptree::value_type& node,
+                   new_table.get_child(Tables::COLUMNS_NODE)) {
+      ptree& column = node.second;
+      column.erase(Tables::Column::ORDINAL_POSITION);
+    }
+    invalid_table_metadata.emplace_back(new_table);
+
+    // remove all data type id
+    new_table = global->testdata_table_metadata->tables;
+    BOOST_FOREACH (ptree::value_type& node,
+                   new_table.get_child(Tables::COLUMNS_NODE)) {
+      ptree& column = node.second;
+      column.erase(Tables::Column::DATA_TYPE_ID);
+    }
+    invalid_table_metadata.emplace_back(new_table);
+
+    // add invalid data type id
+    BOOST_FOREACH (ptree::value_type& node,
+                   new_table.get_child(Tables::COLUMNS_NODE)) {
+      ptree& column = node.second;
+      int invalid_data_type_id = -1;
+      column.put(Tables::Column::DATA_TYPE_ID, invalid_data_type_id);
+    }
+    invalid_table_metadata.emplace_back(new_table);
+
+    // remove all not null constraint
+    new_table = global->testdata_table_metadata->tables;
+    BOOST_FOREACH (ptree::value_type& node,
+                   new_table.get_child(Tables::COLUMNS_NODE)) {
+      ptree& column = node.second;
+      column.erase(Tables::Column::NULLABLE);
+    }
+    invalid_table_metadata.emplace_back(new_table);
+
+    return invalid_table_metadata;
+  }
 
  protected:
   /**
@@ -66,70 +125,6 @@ INSTANTIATE_TEST_CASE_P(
 INSTANTIATE_TEST_CASE_P(ParamtererizedTest,
                         ApiTestTableMetadataByTableNameException,
                         ::testing::Values("table_name_not_exists", ""));
-
-/**
- * @brief Make invalid table metadata used as test data.
- */
-std::vector<ptree>
-ApiTestAddTableMetadataException::make_invalid_table_metadata() {
-  std::vector<ptree> invalid_table_metadata;
-
-  // empty ptree
-  ptree empty_table;
-  invalid_table_metadata.emplace_back(empty_table);
-
-  // remove table name
-  ptree new_table = global->testdata_table_metadata->tables;
-  new_table.erase(Tables::NAME);
-  invalid_table_metadata.emplace_back(new_table);
-
-  // remove all column name
-  new_table = global->testdata_table_metadata->tables;
-  BOOST_FOREACH (ptree::value_type& node,
-                 new_table.get_child(Tables::COLUMNS_NODE)) {
-    ptree& column = node.second;
-    column.erase(Tables::Column::NAME);
-  }
-  invalid_table_metadata.emplace_back(new_table);
-
-  // remove all ordinal position
-  new_table = global->testdata_table_metadata->tables;
-  BOOST_FOREACH (ptree::value_type& node,
-                 new_table.get_child(Tables::COLUMNS_NODE)) {
-    ptree& column = node.second;
-    column.erase(Tables::Column::ORDINAL_POSITION);
-  }
-  invalid_table_metadata.emplace_back(new_table);
-
-  // remove all data type id
-  new_table = global->testdata_table_metadata->tables;
-  BOOST_FOREACH (ptree::value_type& node,
-                 new_table.get_child(Tables::COLUMNS_NODE)) {
-    ptree& column = node.second;
-    column.erase(Tables::Column::DATA_TYPE_ID);
-  }
-  invalid_table_metadata.emplace_back(new_table);
-
-  // add invalid data type id
-  BOOST_FOREACH (ptree::value_type& node,
-                 new_table.get_child(Tables::COLUMNS_NODE)) {
-    ptree& column = node.second;
-    int invalid_data_type_id = -1;
-    column.put(Tables::Column::DATA_TYPE_ID, invalid_data_type_id);
-  }
-  invalid_table_metadata.emplace_back(new_table);
-
-  // remove all not null constraint
-  new_table = global->testdata_table_metadata->tables;
-  BOOST_FOREACH (ptree::value_type& node,
-                 new_table.get_child(Tables::COLUMNS_NODE)) {
-    ptree& column = node.second;
-    column.erase(Tables::Column::NULLABLE);
-  }
-  invalid_table_metadata.emplace_back(new_table);
-
-  return invalid_table_metadata;
-}
 
 /**
  * @brief Add invalid table metadata.

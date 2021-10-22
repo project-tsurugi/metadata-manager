@@ -13,44 +13,44 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef API_TEST_TABLE_METADATAS_H_
-#define API_TEST_TABLE_METADATAS_H_
+#ifndef MANAGER_METADATA_MANAGER_TEST_V4_0_JSON_INCLUDE_TEST_HELPER_TABLE_METADATA_HELPER_H_
+#define MANAGER_METADATA_MANAGER_TEST_V4_0_JSON_INCLUDE_TEST_HELPER_TABLE_METADATA_HELPER_H_
 
-#include <gtest/gtest.h>
 #include <boost/property_tree/ptree.hpp>
-#include <string_view>
+#include <memory>
 #include <vector>
 
 #include "manager/metadata/metadata.h"
-#include "test/global_test_environment.h"
 #include "test/utility/ut_table_metadata.h"
 
 namespace manager::metadata::testing {
 
-class ApiTestTableMetadata : public ::testing::Test {
+class TableMetadataHelper {
  public:
-  void SetUp() override;
+  static void generate_table_metadata(
+      std::unique_ptr<UTTableMetadata>& testdata_table_metadata);
+
+  static std::vector<boost::property_tree::ptree> make_valid_table_metadata();
 
   static void add_table(std::string_view table_name,
                         ObjectIdType* ret_table_id = nullptr);
-  static void add_table(boost::property_tree::ptree new_table,
+  static void add_table(const boost::property_tree::ptree& new_table,
                         ObjectIdType* ret_table_id = nullptr);
+
   static void check_table_metadata_expected(
-      boost::property_tree::ptree& expected,
-      boost::property_tree::ptree& actual);
-  static std::vector<boost::property_tree::ptree>
-  make_testdata_table_metadata();
+      const boost::property_tree::ptree& expected,
+      const boost::property_tree::ptree& actual);
 
  private:
-  static void check_metadata_expected(boost::property_tree::ptree& expected,
-                                      boost::property_tree::ptree& actual,
-                                      const char* meta_name);
+  static void check_metadata_expected(
+      const boost::property_tree::ptree& expected,
+      const boost::property_tree::ptree& actual, const char* meta_name);
   template <typename T>
   static void check_column_metadata_expecetd(
-      boost::property_tree::ptree& expected,
-      boost::property_tree::ptree& actual, const char* meta_name);
+      const boost::property_tree::ptree& expected,
+      const boost::property_tree::ptree& actual, const char* meta_name);
 };
 
 }  // namespace manager::metadata::testing
 
-#endif  // API_TEST_TABLE_METADATAS_H_
+#endif  // MANAGER_METADATA_MANAGER_TEST_V4_0_JSON_INCLUDE_TEST_HELPER_TABLE_METADATA_HELPER_H_

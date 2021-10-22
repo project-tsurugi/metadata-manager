@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 #include <gtest/gtest.h>
+
 #include <boost/format.hpp>
 #include <memory>
 #include <string>
@@ -23,8 +24,6 @@
 #include "test/utility/ut_utils.h"
 
 namespace manager::metadata::testing {
-
-using namespace boost::property_tree;
 
 class ApiTestTablePrivileges : public ::testing::Test {
   void SetUp() override {};

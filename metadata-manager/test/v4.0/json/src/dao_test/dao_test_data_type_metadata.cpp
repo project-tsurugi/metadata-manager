@@ -14,24 +14,26 @@
  * limitations under the License.
  */
 #include <gtest/gtest.h>
+
 #include <boost/property_tree/ptree.hpp>
-#include <memory>
 #include <string>
 
 #include "manager/metadata/dao/datatypes_dao.h"
 #include "manager/metadata/dao/json/db_session_manager.h"
-#include "test/api_test_data_types.h"
+#include "test/helper/data_types_helper.h"
 #include "test/global_test_environment.h"
 #include "test/utility/ut_utils.h"
 
 namespace manager::metadata::testing {
 
-using namespace boost::property_tree;
-using namespace manager::metadata::db;
 namespace storage = manager::metadata::db::json;
 
+using boost::property_tree::ptree;
+using manager::metadata::db::DataTypesDAO;
+using manager::metadata::db::GenericDAO;
+
 class DaoTestDataTypesByKeyValue
-    : public ::testing::TestWithParam<TupleApiTestDataTypes> {
+    : public ::testing::TestWithParam<TestDatatypesType> {
   void SetUp() override {}
 };
 
@@ -62,7 +64,7 @@ TEST_P(DaoTestDataTypesByKeyValue, get_datatypes_by_key_value) {
   UTUtils::print(UTUtils::get_tree_string(datatype));
 
   // Verifies that returned data type metadata equals expected one.
-  ApiTestDataTypes::check_datatype_metadata_expected(datatype);
+  DataTypesHelper::check_datatype_metadata_expected(datatype);
 }
 
 /**
@@ -96,6 +98,6 @@ TEST_F(DaoTestDataTypesByKeyValue, get_non_existing_datatypes_by_key_value) {
 
 INSTANTIATE_TEST_CASE_P(
     ParamtererizedTest, DaoTestDataTypesByKeyValue,
-    ::testing::ValuesIn(ApiTestDataTypes::make_datatypes_tuple()));
+    ::testing::ValuesIn(DataTypesHelper::make_datatypes_tuple()));
 
 }  // namespace manager::metadata::testing

@@ -1,3 +1,18 @@
+/*
+ * Copyright 2020-2021 tsurugi project.
+ *
+ * Licensed under the Apache License, version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 #define _TABLES_STATIC_ENABLED_ 0
 #define _DATARYPES_STATIC_ENABLED_ 0
 
@@ -17,9 +32,13 @@
 #include "manager/metadata/metadata.h"
 #include "manager/metadata/tables.h"
 
+using boost::property_tree::ptree;
+using boost::property_tree::ptree_error;
+using manager::metadata::DataTypes;
+using manager::metadata::ErrorCode;
+using manager::metadata::ObjectIdType;
+using manager::metadata::Tables;
 using manager::metadata::db::json::ObjectId;
-using namespace manager::metadata;
-using namespace boost::property_tree;
 
 const char* const TEST_DB = "test_DB";
 
@@ -51,8 +70,7 @@ const std::string get_tablename() {
 /*
  * @brief initialize test environment.
  */
-bool initialize()
-{
+bool initialize() {
     bool success = false;
 
     // create oid-metadata-table.
@@ -83,7 +101,7 @@ bool initialize()
 ErrorCode display_table_metadata_object(const ptree& table) {
   ErrorCode error = ErrorCode::OK;
 
-  std::unique_ptr<Metadata> datatypes(new DataTypes(TEST_DB));
+  std::unique_ptr<DataTypes> datatypes(new DataTypes(TEST_DB));
   // error = datatypes->load();
   // if (error != ErrorCode::OK) {
   //   print_error(error, __LINE__);
@@ -219,7 +237,6 @@ ErrorCode display_table_metadata_object(const ptree& table) {
   }
 
   return ErrorCode::OK;
-  ;
 }
 
 /*
@@ -228,8 +245,7 @@ ErrorCode display_table_metadata_object(const ptree& table) {
 ErrorCode add_table_metadata() {
   ErrorCode error = ErrorCode::UNKNOWN;
 
-  std::unique_ptr<Metadata> tables(
-      new Tables(TEST_DB));  // use Template-Method.
+  std::unique_ptr<Tables> tables(new Tables(TEST_DB));  // use Template-Method.
   // error = tables->load();
   // if (error != ErrorCode::OK) {
   //   print_error(error, __LINE__);
@@ -370,8 +386,7 @@ ErrorCode tables_remove_test() {
     }
   }
 
-  std::unique_ptr<Metadata> tables(
-      new Tables(TEST_DB));  // use Template-Method.
+  std::unique_ptr<Tables> tables(new Tables(TEST_DB));  // use Template-Method.
   // error = tables->load();
   // if (error != ErrorCode::OK) {
   //   print_error(error, __LINE__);
@@ -473,8 +488,7 @@ ErrorCode tables_remove_test() {
 ErrorCode read_table_metadata() {
   ErrorCode error = ErrorCode::UNKNOWN;
 
-  std::unique_ptr<Metadata> tables(
-      new Tables(TEST_DB));  // use Template-Method.
+  std::unique_ptr<Tables> tables(new Tables(TEST_DB));  // use Template-Method.
   // error = tables->load();
   // if (error != ErrorCode::OK) {
   //   print_error(error, __LINE__);
@@ -620,7 +634,7 @@ ErrorCode tables_static_functions_test() {
 ErrorCode datatypes_test() {
   ErrorCode error = ErrorCode::UNKNOWN;
 
-  std::unique_ptr<Metadata> datatypes(new DataTypes(TEST_DB));
+  std::unique_ptr<DataTypes> datatypes(new DataTypes(TEST_DB));
   ptree datatype_id;
   ptree datatype_name;
 
@@ -825,7 +839,6 @@ int main(void) {
   std::cout << std::endl;
 
   std::cout << "*** TableMetadta test completed. ***" << std::endl;
-  ;
 
   return 0;
 }

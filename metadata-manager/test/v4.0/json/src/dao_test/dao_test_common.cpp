@@ -20,7 +20,7 @@
 
 namespace manager::metadata::testing {
 
-using namespace manager::metadata::db;
+using manager::metadata::db::Config;
 
 class DaoTestCommon : public ::testing::Test {};
 

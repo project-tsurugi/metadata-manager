@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 tsurugi project.
+ * Copyright 2021 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,29 +13,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef API_TEST_DATA_TYPES_H_
-#define API_TEST_DATA_TYPES_H_
+#ifndef MANAGER_METADATA_MANAGER_TEST_V4_0_JSON_INCLUDE_TEST_HELPER_DATA_TYPES_HELPER_H_
+#define MANAGER_METADATA_MANAGER_TEST_V4_0_JSON_INCLUDE_TEST_HELPER_DATA_TYPES_HELPER_H_
 
 #include <boost/property_tree/ptree.hpp>
 #include <string>
+#include <string_view>
+#include <tuple>
 #include <vector>
+
+#include "test/utility/ut_table_metadata.h"
 
 namespace manager::metadata::testing {
 
-typedef std::tuple<std::string, std::string> TupleApiTestDataTypes;
+typedef std::tuple<std::string, std::string> TestDatatypesType;
 
-class ApiTestDataTypes {
+class DataTypesHelper {
  public:
-  static std::vector<TupleApiTestDataTypes> make_datatypes_tuple();
+  static std::vector<TestDatatypesType> make_datatypes_tuple();
+  static std::vector<std::string> make_datatype_names();
+
   static void check_datatype_metadata_expected(
       const boost::property_tree::ptree& datatype);
 
  private:
-  static void make_datatypes_tuple(std::string key,
-                                   std::vector<std::string> values,
-                                   ::std::vector<TupleApiTestDataTypes>& v);
+  static void make_datatypes_tuple(std::string_view key,
+                                   const std::vector<std::string> values,
+                                   std::vector<TestDatatypesType>& v);
 };
 
 }  // namespace manager::metadata::testing
 
-#endif  // API_TEST_DATA_TYPES_H_
+#endif  // MANAGER_METADATA_MANAGER_TEST_V4_0_JSON_INCLUDE_TEST_HELPER_DATA_TYPES_HELPER_H_

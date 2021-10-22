@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef UT_TABLE_METADATA_H_
-#define UT_TABLE_METADATA_H_
+#ifndef MANAGER_METADATA_MANAGER_TEST_V4_0_JSON_INCLUDE_TEST_UTILITY_UT_TABLE_METADATA_H_
+#define MANAGER_METADATA_MANAGER_TEST_V4_0_JSON_INCLUDE_TEST_UTILITY_UT_TABLE_METADATA_H_
 
 #include <boost/property_tree/ptree.hpp>
 #include <string>
@@ -33,8 +33,10 @@ class UTTableMetadata {
   float reltuples = 0;
   boost::property_tree::ptree tables;
   std::vector<UTColumnMetadata> columns;
+
   UTTableMetadata() = delete;
-  explicit UTTableMetadata(std::string name) : name(name){};
+  explicit UTTableMetadata(std::string name) : name(name) {}
+
   void generate_ptree();
 
  private:
@@ -43,4 +45,4 @@ class UTTableMetadata {
 
 }  // namespace manager::metadata::testing
 
-#endif  // UT_TABLE_METADATA_H_
+#endif  // MANAGER_METADATA_MANAGER_TEST_V4_0_JSON_INCLUDE_TEST_UTILITY_UT_TABLE_METADATA_H_

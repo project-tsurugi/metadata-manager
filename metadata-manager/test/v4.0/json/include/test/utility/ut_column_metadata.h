@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef UT_COLUMN_METADATA_H_
-#define UT_COLUMN_METADATA_H_
+#ifndef MANAGER_METADATA_MANAGER_TEST_V4_0_JSON_INCLUDE_TEST_UTILITY_UT_COLUMN_METADATA_H_
+#define MANAGER_METADATA_MANAGER_TEST_V4_0_JSON_INCLUDE_TEST_UTILITY_UT_COLUMN_METADATA_H_
 
 #include <boost/property_tree/ptree.hpp>
 #include <string>
@@ -51,4 +51,4 @@ class UTColumnMetadata {
 
 }  // namespace manager::metadata::testing
 
-#endif  // UT_COLUMN_METADATA_H_
+#endif  // MANAGER_METADATA_MANAGER_TEST_V4_0_JSON_INCLUDE_TEST_UTILITY_UT_COLUMN_METADATA_H_

@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 #include <gtest/gtest.h>
+
 #include <boost/format.hpp>
 #include <memory>
 #include <string>
@@ -24,7 +25,7 @@
 
 namespace manager::metadata::testing {
 
-using namespace boost::property_tree;
+using boost::property_tree::ptree;
 
 class ApiTestRolesMetadata : public ::testing::Test {
  public:

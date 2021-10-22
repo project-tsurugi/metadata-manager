@@ -13,12 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef UT_UTILS_H_
-#define UT_UTILS_H_
+#ifndef MANAGER_METADATA_MANAGER_TEST_V4_0_JSON_INCLUDE_TEST_UTILITY_UT_UTILS_H_
+#define MANAGER_METADATA_MANAGER_TEST_V4_0_JSON_INCLUDE_TEST_UTILITY_UT_UTILS_H_
 
 #include <boost/property_tree/ptree.hpp>
 #include <iostream>
-#include <memory>
 #include <string>
 
 #include "test/utility/ut_column_metadata.h"
@@ -31,13 +30,6 @@ class UTUtils {
   static std::string get_tree_string(const boost::property_tree::ptree& pt);
   static std::string print_tree(const boost::property_tree::ptree& pt,
                                 int level);
-  static void print_column_metadata(const UTColumnMetadata& column_metadata);
-  static void generate_table_metadata(
-      std::unique_ptr<UTTableMetadata>& testdata_table_metadata);
-  static std::string generate_random_string();
-  static boost::property_tree::ptree generate_histogram();
-  static boost::property_tree::ptree generate_histogram_array();
-  static boost::property_tree::ptree generate_column_statistic();
 
   static void print() {
 #ifndef NDEBUG
@@ -66,16 +58,8 @@ class UTUtils {
   static void get_tree_string_internal(const boost::property_tree::ptree& pt,
                                        int level, std::string& output_string,
                                        bool print_tree_enabled);
-  static constexpr char ALPHANUM[] =
-      "0123456789"
-      "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-      "abcdefghijklmnopqrstuvwxyz";
-  static constexpr int NUMBER_OF_ITERATIONS = 10;
-  static constexpr int NUMBER_OF_RANDOM_CHARACTER = 10;
-  static constexpr int UPPER_VALUE_20000 = 20000;
-  static constexpr int UPPER_VALUE_100 = 100;
 };  // class UTUtils
 
 }  // namespace manager::metadata::testing
 
-#endif  // UT_UTILS_H_
+#endif  // MANAGER_METADATA_MANAGER_TEST_V4_0_JSON_INCLUDE_TEST_UTILITY_UT_UTILS_H_
