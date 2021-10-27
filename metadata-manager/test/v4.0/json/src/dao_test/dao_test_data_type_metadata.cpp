@@ -33,7 +33,7 @@ using manager::metadata::db::DataTypesDAO;
 using manager::metadata::db::GenericDAO;
 
 class DaoTestDataTypesByKeyValue
-    : public ::testing::TestWithParam<TestDatatypesType> {
+    : public ::testing::TestWithParam<DataTypesHelper::BasicTestParameter> {
   void SetUp() override {}
 };
 

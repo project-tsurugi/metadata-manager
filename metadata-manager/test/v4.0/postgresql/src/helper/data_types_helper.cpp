@@ -97,8 +97,9 @@ std::vector<std::string> PgDataTypeQualifiedNameList = {
  *   For example, if key = DataTypes::NAME, values are "INT32", "INT64", and
  *   "FLOAT32" etc.
  */
-std::vector<TestDatatypesType> DataTypesHelper::make_datatypes_tuple() {
-  std::vector<TestDatatypesType> v;
+std::vector<DataTypesHelper::BasicTestParameter>
+DataTypesHelper::make_datatypes_tuple() {
+  std::vector<BasicTestParameter> v;
 
   make_datatypes_tuple(DataTypes::ID, DataTypesIdList, v);
   make_datatypes_tuple(DataTypes::NAME, DataTypesNameList, v);
@@ -194,7 +195,7 @@ void DataTypesHelper::check_datatype_metadata_expected(
  */
 void DataTypesHelper::make_datatypes_tuple(
     std::string_view key, const std::vector<std::string> values,
-    std::vector<TestDatatypesType>& v) {
+    std::vector<BasicTestParameter>& v) {
   for (auto value : values) {
     v.emplace_back(key, value);
   }

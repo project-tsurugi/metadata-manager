@@ -26,18 +26,18 @@
 
 namespace manager::metadata::testing {
 
-typedef std::tuple<std::string, std::vector<boost::property_tree::ptree>,
-                   ObjectIdType>
-    TestColumnStatisticsBasicType;
-typedef std::tuple<std::string, std::vector<boost::property_tree::ptree>,
-                   std::vector<boost::property_tree::ptree>, ObjectIdType>
-    TestColumnStatisticsUpdateType;
-
 class ColumnStatisticsHelper {
  public:
-  static std::vector<TestColumnStatisticsBasicType>
-  make_test_patterns_for_basic_tests(std::string_view test_number);
-  static std::vector<TestColumnStatisticsUpdateType>
+  using BasicTestParameter =
+      std::tuple<std::string, std::vector<boost::property_tree::ptree>,
+                 ObjectIdType>;
+  using UpdateTestParameter =
+      std::tuple<std::string, std::vector<boost::property_tree::ptree>,
+                 std::vector<boost::property_tree::ptree>, ObjectIdType>;
+
+  static std::vector<BasicTestParameter> make_test_patterns_for_basic_tests(
+      std::string_view test_number);
+  static std::vector<UpdateTestParameter>
   make_test_patterns_for_update_tests(std::string_view test_number);
 
   static void add_column_statistics(

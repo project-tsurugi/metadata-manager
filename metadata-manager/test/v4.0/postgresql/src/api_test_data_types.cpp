@@ -32,7 +32,7 @@ class ApiTestDataTypes : public ::testing::Test {
   void SetUp() override { UTUtils::skip_if_connection_not_opened(); }
 };
 class ApiTestDataTypesByKeyValue
-    : public ::testing::TestWithParam<TestDatatypesType> {
+    : public ::testing::TestWithParam<DataTypesHelper::BasicTestParameter> {
   void SetUp() override { UTUtils::skip_if_connection_not_opened(); }
 };
 class ApiTestDataTypesByName : public ::testing::TestWithParam<std::string> {

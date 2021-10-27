@@ -59,12 +59,14 @@ class DaoTestColumnStatistics : public ::testing::Test {
 };  // class DaoTestColumnStatistics
 
 class DaoTestColumnStatisticsAllAPIHappy
-    : public ::testing::TestWithParam<TestColumnStatisticsBasicType> {
+    : public ::testing::TestWithParam<
+          ColumnStatisticsHelper::BasicTestParameter> {
   void SetUp() override { UTUtils::skip_if_connection_not_opened(); }
 };  // class DaoTestColumnStatisticsAllAPIHappy
 
 class DaoTestColumnStatisticsUpdateHappy
-    : public ::testing::TestWithParam<TestColumnStatisticsUpdateType> {
+    : public ::testing::TestWithParam<
+          ColumnStatisticsHelper::UpdateTestParameter> {
   void SetUp() override { UTUtils::skip_if_connection_not_opened(); }
 };  // class DaoTestColumnStatisticsUpdateHappy
 

@@ -23,12 +23,12 @@
 
 namespace manager::metadata::testing {
 
-typedef std::tuple<std::string, float, float> TestTableStatisticsType;
-
 class TableStatisticsHelper {
  public:
-  static std::vector<TestTableStatisticsType>
-  make_test_patterns_for_basic_tests(std::string_view test_number);
+  using BasicTestParameter = std::tuple<std::string, float, float>;
+
+  static std::vector<BasicTestParameter> make_test_patterns_for_basic_tests(
+      std::string_view test_number);
 };
 
 }  // namespace manager::metadata::testing

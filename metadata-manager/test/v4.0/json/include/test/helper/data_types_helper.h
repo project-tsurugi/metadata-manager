@@ -26,11 +26,11 @@
 
 namespace manager::metadata::testing {
 
-typedef std::tuple<std::string, std::string> TestDatatypesType;
-
 class DataTypesHelper {
  public:
-  static std::vector<TestDatatypesType> make_datatypes_tuple();
+  using BasicTestParameter = std::tuple<std::string, std::string>;
+
+  static std::vector<BasicTestParameter> make_datatypes_tuple();
   static std::vector<std::string> make_datatype_names();
 
   static void check_datatype_metadata_expected(
@@ -39,7 +39,7 @@ class DataTypesHelper {
  private:
   static void make_datatypes_tuple(std::string_view key,
                                    const std::vector<std::string> values,
-                                   std::vector<TestDatatypesType>& v);
+                                   std::vector<BasicTestParameter>& v);
 };
 
 }  // namespace manager::metadata::testing

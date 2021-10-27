@@ -37,10 +37,10 @@ std::vector<float> reltuples_list = {-1,
  * @param (test_number)  [in]  test number.
  * @return test pattern.
  */
-std::vector<TestTableStatisticsType>
+std::vector<TableStatisticsHelper::BasicTestParameter>
 TableStatisticsHelper::make_test_patterns_for_basic_tests(
     std::string_view test_number) {
-  std::vector<TestTableStatisticsType> v;
+  std::vector<BasicTestParameter> v;
   int next;
   for (int i = 0; static_cast<size_t>(i) < reltuples_list.size(); i++) {
     next = (i + 1) % reltuples_list.size();

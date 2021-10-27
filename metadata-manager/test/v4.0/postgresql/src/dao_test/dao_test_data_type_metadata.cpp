@@ -34,7 +34,7 @@ namespace manager::metadata::testing {
 using db::postgresql::DBSessionManager;
 
 class DaoTestDataTypesByKeyValue
-    : public ::testing::TestWithParam<TestDatatypesType> {
+    : public ::testing::TestWithParam<DataTypesHelper::BasicTestParameter> {
   void SetUp() override { UTUtils::skip_if_connection_not_opened(); }
 };  // class DaoTestDataTypesByKeyValue
 

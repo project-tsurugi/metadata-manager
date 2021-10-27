@@ -32,7 +32,7 @@ using boost::property_tree::ptree;
  * @param (test_number)  [in]  test number.
  * @return test pattern.
  */
-std::vector<TestColumnStatisticsBasicType>
+std::vector<ColumnStatisticsHelper::BasicTestParameter>
 ColumnStatisticsHelper::make_test_patterns_for_basic_tests(
     std::string_view test_number) {
   std::vector<ptree> column_statistics;
@@ -46,7 +46,7 @@ ColumnStatisticsHelper::make_test_patterns_for_basic_tests(
     empty_columns.push_back(empty_column);
   }
 
-  std::vector<TestColumnStatisticsBasicType> v;
+  std::vector<BasicTestParameter> v;
   v.emplace_back("_ColumnStatistic_" + std::string(test_number) + "_1",
                  column_statistics, 1);
   v.emplace_back("_ColumnStatistic_" + std::string(test_number) + "_2",
@@ -61,10 +61,10 @@ ColumnStatisticsHelper::make_test_patterns_for_basic_tests(
  * @param (test_number)  [in]  test number.
  * @return test pattern.
  */
-std::vector<TestColumnStatisticsUpdateType>
+std::vector<ColumnStatisticsHelper::UpdateTestParameter>
 ColumnStatisticsHelper::make_test_patterns_for_update_tests(
     std::string_view test_number) {
-  std::vector<TestColumnStatisticsUpdateType> v;
+  std::vector<UpdateTestParameter> v;
   std::vector<int> number_of_columns = {1, 2, 2, 3};
   std::vector<ObjectIdType> ordinal_positions_to_remove = {1, 1, 2, 3};
 

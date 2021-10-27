@@ -28,8 +28,11 @@ typedef struct pg_result PGresult;
 
 namespace manager::metadata::db::postgresql {
 
-typedef std::shared_ptr<PGconn> ConnectionSPtr;
-typedef std::unique_ptr<PGresult, std::function<void(PGresult*)>> ResultUPtr;
+// Shared smart pointer for DB connection. Just an alias for user convenience.
+using ConnectionSPtr = std::shared_ptr<PGconn>;
+
+// Unique smart pointer for DB result. Just an alias for user convenience.
+using ResultUPtr = std::unique_ptr<PGresult, std::function<void(PGresult*)>>;
 
 static constexpr const char* const SCHEMA_NAME = "tsurugi_catalog";
 

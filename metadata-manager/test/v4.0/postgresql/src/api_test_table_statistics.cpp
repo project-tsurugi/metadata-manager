@@ -42,11 +42,13 @@ class ApiTestTableStatisticsByTableNameException
 };
 
 class ApiTestTableStatisticsByTableIdHappy
-    : public ::testing::TestWithParam<TestTableStatisticsType> {
+    : public ::testing::TestWithParam<
+          TableStatisticsHelper::BasicTestParameter> {
   void SetUp() override { UTUtils::skip_if_connection_not_opened(); }
 };
 class ApiTestTableStatisticsByTableNameHappy
-    : public ::testing::TestWithParam<TestTableStatisticsType> {
+    : public ::testing::TestWithParam<
+          TableStatisticsHelper::BasicTestParameter> {
   void SetUp() override { UTUtils::skip_if_connection_not_opened(); }
 };
 

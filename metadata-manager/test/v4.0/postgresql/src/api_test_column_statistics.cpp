@@ -33,11 +33,13 @@ namespace manager::metadata::testing {
 using boost::property_tree::ptree;
 
 class ApiTestColumnStatisticsAllAPIHappy
-    : public ::testing::TestWithParam<TestColumnStatisticsBasicType> {
+    : public ::testing::TestWithParam<
+          ColumnStatisticsHelper::BasicTestParameter> {
   void SetUp() override { UTUtils::skip_if_connection_not_opened(); }
 };
 class ApiTestColumnStatisticsUpdateHappy
-    : public ::testing::TestWithParam<TestColumnStatisticsUpdateType> {
+    : public ::testing::TestWithParam<
+          ColumnStatisticsHelper::UpdateTestParameter> {
   void SetUp() override { UTUtils::skip_if_connection_not_opened(); }
 };
 class ApiTestColumnStatisticsRemoveAllHappy
@@ -49,7 +51,8 @@ class ApiTestColumnStatisticsAllAPIException
   void SetUp() override { UTUtils::skip_if_connection_not_opened(); }
 };
 class ApiTestColumnStatisticsAllAPIHappyWithoutInit
-    : public ::testing::TestWithParam<TestColumnStatisticsBasicType> {
+    : public ::testing::TestWithParam<
+          ColumnStatisticsHelper::BasicTestParameter> {
   void SetUp() override { UTUtils::skip_if_connection_not_opened(); }
 };
 

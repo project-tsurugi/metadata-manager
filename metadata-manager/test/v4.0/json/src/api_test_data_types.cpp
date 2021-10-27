@@ -31,7 +31,8 @@ using boost::property_tree::ptree;
 
 class ApiTestDataTypes : public ::testing::Test {};
 class ApiTestDataTypesByKeyValue
-    : public ::testing::TestWithParam<TestDatatypesType> {};
+    : public ::testing::TestWithParam<DataTypesHelper::BasicTestParameter> {
+};
 class ApiTestDataTypesByName : public ::testing::TestWithParam<std::string> {};
 class ApiTestDataTypesException
     : public ::testing::TestWithParam<std::tuple<std::string, std::string>> {};
