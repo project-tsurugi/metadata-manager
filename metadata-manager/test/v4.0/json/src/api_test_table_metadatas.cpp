@@ -20,8 +20,8 @@
 #include <string>
 
 #include "manager/metadata/tables.h"
-#include "test/helper/table_metadata_helper.h"
 #include "test/global_test_environment.h"
+#include "test/helper/table_metadata_helper.h"
 #include "test/utility/ut_table_metadata.h"
 #include "test/utility/ut_utils.h"
 
@@ -29,10 +29,7 @@ namespace manager::metadata::testing {
 
 using boost::property_tree::ptree;
 
-class ApiTestTableMetadata : public ::testing::Test {
- public:
-  void SetUp() override {}
-};
+class ApiTestTableMetadata : public ::testing::Test {};
 
 /**
  * @brief happy test for adding one new table metadata
@@ -67,7 +64,7 @@ TEST_F(ApiTestTableMetadata, add_get_table_metadata_by_table_name) {
 
   // verifies that the returned table metadata is expected one.
   TableMetadataHelper::check_table_metadata_expected(new_table,
-                                                      table_metadata_inserted);
+                                                     table_metadata_inserted);
 
   // cleanup
   tables->remove(new_table_name.c_str(), nullptr);
@@ -111,7 +108,7 @@ TEST_F(ApiTestTableMetadata,
   new_table.put(Tables::ID,
                 table_metadata_inserted.get<ObjectIdType>(Tables::ID));
   TableMetadataHelper::check_table_metadata_expected(new_table,
-                                                      table_metadata_inserted);
+                                                     table_metadata_inserted);
 
   // cleanup
   tables->remove(new_table_name.c_str(), nullptr);
@@ -164,7 +161,7 @@ TEST_F(ApiTestTableMetadata, get_two_table_metadata_by_table_name) {
 
   new_table.put(Tables::ID, ret_table_id[0]);
   TableMetadataHelper::check_table_metadata_expected(new_table,
-                                                      table_metadata_inserted);
+                                                     table_metadata_inserted);
 
   // cleanup
   tables->remove(new_table_name.c_str(), nullptr);
@@ -202,7 +199,7 @@ TEST_F(ApiTestTableMetadata, add_get_table_metadata_by_table_id) {
 
   // verifies that the returned table metadata is expected one.
   TableMetadataHelper::check_table_metadata_expected(new_table,
-                                                      table_metadata_inserted);
+                                                     table_metadata_inserted);
 
   // cleanup
   tables->remove(new_table_name.c_str(), nullptr);
@@ -250,7 +247,7 @@ TEST_F(ApiTestTableMetadata, get_all_table_metadata) {
 
     // verifies that the returned table metadata is expected one.
     TableMetadataHelper::check_table_metadata_expected(expected_table,
-                                                        table_metadata);
+                                                       table_metadata);
   }
 
   // cleanup

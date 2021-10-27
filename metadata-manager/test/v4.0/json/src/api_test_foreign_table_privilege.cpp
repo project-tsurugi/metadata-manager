@@ -25,9 +25,7 @@
 
 namespace manager::metadata::testing {
 
-class ApiTestTablePrivileges : public ::testing::Test {
-  void SetUp() override {};
-};
+class ApiTestTablePrivileges : public ::testing::Test {};
 
 /**
  * @brief Unsupported test in JSON version.

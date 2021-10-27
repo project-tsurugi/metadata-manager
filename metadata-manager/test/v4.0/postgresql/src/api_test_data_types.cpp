@@ -27,6 +27,10 @@ namespace manager::metadata::testing {
 
 using boost::property_tree::ptree;
 
+class ApiTestDataTypes : public ::testing::Test {
+ public:
+  void SetUp() override { UTUtils::skip_if_connection_not_opened(); }
+};
 class ApiTestDataTypesByKeyValue
     : public ::testing::TestWithParam<TestDatatypesType> {
   void SetUp() override { UTUtils::skip_if_connection_not_opened(); }
@@ -38,6 +42,23 @@ class ApiTestDataTypesException
     : public ::testing::TestWithParam<std::tuple<std::string, std::string>> {
   void SetUp() override { UTUtils::skip_if_connection_not_opened(); }
 };
+
+INSTANTIATE_TEST_CASE_P(
+    ParamtererizedTest, ApiTestDataTypesByName,
+    ::testing::ValuesIn(DataTypesHelper::make_datatype_names()));
+INSTANTIATE_TEST_CASE_P(
+    ParamtererizedTest, ApiTestDataTypesByKeyValue,
+    ::testing::ValuesIn(DataTypesHelper::make_datatypes_tuple()));
+INSTANTIATE_TEST_CASE_P(
+    ParamtererizedTest, ApiTestDataTypesException,
+    ::testing::Values(std::make_tuple("", ""),
+                      std::make_tuple("", "invalid_value"),
+                      std::make_tuple("invalid_key", ""),
+                      std::make_tuple("invalid_key", "invalid_value"),
+                      std::make_tuple(DataTypes::ID, ""),
+                      std::make_tuple(DataTypes::ID, "invalid_value"),
+                      std::make_tuple(DataTypes::NAME, ""),
+                      std::make_tuple(DataTypes::NAME, "invalid_value")));
 
 /**
  * @brief Happy test for getting all data type metadata based on data type
@@ -132,23 +153,60 @@ TEST_P(ApiTestDataTypesException, get_non_existing_datatypes_by_key_value) {
             UTUtils::get_tree_string(datatype));
 }
 
-INSTANTIATE_TEST_CASE_P(
-    ParamtererizedTest, ApiTestDataTypesByName,
-    ::testing::ValuesIn(DataTypesHelper::make_datatype_names()));
+/**
+ * @brief api test for add role metadata.
+ */
+TEST_F(ApiTestDataTypes, add_datatypes) {
+  ErrorCode error = ErrorCode::UNKNOWN;
 
-INSTANTIATE_TEST_CASE_P(
-    ParamtererizedTest, ApiTestDataTypesByKeyValue,
-    ::testing::ValuesIn(DataTypesHelper::make_datatypes_tuple()));
+  auto datatypes = std::make_unique<DataTypes>(GlobalTestEnvironment::TEST_DB);
+  error = datatypes->init();
+  EXPECT_EQ(ErrorCode::OK, error);
 
-INSTANTIATE_TEST_CASE_P(
-    ParamtererizedTest, ApiTestDataTypesException,
-    ::testing::Values(std::make_tuple("", ""),
-                      std::make_tuple("", "invalid_value"),
-                      std::make_tuple("invalid_key", ""),
-                      std::make_tuple("invalid_key", "invalid_value"),
-                      std::make_tuple(DataTypes::ID, ""),
-                      std::make_tuple(DataTypes::ID, "invalid_value"),
-                      std::make_tuple(DataTypes::NAME, ""),
-                      std::make_tuple(DataTypes::NAME, "invalid_value")));
+  ptree datatype_metadata;
+
+  error = datatypes->add(datatype_metadata);
+  EXPECT_EQ(ErrorCode::UNKNOWN, error);
+
+  ObjectIdType retval_datatype_id = -1;
+  error = datatypes->add(datatype_metadata, &retval_datatype_id);
+  EXPECT_EQ(ErrorCode::UNKNOWN, error);
+  EXPECT_EQ(-1, retval_datatype_id);
+}
+
+/**
+ * @brief api test for get_all role metadata.
+ */
+TEST_F(ApiTestDataTypes, get_all_datatypes) {
+  ErrorCode error = ErrorCode::UNKNOWN;
+
+  auto datatypes = std::make_unique<DataTypes>(GlobalTestEnvironment::TEST_DB);
+  error = datatypes->init();
+  EXPECT_EQ(ErrorCode::OK, error);
+
+  std::vector<boost::property_tree::ptree> container = {};
+  error = datatypes->get_all(container);
+  EXPECT_EQ(ErrorCode::UNKNOWN, error);
+  EXPECT_TRUE(container.empty());
+}
+
+/**
+ * @brief api test for remove role metadata.
+ */
+TEST_F(ApiTestDataTypes, remove_datatypes) {
+  ErrorCode error = ErrorCode::UNKNOWN;
+
+  auto datatypes = std::make_unique<DataTypes>(GlobalTestEnvironment::TEST_DB);
+  error = datatypes->init();
+  EXPECT_EQ(ErrorCode::OK, error);
+
+  error = datatypes->remove(99999);
+  EXPECT_EQ(ErrorCode::UNKNOWN, error);
+
+  ObjectIdType retval_datatype_id = -1;
+  error = datatypes->remove("role_name", &retval_datatype_id);
+  EXPECT_EQ(ErrorCode::UNKNOWN, error);
+  EXPECT_EQ(-1, retval_datatype_id);
+}
 
 }  // namespace manager::metadata::testing

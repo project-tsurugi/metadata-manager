@@ -27,10 +27,7 @@ namespace manager::metadata::testing {
 
 using boost::property_tree::ptree;
 
-class ApiTestColumnStatistics : public ::testing::Test {
- public:
-  void SetUp() override{};
-};
+class ApiTestColumnStatistics : public ::testing::Test {};
 
 /**
  * @brief Unsupported test in JSON version.

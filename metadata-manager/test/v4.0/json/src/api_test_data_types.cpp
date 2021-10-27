@@ -29,22 +29,19 @@ namespace manager::metadata::testing {
 
 using boost::property_tree::ptree;
 
+class ApiTestDataTypes : public ::testing::Test {};
 class ApiTestDataTypesByKeyValue
     : public ::testing::TestWithParam<TestDatatypesType> {};
-
 class ApiTestDataTypesByName : public ::testing::TestWithParam<std::string> {};
-
 class ApiTestDataTypesException
     : public ::testing::TestWithParam<std::tuple<std::string, std::string>> {};
 
 INSTANTIATE_TEST_CASE_P(
     ParamtererizedTest, ApiTestDataTypesByName,
     ::testing::ValuesIn(DataTypesHelper::make_datatype_names()));
-
 INSTANTIATE_TEST_CASE_P(
     ParamtererizedTest, ApiTestDataTypesByKeyValue,
     ::testing::ValuesIn(DataTypesHelper::make_datatypes_tuple()));
-
 INSTANTIATE_TEST_CASE_P(
     ParamtererizedTest, ApiTestDataTypesException,
     ::testing::Values(std::make_tuple("", ""),
@@ -143,6 +140,62 @@ TEST_P(ApiTestDataTypesException, get_non_existing_datatypes_by_key_value) {
   ptree empty_ptree;
   EXPECT_EQ(UTUtils::get_tree_string(empty_ptree),
             UTUtils::get_tree_string(datatype));
+}
+
+/**
+ * @brief api test for add role metadata.
+ */
+TEST_F(ApiTestDataTypes, add_datatypes) {
+  ErrorCode error = ErrorCode::UNKNOWN;
+
+  auto datatypes = std::make_unique<DataTypes>(GlobalTestEnvironment::TEST_DB);
+  error = datatypes->init();
+  EXPECT_EQ(ErrorCode::OK, error);
+
+  ptree datatype_metadata;
+
+  error = datatypes->add(datatype_metadata);
+  EXPECT_EQ(ErrorCode::UNKNOWN, error);
+
+  ObjectIdType retval_datatype_id = -1;
+  error = datatypes->add(datatype_metadata, &retval_datatype_id);
+  EXPECT_EQ(ErrorCode::UNKNOWN, error);
+  EXPECT_EQ(-1, retval_datatype_id);
+}
+
+/**
+ * @brief api test for get_all role metadata.
+ */
+TEST_F(ApiTestDataTypes, get_all_datatypes) {
+  ErrorCode error = ErrorCode::UNKNOWN;
+
+  auto datatypes = std::make_unique<DataTypes>(GlobalTestEnvironment::TEST_DB);
+  error = datatypes->init();
+  EXPECT_EQ(ErrorCode::OK, error);
+
+  std::vector<boost::property_tree::ptree> container = {};
+  error = datatypes->get_all(container);
+  EXPECT_EQ(ErrorCode::UNKNOWN, error);
+  EXPECT_TRUE(container.empty());
+}
+
+/**
+ * @brief api test for remove role metadata.
+ */
+TEST_F(ApiTestDataTypes, remove_datatypes) {
+  ErrorCode error = ErrorCode::UNKNOWN;
+
+  auto datatypes = std::make_unique<DataTypes>(GlobalTestEnvironment::TEST_DB);
+  error = datatypes->init();
+  EXPECT_EQ(ErrorCode::OK, error);
+
+  error = datatypes->remove(99999);
+  EXPECT_EQ(ErrorCode::UNKNOWN, error);
+
+  ObjectIdType retval_datatype_id = -1;
+  error = datatypes->remove("role_name", &retval_datatype_id);
+  EXPECT_EQ(ErrorCode::UNKNOWN, error);
+  EXPECT_EQ(-1, retval_datatype_id);
 }
 
 }  // namespace manager::metadata::testing
