@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 #include <gtest/gtest.h>
+
 #include <cmath>
 #include <limits>
 #include <memory>
@@ -25,36 +26,35 @@
 #include "manager/metadata/dao/tables_dao.h"
 #include "manager/metadata/error_code.h"
 #include "manager/metadata/tables.h"
-#include "test/api_test_table_statistics.h"
-#include "test/dao_test/dao_test_table_metadata.h"
 #include "test/global_test_environment.h"
+#include "test/helper/table_metadata_helper.h"
+#include "test/helper/table_statistics_helper.h"
 #include "test/utility/ut_utils.h"
 
 namespace manager::metadata::testing {
 
-namespace storage = manager::metadata::db::postgresql;
-using namespace boost::property_tree;
-using namespace manager::metadata::db;
-
-typedef std::tuple<std::string, float, float> TupleApiTestTableStatistics;
+using boost::property_tree::ptree;
+using db::postgresql::DBSessionManager;
 
 class DaoTestTableStatisticsByTableIdException
     : public ::testing::TestWithParam<ObjectIdType> {
   void SetUp() override { UTUtils::skip_if_connection_not_opened(); }
-};
+};  // class DaoTestTableStatisticsByTableIdException
+
 class DaoTestTableStatisticsByTableNameException
     : public ::testing::TestWithParam<std::string> {
   void SetUp() override { UTUtils::skip_if_connection_not_opened(); }
-};
+};  // class DaoTestTableStatisticsByTableNameException
 
 class DaoTestTableStatisticsByTableIdHappy
-    : public ::testing::TestWithParam<TupleApiTestTableStatistics> {
+    : public ::testing::TestWithParam<TestTableStatisticsType> {
   void SetUp() override { UTUtils::skip_if_connection_not_opened(); }
-};
+};  // class DaoTestTableStatisticsByTableIdHappy
+
 class DaoTestTableStatisticsByTableNameHappy
-    : public ::testing::TestWithParam<TupleApiTestTableStatistics> {
+    : public ::testing::TestWithParam<TestTableStatisticsType> {
   void SetUp() override { UTUtils::skip_if_connection_not_opened(); }
-};
+};  // class DaoTestTableStatisticsByTableNameHappy
 
 INSTANTIATE_TEST_CASE_P(
     ParamtererizedTest, DaoTestTableStatisticsByTableIdException,
@@ -70,12 +70,12 @@ INSTANTIATE_TEST_CASE_P(ParamtererizedTest,
 INSTANTIATE_TEST_CASE_P(
     ParamtererizedTest, DaoTestTableStatisticsByTableIdHappy,
     ::testing::ValuesIn(
-        ApiTestTableStatistics::make_tuple_table_statistics("3")));
+        TableStatisticsHelper::make_test_patterns_for_basic_tests("3")));
 
 INSTANTIATE_TEST_CASE_P(
     ParamtererizedTest, DaoTestTableStatisticsByTableNameHappy,
     ::testing::ValuesIn(
-        ApiTestTableStatistics::make_tuple_table_statistics("4")));
+        TableStatisticsHelper::make_test_patterns_for_basic_tests("4")));
 
 /**
  * @brief Exception paths test for add_table_statistic
@@ -83,16 +83,16 @@ INSTANTIATE_TEST_CASE_P(
  */
 TEST_P(DaoTestTableStatisticsByTableIdException,
        add_table_statistics_by_table_id_if_not_exists) {
-  std::shared_ptr<GenericDAO> t_gdao = nullptr;
-  storage::DBSessionManager db_session_manager;
+  std::shared_ptr<db::GenericDAO> t_gdao = nullptr;
+  DBSessionManager db_session_manager;
 
   ErrorCode error =
-      db_session_manager.get_dao(GenericDAO::TableName::TABLES, t_gdao);
+      db_session_manager.get_dao(db::GenericDAO::TableName::TABLES, t_gdao);
 
   EXPECT_EQ(ErrorCode::OK, error);
 
-  std::shared_ptr<TablesDAO> tdao;
-  tdao = std::static_pointer_cast<TablesDAO>(t_gdao);
+  std::shared_ptr<db::TablesDAO> tdao;
+  tdao = std::static_pointer_cast<db::TablesDAO>(t_gdao);
 
   error = db_session_manager.start_transaction();
 
@@ -118,16 +118,16 @@ TEST_P(DaoTestTableStatisticsByTableIdException,
  */
 TEST_P(DaoTestTableStatisticsByTableNameException,
        add_table_statistics_by_table_name_if_not_exists) {
-  std::shared_ptr<GenericDAO> t_gdao = nullptr;
-  storage::DBSessionManager db_session_manager;
+  std::shared_ptr<db::GenericDAO> t_gdao = nullptr;
+  DBSessionManager db_session_manager;
 
   ErrorCode error =
-      db_session_manager.get_dao(GenericDAO::TableName::TABLES, t_gdao);
+      db_session_manager.get_dao(db::GenericDAO::TableName::TABLES, t_gdao);
 
   EXPECT_EQ(ErrorCode::OK, error);
 
-  std::shared_ptr<TablesDAO> tdao;
-  tdao = std::static_pointer_cast<TablesDAO>(t_gdao);
+  std::shared_ptr<db::TablesDAO> tdao;
+  tdao = std::static_pointer_cast<db::TablesDAO>(t_gdao);
 
   error = db_session_manager.start_transaction();
 
@@ -152,16 +152,16 @@ TEST_P(DaoTestTableStatisticsByTableNameException,
  */
 TEST_P(DaoTestTableStatisticsByTableIdException,
        get_table_statistics_by_table_id_if_not_exists) {
-  std::shared_ptr<GenericDAO> t_gdao = nullptr;
-  storage::DBSessionManager db_session_manager;
+  std::shared_ptr<db::GenericDAO> t_gdao = nullptr;
+  DBSessionManager db_session_manager;
 
   ErrorCode error =
-      db_session_manager.get_dao(GenericDAO::TableName::TABLES, t_gdao);
+      db_session_manager.get_dao(db::GenericDAO::TableName::TABLES, t_gdao);
 
   EXPECT_EQ(ErrorCode::OK, error);
 
-  std::shared_ptr<TablesDAO> tdao;
-  tdao = std::static_pointer_cast<TablesDAO>(t_gdao);
+  std::shared_ptr<db::TablesDAO> tdao;
+  tdao = std::static_pointer_cast<db::TablesDAO>(t_gdao);
 
   auto table_id_not_exists = GetParam();
   ptree table_stats;
@@ -169,7 +169,7 @@ TEST_P(DaoTestTableStatisticsByTableIdException,
       Tables::ID, std::to_string(table_id_not_exists), table_stats);
 
   EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
-  UTUtils::print_table_statistics(table_stats);
+  TableMetadataHelper::print_table_statistics(table_stats);
 }
 
 /**
@@ -178,16 +178,16 @@ TEST_P(DaoTestTableStatisticsByTableIdException,
  */
 TEST_P(DaoTestTableStatisticsByTableNameException,
        get_table_statistics_by_table_name_if_not_exists) {
-  std::shared_ptr<GenericDAO> t_gdao = nullptr;
-  storage::DBSessionManager db_session_manager;
+  std::shared_ptr<db::GenericDAO> t_gdao = nullptr;
+  DBSessionManager db_session_manager;
 
   ErrorCode error =
-      db_session_manager.get_dao(GenericDAO::TableName::TABLES, t_gdao);
+      db_session_manager.get_dao(db::GenericDAO::TableName::TABLES, t_gdao);
 
   EXPECT_EQ(ErrorCode::OK, error);
 
-  std::shared_ptr<TablesDAO> tdao;
-  tdao = std::static_pointer_cast<TablesDAO>(t_gdao);
+  std::shared_ptr<db::TablesDAO> tdao;
+  tdao = std::static_pointer_cast<db::TablesDAO>(t_gdao);
 
   std::string table_name_not_exists = GetParam();
   ptree table_stats;
@@ -210,17 +210,17 @@ TEST_P(DaoTestTableStatisticsByTableIdHappy,
   std::string table_name = testdata_table_metadata->name + std::get<0>(param);
 
   ObjectIdType ret_table_id;
-  DaoTestTableMetadata::add_table(table_name, &ret_table_id);
+  TableMetadataHelper::add_table(table_name, &ret_table_id);
 
-  std::shared_ptr<GenericDAO> t_gdao = nullptr;
-  storage::DBSessionManager db_session_manager;
+  std::shared_ptr<db::GenericDAO> t_gdao = nullptr;
+  DBSessionManager db_session_manager;
 
   ErrorCode error =
-      db_session_manager.get_dao(GenericDAO::TableName::TABLES, t_gdao);
+      db_session_manager.get_dao(db::GenericDAO::TableName::TABLES, t_gdao);
   EXPECT_EQ(ErrorCode::OK, error);
 
-  std::shared_ptr<TablesDAO> tdao;
-  tdao = std::static_pointer_cast<TablesDAO>(t_gdao);
+  std::shared_ptr<db::TablesDAO> tdao;
+  tdao = std::static_pointer_cast<db::TablesDAO>(t_gdao);
 
   // The number of rows is NULL in the table metadata table.
   // So, adds the number of rows to the table metadata table.
@@ -263,7 +263,7 @@ TEST_P(DaoTestTableStatisticsByTableIdHappy,
     }
   }
 
-  UTUtils::print_table_statistics(table_stats_added);
+  TableMetadataHelper::print_table_statistics(table_stats_added);
 
   // updates the number of rows.
   error = db_session_manager.start_transaction();
@@ -305,10 +305,10 @@ TEST_P(DaoTestTableStatisticsByTableIdHappy,
     }
   }
 
-  UTUtils::print_table_statistics(table_stats_updated);
+  TableMetadataHelper::print_table_statistics(table_stats_updated);
 
   // remove table metadata.
-  DaoTestTableMetadata::remove_table_metadata(ret_table_id);
+  TableMetadataHelper::remove_table(ret_table_id);
 }
 
 /**
@@ -324,17 +324,17 @@ TEST_P(DaoTestTableStatisticsByTableNameHappy,
   std::string table_name = testdata_table_metadata->name + std::get<0>(param);
 
   ObjectIdType ret_table_id;
-  DaoTestTableMetadata::add_table(table_name, &ret_table_id);
+  TableMetadataHelper::add_table(table_name, &ret_table_id);
 
-  std::shared_ptr<GenericDAO> t_gdao = nullptr;
-  storage::DBSessionManager db_session_manager;
+  std::shared_ptr<db::GenericDAO> t_gdao = nullptr;
+  DBSessionManager db_session_manager;
 
   ErrorCode error =
-      db_session_manager.get_dao(GenericDAO::TableName::TABLES, t_gdao);
+      db_session_manager.get_dao(db::GenericDAO::TableName::TABLES, t_gdao);
   EXPECT_EQ(ErrorCode::OK, error);
 
-  std::shared_ptr<TablesDAO> tdao;
-  tdao = std::static_pointer_cast<TablesDAO>(t_gdao);
+  std::shared_ptr<db::TablesDAO> tdao;
+  tdao = std::static_pointer_cast<db::TablesDAO>(t_gdao);
 
   // The number of rows is NULL in the table metadata table.
   // So, adds the number of rows to the table metadata table.
@@ -377,7 +377,7 @@ TEST_P(DaoTestTableStatisticsByTableNameHappy,
     }
   }
 
-  UTUtils::print_table_statistics(table_stats_added);
+  TableMetadataHelper::print_table_statistics(table_stats_added);
 
   // updates the number of rows.
   error = db_session_manager.start_transaction();
@@ -419,10 +419,10 @@ TEST_P(DaoTestTableStatisticsByTableNameHappy,
     }
   }
 
-  UTUtils::print_table_statistics(table_stats_updated);
+  TableMetadataHelper::print_table_statistics(table_stats_updated);
 
   // remove table metadata.
-  DaoTestTableMetadata::remove_table_metadata(ret_table_id);
+  TableMetadataHelper::remove_table(ret_table_id);
 }
 
 }  // namespace manager::metadata::testing

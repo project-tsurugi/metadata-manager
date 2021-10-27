@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 #include <gtest/gtest.h>
+
 #include <memory>
 
 #include "manager/metadata/dao/generic_dao.h"
@@ -23,33 +24,34 @@
 
 namespace manager::metadata::testing {
 
-namespace storage = manager::metadata::db::postgresql;
-using namespace manager::metadata::db;
-using postgresql::DBSessionManager;
+using db::postgresql::DBSessionManager;
 
 class DaoTestDBAccessFailure : public ::testing::Test {
   void SetUp() override { UTUtils::skip_if_connection_opened(); }
-};
+};  // class DaoTestDBAccessFailure
 
 TEST_F(DaoTestDBAccessFailure, all) {
   ErrorCode error = ErrorCode::INTERNAL_ERROR;
 
-  std::shared_ptr<GenericDAO> g_gdao = nullptr;
-  storage::DBSessionManager db_session_manager;
+  std::shared_ptr<db::GenericDAO> g_gdao = nullptr;
+  DBSessionManager db_session_manager;
 
-  error = db_session_manager.get_dao(GenericDAO::TableName::STATISTICS, g_gdao);
+  error =
+      db_session_manager.get_dao(db::GenericDAO::TableName::STATISTICS, g_gdao);
   EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
   EXPECT_EQ(nullptr, g_gdao);
 
-  error = db_session_manager.get_dao(GenericDAO::TableName::COLUMNS, g_gdao);
+  error =
+      db_session_manager.get_dao(db::GenericDAO::TableName::COLUMNS, g_gdao);
   EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
   EXPECT_EQ(nullptr, g_gdao);
 
-  error = db_session_manager.get_dao(GenericDAO::TableName::TABLES, g_gdao);
+  error = db_session_manager.get_dao(db::GenericDAO::TableName::TABLES, g_gdao);
   EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
   EXPECT_EQ(nullptr, g_gdao);
 
-  error = db_session_manager.get_dao(GenericDAO::TableName::DATATYPES, g_gdao);
+  error =
+      db_session_manager.get_dao(db::GenericDAO::TableName::DATATYPES, g_gdao);
   EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
   EXPECT_EQ(nullptr, g_gdao);
 

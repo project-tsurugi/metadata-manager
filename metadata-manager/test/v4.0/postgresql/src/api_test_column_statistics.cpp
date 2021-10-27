@@ -13,32 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "test/api_test_column_statistics.h"
-
 #include <gtest/gtest.h>
+
 #include <memory>
 #include <string>
-#include <unordered_map>
+#include <string_view>
 #include <vector>
 
 #include "manager/metadata/statistics.h"
 #include "manager/metadata/tables.h"
-#include "test/api_test_table_metadata.h"
 #include "test/global_test_environment.h"
+#include "test/helper/column_statistics_helper.h"
+#include "test/helper/table_metadata_helper.h"
 #include "test/utility/ut_table_metadata.h"
 #include "test/utility/ut_utils.h"
 
-using namespace manager::metadata;
-using namespace boost::property_tree;
-
 namespace manager::metadata::testing {
 
+using boost::property_tree::ptree;
+
 class ApiTestColumnStatisticsAllAPIHappy
-    : public ::testing::TestWithParam<TupleApiTestColumnStatisticsAllAPI> {
+    : public ::testing::TestWithParam<TestColumnStatisticsBasicType> {
   void SetUp() override { UTUtils::skip_if_connection_not_opened(); }
 };
 class ApiTestColumnStatisticsUpdateHappy
-    : public ::testing::TestWithParam<TupleApiTestColumnStatisticsUpdate> {
+    : public ::testing::TestWithParam<TestColumnStatisticsUpdateType> {
   void SetUp() override { UTUtils::skip_if_connection_not_opened(); }
 };
 class ApiTestColumnStatisticsRemoveAllHappy
@@ -50,70 +49,18 @@ class ApiTestColumnStatisticsAllAPIException
   void SetUp() override { UTUtils::skip_if_connection_not_opened(); }
 };
 class ApiTestColumnStatisticsAllAPIHappyWithoutInit
-    : public ::testing::TestWithParam<TupleApiTestColumnStatisticsAllAPI> {
+    : public ::testing::TestWithParam<TestColumnStatisticsBasicType> {
   void SetUp() override { UTUtils::skip_if_connection_not_opened(); }
 };
-
-std::vector<TupleApiTestColumnStatisticsAllAPI> ApiTestColumnStatistics::
-    make_tuple_for_api_test_column_statistics_all_api_happy(
-        const std::string& test_number) {
-  std::vector<ptree> column_statistics;
-  for (int i = 0; i < 3; i++) {
-    column_statistics.push_back(UTUtils::generate_column_statistic());
-  }
-
-  std::vector<ptree> empty_columns;
-  ptree empty_column;
-  for (int i = 0; i < 3; i++) {
-    empty_columns.push_back(empty_column);
-  }
-
-  std::vector<TupleApiTestColumnStatisticsAllAPI> v;
-  v.emplace_back("_ColumnStatistic_" + test_number + "_1", column_statistics,
-                 1);
-  v.emplace_back("_ColumnStatistic_" + test_number + "_2", empty_columns, 2);
-  v.emplace_back("_ColumnStatistic_" + test_number + "_3", column_statistics,
-                 3);
-  return v;
-}
-
-std::vector<TupleApiTestColumnStatisticsUpdate>
-ApiTestColumnStatistics::make_tuple_for_api_test_column_statistics_update_happy(
-    const std::string& test_number) {
-  std::vector<TupleApiTestColumnStatisticsUpdate> v;
-  std::vector<int> number_of_columns = {1, 2, 2, 3};
-  std::vector<ObjectIdType> ordinal_positions_to_remove = {1, 1, 2, 3};
-
-  int test_case_no = 0;
-  for (int noc : number_of_columns) {
-    std::vector<ptree> cs;
-    for (int i = 0; i < noc; i++) {
-      cs.push_back(UTUtils::generate_column_statistic());
-    }
-    std::vector<ptree> empty_columns;
-    ptree empty_column;
-    for (int i = 0; i < noc; i++) {
-      empty_columns.push_back(empty_column);
-    }
-    v.emplace_back(
-        "_ColumnStatistic_" + test_number + "_" + std::to_string(test_case_no),
-        cs, empty_columns, ordinal_positions_to_remove[test_case_no]);
-    test_case_no++;
-  }
-
-  return v;
-}
 
 INSTANTIATE_TEST_CASE_P(
     ParamtererizedTest, ApiTestColumnStatisticsAllAPIHappy,
     ::testing::ValuesIn(
-        ApiTestColumnStatistics::
-            make_tuple_for_api_test_column_statistics_all_api_happy("1")));
+        ColumnStatisticsHelper::make_test_patterns_for_basic_tests("1")));
 INSTANTIATE_TEST_CASE_P(
     ParamtererizedTest, ApiTestColumnStatisticsUpdateHappy,
     ::testing::ValuesIn(
-        ApiTestColumnStatistics::
-            make_tuple_for_api_test_column_statistics_update_happy("2")));
+        ColumnStatisticsHelper::make_test_patterns_for_update_tests("2")));
 INSTANTIATE_TEST_CASE_P(ParamtererizedTest,
                         ApiTestColumnStatisticsRemoveAllHappy,
                         ::testing::Values("_ColumnStatistic_3"));
@@ -123,92 +70,7 @@ INSTANTIATE_TEST_CASE_P(ParamtererizedTest,
 INSTANTIATE_TEST_CASE_P(
     ParamtererizedTest, ApiTestColumnStatisticsAllAPIHappyWithoutInit,
     ::testing::ValuesIn(
-        ApiTestColumnStatistics::
-            make_tuple_for_api_test_column_statistics_all_api_happy("5")));
-
-/**
- * @brief Add column statistics based on the given table id and
- *  the given ptree type column statistics.
- * @param (table_id)          [in]  table id.
- * @param (column_statistics)     [in]  ptree type column statistics.
- * @return none.
- */
-void ApiTestColumnStatistics::add_column_statistics(
-    ObjectIdType table_id, std::vector<ptree> column_statistics) {
-  auto stats = std::make_unique<Statistics>(GlobalTestEnvironment::TEST_DB);
-
-  ErrorCode error = stats->init();
-  EXPECT_EQ(ErrorCode::OK, error);
-
-  UTUtils::print("-- add column statistics by add_column_statistic start --");
-  UTUtils::print(" id:", table_id);
-
-  boost::property_tree::ptree statistic;
-
-  for (std::int64_t ordinal_position = 1;
-       static_cast<std::size_t>(ordinal_position) <= column_statistics.size();
-       ordinal_position++) {
-    // clear
-    statistic.clear();
-    // name
-    std::string statistic_name = "ApiTestColumnStatistics_" +
-                                 std::to_string(table_id) + "-" +
-                                 std::to_string(ordinal_position);
-    statistic.put(Statistics::NAME, statistic_name);
-    // table_id
-    statistic.put(Statistics::TABLE_ID, table_id);
-    // ordinal_position
-    statistic.put(Statistics::ORDINAL_POSITION, ordinal_position);
-    // column_statistic
-    statistic.add_child(Statistics::COLUMN_STATISTIC,
-                        column_statistics[ordinal_position - 1]);
-
-    error = stats->add(statistic);
-    EXPECT_EQ(ErrorCode::OK, error);
-
-    UTUtils::print(" ordinal position: ", ordinal_position);
-    UTUtils::print(
-        " column statistics:" +
-        UTUtils::get_tree_string(column_statistics[ordinal_position - 1]));
-  }
-
-  UTUtils::print("-- add column statistics by add_column_statistic end --\n");
-}
-
-/**
- * @brief Add column statistics based on the given table id and
- *  the given ptree type column statistics.
- * @param (table_id)          [in]  table id.
- * @param (column_statistics)     [in]  ptree type column statistics.
- * @return none.
- */
-void ApiTestColumnStatistics::add_column_statistics(ObjectIdType column_id,
-                                                    ptree column_statistics) {
-  auto stats = std::make_unique<Statistics>(GlobalTestEnvironment::TEST_DB);
-
-  ErrorCode error = stats->init();
-  EXPECT_EQ(ErrorCode::OK, error);
-
-  UTUtils::print("-- add column statistics by add_column_statistic start --");
-  UTUtils::print(" column_id:", column_id);
-  UTUtils::print(" column statistics:" +
-                 UTUtils::get_tree_string(column_statistics));
-
-  boost::property_tree::ptree statistic;
-  // name
-  std::string statistic_name =
-      "ApiTestColumnStatistics_" + std::to_string(column_id);
-  statistic.put(Statistics::NAME, statistic_name);
-  // column_id
-  statistic.put(Statistics::COLUMN_ID, column_id);
-  // column_statistic
-  statistic.add_child(Statistics::COLUMN_STATISTIC, column_statistics);
-
-  error = stats->add(statistic);
-  EXPECT_EQ(ErrorCode::OK, error);
-
-  UTUtils::print("-- add column statistics by add_column_statistic end --\n");
-}
+        ColumnStatisticsHelper::make_test_patterns_for_basic_tests("5")));
 
 /**
  * @brief happy test for add/get_all/remove API.
@@ -229,21 +91,21 @@ TEST_P(ApiTestColumnStatisticsAllAPIHappy, get_all_api_by_table_id) {
   // add table metadata.
   std::string table_name_1 = table_name_base + "1";
   ObjectIdType ret_table_id_1;
-  ApiTestTableMetadata::add_table(table_name_1, &ret_table_id_1);
+  TableMetadataHelper::add_table(table_name_1, &ret_table_id_1);
   // add table metadata.
   std::string table_name_2 = table_name_base + "2";
   ObjectIdType ret_table_id_2;
-  ApiTestTableMetadata::add_table(table_name_2, &ret_table_id_2);
+  TableMetadataHelper::add_table(table_name_2, &ret_table_id_2);
 
   /**
    * add
    * based on both existing table id and column ordinal position.
    */
   std::vector<ptree> column_statistics = std::get<1>(param);
-  ApiTestColumnStatistics::add_column_statistics(ret_table_id_1,
-                                                 column_statistics);
-  ApiTestColumnStatistics::add_column_statistics(ret_table_id_2,
-                                                 column_statistics);
+  ColumnStatisticsHelper::add_column_statistics(ret_table_id_1,
+                                                column_statistics);
+  ColumnStatisticsHelper::add_column_statistics(ret_table_id_2,
+                                                column_statistics);
 
   auto stats = std::make_unique<Statistics>(GlobalTestEnvironment::TEST_DB);
   ErrorCode error = stats->init();
@@ -307,8 +169,8 @@ TEST_P(ApiTestColumnStatisticsAllAPIHappy, get_all_api_by_table_id) {
   UTUtils::print("-- remove column statistics by remove_by_table_id end --\n");
 
   // remove table metadata.
-  ApiTestTableMetadata::remove_table(ret_table_id_1);
-  ApiTestTableMetadata::remove_table(ret_table_id_2);
+  TableMetadataHelper::remove_table(ret_table_id_1);
+  TableMetadataHelper::remove_table(ret_table_id_2);
 }
 
 /**
@@ -332,21 +194,21 @@ TEST_P(ApiTestColumnStatisticsAllAPIHappy, get_all_api) {
   // add table metadata.
   std::string table_name_1 = table_name_base + "1";
   ObjectIdType ret_table_id_1;
-  ApiTestTableMetadata::add_table(table_name_1, &ret_table_id_1);
+  TableMetadataHelper::add_table(table_name_1, &ret_table_id_1);
   // add table metadata.
   std::string table_name_2 = table_name_base + "2";
   ObjectIdType ret_table_id_2;
-  ApiTestTableMetadata::add_table(table_name_2, &ret_table_id_2);
+  TableMetadataHelper::add_table(table_name_2, &ret_table_id_2);
 
   /**
    * add
    * based on both existing table id and column ordinal position.
    */
   std::vector<ptree> column_statistics = std::get<1>(param);
-  ApiTestColumnStatistics::add_column_statistics(ret_table_id_1,
-                                                 column_statistics);
-  ApiTestColumnStatistics::add_column_statistics(ret_table_id_2,
-                                                 column_statistics);
+  ColumnStatisticsHelper::add_column_statistics(ret_table_id_1,
+                                                column_statistics);
+  ColumnStatisticsHelper::add_column_statistics(ret_table_id_2,
+                                                column_statistics);
 
   auto stats = std::make_unique<Statistics>(GlobalTestEnvironment::TEST_DB);
   ErrorCode error = stats->init();
@@ -438,8 +300,8 @@ TEST_P(ApiTestColumnStatisticsAllAPIHappy, get_all_api) {
   UTUtils::print("-- remove column statistics by remove_by_table_id end --\n");
 
   // remove table metadata.
-  ApiTestTableMetadata::remove_table(ret_table_id_1);
-  ApiTestTableMetadata::remove_table(ret_table_id_2);
+  TableMetadataHelper::remove_table(ret_table_id_1);
+  TableMetadataHelper::remove_table(ret_table_id_2);
 }
 
 /**
@@ -463,7 +325,7 @@ TEST_P(ApiTestColumnStatisticsAllAPIHappy, get_remove_api_by_statistic_id) {
 
   // add table metadata.
   ObjectIdType ret_table_id;
-  ApiTestTableMetadata::add_table(table_name, &ret_table_id);
+  TableMetadataHelper::add_table(table_name, &ret_table_id);
 
   auto stats = std::make_unique<Statistics>(GlobalTestEnvironment::TEST_DB);
   error = stats->init();
@@ -552,7 +414,7 @@ TEST_P(ApiTestColumnStatisticsAllAPIHappy, get_remove_api_by_statistic_id) {
       "-- remove column statistics by remove (by statistic id) end --\n");
 
   // remove table metadata.
-  ApiTestTableMetadata::remove_table(ret_table_id);
+  TableMetadataHelper::remove_table(ret_table_id);
 }
 
 /**
@@ -576,7 +438,7 @@ TEST_P(ApiTestColumnStatisticsAllAPIHappy, get_remove_api_by_statistic_name) {
 
   // add table metadata.
   ObjectIdType ret_table_id;
-  ApiTestTableMetadata::add_table(table_name, &ret_table_id);
+  TableMetadataHelper::add_table(table_name, &ret_table_id);
 
   auto stats = std::make_unique<Statistics>(GlobalTestEnvironment::TEST_DB);
   error = stats->init();
@@ -671,7 +533,7 @@ TEST_P(ApiTestColumnStatisticsAllAPIHappy, get_remove_api_by_statistic_name) {
       "-- remove column statistics by remove (by statistic name) end --\n");
 
   // remove table metadata.
-  ApiTestTableMetadata::remove_table(ret_table_id);
+  TableMetadataHelper::remove_table(ret_table_id);
 }
 
 /**
@@ -693,7 +555,7 @@ TEST_P(ApiTestColumnStatisticsAllAPIHappy, get_remove_api_by_column_id) {
 
   // add table metadata.
   ObjectIdType ret_table_id;
-  ApiTestTableMetadata::add_table(table_name, &ret_table_id);
+  TableMetadataHelper::add_table(table_name, &ret_table_id);
 
   auto tables = std::make_unique<Tables>(GlobalTestEnvironment::TEST_DB);
   error = tables->init();
@@ -802,7 +664,7 @@ TEST_P(ApiTestColumnStatisticsAllAPIHappy, get_remove_api_by_column_id) {
   UTUtils::print("-- remove column statistics by remove_by_column_id end --\n");
 
   // remove table metadata.
-  ApiTestTableMetadata::remove_table(ret_table_id);
+  TableMetadataHelper::remove_table(ret_table_id);
 }
 
 /**
@@ -824,7 +686,7 @@ TEST_P(ApiTestColumnStatisticsAllAPIHappy, get_remove_api_by_column_number) {
 
   // add table metadata.
   ObjectIdType ret_table_id;
-  ApiTestTableMetadata::add_table(table_name, &ret_table_id);
+  TableMetadataHelper::add_table(table_name, &ret_table_id);
 
   auto stats = std::make_unique<Statistics>(GlobalTestEnvironment::TEST_DB);
   error = stats->init();
@@ -909,7 +771,7 @@ TEST_P(ApiTestColumnStatisticsAllAPIHappy, get_remove_api_by_column_number) {
       "-- remove column statistics by remove_by_column_numebr end --\n");
 
   // remove table metadata.
-  ApiTestTableMetadata::remove_table(ret_table_id);
+  TableMetadataHelper::remove_table(ret_table_id);
 }
 
 /**
@@ -931,7 +793,7 @@ TEST_P(ApiTestColumnStatisticsAllAPIHappy, get_remove_api_by_column_name) {
 
   // add table metadata.
   ObjectIdType ret_table_id;
-  ApiTestTableMetadata::add_table(table_name, &ret_table_id);
+  TableMetadataHelper::add_table(table_name, &ret_table_id);
 
   auto tables = std::make_unique<Tables>(GlobalTestEnvironment::TEST_DB);
   error = tables->init();
@@ -1044,7 +906,7 @@ TEST_P(ApiTestColumnStatisticsAllAPIHappy, get_remove_api_by_column_name) {
       "-- remove column statistics by remove_by_column_name end --\n");
 
   // remove table metadata.
-  ApiTestTableMetadata::remove_table(ret_table_id);
+  TableMetadataHelper::remove_table(ret_table_id);
 }
 
 /**
@@ -1063,15 +925,15 @@ TEST_P(ApiTestColumnStatisticsUpdateHappy, update_column_statistics) {
   std::string table_name = testdata_table_metadata->name + std::get<0>(param);
 
   ObjectIdType ret_table_id;
-  ApiTestTableMetadata::add_table(table_name, &ret_table_id);
+  TableMetadataHelper::add_table(table_name, &ret_table_id);
 
   /**
    * add new column statistics
    * based on both existing table id and column ordinal position.
    */
   std::vector<ptree> column_statistics = std::get<1>(param);
-  ApiTestColumnStatistics::add_column_statistics(ret_table_id,
-                                                 column_statistics);
+  ColumnStatisticsHelper::add_column_statistics(ret_table_id,
+                                                column_statistics);
 
   auto stats = std::make_unique<Statistics>(GlobalTestEnvironment::TEST_DB);
 
@@ -1150,8 +1012,8 @@ TEST_P(ApiTestColumnStatisticsUpdateHappy, update_column_statistics) {
    * based on both existing table id and column ordinal position.
    */
   std::vector<ptree> column_statistics_to_update = std::get<2>(param);
-  ApiTestColumnStatistics::add_column_statistics(ret_table_id,
-                                                 column_statistics_to_update);
+  ColumnStatisticsHelper::add_column_statistics(ret_table_id,
+                                                column_statistics_to_update);
 
   /**
    * check if results of column statistics are expected or not.
@@ -1355,7 +1217,7 @@ TEST_P(ApiTestColumnStatisticsUpdateHappy, update_column_statistics) {
   }
 
   // remove table metadata.
-  ApiTestTableMetadata::remove_table(ret_table_id);
+  TableMetadataHelper::remove_table(ret_table_id);
 }
 
 /**
@@ -1374,15 +1236,15 @@ TEST_P(ApiTestColumnStatisticsRemoveAllHappy, remove_by_table_id) {
   std::string table_name = testdata_table_metadata->name + param;
 
   ObjectIdType ret_table_id;
-  ApiTestTableMetadata::add_table(table_name, &ret_table_id);
+  TableMetadataHelper::add_table(table_name, &ret_table_id);
 
   /**
    * add new column statistics
    * based on both existing table id and column ordinal position.
    */
   std::vector<ptree> column_statistics = global->column_statistics;
-  ApiTestColumnStatistics::add_column_statistics(ret_table_id,
-                                                 column_statistics);
+  ColumnStatisticsHelper::add_column_statistics(ret_table_id,
+                                                column_statistics);
 
   auto stats = std::make_unique<Statistics>(GlobalTestEnvironment::TEST_DB);
 
@@ -1479,7 +1341,7 @@ TEST_P(ApiTestColumnStatisticsRemoveAllHappy, remove_by_table_id) {
   }
 
   // remove table metadata.
-  ApiTestTableMetadata::remove_table(ret_table_id);
+  TableMetadataHelper::remove_table(ret_table_id);
 }
 
 /**
@@ -1508,11 +1370,11 @@ TEST_P(ApiTestColumnStatisticsAllAPIException, all_api_exception) {
   std::string table_name = testdata_table_metadata->name + param;
 
   ObjectIdType ret_table_id;
-  ApiTestTableMetadata::add_table(table_name, &ret_table_id);
+  TableMetadataHelper::add_table(table_name, &ret_table_id);
 
   std::vector<ptree> column_statistics = global->column_statistics;
-  ApiTestColumnStatistics::add_column_statistics(ret_table_id,
-                                                 column_statistics);
+  ColumnStatisticsHelper::add_column_statistics(ret_table_id,
+                                                column_statistics);
 
   auto stats = std::make_unique<Statistics>(GlobalTestEnvironment::TEST_DB);
 
@@ -1682,7 +1544,7 @@ TEST_P(ApiTestColumnStatisticsAllAPIException, all_api_exception) {
   }
 
   // remove table metadata.
-  ApiTestTableMetadata::remove_table(ret_table_id);
+  TableMetadataHelper::remove_table(ret_table_id);
 }
 
 /**
@@ -1708,7 +1570,7 @@ TEST_P(ApiTestColumnStatisticsAllAPIHappyWithoutInit,
   std::string table_name = testdata_table_metadata->name + std::get<0>(param);
 
   ObjectIdType ret_table_id;
-  ApiTestTableMetadata::add_table(table_name, &ret_table_id);
+  TableMetadataHelper::add_table(table_name, &ret_table_id);
 
   /**
    * add without init()
@@ -1944,7 +1806,7 @@ TEST_P(ApiTestColumnStatisticsAllAPIHappyWithoutInit,
   }
 
   // remove table metadata.
-  ApiTestTableMetadata::remove_table(ret_table_id);
+  TableMetadataHelper::remove_table(ret_table_id);
 }
 
 }  // namespace manager::metadata::testing

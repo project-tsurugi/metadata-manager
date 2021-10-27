@@ -19,9 +19,9 @@
 
 #include "manager/metadata/tables.h"
 
-using namespace boost::property_tree;
-
 namespace manager::metadata::testing {
+
+using boost::property_tree::ptree;
 
 /**
  * @brief Generate ptree type table metadata

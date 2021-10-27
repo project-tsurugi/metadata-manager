@@ -13,55 +13,79 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "test/dao_test/dao_test_column_statistics.h"
+#include <gtest/gtest.h>
 
+#include <boost/property_tree/json_parser.hpp>
 #include <memory>
 #include <string>
-#include <unordered_map>
-#include <boost/property_tree/json_parser.hpp>
 
 #include "manager/metadata/dao/common/message.h"
 #include "manager/metadata/dao/postgresql/db_session_manager.h"
 #include "manager/metadata/dao/statistics_dao.h"
-#include "test/api_test_column_statistics.h"
-#include "test/dao_test/dao_test_table_metadata.h"
 #include "test/global_test_environment.h"
+#include "test/helper/column_statistics_helper.h"
+#include "test/helper/table_metadata_helper.h"
 #include "test/utility/ut_utils.h"
 
 namespace manager::metadata::testing {
 
-namespace storage = manager::metadata::db::postgresql;
-using namespace boost::property_tree;
-using namespace manager::metadata;
-using namespace manager::metadata::db;
+namespace json_parser = boost::property_tree::json_parser;
+
+using boost::property_tree::ptree;
+using db::postgresql::DBSessionManager;
+
+class DaoTestColumnStatistics : public ::testing::Test {
+ public:
+  static void add_column_statistics(
+      ObjectIdType table_id,
+      std::vector<boost::property_tree::ptree> column_statistics);
+  static ErrorCode add_one_column_statistic(
+      ObjectIdType table_id, ObjectIdType ordinal_position,
+      boost::property_tree::ptree& column_statistic);
+
+  static ErrorCode get_one_column_statistic(
+      ObjectIdType table_id, ObjectIdType ordinal_position,
+      const boost::property_tree::ptree& expected_column_statistic);
+  static ErrorCode get_all_column_statistics(
+      ObjectIdType table_id,
+      std::vector<boost::property_tree::ptree> column_statistics_expected);
+  static ErrorCode get_all_column_statistics(
+      ObjectIdType table_id,
+      std::vector<boost::property_tree::ptree> column_statistics_expected,
+      ObjectIdType ordinal_position_removed);
+  static ErrorCode remove_one_column_statistic(ObjectIdType table_id,
+                                               ObjectIdType ordinal_position);
+  static ErrorCode remove_all_column_statistics(ObjectIdType table_id);
+};  // class DaoTestColumnStatistics
 
 class DaoTestColumnStatisticsAllAPIHappy
-    : public ::testing::TestWithParam<TupleApiTestColumnStatisticsAllAPI> {
+    : public ::testing::TestWithParam<TestColumnStatisticsBasicType> {
   void SetUp() override { UTUtils::skip_if_connection_not_opened(); }
-};
+};  // class DaoTestColumnStatisticsAllAPIHappy
+
 class DaoTestColumnStatisticsUpdateHappy
-    : public ::testing::TestWithParam<TupleApiTestColumnStatisticsUpdate> {
+    : public ::testing::TestWithParam<TestColumnStatisticsUpdateType> {
   void SetUp() override { UTUtils::skip_if_connection_not_opened(); }
-};
+};  // class DaoTestColumnStatisticsUpdateHappy
+
 class DaoTestColumnStatisticsRemoveAllHappy
     : public ::testing::TestWithParam<std::string> {
   void SetUp() override { UTUtils::skip_if_connection_not_opened(); }
-};
+};  // class DaoTestColumnStatisticsRemoveAllHappy
+
 class DaoTestColumnStatisticsAllAPIException
     : public ::testing::TestWithParam<std::string> {
   void SetUp() override { UTUtils::skip_if_connection_not_opened(); }
-};
+};  // class DaoTestColumnStatisticsAllAPIException
 
 INSTANTIATE_TEST_CASE_P(
     ParamtererizedTest, DaoTestColumnStatisticsAllAPIHappy,
     ::testing::ValuesIn(
-        ApiTestColumnStatistics::
-            make_tuple_for_api_test_column_statistics_all_api_happy("3")));
+        ColumnStatisticsHelper::make_test_patterns_for_basic_tests("3")));
 INSTANTIATE_TEST_CASE_P(
     ParamtererizedTest, DaoTestColumnStatisticsUpdateHappy,
     ::testing::ValuesIn(
-        ApiTestColumnStatistics::
-            make_tuple_for_api_test_column_statistics_update_happy("4")));
+        ColumnStatisticsHelper::make_test_patterns_for_update_tests("4")));
 INSTANTIATE_TEST_CASE_P(ParamtererizedTest,
                         DaoTestColumnStatisticsRemoveAllHappy,
                         ::testing::Values("_ColumnStatistic_5"));
@@ -111,14 +135,15 @@ ErrorCode DaoTestColumnStatistics::add_one_column_statistic(
     boost::property_tree::ptree& column_statistic) {
   ErrorCode error = ErrorCode::INTERNAL_ERROR;
 
-  std::shared_ptr<GenericDAO> s_gdao = nullptr;
-  storage::DBSessionManager db_session_manager;
+  std::shared_ptr<db::GenericDAO> s_gdao = nullptr;
+  DBSessionManager db_session_manager;
 
-  error = db_session_manager.get_dao(GenericDAO::TableName::STATISTICS, s_gdao);
+  error =
+      db_session_manager.get_dao(db::GenericDAO::TableName::STATISTICS, s_gdao);
   EXPECT_EQ(ErrorCode::OK, error);
 
-  std::shared_ptr<StatisticsDAO> sdao;
-  sdao = std::static_pointer_cast<StatisticsDAO>(s_gdao);
+  std::shared_ptr<db::StatisticsDAO> sdao;
+  sdao = std::static_pointer_cast<db::StatisticsDAO>(s_gdao);
 
   std::string statistic_name = "statistic-name";
 
@@ -128,10 +153,10 @@ ErrorCode DaoTestColumnStatistics::add_one_column_statistic(
     try {
       json_parser::write_json(ss, column_statistic, false);
     } catch (boost::property_tree::json_parser_error& e) {
-      std::cerr << Message::WRITE_JSON_FAILURE << e.what() << std::endl;
+      std::cerr << db::Message::WRITE_JSON_FAILURE << e.what() << std::endl;
       return ErrorCode::INTERNAL_ERROR;
     } catch (...) {
-      std::cerr << Message::WRITE_JSON_FAILURE << std::endl;
+      std::cerr << db::Message::WRITE_JSON_FAILURE << std::endl;
       return ErrorCode::INTERNAL_ERROR;
     }
 
@@ -144,7 +169,7 @@ ErrorCode DaoTestColumnStatistics::add_one_column_statistic(
   ObjectIdType ret_statistic_id;
   error = sdao->upsert_column_statistic(
       table_id, Statistics::ORDINAL_POSITION, std::to_string(ordinal_position),
-      &statistic_name, &column_statistic, ret_statistic_id);
+      &statistic_name, column_statistic, ret_statistic_id);
 
   if (error == ErrorCode::OK) {
     ErrorCode commit_error = db_session_manager.commit();
@@ -181,14 +206,15 @@ ErrorCode DaoTestColumnStatistics::get_one_column_statistic(
     const ptree& expected_column_statistic) {
   ErrorCode error = ErrorCode::INTERNAL_ERROR;
 
-  std::shared_ptr<GenericDAO> s_gdao = nullptr;
-  storage::DBSessionManager db_session_manager;
+  std::shared_ptr<db::GenericDAO> s_gdao = nullptr;
+  DBSessionManager db_session_manager;
 
-  error = db_session_manager.get_dao(GenericDAO::TableName::STATISTICS, s_gdao);
+  error =
+      db_session_manager.get_dao(db::GenericDAO::TableName::STATISTICS, s_gdao);
   EXPECT_EQ(ErrorCode::OK, error);
 
-  std::shared_ptr<StatisticsDAO> sdao;
-  sdao = std::static_pointer_cast<StatisticsDAO>(s_gdao);
+  std::shared_ptr<db::StatisticsDAO> sdao;
+  sdao = std::static_pointer_cast<db::StatisticsDAO>(s_gdao);
 
   ptree column_statistic;
   error = sdao->select_column_statistic(table_id, Statistics::ORDINAL_POSITION,
@@ -231,14 +257,15 @@ ErrorCode DaoTestColumnStatistics::get_all_column_statistics(
     ObjectIdType table_id, std::vector<ptree> column_statistics_expected) {
   ErrorCode error = ErrorCode::INTERNAL_ERROR;
 
-  std::shared_ptr<GenericDAO> s_gdao = nullptr;
-  storage::DBSessionManager db_session_manager;
+  std::shared_ptr<db::GenericDAO> s_gdao = nullptr;
+  DBSessionManager db_session_manager;
 
-  error = db_session_manager.get_dao(GenericDAO::TableName::STATISTICS, s_gdao);
+  error =
+      db_session_manager.get_dao(db::GenericDAO::TableName::STATISTICS, s_gdao);
   EXPECT_EQ(ErrorCode::OK, error);
 
-  std::shared_ptr<StatisticsDAO> sdao;
-  sdao = std::static_pointer_cast<StatisticsDAO>(s_gdao);
+  std::shared_ptr<db::StatisticsDAO> sdao;
+  sdao = std::static_pointer_cast<db::StatisticsDAO>(s_gdao);
 
   std::vector<ptree> column_statistics;
   error = sdao->select_column_statistic(table_id, column_statistics);
@@ -297,14 +324,15 @@ ErrorCode DaoTestColumnStatistics::get_all_column_statistics(
     ObjectIdType ordinal_position_removed) {
   ErrorCode error = ErrorCode::INTERNAL_ERROR;
 
-  std::shared_ptr<GenericDAO> s_gdao = nullptr;
-  storage::DBSessionManager db_session_manager;
+  std::shared_ptr<db::GenericDAO> s_gdao = nullptr;
+  DBSessionManager db_session_manager;
 
-  error = db_session_manager.get_dao(GenericDAO::TableName::STATISTICS, s_gdao);
+  error =
+      db_session_manager.get_dao(db::GenericDAO::TableName::STATISTICS, s_gdao);
   EXPECT_EQ(ErrorCode::OK, error);
 
-  std::shared_ptr<StatisticsDAO> sdao;
-  sdao = std::static_pointer_cast<StatisticsDAO>(s_gdao);
+  std::shared_ptr<db::StatisticsDAO> sdao;
+  sdao = std::static_pointer_cast<db::StatisticsDAO>(s_gdao);
 
   std::vector<ptree> column_statistics;
   error = sdao->select_column_statistic(table_id, column_statistics);
@@ -363,14 +391,15 @@ ErrorCode DaoTestColumnStatistics::remove_one_column_statistic(
     ObjectIdType table_id, ObjectIdType ordinal_position) {
   ErrorCode error = ErrorCode::INTERNAL_ERROR;
 
-  std::shared_ptr<GenericDAO> s_gdao = nullptr;
-  storage::DBSessionManager db_session_manager;
+  std::shared_ptr<db::GenericDAO> s_gdao = nullptr;
+  DBSessionManager db_session_manager;
 
-  error = db_session_manager.get_dao(GenericDAO::TableName::STATISTICS, s_gdao);
+  error =
+      db_session_manager.get_dao(db::GenericDAO::TableName::STATISTICS, s_gdao);
   EXPECT_EQ(ErrorCode::OK, error);
 
-  std::shared_ptr<StatisticsDAO> sdao;
-  sdao = std::static_pointer_cast<StatisticsDAO>(s_gdao);
+  std::shared_ptr<db::StatisticsDAO> sdao;
+  sdao = std::static_pointer_cast<db::StatisticsDAO>(s_gdao);
 
   error = db_session_manager.start_transaction();
   EXPECT_EQ(ErrorCode::OK, error);
@@ -408,14 +437,15 @@ ErrorCode DaoTestColumnStatistics::remove_all_column_statistics(
     ObjectIdType table_id) {
   ErrorCode error = ErrorCode::INTERNAL_ERROR;
 
-  std::shared_ptr<GenericDAO> s_gdao = nullptr;
-  storage::DBSessionManager db_session_manager;
+  std::shared_ptr<db::GenericDAO> s_gdao = nullptr;
+  DBSessionManager db_session_manager;
 
-  error = db_session_manager.get_dao(GenericDAO::TableName::STATISTICS, s_gdao);
+  error =
+      db_session_manager.get_dao(db::GenericDAO::TableName::STATISTICS, s_gdao);
   EXPECT_EQ(ErrorCode::OK, error);
 
-  std::shared_ptr<StatisticsDAO> sdao;
-  sdao = std::static_pointer_cast<StatisticsDAO>(s_gdao);
+  std::shared_ptr<db::StatisticsDAO> sdao;
+  sdao = std::static_pointer_cast<db::StatisticsDAO>(s_gdao);
 
   error = db_session_manager.start_transaction();
   EXPECT_EQ(ErrorCode::OK, error);
@@ -460,7 +490,7 @@ TEST_P(DaoTestColumnStatisticsAllAPIHappy, All_API_happy) {
   std::string table_name = testdata_table_metadata->name + std::get<0>(param);
 
   ObjectIdType ret_table_id;
-  DaoTestTableMetadata::add_table(table_name, &ret_table_id);
+  TableMetadataHelper::add_table(table_name, &ret_table_id);
 
   /**
    * add_one_column_statistic
@@ -545,7 +575,7 @@ TEST_P(DaoTestColumnStatisticsAllAPIHappy, All_API_happy) {
   }
 
   // remove table metadata.
-  DaoTestTableMetadata::remove_table_metadata(ret_table_id);
+  TableMetadataHelper::remove_table(ret_table_id);
 }
 
 /**
@@ -564,7 +594,7 @@ TEST_P(DaoTestColumnStatisticsUpdateHappy, update_column_statistics) {
   std::string table_name = testdata_table_metadata->name + std::get<0>(param);
 
   ObjectIdType ret_table_id;
-  DaoTestTableMetadata::add_table(table_name, &ret_table_id);
+  TableMetadataHelper::add_table(table_name, &ret_table_id);
 
   /**
    * add new column statistics
@@ -706,7 +736,7 @@ TEST_P(DaoTestColumnStatisticsUpdateHappy, update_column_statistics) {
   }
 
   // remove table metadata.
-  DaoTestTableMetadata::remove_table_metadata(ret_table_id);
+  TableMetadataHelper::remove_table(ret_table_id);
 }
 
 /**
@@ -725,7 +755,7 @@ TEST_P(DaoTestColumnStatisticsRemoveAllHappy, remove_all_column_statistics) {
   std::string table_name = testdata_table_metadata->name + param;
 
   ObjectIdType ret_table_id;
-  DaoTestTableMetadata::add_table(table_name, &ret_table_id);
+  TableMetadataHelper::add_table(table_name, &ret_table_id);
 
   /**
    * add new column statistics
@@ -776,7 +806,7 @@ TEST_P(DaoTestColumnStatisticsRemoveAllHappy, remove_all_column_statistics) {
   }
 
   // remove table metadata.
-  DaoTestTableMetadata::remove_table_metadata(ret_table_id);
+  TableMetadataHelper::remove_table(ret_table_id);
 }
 
 /**
@@ -805,7 +835,7 @@ TEST_P(DaoTestColumnStatisticsAllAPIException, all_api_exception) {
   std::string table_name = testdata_table_metadata->name + param;
 
   ObjectIdType ret_table_id;
-  DaoTestTableMetadata::add_table(table_name, &ret_table_id);
+  TableMetadataHelper::add_table(table_name, &ret_table_id);
 
   std::vector<ptree> column_statistics = global->column_statistics;
   DaoTestColumnStatistics::add_column_statistics(ret_table_id,
@@ -924,7 +954,7 @@ TEST_P(DaoTestColumnStatisticsAllAPIException, all_api_exception) {
   }
 
   // remove table metadata.
-  DaoTestTableMetadata::remove_table_metadata(ret_table_id);
+  TableMetadataHelper::remove_table(ret_table_id);
 }
 
 TEST_F(DaoTestColumnStatisticsAllAPIException,
@@ -937,21 +967,22 @@ TEST_F(DaoTestColumnStatisticsAllAPIException,
   std::string statistic_name = "statistic-name";
 
   ObjectIdType ret_table_id;
-  DaoTestTableMetadata::add_table(table_name, &ret_table_id);
+  TableMetadataHelper::add_table(table_name, &ret_table_id);
 
-  std::shared_ptr<GenericDAO> s_gdao = nullptr;
-  storage::DBSessionManager db_session_manager;
+  std::shared_ptr<db::GenericDAO> s_gdao = nullptr;
+  DBSessionManager db_session_manager;
 
-  error = db_session_manager.get_dao(GenericDAO::TableName::STATISTICS, s_gdao);
+  error =
+      db_session_manager.get_dao(db::GenericDAO::TableName::STATISTICS, s_gdao);
   EXPECT_EQ(ErrorCode::OK, error);
 
-  std::shared_ptr<StatisticsDAO> sdao;
-  sdao = std::static_pointer_cast<StatisticsDAO>(s_gdao);
+  std::shared_ptr<db::StatisticsDAO> sdao;
+  sdao = std::static_pointer_cast<db::StatisticsDAO>(s_gdao);
 
   error = db_session_manager.start_transaction();
   EXPECT_EQ(ErrorCode::OK, error);
 
-  ptree* column_statistic = nullptr;
+  ptree column_statistic;
   std::int64_t ordinal_position = 1;
   ObjectIdType ret_statistic_id;
 
@@ -971,7 +1002,7 @@ TEST_F(DaoTestColumnStatisticsAllAPIException,
   EXPECT_EQ(ErrorCode::OK, rollback_error);
 
   // remove table metadata.
-  DaoTestTableMetadata::remove_table_metadata(ret_table_id);
+  TableMetadataHelper::remove_table(ret_table_id);
 }
 
 }  // namespace manager::metadata::testing

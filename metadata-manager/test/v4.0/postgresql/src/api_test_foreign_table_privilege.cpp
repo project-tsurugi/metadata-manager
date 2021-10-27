@@ -13,7 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "test/api_test_foreign_table_privilege.h"
+// #include "test/api_test_foreign_table_privilege.h"
+
+#include <gtest/gtest.h>
 
 #include <boost/format.hpp>
 #include <memory>
@@ -22,8 +24,10 @@
 #include "manager/metadata/dao/common/config.h"
 #include "manager/metadata/dao/postgresql/dbc_utils.h"
 #include "manager/metadata/tables.h"
-#include "test/api_test_table_metadata.h"
 #include "test/global_test_environment.h"
+#include "test/helper/foreign_table_helper.h"
+#include "test/helper/role_metadata_helper.h"
+#include "test/helper/table_metadata_helper.h"
 #include "test/utility/ut_utils.h"
 
 namespace {
@@ -49,8 +53,57 @@ Oid foreign_table_id_rw = 0;
 namespace manager::metadata::testing {
 
 namespace storage = manager::metadata::db::postgresql;
-using namespace manager::metadata;
-using namespace boost::property_tree;
+
+class ApiTestForeignTablePrivileges {
+ public:
+  /**
+   * @brief setup the data for testing.
+   */
+  static void test_setup() {
+    boost::format statement;
+
+    if (global->is_open()) {
+      // create an instance of the Tables class.
+      tables = std::make_unique<Tables>(GlobalTestEnvironment::TEST_DB);
+      tables->init();
+
+      // create dummy data for ROLE.
+      role_id = RoleMetadataHelper::create_role(role_name, "");
+
+      // create dummy data for TABLE.
+      table_id_ro = ForeignTableHelper::create_table(foreign_table_name_ro,
+                                                     role_name, "SELECT");
+      table_id_rw = ForeignTableHelper::create_table(
+          foreign_table_name_rw, role_name, "SELECT,INSERT,UPDATE,DELETE");
+
+      // create dummy data for pg_foreign_table.
+      foreign_table_id_ro =
+          ForeignTableHelper::insert_foreign_table(foreign_table_name_ro);
+      foreign_table_id_rw =
+          ForeignTableHelper::insert_foreign_table(foreign_table_name_rw);
+    } else {
+      GTEST_SKIP_("metadata repository is not started.");
+    }
+  }
+
+  /**
+   * @brief discard the data for testing.
+   */
+  static void test_teardown() {
+    if (global->is_open()) {
+      // remove dummy data for pg_foreign_table.
+      ForeignTableHelper::delete_foreign_table(foreign_table_id_ro);
+      ForeignTableHelper::delete_foreign_table(foreign_table_id_rw);
+
+      // remove dummy data for TABLE.
+      ForeignTableHelper::drop_table(foreign_table_name_ro);
+      ForeignTableHelper::drop_table(foreign_table_name_rw);
+
+      // remove dummy data for ROLE.
+      RoleMetadataHelper::drop_role(role_name);
+    }
+  }
+};
 
 /**
  * @brief ApiTestTablePrivilegesSingle
@@ -63,13 +116,13 @@ class ApiTestTablePrivilegesSingle
     ApiTestForeignTablePrivileges::test_setup();
     if (global->is_open()) {
       // add read-write table metadata.
-      ApiTestTableMetadata::add_table(foreign_table_name_rw);
+      TableMetadataHelper::add_table(foreign_table_name_rw);
     }
   }
   void TearDown() override {
     if (global->is_open()) {
       // remove table metadata.
-      ApiTestTableMetadata::remove_table(foreign_table_name_rw);
+      TableMetadataHelper::remove_table(foreign_table_name_rw);
     }
     ApiTestForeignTablePrivileges::test_teardown();
   }
@@ -87,16 +140,16 @@ class ApiTestTablePrivilegesMultiple
 
     if (global->is_open()) {
       // add read-write table metadata.
-      ApiTestTableMetadata::add_table(foreign_table_name_rw);
+      TableMetadataHelper::add_table(foreign_table_name_rw);
       // add read-only table metadata.
-      ApiTestTableMetadata::add_table(foreign_table_name_ro);
+      TableMetadataHelper::add_table(foreign_table_name_ro);
     }
   }
   void TearDown() override {
     if (global->is_open()) {
       // remove table metadata.
-      ApiTestTableMetadata::remove_table(foreign_table_name_rw);
-      ApiTestTableMetadata::remove_table(foreign_table_name_ro);
+      TableMetadataHelper::remove_table(foreign_table_name_rw);
+      TableMetadataHelper::remove_table(foreign_table_name_ro);
     }
     ApiTestForeignTablePrivileges::test_teardown();
   }
@@ -122,13 +175,13 @@ class ApiTestTablePrivilegesInvalid
 
     if (global->is_open()) {
       // add read-write table metadata.
-      ApiTestTableMetadata::add_table(foreign_table_name_rw);
+      TableMetadataHelper::add_table(foreign_table_name_rw);
     }
   }
   void TearDown() override {
     if (global->is_open()) {
       // remove table metadata.
-      ApiTestTableMetadata::remove_table(foreign_table_name_rw);
+      TableMetadataHelper::remove_table(foreign_table_name_rw);
     }
     ApiTestForeignTablePrivileges::test_teardown();
   }
@@ -157,144 +210,6 @@ INSTANTIATE_TEST_CASE_P(ParamtererizedTest, ApiTestTablePrivilegesMultiple,
 
 INSTANTIATE_TEST_CASE_P(ParamtererizedTest, ApiTestTablePrivilegesInvalid,
                         ::testing::Values(test_pattern_list_invalid));
-
-/**
- * @brief setup the data for testing.
- */
-void ApiTestForeignTablePrivileges::test_setup() {
-  boost::format statement;
-
-  if (global->is_open()) {
-    // db connection.
-    connection = storage::DbcUtils::make_connection_sptr(
-        PQconnectdb(db::Config::get_connection_string().c_str()));
-
-    // create an instance of the Tables class.
-    tables = std::make_unique<Tables>(GlobalTestEnvironment::TEST_DB);
-    tables->init();
-
-    // create dummy data for ROLE.
-    statement = boost::format("CREATE ROLE %s") % role_name;
-    PGresult* res = PQexec(connection.get(), statement.str().c_str());
-    PQclear(res);
-    // get dummy data for ROLE.
-    statement = boost::format("SELECT oid FROM pg_authid WHERE rolname='%s'") %
-                role_name;
-    res = PQexec(connection.get(), statement.str().c_str());
-    role_id = str_to_oid(PQgetvalue(res, 0, 0));
-    PQclear(res);
-
-    // create dummy data for TABLE.
-    create_table(foreign_table_name_ro, "SELECT", table_id_ro);
-    create_table(foreign_table_name_rw, "SELECT,INSERT,UPDATE,DELETE",
-                 table_id_rw);
-
-    // create dummy data for pg_foreign_table.
-    create_foreign_table(foreign_table_name_ro, foreign_table_id_ro);
-    create_foreign_table(foreign_table_name_rw, foreign_table_id_rw);
-  } else {
-    GTEST_SKIP_("metadata repository is not started.");
-  }
-}
-
-/**
- * @brief discard the data for testing.
- */
-void ApiTestForeignTablePrivileges::test_teardown() {
-  if (global->is_open()) {
-    boost::format statement;
-    PGresult* res = nullptr;
-
-    // remove dummy data for pg_foreign_table.
-    statement =
-        boost::format("DELETE FROM pg_foreign_table where ftrelid IN (%s,%s)") %
-        foreign_table_id_ro % foreign_table_id_rw;
-    res = PQexec(connection.get(), statement.str().c_str());
-    PQclear(res);
-
-    // remove dummy data for TABLE.
-    statement =
-        boost::format("DROP TABLE tsurugi_catalog.%s") % foreign_table_name_ro;
-    res = PQexec(connection.get(), statement.str().c_str());
-    PQclear(res);
-
-    statement =
-        boost::format("DROP TABLE tsurugi_catalog.%s") % foreign_table_name_rw;
-    res = PQexec(connection.get(), statement.str().c_str());
-    PQclear(res);
-
-    // remove dummy data for ROLE.
-    statement = boost::format("DROP ROLE %s") % role_name;
-    res = PQexec(connection.get(), statement.str().c_str());
-    PQclear(res);
-  }
-}
-
-/**
- * @brief create a table metadata for testing.
- */
-void ApiTestForeignTablePrivileges::create_table(std::string_view table_name,
-                                                 std::string_view privileges,
-                                                 Oid& table_id) {
-  boost::format statement;
-  PGresult* res = nullptr;
-
-  // create dummy data for TABLE.
-  statement =
-      boost::format("CREATE TABLE tsurugi_catalog.%s (id bigint, name text)") %
-      table_name;
-  res = PQexec(connection.get(), statement.str().c_str());
-  PQclear(res);
-
-  // get dummy data for TABLE.
-  statement =
-      boost::format("SELECT oid FROM pg_class WHERE relname='%s'") % table_name;
-  res = PQexec(connection.get(), statement.str().c_str());
-  table_id = str_to_oid(PQgetvalue(res, 0, 0));
-  PQclear(res);
-
-  // set dummy data for privileges.
-  if (!privileges.empty()) {
-    statement = boost::format("GRANT %s ON tsurugi_catalog.%s TO %s") %
-                privileges % table_name % role_name;
-  } else {
-    statement = boost::format("REVOKE ALL ON tsurugi_catalog.%s TO %s") %
-                table_name % role_name;
-  }
-  res = PQexec(connection.get(), statement.str().c_str());
-  PQclear(res);
-}
-
-/**
- * @brief create a foreign table for testing.
- */
-void ApiTestForeignTablePrivileges::create_foreign_table(
-    std::string_view table_name, Oid& table_id) {
-  std::string ft_statement_sub =
-      "SELECT CAST(MAX(ftrelid) AS INTEGER) num FROM pg_foreign_table";
-  boost::format statement =
-      boost::format(
-          "INSERT into pg_foreign_table VALUES"
-          " ((%s) + 1, 1"
-          " , '{schema_name=tsurugi_catalog,table_name=%s}')"
-          " RETURNING ftrelid") %
-      ft_statement_sub % table_name;
-  PGresult* res = PQexec(connection.get(), statement.str().c_str());
-  table_id = str_to_oid(PQgetvalue(res, 0, 0));
-  PQclear(res);
-}
-
-/**
- * @brief Convert string to Oid.
- * @param (source)  [in]   C-string containing the representation of
- *   decimal integer literal (base 10).
- * @return the converted integral number.
- */
-Oid ApiTestForeignTablePrivileges::str_to_oid(const char* source) {
-  std::int64_t res_val = 0;
-  storage::DbcUtils::str_to_integral(source, res_val);
-  return static_cast<Oid>(res_val);
-}
 
 /**
  * @brief test for confirm permissions.
@@ -357,11 +272,11 @@ TEST_F(ApiTestForeignTableNotExists, table_metadata_does_not_exist) {
   ErrorCode error = ErrorCode::UNKNOWN;
   bool res_permission = false;
 
-  // test by role id.
+  UTUtils::print("-- confirm permission by role id --");
   error = tables->confirm_permission_in_acls(role_id, "r", res_permission);
   EXPECT_EQ(ErrorCode::NOT_FOUND, error);
 
-  // test by role name.
+  UTUtils::print("-- confirm permission by role name --");
   error = tables->confirm_permission_in_acls(role_name, "r", res_permission);
   EXPECT_EQ(ErrorCode::NOT_FOUND, error);
 }
@@ -374,18 +289,18 @@ TEST_F(ApiTestForeignTableNotExists, foreign_table_does_not_exist) {
   bool res_permission = false;
 
   // add read-write table metadata.
-  ApiTestTableMetadata::add_table(foreign_table_name_none);
+  TableMetadataHelper::add_table(foreign_table_name_none);
 
-  // test by role id.
+  UTUtils::print("-- confirm permission by role id --");
   error = tables->confirm_permission_in_acls(role_id, "r", res_permission);
   EXPECT_EQ(ErrorCode::NOT_FOUND, error);
 
-  // test by role name.
+  UTUtils::print("-- confirm permission by role name --");
   error = tables->confirm_permission_in_acls(role_name, "r", res_permission);
   EXPECT_EQ(ErrorCode::NOT_FOUND, error);
 
   // remove table metadata.
-  ApiTestTableMetadata::remove_table(foreign_table_name_none);
+  TableMetadataHelper::remove_table(foreign_table_name_none);
 }
 
 /**
@@ -396,7 +311,7 @@ TEST_F(ApiTestForeignTableNotExists, role_does_not_exist) {
   bool res_permission = false;
 
   // add read-write table metadata.
-  ApiTestTableMetadata::add_table(foreign_table_name_rw);
+  TableMetadataHelper::add_table(foreign_table_name_rw);
 
   ObjectIdType role_id;
   std::string role_name;
@@ -426,7 +341,7 @@ TEST_F(ApiTestForeignTableNotExists, role_does_not_exist) {
   EXPECT_EQ(ErrorCode::NAME_NOT_FOUND, error);
 
   // remove table metadata.
-  ApiTestTableMetadata::remove_table(foreign_table_name_rw);
+  TableMetadataHelper::remove_table(foreign_table_name_rw);
 }
 
 /**

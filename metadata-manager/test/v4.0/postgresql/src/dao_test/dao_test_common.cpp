@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 #include <gtest/gtest.h>
+
 #include <cmath>
 #include <iostream>
 #include <limits>
@@ -27,43 +28,41 @@
 #include "manager/metadata/metadata.h"
 #include "test/utility/ut_utils.h"
 
-extern "C" {
-#include <libpq-fe.h>
-}
+// extern "C" {
+// #include <libpq-fe.h>
+// }
 
 namespace manager::metadata::testing {
 
-using namespace manager::metadata::db;
-using postgresql::ConnectionSPtr;
-using postgresql::DbcUtils;
-using postgresql::ResultUPtr;
+using db::postgresql::ConnectionSPtr;
+using db::postgresql::DbcUtils;
+using db::postgresql::ResultUPtr;
 
-typedef std::tuple<const char*, float> TupleConvertFloatToString;
 class DaoTestCommonStrToFloat
-    : public ::testing::TestWithParam<TupleConvertFloatToString> {};
+    : public ::testing::TestWithParam<std::tuple<const char*, float>> {};
 
-typedef std::tuple<const char*, uint64_t> TupleConvertStrToUint64_t;
 class DaoTestCommonStrToUint64_t
-    : public ::testing::TestWithParam<TupleConvertStrToUint64_t> {};
+    : public ::testing::TestWithParam<std::tuple<const char*, uint64_t>> {};
 
-typedef std::tuple<const char*, ObjectIdType> TupleConvertStrToInt64_t;
 class DaoTestCommonStrToInt64_t
-    : public ::testing::TestWithParam<TupleConvertStrToInt64_t> {};
+    : public ::testing::TestWithParam<std::tuple<const char*, ObjectIdType>> {};
 
 class DaoTestCommonStrToFloatException
     : public ::testing::TestWithParam<const char*> {};
+
 class DaoTestCommonStrToUint64_tException
     : public ::testing::TestWithParam<const char*> {};
+
 class DaoTestCommonStrToInt64_tException
     : public ::testing::TestWithParam<const char*> {};
 
 class DaoTestCommonIfConnectionOpened : public ::testing::Test {
   void SetUp() override { UTUtils::skip_if_connection_not_opened(); }
-};
+};  // class DaoTestCommonIfConnectionOpened
 
 class DaoTestCommonIfConnectionNotOpened : public ::testing::Test {
   void SetUp() override { UTUtils::skip_if_connection_opened(); }
-};
+};  // class DaoTestCommonIfConnectionNotOpened
 
 class DaoTestCommon : public ::testing::Test {};
 
@@ -202,11 +201,11 @@ TEST_F(DaoTestCommon, get_connection_string) {
   const char* tmp_cs = std::getenv("TSURUGI_CONNECTION_STRING");
 
   if (tmp_cs == nullptr) {
-    EXPECT_EQ("dbname=tsurugi", Config::get_connection_string());
-    UTUtils::print("Connection Strings:", Config::get_connection_string());
+    EXPECT_EQ("dbname=tsurugi", db::Config::get_connection_string());
+    UTUtils::print("Connection Strings:", db::Config::get_connection_string());
   } else {
-    EXPECT_EQ(tmp_cs, Config::get_connection_string());
-    UTUtils::print("Connection Strings:", Config::get_connection_string());
+    EXPECT_EQ(tmp_cs, db::Config::get_connection_string());
+    UTUtils::print("Connection Strings:", db::Config::get_connection_string());
   }
 }
 
@@ -221,7 +220,7 @@ TEST_F(DaoTestCommonIfConnectionOpened, is_open) {
 
   // Verifies that a connection is opened if it is opened.
   ConnectionSPtr connection = DbcUtils::make_connection_sptr(
-      PQconnectdb(Config::get_connection_string().c_str()));
+      PQconnectdb(db::Config::get_connection_string().c_str()));
   EXPECT_EQ(true, DbcUtils::is_open(connection));
 }
 
@@ -236,7 +235,7 @@ TEST_F(DaoTestCommonIfConnectionNotOpened, is_open) {
 
   // Verifies that a connection is closed if it is closed.
   ConnectionSPtr connection = DbcUtils::make_connection_sptr(
-      PQconnectdb(Config::get_connection_string().c_str()));
+      PQconnectdb(db::Config::get_connection_string().c_str()));
   EXPECT_EQ(false, DbcUtils::is_open(connection));
 }
 

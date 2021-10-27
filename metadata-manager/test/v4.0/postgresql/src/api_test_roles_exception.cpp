@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "test/api_test_roles.h"
+#include <gtest/gtest.h>
 
 #include <boost/property_tree/ptree.hpp>
 #include <memory>
@@ -23,10 +23,9 @@
 #include "test/global_test_environment.h"
 #include "test/utility/ut_utils.h"
 
-using namespace manager::metadata;
-using namespace boost::property_tree;
-
 namespace manager::metadata::testing {
+
+using boost::property_tree::ptree;
 
 class ApiTestRolesMetadataException
     : public ::testing::TestWithParam<boost::property_tree::ptree> {

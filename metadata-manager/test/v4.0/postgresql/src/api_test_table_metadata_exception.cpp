@@ -14,20 +14,19 @@
  * limitations under the License.
  */
 #include <gtest/gtest.h>
+
 #include <boost/foreach.hpp>
-#include <iostream>
 #include <memory>
 #include <string>
 
 #include "manager/metadata/tables.h"
-#include "test/api_test_table_metadata.h"
 #include "test/global_test_environment.h"
+#include "test/helper/table_metadata_helper.h"
 #include "test/utility/ut_utils.h"
 
-using namespace manager::metadata;
-using namespace boost::property_tree;
-
 namespace manager::metadata::testing {
+
+using boost::property_tree::ptree;
 
 class ApiTestAddTableMetadataException
     : public ::testing::TestWithParam<boost::property_tree::ptree> {
@@ -48,31 +47,31 @@ class ApiTestAddTableMetadataException
   std::vector<boost::property_tree::ptree> invalid_table_metadata;
 };
 
-class ApiTestTableMetadataByTableIdException
+class TableMetadataHelperByTableIdException
     : public ::testing::TestWithParam<ObjectIdType> {
   void SetUp() override { UTUtils::skip_if_connection_not_opened(); }
 };
 
-class ApiTestTableMetadataByTableNameException
+class TableMetadataHelperByTableNameException
     : public ::testing::TestWithParam<std::string> {
   void SetUp() override { UTUtils::skip_if_connection_not_opened(); }
 };
 
 INSTANTIATE_TEST_CASE_P(
-    ParamtererizedTest, ApiTestTableMetadataByTableIdException,
+    ParamtererizedTest, TableMetadataHelperByTableIdException,
     ::testing::Values(-1, 0, INT64_MAX - 1, INT64_MAX,
                       std::numeric_limits<ObjectIdType>::infinity(),
                       -std::numeric_limits<ObjectIdType>::infinity(),
                       std::numeric_limits<ObjectIdType>::quiet_NaN()));
 
 INSTANTIATE_TEST_CASE_P(ParamtererizedTest,
-                        ApiTestTableMetadataByTableNameException,
+                        TableMetadataHelperByTableNameException,
                         ::testing::Values("table_name_not_exists", ""));
 
 /**
  * @brief Make invalid table metadata used as test data.
  */
-std::vector<ptree>
+std::vector<boost::property_tree::ptree>
 ApiTestAddTableMetadataException::make_invalid_table_metadata() {
   std::vector<ptree> invalid_table_metadata;
 
@@ -157,7 +156,7 @@ TEST_F(ApiTestAddTableMetadataException, add_table_metadata) {
  * @brief Exception path test for getting table metadata
  * based on non-existing table id.
  */
-TEST_P(ApiTestTableMetadataByTableIdException,
+TEST_P(TableMetadataHelperByTableIdException,
        get_table_metadata_by_non_existing_table_id) {
   auto tables = std::make_unique<Tables>(GlobalTestEnvironment::TEST_DB);
 
@@ -173,7 +172,7 @@ TEST_P(ApiTestTableMetadataByTableIdException,
  * @brief Exception path test for getting table metadata
  * based on non-existing table name.
  */
-TEST_P(ApiTestTableMetadataByTableNameException,
+TEST_P(TableMetadataHelperByTableNameException,
        get_table_metadata_by_non_existing_table_name) {
   auto tables = std::make_unique<Tables>(GlobalTestEnvironment::TEST_DB);
 
@@ -189,7 +188,7 @@ TEST_P(ApiTestTableMetadataByTableNameException,
  * @brief Exception path test for removing table metadata
  * based on non-existing table id.
  */
-TEST_P(ApiTestTableMetadataByTableIdException,
+TEST_P(TableMetadataHelperByTableIdException,
        remove_table_metadata_by_non_existing_table_id) {
   auto tables = std::make_unique<Tables>(GlobalTestEnvironment::TEST_DB);
 
@@ -204,7 +203,7 @@ TEST_P(ApiTestTableMetadataByTableIdException,
  * @brief Exception path test for removing table metadata
  * based on non-existing table name.
  */
-TEST_P(ApiTestTableMetadataByTableNameException,
+TEST_P(TableMetadataHelperByTableNameException,
        remove_table_metadata_by_non_existing_table_name) {
   auto tables = std::make_unique<Tables>(GlobalTestEnvironment::TEST_DB);
 

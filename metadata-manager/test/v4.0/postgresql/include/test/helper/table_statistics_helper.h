@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 tsurugi project.
+ * Copyright 2021 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,28 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef API_TEST_TABLE_METADATAS_EXTRA_H_
-#define API_TEST_TABLE_METADATAS_EXTRA_H_
+#ifndef MANAGER_METADATA_MANAGER_TEST_V4_0_POSTGRESQL_INCLUDE_TEST_HELPER_TABLE_STATISTICS_HELPER_H_
+#define MANAGER_METADATA_MANAGER_TEST_V4_0_POSTGRESQL_INCLUDE_TEST_HELPER_TABLE_STATISTICS_HELPER_H_
 
-#include <gtest/gtest.h>
-#include <boost/property_tree/ptree.hpp>
+#include <string>
+#include <string_view>
+#include <tuple>
 #include <vector>
-
-#include "manager/metadata/metadata.h"
 
 namespace manager::metadata::testing {
 
-class ApiTestTableMetadataExtra
-    : public ::testing::TestWithParam<boost::property_tree::ptree> {
+typedef std::tuple<std::string, float, float> TestTableStatisticsType;
+
+class TableStatisticsHelper {
  public:
-  void SetUp() override;
-
-  static std::vector<boost::property_tree::ptree> make_valid_table_metadata();
-
- protected:
-  std::vector<boost::property_tree::ptree> table_metadata;
+  static std::vector<TestTableStatisticsType>
+  make_test_patterns_for_basic_tests(std::string_view test_number);
 };
 
 }  // namespace manager::metadata::testing
 
-#endif  // API_TEST_TABLE_METADATAS_EXTRA_H_
+#endif  // MANAGER_METADATA_MANAGER_TEST_V4_0_POSTGRESQL_INCLUDE_TEST_HELPER_TABLE_STATISTICS_HELPER_H_

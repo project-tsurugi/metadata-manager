@@ -14,24 +14,25 @@
  * limitations under the License.
  */
 #include <gtest/gtest.h>
+
 #include <boost/property_tree/ptree.hpp>
 #include <limits>
 #include <memory>
 #include <string>
 #include <tuple>
-#include <unordered_map>
 #include <vector>
 
 #include "manager/metadata/datatypes.h"
+#include "manager/metadata/roles.h"
 #include "manager/metadata/statistics.h"
 #include "manager/metadata/tables.h"
 #include "test/global_test_environment.h"
+#include "test/helper/column_statistics_helper.h"
 #include "test/utility/ut_utils.h"
 
-using namespace manager::metadata;
-using namespace boost::property_tree;
-
 namespace manager::metadata::testing {
+
+using boost::property_tree::ptree;
 
 class ApiTestDBAccessFailure : public ::testing::Test {
   void SetUp() override { UTUtils::skip_if_connection_opened(); }
@@ -99,8 +100,9 @@ std::vector<float> reltuples_dbaf = {-1,
                                      static_cast<float>(DBL_MIN)};
 
 ptree empty_column_stats_dbaf;
-std::vector<ptree> ptrees_dbaf = {empty_column_stats_dbaf,
-                                  UTUtils::generate_column_statistic()};
+std::vector<ptree> ptrees_dbaf = {
+    empty_column_stats_dbaf,
+    ColumnStatisticsHelper::generate_column_statistic()};
 std::vector<std::string> table_name_dbaf = {"table_name_not_exists", ""};
 
 INSTANTIATE_TEST_CASE_P(ParamtererizedTest, ApiTestDBAccessFailureByTableId,
@@ -131,7 +133,7 @@ INSTANTIATE_TEST_CASE_P(
                        ::testing::ValuesIn(ptrees_dbaf)));
 /**
  * @brief API to add table metadata
- * returnes ErrorCode::DATABASE_ACCESS_FAILURE
+ *   returnes ErrorCode::DATABASE_ACCESS_FAILURE
  */
 TEST_F(ApiTestDBAccessFailure, add_table_metadata) {
   UTTableMetadata* testdata_table_metadata =
@@ -155,7 +157,7 @@ TEST_F(ApiTestDBAccessFailure, add_table_metadata) {
 
 /**
  * @brief API to get table metadata based on table id
- * returnes ErrorCode::DATABASE_ACCESS_FAILURE
+ *   returnes ErrorCode::DATABASE_ACCESS_FAILURE
  */
 TEST_F(ApiTestDBAccessFailure, get_table_metadata_by_table_id) {
   ObjectIdType table_id = 1;
@@ -176,7 +178,7 @@ TEST_F(ApiTestDBAccessFailure, get_table_metadata_by_table_id) {
 
 /**
  * @brief API to get table metadata based on table name
- * returnes ErrorCode::DATABASE_ACCESS_FAILURE
+ *   returnes ErrorCode::DATABASE_ACCESS_FAILURE
  */
 TEST_F(ApiTestDBAccessFailure, get_table_metadata_by_table_name) {
   UTTableMetadata testdata_table_metadata =
@@ -199,7 +201,7 @@ TEST_F(ApiTestDBAccessFailure, get_table_metadata_by_table_name) {
 
 /**
  * @brief API to remove table metadata based on table id
- * returnes ErrorCode::DATABASE_ACCESS_FAILURE
+ *   returnes ErrorCode::DATABASE_ACCESS_FAILURE
  */
 TEST_F(ApiTestDBAccessFailure, remove_table_metadata_by_table_id) {
   auto tables = std::make_unique<Tables>(GlobalTestEnvironment::TEST_DB);
@@ -213,7 +215,7 @@ TEST_F(ApiTestDBAccessFailure, remove_table_metadata_by_table_id) {
 
 /**
  * @brief API to remove table metadata based on table name
- * returnes ErrorCode::DATABASE_ACCESS_FAILURE
+ *   returnes ErrorCode::DATABASE_ACCESS_FAILURE
  */
 TEST_F(ApiTestDBAccessFailure, remove_table_metadata_by_table_name) {
   auto tables = std::make_unique<Tables>(GlobalTestEnvironment::TEST_DB);
@@ -230,7 +232,7 @@ TEST_F(ApiTestDBAccessFailure, remove_table_metadata_by_table_name) {
 
 /**
  * @brief API to get data type metadata based on data type name
- * returnes ErrorCode::DATABASE_ACCESS_FAILURE
+ *  returnes ErrorCode::DATABASE_ACCESS_FAILURE
  */
 TEST_F(ApiTestDBAccessFailure, get_datatypes_by_name) {
   auto datatypes = std::make_unique<DataTypes>(GlobalTestEnvironment::TEST_DB);
@@ -250,7 +252,7 @@ TEST_F(ApiTestDBAccessFailure, get_datatypes_by_name) {
 
 /**
  * @brief API to get data type metadata based on key/value
- * returnes ErrorCode::DATABASE_ACCESS_FAILURE
+ *   returnes ErrorCode::DATABASE_ACCESS_FAILURE
  */
 TEST_F(ApiTestDBAccessFailure, get_datatypes_by_key_value) {
   auto datatypes = std::make_unique<DataTypes>(GlobalTestEnvironment::TEST_DB);
@@ -268,6 +270,44 @@ TEST_F(ApiTestDBAccessFailure, get_datatypes_by_key_value) {
   ptree empty_ptree;
   EXPECT_EQ(UTUtils::get_tree_string(empty_ptree),
             UTUtils::get_tree_string(datatype));
+}
+
+/**
+ * @brief API to get role metadata based on role id
+ *   returnes ErrorCode::DATABASE_ACCESS_FAILURE
+ */
+TEST_F(ApiTestDBAccessFailure, get_roles_by_id) {
+  auto roles = std::make_unique<Roles>(GlobalTestEnvironment::TEST_DB);
+
+  ErrorCode error = roles->init();
+  EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
+
+  ptree role_metadata;
+  error = roles->get(9999, role_metadata);
+  EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
+
+  ptree empty_ptree;
+  EXPECT_EQ(UTUtils::get_tree_string(empty_ptree),
+            UTUtils::get_tree_string(role_metadata));
+}
+
+/**
+ * @brief API to get role metadata based on role name
+ *   returnes ErrorCode::DATABASE_ACCESS_FAILURE
+ */
+TEST_F(ApiTestDBAccessFailure, get_roles_by_name) {
+  auto roles = std::make_unique<Roles>(GlobalTestEnvironment::TEST_DB);
+
+  ErrorCode error = roles->init();
+  EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
+
+  ptree role_metadata;
+  error = roles->get("role_name", role_metadata);
+  EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
+
+  ptree empty_ptree;
+  EXPECT_EQ(UTUtils::get_tree_string(empty_ptree),
+            UTUtils::get_tree_string(role_metadata));
 }
 
 /**

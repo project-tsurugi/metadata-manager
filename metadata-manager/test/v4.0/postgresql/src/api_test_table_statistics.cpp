@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "test/api_test_table_statistics.h"
+#include <gtest/gtest.h>
 
 #include <cmath>
 #include <limits>
@@ -22,15 +22,15 @@
 #include <vector>
 
 #include "manager/metadata/tables.h"
-#include "test/api_test_table_metadata.h"
 #include "test/global_test_environment.h"
+#include "test/helper/table_metadata_helper.h"
+#include "test/helper/table_statistics_helper.h"
 #include "test/utility/ut_table_metadata.h"
 #include "test/utility/ut_utils.h"
 
-using namespace manager::metadata;
-using namespace boost::property_tree;
-
 namespace manager::metadata::testing {
+
+using boost::property_tree::ptree;
 
 class ApiTestTableStatisticsByTableIdException
     : public ::testing::TestWithParam<ObjectIdType> {
@@ -42,11 +42,11 @@ class ApiTestTableStatisticsByTableNameException
 };
 
 class ApiTestTableStatisticsByTableIdHappy
-    : public ::testing::TestWithParam<TupleApiTestTableStatistics> {
+    : public ::testing::TestWithParam<TestTableStatisticsType> {
   void SetUp() override { UTUtils::skip_if_connection_not_opened(); }
 };
 class ApiTestTableStatisticsByTableNameHappy
-    : public ::testing::TestWithParam<TupleApiTestTableStatistics> {
+    : public ::testing::TestWithParam<TestTableStatisticsType> {
   void SetUp() override { UTUtils::skip_if_connection_not_opened(); }
 };
 
@@ -61,40 +61,15 @@ INSTANTIATE_TEST_CASE_P(ParamtererizedTest,
                         ApiTestTableStatisticsByTableNameException,
                         ::testing::Values("table_name_not_exists", ""));
 
-std::vector<float> reltuples_list = {-1,
-                                     0,
-                                     1,
-                                     100000000,
-                                     FLT_MAX,
-                                     std::numeric_limits<float>::infinity(),
-                                     -std::numeric_limits<float>::infinity(),
-                                     std::numeric_limits<float>::quiet_NaN(),
-                                     static_cast<float>(DBL_MAX),
-                                     static_cast<float>(DBL_MIN)};
-
-std::vector<TupleApiTestTableStatistics>
-ApiTestTableStatistics::make_tuple_table_statistics(
-    std::string_view test_number) {
-  std::vector<TupleApiTestTableStatistics> v;
-  int next;
-  for (int i = 0; static_cast<size_t>(i) < reltuples_list.size(); i++) {
-    next = (i + 1) % reltuples_list.size();
-    std::string table_name =
-        "_TableStatistic_" + std::string(test_number) + "_" + std::to_string(i);
-    v.emplace_back(table_name, reltuples_list[i], reltuples_list[next]);
-  }
-  return v;
-}
-
 INSTANTIATE_TEST_CASE_P(
     ParamtererizedTest, ApiTestTableStatisticsByTableIdHappy,
     ::testing::ValuesIn(
-        ApiTestTableStatistics::make_tuple_table_statistics("1")));
+        TableStatisticsHelper::make_test_patterns_for_basic_tests("1")));
 
 INSTANTIATE_TEST_CASE_P(
     ParamtererizedTest, ApiTestTableStatisticsByTableNameHappy,
     ::testing::ValuesIn(
-        ApiTestTableStatistics::make_tuple_table_statistics("2")));
+        TableStatisticsHelper::make_test_patterns_for_basic_tests("2")));
 
 /**
  * @brief Exception path test for add_table_statistic
@@ -159,7 +134,7 @@ TEST_P(ApiTestTableStatisticsByTableIdException,
   error = tables->get_statistic(table_id_not_exists, table_stats);
   EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
 
-  UTUtils::print_table_statistics(table_stats);
+  TableMetadataHelper::print_table_statistics(table_stats);
 }
 
 /**
@@ -194,7 +169,7 @@ TEST_P(ApiTestTableStatisticsByTableIdHappy,
 
   // add table metadata.
   ObjectIdType ret_table_id = -1;
-  ApiTestTableMetadata::add_table(table_name, &ret_table_id);
+  TableMetadataHelper::add_table(table_name, &ret_table_id);
 
   auto tables = std::make_unique<Tables>(GlobalTestEnvironment::TEST_DB);
 
@@ -243,7 +218,7 @@ TEST_P(ApiTestTableStatisticsByTableIdHappy,
   }
   EXPECT_FLOAT_EQ(reltuples_to_add, add_metadata_tuples.get());
 
-  UTUtils::print_table_statistics(table_stats_added);
+  TableMetadataHelper::print_table_statistics(table_stats_added);
 
   // update the number of rows.
   float reltuples_to_update = std::get<2>(param);
@@ -283,7 +258,7 @@ TEST_P(ApiTestTableStatisticsByTableIdHappy,
     EXPECT_FLOAT_EQ(reltuples_to_add, upd_metadata_tuples.get());
   }
 
-  UTUtils::print_table_statistics(table_stats_updated);
+  TableMetadataHelper::print_table_statistics(table_stats_updated);
 
   // remove table metadata by table name.
   error = tables->remove(ret_table_id);
@@ -304,7 +279,7 @@ TEST_P(ApiTestTableStatisticsByTableNameHappy,
 
   // add table metadata.
   ObjectIdType ret_table_id;
-  ApiTestTableMetadata::add_table(table_name, &ret_table_id);
+  TableMetadataHelper::add_table(table_name, &ret_table_id);
 
   // add table statistic.
   auto tables = std::make_unique<Tables>(GlobalTestEnvironment::TEST_DB);
@@ -354,7 +329,7 @@ TEST_P(ApiTestTableStatisticsByTableNameHappy,
   }
   EXPECT_FLOAT_EQ(reltuples_to_add, add_metadata_tuples.get());
 
-  UTUtils::print_table_statistics(table_stats_added);
+  TableMetadataHelper::print_table_statistics(table_stats_added);
 
   // update the number of rows.
   float reltuples_to_update = std::get<2>(param);
@@ -394,7 +369,7 @@ TEST_P(ApiTestTableStatisticsByTableNameHappy,
     EXPECT_FLOAT_EQ(reltuples_to_add, upd_metadata_tuples.get());
   }
 
-  UTUtils::print_table_statistics(table_stats_updated);
+  TableMetadataHelper::print_table_statistics(table_stats_updated);
 
   // remove table metadata by table name.
   error = tables->remove(ret_table_id);

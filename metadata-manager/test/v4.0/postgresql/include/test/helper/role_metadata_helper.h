@@ -13,23 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef API_TEST_ROLES_H_
-#define API_TEST_ROLES_H_
+#ifndef MANAGER_METADATA_MANAGER_TEST_V4_0_POSTGRESQL_INCLUDE_TEST_HELPER_ROLE_METADATA_HELPER_H_
+#define MANAGER_METADATA_MANAGER_TEST_V4_0_POSTGRESQL_INCLUDE_TEST_HELPER_ROLE_METADATA_HELPER_H_
 
-#include <gtest/gtest.h>
 #include <boost/property_tree/ptree.hpp>
+#include <string_view>
+
+#include "manager/metadata/metadata.h"
 
 namespace manager::metadata::testing {
 
-class DaoTestRolesMetadata : public ::testing::Test {
+class RoleMetadataHelper {
  public:
-  void SetUp() override;
-  void TearDown() override;
+  static ObjectIdType create_role(std::string_view role_name,
+                                  std::string_view options);
+  static void drop_role(std::string_view role_name);
 
   static void check_roles_expected(const boost::property_tree::ptree& actual,
                                    const boost::property_tree::ptree& expect);
+
+ private:
+  static void db_connection();
 };
 
 }  // namespace manager::metadata::testing
 
-#endif  // API_TEST_DATA_TYPES_H_
+#endif  // MANAGER_METADATA_MANAGER_TEST_V4_0_POSTGRESQL_INCLUDE_TEST_HELPER_ROLE_METADATA_HELPER_H_

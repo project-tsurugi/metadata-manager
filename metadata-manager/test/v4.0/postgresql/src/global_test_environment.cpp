@@ -15,30 +15,28 @@
  */
 #include "test/global_test_environment.h"
 
+#include <gtest/gtest.h>
+
 #include <limits>
 
 #include "manager/metadata/dao/common/config.h"
 #include "manager/metadata/dao/postgresql/dbc_utils.h"
-#include "test/utility/ut_utils.h"
-
-extern "C" {
-#include <libpq-fe.h>
-}
+#include "test/helper/column_statistics_helper.h"
+#include "test/helper/table_metadata_helper.h"
 
 namespace manager::metadata::testing {
 
-using namespace manager::metadata;
-using namespace manager::metadata::db;
-using postgresql::ConnectionSPtr;
-using postgresql::DbcUtils;
+using db::postgresql::ConnectionSPtr;
+using db::postgresql::DbcUtils;
 
 void GlobalTestEnvironment::SetUp() {
   // generate table metadata as test data.
-  UTUtils::generate_table_metadata(testdata_table_metadata);
+  TableMetadataHelper::generate_table_metadata(testdata_table_metadata);
 
   // generate column statistics as test data.
   for (auto column : testdata_table_metadata->columns) {
-    column_statistics.push_back(UTUtils::generate_column_statistic());
+    column_statistics.push_back(
+        ColumnStatisticsHelper::generate_column_statistic());
   }
 
   // initialize non-existing table id.
@@ -63,7 +61,7 @@ void GlobalTestEnvironment::SetUp() {
 
   // check if a connection to the metadata repository is opened or not.
   ConnectionSPtr connection = DbcUtils::make_connection_sptr(
-      PQconnectdb(Config::get_connection_string().c_str()));
+      PQconnectdb(db::Config::get_connection_string().c_str()));
 
   if (DbcUtils::is_open(connection)) {
     is_open_ = true;

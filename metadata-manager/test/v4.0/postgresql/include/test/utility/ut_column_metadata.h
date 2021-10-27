@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef UT_COLUMN_METADATA_H_
-#define UT_COLUMN_METADATA_H_
+#ifndef MANAGER_METADATA_MANAGER_TEST_V4_0_POSTGRESQL_INCLUDE_TEST_UTILITY_UT_COLUMN_METADATA_H_
+#define MANAGER_METADATA_MANAGER_TEST_V4_0_POSTGRESQL_INCLUDE_TEST_UTILITY_UT_COLUMN_METADATA_H_
 
 #include <boost/property_tree/ptree.hpp>
 #include <string>
@@ -24,31 +24,33 @@ namespace manager::metadata::testing {
 
 class UTColumnMetadata {
  public:
-  int64_t id = NOT_INITIALIZED;
-  int64_t table_id = NOT_INITIALIZED;
+  std::int64_t id = NOT_INITIALIZED;
+  std::int64_t table_id = NOT_INITIALIZED;
   std::string name;
-  int64_t ordinal_position = NOT_INITIALIZED;
-  int64_t data_type_id = NOT_INITIALIZED;
-  int64_t data_length =
+  std::int64_t ordinal_position = NOT_INITIALIZED;
+  std::int64_t data_type_id = NOT_INITIALIZED;
+  std::int64_t data_length =
       NOT_INITIALIZED;  //!< @brief single value of data length
   boost::property_tree::ptree p_data_lengths;  //!< @brief array of data length
   int varying = NOT_INITIALIZED;
   bool nullable;
   std::string default_expr;
-  int64_t direction = NOT_INITIALIZED;
+  std::int64_t direction = NOT_INITIALIZED;
+
   UTColumnMetadata() = delete;
-  UTColumnMetadata(std::string name, int64_t ordinal_position,
-                   int64_t data_type_id, bool nullable)
+  UTColumnMetadata(std::string name, std::int64_t ordinal_position,
+                   std::int64_t data_type_id, bool nullable)
       : name(name),
         ordinal_position(ordinal_position),
         data_type_id(data_type_id),
-        nullable(nullable){};
+        nullable(nullable) {}
+
   void show();
 
  private:
-  static constexpr int64_t NOT_INITIALIZED = -1;
+  static constexpr std::int64_t NOT_INITIALIZED = -1;
 };
 
 }  // namespace manager::metadata::testing
 
-#endif  // UT_COLUMN_METADATA_H_
+#endif  // MANAGER_METADATA_MANAGER_TEST_V4_0_POSTGRESQL_INCLUDE_TEST_UTILITY_UT_COLUMN_METADATA_H_
