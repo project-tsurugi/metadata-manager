@@ -1,8 +1,8 @@
 {
-    "formatVersion": "1",
-    "generation": "1",
     "tables": [
         {
+            "formatVersion": "1",
+            "generation": "1",
             "name": "no_key_of_pkey",
             "columns": [
                 {
@@ -15,9 +15,10 @@
             ]
         },
         {
+            "formatVersion": "1",
+            "generation": "1",
             "name": "empty_array_of_pkey",
-            "primaryKey": [
-            ],
+            "primaryKey": [],
             "columns": [
                 {
                     "ordinalPosition": "1",
@@ -43,14 +44,17 @@
             ]
         },
         {
+            "formatVersion": "1",
+            "generation": "1",
             "name": "no_column",
             "primaryKey": [
                 "1"
             ],
-            "columns": [
-            ]
+            "columns": []
         },
         {
+            "formatVersion": "1",
+            "generation": "1",
             "name": "one_column",
             "primaryKey": [
                 "1"
@@ -66,6 +70,8 @@
             ]
         },
         {
+            "formatVersion": "1",
+            "generation": "1",
             "name": "two_column",
             "primaryKey": [
                 "1"
@@ -90,6 +96,8 @@
             ]
         },
         {
+            "formatVersion": "1",
+            "generation": "1",
             "name": "japanese_column_name",
             "primaryKey": [
                 "1"
@@ -105,6 +113,8 @@
             ]
         },
         {
+            "formatVersion": "1",
+            "generation": "1",
             "name": "one_english_column_name",
             "primaryKey": [
                 "1"
@@ -120,6 +130,8 @@
             ]
         },
         {
+            "formatVersion": "1",
+            "generation": "1",
             "name": "customer",
             "primaryKey": [
                 "1",
@@ -301,6 +313,8 @@
             ]
         },
         {
+            "formatVersion": "1",
+            "generation": "1",
             "name": "integer1",
             "primaryKey": [
                 "1"
@@ -316,6 +330,8 @@
             ]
         },
         {
+            "formatVersion": "1",
+            "generation": "1",
             "name": "bigint1",
             "primaryKey": [
                 "1"
@@ -338,6 +354,8 @@
             ]
         },
         {
+            "formatVersion": "1",
+            "generation": "1",
             "name": "real1",
             "primaryKey": [
                 "1"
@@ -353,6 +371,8 @@
             ]
         },
         {
+            "formatVersion": "1",
+            "generation": "1",
             "name": "double1",
             "primaryKey": [
                 "1"
@@ -368,6 +388,8 @@
             ]
         },
         {
+            "formatVersion": "1",
+            "generation": "1",
             "name": "char_length_10",
             "primaryKey": [
                 "1"
@@ -385,6 +407,8 @@
             ]
         },
         {
+            "formatVersion": "1",
+            "generation": "1",
             "name": "varchar_length_10",
             "primaryKey": [
                 "1"

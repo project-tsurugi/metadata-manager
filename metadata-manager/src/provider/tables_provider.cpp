@@ -436,13 +436,17 @@ ErrorCode TablesProvider::get_column_metadata(
     std::string_view table_id, boost::property_tree::ptree& tables) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
-  ptree columns;
-  error = columns_dao_->select_column_metadata(Tables::Column::TABLE_ID,
-                                               table_id, columns);
-
-  if ((error == ErrorCode::OK) || (error == ErrorCode::INVALID_PARAMETER)) {
-    tables.add_child(Tables::COLUMNS_NODE, columns);
-    error = ErrorCode::OK;
+  auto option_column = tables.get_child_optional(Tables::COLUMNS_NODE);
+  if (!option_column) {
+    ptree columns;
+    error = columns_dao_->select_column_metadata(Tables::Column::TABLE_ID,
+                                                table_id, columns);
+    if ((error == ErrorCode::OK) || (error == ErrorCode::INVALID_PARAMETER)) {
+      tables.add_child(Tables::COLUMNS_NODE, columns);
+      error = ErrorCode::OK;
+    }
+  } else {
+      error = ErrorCode::OK;
   }
 
   return error;

@@ -205,7 +205,8 @@ TEST_F(ApiTestTableMetadata, add_get_table_metadata_by_table_id) {
  */
 TEST_F(ApiTestTableMetadata, get_all_table_metadata) {
   constexpr int test_table_count = 5;
-  std::string table_name_prefix = "Table-ApiTestTableMetadata-GetAll-";
+  std::string table_name_prefix =
+      "ApiTestTableMetadata-GetAll-" + std::to_string(time(NULL));
   std::vector<ObjectIdType> table_ids = {};
 
   // get base count

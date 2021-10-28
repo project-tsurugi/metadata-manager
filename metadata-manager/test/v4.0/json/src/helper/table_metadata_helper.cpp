@@ -57,6 +57,9 @@ void TableMetadataHelper::generate_table_metadata(
   testdata_table_metadata->primary_keys.push_back(ordinal_positions[0]);
   testdata_table_metadata->primary_keys.push_back(ordinal_positions[1]);
 
+  // generate tuples.
+  testdata_table_metadata->tuples = 0;
+
   // first column metadata
   bool is_null = true;
   UTColumnMetadata column1{
@@ -186,6 +189,14 @@ void TableMetadataHelper::add_table(
 void TableMetadataHelper::check_table_metadata_expected(
     const boost::property_tree::ptree& expected,
     const boost::property_tree::ptree& actual) {
+  // format version
+  EXPECT_EQ(Tables::format_version(),
+            actual.get<FormatVersionType>(Tables::FORMAT_VERSION));
+
+  // generation
+  EXPECT_EQ(Tables::generation(),
+            actual.get<GenerationType>(Tables::GENERATION));
+
   // table name
   EXPECT_EQ(expected.get<std::string>(Tables::NAME),
             actual.get<std::string>(Tables::NAME));
@@ -212,6 +223,17 @@ void TableMetadataHelper::check_table_metadata_expected(
 
   // primary keys
   check_metadata_expected(expected, actual, Tables::PRIMARY_KEY_NODE);
+
+  // tuples
+  auto o_tuples_expected = expected.get_optional<float>(Tables::TUPLES);
+  auto o_tuples_actual = expected.get_optional<float>(Tables::TUPLES);
+  if (o_tuples_expected && o_tuples_actual) {
+    EXPECT_EQ(o_tuples_expected.value(), o_tuples_actual.value());
+  } else if (!o_tuples_expected && !o_tuples_actual) {
+    ASSERT_TRUE(true);
+  } else {
+    ASSERT_TRUE(false);
+  }
 
   // column metadata
   auto o_columns_expected = expected.get_child_optional(Tables::COLUMNS_NODE);

@@ -159,7 +159,7 @@ void TableMetadataHelper::add_table(
   ASSERT_EQ(ErrorCode::OK, error);
   ASSERT_GT(retval_table_id, 0);
 
-  UTUtils::print(" new table_id: ", ret_table_id);
+  UTUtils::print(" new table_id: ", retval_table_id);
   UTUtils::print(" " + UTUtils::get_tree_string(new_table));
 
   if (ret_table_id != nullptr) {
@@ -256,6 +256,14 @@ void TableMetadataHelper::print_table_statistics(
 void TableMetadataHelper::check_table_metadata_expected(
     const boost::property_tree::ptree& expected,
     const boost::property_tree::ptree& actual) {
+  // format version
+  EXPECT_EQ(Tables::format_version(),
+            actual.get<FormatVersionType>(Tables::FORMAT_VERSION));
+
+  // generation
+  EXPECT_EQ(Tables::generation(),
+            actual.get<GenerationType>(Tables::GENERATION));
+
   // table name
   ASSERT_EQ(expected.get<std::string>(Tables::NAME),
             actual.get<std::string>(Tables::NAME));
@@ -287,6 +295,17 @@ void TableMetadataHelper::check_table_metadata_expected(
 
   // primary keys
   check_metadata_expected(expected, actual, Tables::PRIMARY_KEY_NODE);
+
+  // tuples
+  auto o_tuples_expected = expected.get_optional<float>(Tables::TUPLES);
+  auto o_tuples_actual = expected.get_optional<float>(Tables::TUPLES);
+  if (o_tuples_expected && o_tuples_actual) {
+    EXPECT_EQ(o_tuples_expected.value(), o_tuples_actual.value());
+  } else if (!o_tuples_expected && !o_tuples_actual) {
+    ASSERT_TRUE(true);
+  } else {
+    ASSERT_TRUE(false);
+  }
 
   // column metadata
   auto o_columns_expected = expected.get_child_optional(Tables::COLUMNS_NODE);

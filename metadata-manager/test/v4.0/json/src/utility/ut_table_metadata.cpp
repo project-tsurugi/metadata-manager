@@ -29,6 +29,16 @@ using boost::property_tree::ptree;
  * @return none.
  */
 void UTTableMetadata::generate_ptree() {
+  // format_version
+  if (format_version != NOT_INITIALIZED) {
+    tables.put(Tables::FORMAT_VERSION, format_version);
+  }
+
+  // generation
+  if (generation != NOT_INITIALIZED) {
+    tables.put(Tables::GENERATION, generation);
+  }
+
   // name
   tables.put(Tables::NAME, name);
 
@@ -48,6 +58,11 @@ void UTTableMetadata::generate_ptree() {
     }
 
     tables.add_child(Tables::PRIMARY_KEY_NODE, p_primary_keys);
+  }
+
+  // tuples
+  if (tuples != NOT_INITIALIZED) {
+    tables.put(Tables::TUPLES, tuples);
   }
 
   // columns

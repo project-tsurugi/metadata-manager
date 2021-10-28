@@ -26,11 +26,13 @@ namespace manager::metadata::testing {
 
 class UTTableMetadata {
  public:
+  std::int32_t format_version = NOT_INITIALIZED;
+  std::int64_t generation = NOT_INITIALIZED;
   std::int64_t id = NOT_INITIALIZED;
   std::string name;
   std::string namespace_name;
   std::vector<std::int64_t> primary_keys;
-  float reltuples = 0;
+  float tuples = NOT_INITIALIZED;
   boost::property_tree::ptree tables;
   std::vector<UTColumnMetadata> columns;
 
