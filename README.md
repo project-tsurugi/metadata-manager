@@ -50,6 +50,7 @@ available options:
 
 * `-DBUILD_DOCUMENTS=OFF` - never build documents by doxygen
 * `-DDATA_STORAGE=postgresql` - specifies the data-storage where the metadata is stored. "postgresql" or "json".
+* `-DBUILD_TARGET=ALL` - specifies the library to be built. "ALL" or "AUTH" or "METADATA".
 * for debugging only
 * `-DENABLE_SANITIZER=OFF` - disable sanitizers (requires `-DCMAKE_BUILD_TYPE=Debug`)
 * `-DENABLE_UB_SANITIZER=ON` - enable undefined behavior sanitizer (requires `-DENABLE_SANITIZER=ON`)

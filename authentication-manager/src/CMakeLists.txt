@@ -12,29 +12,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-project(metadata)
+project(authentication)
 
 file(GLOB_RECURSE SOURCES "*.cpp")
-
-if (DATA_STORAGE_JSON)
-    list(FILTER SOURCES EXCLUDE REGEX "/?postgresql/*")
-else()
-    list(FILTER SOURCES EXCLUDE REGEX "/?json/*")
-endif()
 
 add_library(${PROJECT_NAME}
     SHARED ${SOURCES}
 )
 
 target_include_directories(${PROJECT_NAME}
-    PRIVATE ${PROJECT_SOURCE_DIR}/include/manager/metadata
+    PRIVATE ${PROJECT_SOURCE_DIR}/include/manager/authentication
     PRIVATE ${PG_INCLUDEDIR}
 )
 
 set_target_properties(${PROJECT_NAME}
     PROPERTIES
         LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/output"
-        LIBRARY_OUTPUT_NAME "manager-metadata"
+        LIBRARY_OUTPUT_NAME "manager-authentication"
 )
 
 if (DATA_STORAGE_PG)
