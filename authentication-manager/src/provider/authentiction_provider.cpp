@@ -36,7 +36,7 @@ ErrorCode AuthenticationProvider::auth_user(
   ErrorCode error = ErrorCode::UNKNOWN;
 
   // Attempt to connect via the Session Manager.
-  error = session_manager_->check_connect(params);
+  error = session_manager_->attempt_connect(params);
 
   return error;
 }
@@ -59,7 +59,7 @@ ErrorCode AuthenticationProvider::auth_user(std::string_view conninfo) {
   params.put(DBSessionManager::kKeyConnInfo, conninfo);
 
   // Attempt to connect via the Session Manager.
-  error = session_manager_->check_connect(params);
+  error = session_manager_->attempt_connect(params);
 
   return error;
 }

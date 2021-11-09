@@ -50,7 +50,7 @@ class DaoTestDbSessionManager : public ::testing::Test {
     UTUtils::print("  test by property tree");
 
     // test connect by property tree.
-    result = db_session_manager.check_connect(params);
+    result = db_session_manager.attempt_connect(params);
     EXPECT_EQ(expected, result);
 
     // create test data for connection string.
@@ -66,7 +66,7 @@ class DaoTestDbSessionManager : public ::testing::Test {
     UTUtils::print("  test by connection string");
 
     // test connect by connection string.
-    result = db_session_manager.check_connect(local_params);
+    result = db_session_manager.attempt_connect(local_params);
 
     EXPECT_EQ(expected, result);
   }

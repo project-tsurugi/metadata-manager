@@ -25,7 +25,7 @@ namespace manager::authentication::db::postgresql {
 
 class DBSessionManager : public manager::authentication::db::DBSessionManager {
  public:
-  manager::authentication::ErrorCode check_connect(
+  manager::authentication::ErrorCode attempt_connect(
       const boost::property_tree::ptree& params) override;
 };  // class DBSessionManager
 

@@ -28,14 +28,14 @@ namespace manager::authentication::db::postgresql {
 using manager::authentication::ErrorCode;
 
 /**
- * @brief Check a connection to the database.
+ * @brief Attempt to connect to the database.
  * @param (params)  [in]  connection parameters.
  * @retval ErrorCode::OK if success.
  * @retval ErrorCode::AUTHENTICATION_FAILURE If the authentication failed.
  * @retval ErrorCode::CONNECTION_FAILURE If the connection to the
  *   database failed.
  */
-ErrorCode DBSessionManager::check_connect(
+ErrorCode DBSessionManager::attempt_connect(
     const boost::property_tree::ptree& params) {
   ErrorCode error = ErrorCode::UNKNOWN;
 

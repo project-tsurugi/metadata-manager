@@ -28,7 +28,7 @@ class DBSessionManager {
 
   virtual ~DBSessionManager() {}
 
-  virtual manager::authentication::ErrorCode check_connect(
+  virtual manager::authentication::ErrorCode attempt_connect(
       const boost::property_tree::ptree& params) = 0;
 };  // class DBSessionManager
 
