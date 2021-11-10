@@ -24,7 +24,7 @@ namespace manager::authentication::db {
 
 class DBSessionManager {
  public:
-  static constexpr const char* const kKeyConnInfo = "connection_info";
+  static constexpr const char* const kKeyConnectString = "connection_strings";
 
   virtual ~DBSessionManager() {}
 

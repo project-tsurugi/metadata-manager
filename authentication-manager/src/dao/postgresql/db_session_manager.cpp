@@ -41,7 +41,7 @@ ErrorCode DBSessionManager::attempt_connect(
 
   // Generating connection information.
   std::string conninfo = "";
-  auto optional_conninfo = params.get_optional<std::string>(kKeyConnInfo);
+  auto optional_conninfo = params.get_optional<std::string>(kKeyConnectString);
   if (optional_conninfo) {
     conninfo = optional_conninfo.value();
   } else {

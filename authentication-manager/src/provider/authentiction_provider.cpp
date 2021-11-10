@@ -56,7 +56,7 @@ ErrorCode AuthenticationProvider::auth_user(std::string_view conninfo) {
   boost::property_tree::ptree params;
 
   // Set the connection string.
-  params.put(DBSessionManager::kKeyConnInfo, conninfo);
+  params.put(DBSessionManager::kKeyConnectString, conninfo);
 
   // Attempt to connect via the Session Manager.
   error = session_manager_->attempt_connect(params);

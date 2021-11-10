@@ -61,7 +61,7 @@ class DaoTestDbSessionManager : public ::testing::Test {
       conn_string = key_value.str();
     }
     boost::property_tree::ptree local_params;
-    local_params.put(DBSessionManager::kKeyConnInfo, conn_string);
+    local_params.put(DBSessionManager::kKeyConnectString, conn_string);
 
     UTUtils::print("  test by connection string");
 
