@@ -18,15 +18,16 @@
 
 #include <boost/property_tree/ptree.hpp>
 
-#include "manager/authentication/dao/db_session_manager.h"
 #include "manager/authentication/error_code.h"
 
 namespace manager::authentication::db::postgresql {
 
-class DBSessionManager : public manager::authentication::db::DBSessionManager {
+class DBSessionManager {
  public:
-  manager::authentication::ErrorCode attempt_connect(
-      const boost::property_tree::ptree& params) override;
+  static constexpr const char* const kConnectStringKey = "connection_strings";
+
+  static manager::authentication::ErrorCode attempt_connect(
+      const boost::property_tree::ptree& params);
 };  // class DBSessionManager
 
 }  // namespace manager::authentication::db::postgresql

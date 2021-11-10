@@ -45,12 +45,11 @@ class DaoTestDbSessionManager : public ::testing::Test {
   static void test_connect(const boost::property_tree::ptree& params,
                            ErrorCode expected) {
     ErrorCode result = ErrorCode::UNKNOWN;
-    DBSessionManager db_session_manager;
 
     UTUtils::print("  test by property tree");
 
     // test connect by property tree.
-    result = db_session_manager.attempt_connect(params);
+    result = DBSessionManager::attempt_connect(params);
     EXPECT_EQ(expected, result);
 
     // create test data for connection string.
@@ -61,12 +60,12 @@ class DaoTestDbSessionManager : public ::testing::Test {
       conn_string = key_value.str();
     }
     boost::property_tree::ptree local_params;
-    local_params.put(DBSessionManager::kKeyConnectString, conn_string);
+    local_params.put(DBSessionManager::kConnectStringKey, conn_string);
 
     UTUtils::print("  test by connection string");
 
     // test connect by connection string.
-    result = db_session_manager.attempt_connect(local_params);
+    result = DBSessionManager::attempt_connect(local_params);
 
     EXPECT_EQ(expected, result);
   }

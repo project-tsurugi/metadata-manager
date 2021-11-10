@@ -19,15 +19,15 @@
 #include <boost/property_tree/ptree.hpp>
 
 #include "manager/authentication/error_code.h"
-#include "manager/authentication/provider/provider_base.h"
 
 namespace manager::authentication::db {
 
-class AuthenticationProvider : public ProviderBase {
+class AuthenticationProvider {
  public:
-  manager::authentication::ErrorCode auth_user(
+  static manager::authentication::ErrorCode auth_user(
       const boost::property_tree::ptree& params);
-  manager::authentication::ErrorCode auth_user(std::string_view conninfo);
+  static manager::authentication::ErrorCode auth_user(
+      std::string_view conninfo);
 };  // class RolesProvider
 
 }  // namespace manager::authentication::db

@@ -17,10 +17,19 @@
 
 #include <boost/foreach.hpp>
 
+#if defined(STORAGE_POSTGRESQL)
+#include "manager/authentication/dao/postgresql/db_session_manager.h"
+#endif
+
 // =============================================================================
 namespace manager::authentication::db {
 
+#if defined(STORAGE_POSTGRESQL)
+namespace storage = postgresql;
+#endif
+
 using manager::authentication::ErrorCode;
+using storage::DBSessionManager;
 
 /**
  * @brief Authentication is performed based on the connection information of the
@@ -36,7 +45,7 @@ ErrorCode AuthenticationProvider::auth_user(
   ErrorCode error = ErrorCode::UNKNOWN;
 
   // Attempt to connect via the Session Manager.
-  error = session_manager_->attempt_connect(params);
+  error = DBSessionManager::attempt_connect(params);
 
   return error;
 }
@@ -56,10 +65,10 @@ ErrorCode AuthenticationProvider::auth_user(std::string_view conninfo) {
   boost::property_tree::ptree params;
 
   // Set the connection string.
-  params.put(DBSessionManager::kKeyConnectString, conninfo);
+  params.put(DBSessionManager::kConnectStringKey, conninfo);
 
   // Attempt to connect via the Session Manager.
-  error = session_manager_->attempt_connect(params);
+  error = DBSessionManager::attempt_connect(params);
 
   return error;
 }

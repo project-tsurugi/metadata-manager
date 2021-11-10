@@ -35,9 +35,7 @@ namespace manager::authentication {
 ErrorCode Authentication::auth_user(const boost::property_tree::ptree& params) {
   ErrorCode error = ErrorCode::UNKNOWN;
 
-  db::AuthenticationProvider provider;
-
-  error = provider.auth_user(params);
+  error = db::AuthenticationProvider::auth_user(params);
 
   return error;
 }
@@ -54,9 +52,7 @@ ErrorCode Authentication::auth_user(const boost::property_tree::ptree& params) {
 ErrorCode Authentication::auth_user(std::string_view conninfo) {
   ErrorCode error = ErrorCode::UNKNOWN;
 
-  db::AuthenticationProvider provider;
-
-  error = provider.auth_user(conninfo);
+  error = db::AuthenticationProvider::auth_user(conninfo);
 
   return error;
 }
