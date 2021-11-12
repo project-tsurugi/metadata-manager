@@ -26,7 +26,7 @@ class DBSessionManager {
  public:
   static constexpr const char* const kConnectStringKey = "connection_strings";
 
-  static manager::authentication::ErrorCode attempt_connect(
+  static manager::authentication::ErrorCode attempt_connection(
       const boost::property_tree::ptree& params);
 };  // class DBSessionManager
 

@@ -35,7 +35,7 @@ using manager::authentication::ErrorCode;
  * @retval ErrorCode::CONNECTION_FAILURE If the connection to the
  *   database failed.
  */
-ErrorCode DBSessionManager::attempt_connect(
+ErrorCode DBSessionManager::attempt_connection(
     const boost::property_tree::ptree& params) {
   ErrorCode error = ErrorCode::UNKNOWN;
 

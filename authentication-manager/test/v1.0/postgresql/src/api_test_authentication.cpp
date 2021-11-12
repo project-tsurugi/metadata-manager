@@ -54,15 +54,63 @@ class ApiTestAuthentication : public ::testing::Test {
     result = Authentication::auth_user(params);
     EXPECT_EQ(expected, result);
 
-    // create test data for connection string.
+    // create test data for connection string (key=value).
     std::string conn_string = "";
     for (auto pos = params.begin(); pos != params.end(); pos++) {
-      boost::format key_value = boost::format("%s %s=%s") % conn_string %
+      boost::format key_value = boost::format("%s%s=%s ") % conn_string %
                                 pos->first % pos->second.data();
       conn_string = key_value.str();
     }
 
     UTUtils::print("  test by connection string");
+    UTUtils::print("    ", conn_string);
+
+    // test connect by connection string (URI).
+    result = Authentication::auth_user(conn_string);
+    EXPECT_EQ(expected, result);
+
+    // create test data for connection string (URI).
+    auto user = params.get_optional<std::string>("user");
+    auto password = params.get_optional<std::string>("password");
+    auto host = params.get_optional<std::string>("host");
+    auto hostaddr = params.get_optional<std::string>("hostaddr");
+    auto port = params.get_optional<std::string>("port");
+    auto dbname = params.get_optional<std::string>("dbname");
+    auto connect_timeout = params.get_optional<std::string>("connect_timeout");
+
+    conn_string = "postgresql://";
+    // [user[:password]@]
+    if (user) {
+      boost::format value = boost::format("%s%s%s@") % conn_string %
+                            user.value() %
+                            (password ? ":" + password.value() : "");
+      conn_string = value.str();
+    }
+    // [netloc]
+    if (host || hostaddr) {
+      boost::format value = boost::format("%s%s") % conn_string %
+                            (host ? host.value() : hostaddr.value());
+      conn_string = value.str();
+    }
+    // [:port]
+    if (port) {
+      boost::format value = boost::format("%s:%s") % conn_string % port.value();
+      conn_string = value.str();
+    }
+    // [/dbname]
+    if (dbname) {
+      boost::format value =
+          boost::format("%s/%s") % conn_string % dbname.value();
+      conn_string = value.str();
+    }
+    // [?param1=value1&...]
+    if (connect_timeout) {
+      boost::format value = boost::format("%s?%s=%s") % conn_string %
+                            "connect_timeout" % connect_timeout.value();
+      conn_string = value.str();
+    }
+
+    UTUtils::print("    ", conn_string);
 
     // test connect by connection string.
     result = Authentication::auth_user(conn_string);
@@ -282,7 +330,7 @@ TEST_F(ApiTestAuthentication, authentication_failures_password_not_set) {
 /**
  * @brief Test for patterns of connection failures on invalid password.
  */
-TEST_F(ApiTestAuthentication, authentication_failures_password_) {
+TEST_F(ApiTestAuthentication, authentication_failures_password_empty) {
   boost::property_tree::ptree params;
 
   // create test data for property tree.
@@ -290,7 +338,6 @@ TEST_F(ApiTestAuthentication, authentication_failures_password_) {
   params.put("port", "5432");
   params.put("dbname", "tsurugi");
   params.put("user", role_name);
-  //  params.put("password", "1234");
 
   // create dummy data for ROLE.
   boost::format role_options = boost::format("LOGIN PASSWORD '%s'") % "1234";
@@ -300,6 +347,30 @@ TEST_F(ApiTestAuthentication, authentication_failures_password_) {
   // test.
   ApiTestAuthentication::test_authentication(params,
                                              ErrorCode::AUTHENTICATION_FAILURE);
+
+  // remove dummy data for ROLE.
+  RoleMetadataHelper::drop_role(params.get<std::string>("user"));
+}
+
+/**
+ * @brief Test for patterns of connection failures on invalid password.
+ */
+TEST_F(ApiTestAuthentication, authentication_default) {
+  boost::property_tree::ptree params;
+
+  // create test data for property tree.
+  params.put("dbname", "tsurugi");
+  params.put("user", role_name);
+  params.put("password", "1234");
+
+  // create dummy data for ROLE.
+  boost::format role_options = boost::format("LOGIN PASSWORD '%s'") %
+                               params.get<std::string>("password");
+  RoleMetadataHelper::create_role(params.get<std::string>("user"),
+                                  role_options.str());
+
+  // test.
+  ApiTestAuthentication::test_authentication(params, ErrorCode::OK);
 
   // remove dummy data for ROLE.
   RoleMetadataHelper::drop_role(params.get<std::string>("user"));
