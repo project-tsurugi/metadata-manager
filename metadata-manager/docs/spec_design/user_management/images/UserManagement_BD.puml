@@ -69,22 +69,19 @@ package PostgreSQL {
   database pg_catalog
   database metadata
 
-  frontend -> ext_table : GRANT/REVOKE
-  ext_table -> pg_catalog : metadata
+  frontend --> ext_table : GRANT/REVOKE
+  ext_table --> pg_catalog : metadata
   frontend --> metadata : Update access\nprivileges of the table
   metadata --> manager
 }
 
 package OLTP {
   component ogawayama
-  entity "t_table" as t_table
-
-  ogawayama -> t_table : Grant/Revoke
 }
 
 admin --> frontend : GRANT/REVOKE privileges ON t_table
-manager --> ogawayama : metadata
-frontend ---> ogawayama : message(GRANT/REVOKE)
+frontend --> ogawayama : message(GRANT/REVOKE)
+ogawayama <--- manager : metadata of database objects
 @enduml
 
 ' ===============================================
@@ -157,23 +154,21 @@ fdw --> ogawayama : SELECT FROM t_table
 actor admin
 
 package PostgreSQL {
+  entity role
   database pg_catalog
   component frontend
   component manager
-  entity role
 }
 
 package OLTP {
   component ogawayama
-  entity "role" as role_
 }
 
 admin --> frontend : CREATE ROLE
-frontend -> role : Create
+frontend --> role : Create
 frontend --> pg_catalog : metadata
 pg_catalog --> manager
-manager --> ogawayama : metadata
-ogawayama -> role_ : Create
+ogawayama <--- manager : role metadata
 frontend --> ogawayama : message(CREATE ROLE)
 
 @enduml
