@@ -45,10 +45,10 @@ class TablesDAO : public manager::metadata::db::TablesDAO {
       std::vector<boost::property_tree::ptree>& container) const override;
 
   manager::metadata::ErrorCode update_reltuples(
-      const float reltuples __attribute__((unused)),
-      std::string_view object_key __attribute__((unused)),
-      std::string_view object_value __attribute__((unused)),
-      ObjectIdType& table_id __attribute__((unused))) const override {
+      [[maybe_unused]] const float reltuples,
+      [[maybe_unused]] std::string_view object_key,
+      [[maybe_unused]] std::string_view object_value,
+      [[maybe_unused]] ObjectIdType& table_id) const override {
     return ErrorCode::NOT_SUPPORTED;
   }
 

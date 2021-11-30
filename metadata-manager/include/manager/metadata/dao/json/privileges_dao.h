@@ -24,8 +24,7 @@ namespace manager::metadata::db::json {
 
 class PrivilegesDAO : public manager::metadata::db::PrivilegesDAO {
  public:
-  explicit PrivilegesDAO(DBSessionManager* session_manager
-                         __attribute__((unused))) {}
+  explicit PrivilegesDAO([[maybe_unused]] DBSessionManager* session_manager) {}
 
   manager::metadata::ErrorCode prepare() const override {
     // Do nothing and return of ErrorCode::NOT_SUPPORTED.

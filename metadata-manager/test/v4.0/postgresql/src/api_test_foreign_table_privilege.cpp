@@ -156,6 +156,27 @@ class ApiTestTablePrivilegesMultiple
 };
 
 /**
+ * @brief ApiTestForeignTable
+ */
+class ApiTestForeignTable : public ::testing::Test {
+ public:
+  void SetUp() override {
+    ApiTestForeignTablePrivileges::test_setup();
+    if (global->is_open()) {
+      // add read-write table metadata.
+      TableMetadataHelper::add_table(foreign_table_name_rw);
+    }
+  }
+  void TearDown() override {
+    if (global->is_open()) {
+      // remove table metadata.
+      TableMetadataHelper::remove_table(foreign_table_name_rw);
+    }
+    ApiTestForeignTablePrivileges::test_teardown();
+  }
+};
+
+/**
  * @brief ApiTestForeignTableNotExists
  */
 class ApiTestForeignTableNotExists : public ::testing::Test {
@@ -263,6 +284,25 @@ TEST_P(ApiTestTablePrivilegesMultiple, confirm_tables_permission) {
     EXPECT_EQ(ErrorCode::OK, error);
     EXPECT_EQ(expected, actual);
   }
+}
+
+/**
+ * @brief test retrieving table metadata for an foreign table.
+ */
+TEST_F(ApiTestForeignTable, get_table_metadata) {
+  ErrorCode error = ErrorCode::UNKNOWN;
+
+  boost::property_tree::ptree object;
+  error = tables->get(foreign_table_name_rw, object);
+  EXPECT_EQ(ErrorCode::OK, error);
+
+  UTUtils::print("-- get an foreign table metadata --");
+  UTUtils::print(UTUtils::get_tree_string(object));
+
+  auto res_role_id = object.get_optional<Oid>(Tables::OWNER_ROLE_ID);
+  auto res_acl = object.get_child(Tables::ACL);
+  EXPECT_GT(res_role_id.value(), 0);
+  EXPECT_GT(res_acl.size(), 0);
 }
 
 /**

@@ -79,7 +79,7 @@ class Statistics : public Metadata {
                                   std::string_view column_name) const;
 
  private:
-  manager::metadata::ErrorCode param_check_statistics_add(
+  ErrorCode param_check_statistics_add(
       const boost::property_tree::ptree& object) const;
 };  // class Statistics
 

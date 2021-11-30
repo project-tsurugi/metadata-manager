@@ -52,14 +52,12 @@ class Roles : public Metadata {
 
   ErrorCode init() const override;
 
-  ErrorCode add(const boost::property_tree::ptree& object
-                __attribute__((unused))) const override {
+  ErrorCode add([[maybe_unused]] const boost::property_tree::ptree& object)
+      const override {
     return ErrorCode::UNKNOWN;
   }
-  ErrorCode add(const boost::property_tree::ptree& object
-                __attribute__((unused)),
-                ObjectIdType* object_id
-                __attribute__((unused))) const override {
+  ErrorCode add([[maybe_unused]]const boost::property_tree::ptree& object,
+                [[maybe_unused]]ObjectIdType* object_id) const override {
     return ErrorCode::UNKNOWN;
   }
 
@@ -67,18 +65,17 @@ class Roles : public Metadata {
                 boost::property_tree::ptree& object) const override;
   ErrorCode get(std::string_view object_name,
                 boost::property_tree::ptree& object) const override;
-  ErrorCode get_all(std::vector<boost::property_tree::ptree>& container
-                    __attribute__((unused))) const override {
+  ErrorCode get_all([[maybe_unused]] std::vector<boost::property_tree::ptree>&
+                        container) const override {
     return ErrorCode::UNKNOWN;
   }
 
-  ErrorCode remove(const ObjectIdType object_id
-                   __attribute__((unused))) const override {
+  ErrorCode remove(
+      [[maybe_unused]] const ObjectIdType object_id) const override {
     return ErrorCode::UNKNOWN;
   }
-  ErrorCode remove(std::string_view object_name __attribute__((unused)),
-                   ObjectIdType* object_id
-                   __attribute__((unused))) const override {
+  ErrorCode remove([[maybe_unused]] std::string_view object_name,
+                   [[maybe_unused]] ObjectIdType* object_id) const override {
     return ErrorCode::UNKNOWN;
   }
 };  // class Roles

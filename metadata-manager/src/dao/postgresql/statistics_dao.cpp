@@ -1003,6 +1003,9 @@ ErrorCode StatisticsDAO::convert_pgresult_to_ptree(
     boost::property_tree::ptree& statistic) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
+  // Initialization.
+  statistic.clear();
+
   // Set the value of the format_version column to ptree.
   statistic.put(Statistics::FORMAT_VERSION,
                 PQgetvalue(res, ordinal_position,

@@ -27,8 +27,7 @@ namespace manager::metadata::db::json {
 
 class ColumnsDAO : public manager::metadata::db::ColumnsDAO {
  public:
-  explicit ColumnsDAO(DBSessionManager* session_manager
-                      __attribute__((unused))) {}
+  explicit ColumnsDAO([[maybe_unused]] DBSessionManager* session_manager) {}
 
   manager::metadata::ErrorCode prepare() const override {
     // Do nothing and return of ErrorCode::OK.
@@ -36,25 +35,24 @@ class ColumnsDAO : public manager::metadata::db::ColumnsDAO {
   }
 
   manager::metadata::ErrorCode insert_one_column_metadata(
-      const ObjectIdType table_id __attribute__((unused)),
-      const boost::property_tree::ptree& column
-      __attribute__((unused))) const override {
+      [[maybe_unused]] const ObjectIdType table_id,
+      [[maybe_unused]] const boost::property_tree::ptree& column)
+      const override {
     // Do nothing and return of ErrorCode::OK.
     return ErrorCode::OK;
   }
 
   manager::metadata::ErrorCode select_column_metadata(
-      std::string_view object_key __attribute__((unused)),
-      std::string_view object_value __attribute__((unused)),
-      boost::property_tree::ptree& object
-      __attribute__((unused))) const override {
+      [[maybe_unused]] std::string_view object_key,
+      [[maybe_unused]] std::string_view object_value,
+      [[maybe_unused]] boost::property_tree::ptree& object) const override {
     // Do nothing and return of ErrorCode::OK.
     return ErrorCode::OK;
   }
 
   manager::metadata::ErrorCode delete_column_metadata(
-      std::string_view object_key __attribute__((unused)),
-      std::string_view object_value __attribute__((unused))) const override {
+      [[maybe_unused]] std::string_view object_key,
+      [[maybe_unused]] std::string_view object_value) const override {
     // Do nothing and return of ErrorCode::OK.
     return ErrorCode::OK;
   }

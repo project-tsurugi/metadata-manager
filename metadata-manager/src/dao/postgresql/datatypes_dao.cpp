@@ -208,10 +208,13 @@ ErrorCode DataTypesDAO::select_one_data_type_metadata(
  * @param (object)            [out] one data type metadata.
  * @return ErrorCode::OK if success, otherwise an error code.
  */
-ErrorCode DataTypesDAO::convert_pgresult_to_ptree(const PGresult* res,
-                                                  const int ordinal_position,
-                                                  boost::property_tree::ptree& object) const {
+ErrorCode DataTypesDAO::convert_pgresult_to_ptree(
+    const PGresult* res, const int ordinal_position,
+    boost::property_tree::ptree& object) const {
   ErrorCode error = ErrorCode::UNKNOWN;
+
+  // Initialization.
+  object.clear();
 
   // Set the value of the format_version column to ptree.
   object.put(DataTypes::FORMAT_VERSION,

@@ -582,6 +582,9 @@ ErrorCode TablesDAO::convert_pgresult_to_ptree(
     boost::property_tree::ptree& table) {
   ErrorCode error = ErrorCode::UNKNOWN;
 
+  // Initialization.
+  table.clear();
+
   // Set the value of the format_version column to ptree.
   table.put(Tables::FORMAT_VERSION,
             PQgetvalue(res, ordinal_position,

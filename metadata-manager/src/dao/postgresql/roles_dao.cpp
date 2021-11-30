@@ -212,6 +212,9 @@ ErrorCode RolesDAO::convert_pgresult_to_ptree(
     boost::property_tree::ptree& role) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
+  // Initialization.
+  role.clear();
+
   // Set the value of the format_version to ptree.
   role.put(Roles::FORMAT_VERSION, Roles::format_version());
 
