@@ -27,7 +27,7 @@ namespace manager::metadata::db::json {
 
 class ColumnsDAO : public manager::metadata::db::ColumnsDAO {
  public:
-  explicit ColumnsDAO([[maybe_unused]] DBSessionManager* session_manager) {}
+  explicit ColumnsDAO(DBSessionManager* session_manager) {}
 
   manager::metadata::ErrorCode prepare() const override {
     // Do nothing and return of ErrorCode::OK.
