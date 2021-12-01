@@ -67,13 +67,13 @@ TEST_F(DaoTestRolesMetadata, select_role_metadata) {
   expect_metadata.put(Roles::FORMAT_VERSION, Roles::format_version());
   expect_metadata.put(Roles::GENERATION, Roles::generation());
   expect_metadata.put(Roles::ROLE_ROLNAME, role_name);
-  expect_metadata.put(Roles::ROLE_ROLSUPER, "t");        // true
-  expect_metadata.put(Roles::ROLE_ROLINHERIT, "f");      // false
-  expect_metadata.put(Roles::ROLE_ROLCREATEROLE, "f");   // false
-  expect_metadata.put(Roles::ROLE_ROLCREATEDB, "f");     // false
-  expect_metadata.put(Roles::ROLE_ROLCANLOGIN, "t");     // true
-  expect_metadata.put(Roles::ROLE_ROLREPLICATION, "f");  // false
-  expect_metadata.put(Roles::ROLE_ROLBYPASSRLS, "t");    // true
+  expect_metadata.put(Roles::ROLE_ROLSUPER, "true");        // true
+  expect_metadata.put(Roles::ROLE_ROLINHERIT, "false");      // false
+  expect_metadata.put(Roles::ROLE_ROLCREATEROLE, "false");   // false
+  expect_metadata.put(Roles::ROLE_ROLCREATEDB, "false");     // false
+  expect_metadata.put(Roles::ROLE_ROLCANLOGIN, "true");     // true
+  expect_metadata.put(Roles::ROLE_ROLREPLICATION, "false");  // false
+  expect_metadata.put(Roles::ROLE_ROLBYPASSRLS, "true");    // true
   expect_metadata.put(Roles::ROLE_ROLCONNLIMIT, "-1");   // -1
   expect_metadata.put(Roles::ROLE_ROLPASSWORD, "");      // empty
   expect_metadata.put(Roles::ROLE_ROLVALIDUNTIL, "");    // empty

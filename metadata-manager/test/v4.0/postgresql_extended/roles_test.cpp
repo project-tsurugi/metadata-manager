@@ -351,13 +351,13 @@ void roles_test() {
   expect_metadata.put(Roles::FORMAT_VERSION, Roles::format_version());
   expect_metadata.put(Roles::GENERATION, Roles::generation());
   expect_metadata.put(Roles::ROLE_ROLNAME, ROLE_NAME);
-  expect_metadata.put(Roles::ROLE_ROLSUPER, "f");        // false
-  expect_metadata.put(Roles::ROLE_ROLINHERIT, "f");      // false
-  expect_metadata.put(Roles::ROLE_ROLCREATEROLE, "t");   // true
-  expect_metadata.put(Roles::ROLE_ROLCREATEDB, "t");     // true
-  expect_metadata.put(Roles::ROLE_ROLCANLOGIN, "f");     // false
-  expect_metadata.put(Roles::ROLE_ROLREPLICATION, "t");  // true
-  expect_metadata.put(Roles::ROLE_ROLBYPASSRLS, "f");    // false
+  expect_metadata.put(Roles::ROLE_ROLSUPER, "false");        // false
+  expect_metadata.put(Roles::ROLE_ROLINHERIT, "false");      // false
+  expect_metadata.put(Roles::ROLE_ROLCREATEROLE, "true");   // true
+  expect_metadata.put(Roles::ROLE_ROLCREATEDB, "true");     // true
+  expect_metadata.put(Roles::ROLE_ROLCANLOGIN, "false");     // false
+  expect_metadata.put(Roles::ROLE_ROLREPLICATION, "true");  // true
+  expect_metadata.put(Roles::ROLE_ROLBYPASSRLS, "false");    // false
   expect_metadata.put(Roles::ROLE_ROLCONNLIMIT, "10");   // 10
   expect_metadata.put(Roles::ROLE_ROLPASSWORD, "");      // empty
   expect_metadata.put(Roles::ROLE_ROLVALIDUNTIL, "");    // empty
