@@ -32,6 +32,8 @@ class DbcUtils {
  public:
   static bool is_open(const ConnectionSPtr& connection);
   static std::string convert_boolean_expression(const char* string);
+  static bool str_to_boolean(const char* string);
+  static std::string boolean_to_str(const bool value);
 
   template <typename T>
   static manager::metadata::ErrorCode str_to_floating_point(const char* input,

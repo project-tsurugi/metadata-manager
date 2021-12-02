@@ -18,7 +18,6 @@
 #include <libpq-fe.h>
 
 #include <boost/format.hpp>
-#include <boost/property_tree/json_parser.hpp>
 #include <iostream>
 #include <regex>
 #include <string>
@@ -26,6 +25,7 @@
 
 #include "manager/metadata/dao/common/message.h"
 #include "manager/metadata/dao/common/statement_name.h"
+#include "manager/metadata/dao/common/utilitys.h"
 #include "manager/metadata/dao/postgresql/common.h"
 #include "manager/metadata/dao/postgresql/dbc_utils.h"
 #include "manager/metadata/tables.h"
@@ -162,8 +162,6 @@ std::string delete_equal_to(std::string_view column_name) {
 // =============================================================================
 namespace manager::metadata::db::postgresql {
 
-namespace json_parser = boost::property_tree::json_parser;
-using boost::property_tree::json_parser_error;
 using boost::property_tree::ptree;
 using manager::metadata::ErrorCode;
 using manager::metadata::db::StatementName;
@@ -307,22 +305,10 @@ ErrorCode TablesDAO::insert_table_metadata(
 
   std::string s_primary_keys;
   if (o_primary_keys) {
-    const ptree& p_primary_keys = o_primary_keys.value();
-
-    if (!p_primary_keys.empty()) {
-      std::stringstream ss;
-      try {
-        json_parser::write_json(ss, p_primary_keys, false);
-      } catch (json_parser_error& e) {
-        std::cerr << Message::WRITE_JSON_FAILURE << e.what() << std::endl;
-        error = ErrorCode::INVALID_PARAMETER;
-        return error;
-      } catch (...) {
-        std::cerr << Message::WRITE_JSON_FAILURE << std::endl;
-        error = ErrorCode::INVALID_PARAMETER;
-        return error;
-      }
-      s_primary_keys = ss.str();
+    // Converts a property_tree to a JSON string.
+    error = Utilitys::ptree_to_json(o_primary_keys.value(), s_primary_keys);
+    if (error != ErrorCode::OK) {
+      return error;
     }
   }
   param_values.emplace_back(
@@ -579,7 +565,7 @@ ErrorCode TablesDAO::delete_table_metadata(std::string_view object_key,
  */
 ErrorCode TablesDAO::convert_pgresult_to_ptree(
     const PGresult* res, const int ordinal_position,
-    boost::property_tree::ptree& table) {
+    boost::property_tree::ptree& table) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   // Initialization.
@@ -610,22 +596,13 @@ ErrorCode TablesDAO::convert_pgresult_to_ptree(
 
   // Set the value of the primary_keys column to ptree.
   ptree primary_keys;
-  std::string s_primary_keys = PQgetvalue(
-      res, ordinal_position, static_cast<int>(OrdinalPosition::kPrimaryKey));
-  if (!s_primary_keys.empty()) {
-    std::stringstream ss;
-    ss << s_primary_keys;
-    try {
-      json_parser::read_json(ss, primary_keys);
-    } catch (json_parser_error& e) {
-      std::cerr << Message::READ_JSON_FAILURE << e.what() << std::endl;
-      error = ErrorCode::INTERNAL_ERROR;
-      return error;
-    } catch (...) {
-      std::cerr << Message::READ_JSON_FAILURE << std::endl;
-      error = ErrorCode::INTERNAL_ERROR;
-      return error;
-    }
+  // Converts a JSON string to a property_tree.
+  error = Utilitys::json_to_ptree(
+      PQgetvalue(res, ordinal_position,
+                 static_cast<int>(OrdinalPosition::kPrimaryKey)),
+      primary_keys);
+  if (error != ErrorCode::OK) {
+    return error;
   }
   // NOTICE:
   //   If it is not set, MUST add an empty ptree.
@@ -671,7 +648,7 @@ ErrorCode TablesDAO::convert_pgresult_to_ptree(
  * @return Vector of the result of the split.
  */
 std::vector<std::string> TablesDAO::split(const std::string& source,
-                                          const char& delimiter) {
+                                          const char& delimiter) const {
   std::vector<std::string> result;
   std::stringstream stream(source);
   std::string buffer;

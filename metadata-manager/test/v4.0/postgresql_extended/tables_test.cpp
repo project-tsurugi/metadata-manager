@@ -46,52 +46,59 @@ bool test_succeed = true;
   func_expect_gt(actual, value, __FILE__, __LINE__)
 #define EXPECT_TRUE(actual) func_expect_bool(actual, true, __FILE__, __LINE__)
 
-void func_expect_eq(ErrorCode expected, ErrorCode actual, std::string_view file,
+bool func_expect_eq(ErrorCode expected, ErrorCode actual, std::string_view file,
                     std::int32_t line) {
   if (expected != actual) {
-    std::cout << std::endl
-              << file << ": " << line << ": Failure" << std::endl
-              << "  Expected value: " << static_cast<int32_t>(expected)
-              << std::endl
+    std::cout << file << ": " << line << ": Failure" << std::endl
+              << "  Expecting it to be equal to "
+              << static_cast<int32_t>(expected) << "." << std::endl
               << "  Actual value: " << static_cast<int32_t>(actual)
               << std::endl;
     test_succeed = false;
+    return false;
   }
+  return true;
 }
 
 template <typename T>
-void func_expect_eq(T expected, T actual, std::string_view file,
+bool func_expect_eq(T expected, T actual, std::string_view file,
                     std::int32_t line) {
   if (expected != actual) {
-    std::cout << std::endl
-              << file << ": " << line << ": Failure" << std::endl
-              << "  Expected value: " << expected << std::endl
+    std::cout << file << ": " << line << ": Failure" << std::endl
+              << "  Expecting it to be equal to " << expected << "."
+              << std::endl
               << "  Actual value: " << actual << std::endl;
     test_succeed = false;
+    return false;
   }
+  return true;
 }
 
 template <typename T1, typename T2>
-void func_expect_gt(T1 actual, T2 value, std::string_view file,
+bool func_expect_gt(T1 actual, T2 value, std::string_view file,
                     std::int32_t line) {
   if (actual <= static_cast<T1>(value)) {
-    std::cout << std::endl
-              << file << ": " << line << ": Failure" << std::endl
-              << "  Expected value: > " << value << std::endl
+    std::cout << file << ": " << line << ": Failure" << std::endl
+              << "  Expecting it to be greater than " << value << "."
+              << std::endl
               << "  Actual value: " << actual << std::endl;
     test_succeed = false;
+    return false;
   }
+  return true;
 }
 
-void func_expect_bool(bool expected, bool actual, std::string_view file,
+bool func_expect_bool(bool expected, bool actual, std::string_view file,
                       std::int32_t line) {
   if (expected != actual) {
-    std::cout << std::endl
-              << file << ": " << line << ": Failure" << std::endl
-              << "  Expected: > " << std::boolalpha << expected << std::endl
+    std::cout << file << ": " << line << ": Failure" << std::endl
+              << "  Expecting it to be equal to " << std::boolalpha << expected
+              << "." << std::endl
               << "  Actual: " << std::boolalpha << actual << std::endl;
     test_succeed = false;
+    return false;
   }
+  return true;
 }
 
 /**
@@ -178,16 +185,16 @@ void add_table(const boost::property_tree::ptree& new_table,
 
   auto tables = std::make_unique<Tables>(TEST_DB);
 
-  ErrorCode error = tables->init();
-  EXPECT_EQ(ErrorCode::OK, error);
+  ErrorCode result = tables->init();
+  EXPECT_EQ(ErrorCode::OK, result);
 
   // add table metadata.
   ObjectIdType retval_table_id = 0;
-  error = tables->add(new_table, &retval_table_id);
-  EXPECT_EQ(ErrorCode::OK, error);
+  result = tables->add(new_table, &retval_table_id);
+  EXPECT_EQ(ErrorCode::OK, result);
   EXPECT_GT(retval_table_id, 0);
 
-  std::cout << "  new table_id: " << retval_table_id << std::endl;
+  std::cout << "> new table_id: " << retval_table_id << std::endl;
   std::cout << "  " << get_tree_string(new_table) << std::endl;
 
   if (ret_table_id != nullptr) {
@@ -197,22 +204,23 @@ void add_table(const boost::property_tree::ptree& new_table,
 
 /**
  * @brief Remove one new table metadata to table metadata table.
- * @param (table_id)  [in]   table id of remove table metadata.
+ * @param (table_name)  [in]   table name of remove table metadata.
  * @return none.
  */
-void remove_table(const ObjectIdType table_id) {
+void remove_table(std::string_view table_name) {
   std::cout << "-- remove table metadata --" << std::endl;
 
   auto tables = std::make_unique<Tables>(TEST_DB);
 
-  ErrorCode error = tables->init();
-  EXPECT_EQ(ErrorCode::OK, error);
+  ErrorCode result = tables->init();
+  EXPECT_EQ(ErrorCode::OK, result);
 
+  ObjectIdType table_id = 0;
   // remove table metadata.
-  error = tables->remove(table_id);
-  EXPECT_EQ(ErrorCode::OK, error);
+  result = tables->remove(table_name, &table_id);
+  EXPECT_EQ(ErrorCode::OK, result);
 
-  std::cout << "  table_id: " << table_id << std::endl;
+  std::cout << "> table_id: " << table_id << std::endl;
 }
 
 /**
@@ -297,7 +305,7 @@ void check_table_metadata_expected(const ptree& expected, const ptree& actual) {
     std::string& s_namespace_actual = o_namespace_actual.value();
     EXPECT_EQ(s_namespace_expected, s_namespace_actual);
   } else {
-    bool actual = namespace_empty_actual && namespace_empty_actual;
+    bool actual = namespace_empty_expected && namespace_empty_actual;
     EXPECT_TRUE(actual);
   }
 
@@ -310,8 +318,7 @@ void check_table_metadata_expected(const ptree& expected, const ptree& actual) {
   if (o_tuples_expected && o_tuples_actual) {
     EXPECT_EQ(o_tuples_expected.value(), o_tuples_actual.value());
   } else {
-    bool actual = !o_tuples_expected && !o_tuples_actual;
-    EXPECT_TRUE(actual);
+    EXPECT_TRUE(!o_tuples_expected && !o_tuples_actual);
   }
 
   // column metadata
@@ -381,12 +388,13 @@ void check_table_metadata_expected(const ptree& expected, const ptree& actual) {
 namespace test {
 
 /*
- * @biref Test for Roles class object.
+ * @biref Test for Tables class object.
  */
 ErrorCode tables_test() {
-  ErrorCode error = ErrorCode::UNKNOWN;
+  ErrorCode result = ErrorCode::UNKNOWN;
 
-  constexpr const char* const table_name = "UTex_Test_TableMetadata1";
+  const std::string table_name =
+      "UTex_test_table_name_" + std::to_string(__LINE__);
 
   // create dummy metadata for Tables.
   ptree new_table;
@@ -417,42 +425,40 @@ ErrorCode tables_test() {
   new_table.put(Tables::ID, ret_table_id);
 
   auto tables = std::make_unique<Tables>(TEST_DB);
-  error = tables->init();
-  EXPECT_EQ(ErrorCode::OK, error);
+  result = tables->init();
+  EXPECT_EQ(ErrorCode::OK, result);
 
   ptree table_metadata;
 
   // get table metadata by table id.
-  error = tables->get(ret_table_id, table_metadata);
-  EXPECT_EQ(ErrorCode::OK, error);
+  result = tables->get(ret_table_id, table_metadata);
+  EXPECT_EQ(ErrorCode::OK, result);
 
   std::cout << "-- get table metadata by table id --" << std::endl;
   std::cout << "  " << get_tree_string(table_metadata) << std::endl;
 
   // verifies that the returned table metadata is expected one.
-  helper::check_table_metadata_expected(new_table,
-                                                     table_metadata);
+  helper::check_table_metadata_expected(new_table, table_metadata);
 
   // clear property_tree.
   table_metadata.clear();
 
   // get table metadata by table name.
-  error = tables->get(table_name, table_metadata);
-  EXPECT_EQ(ErrorCode::OK, error);
+  result = tables->get(table_name, table_metadata);
+  EXPECT_EQ(ErrorCode::OK, result);
 
   std::cout << "-- get table metadata by table name --" << std::endl;
   std::cout << "  " << get_tree_string(table_metadata) << std::endl;
 
   // verifies that the returned table metadata is expected one.
-  helper::check_table_metadata_expected(new_table,
-                                                     table_metadata);
+  helper::check_table_metadata_expected(new_table, table_metadata);
 
   // remove table metadata.
-  helper::remove_table(ret_table_id);
+  helper::remove_table(table_name);
 
-  error = ErrorCode::OK;
+  result = ErrorCode::OK;
 
-  return error;
+  return result;
 }
 
 }  // namespace test
@@ -464,7 +470,7 @@ int main(void) {
   std::cout << "*** TablesMetadta test start. ***" << std::endl << std::endl;
 
   std::cout << "=== class object test start. ===" << std::endl;
-  ErrorCode tables_test_error = test::tables_test();
+  test::tables_test();
   std::cout << "=== class object test done. ===" << std::endl;
   std::cout << std::endl;
 

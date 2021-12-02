@@ -90,11 +90,11 @@ class TablesDAO : public manager::metadata::db::TablesDAO {
  private:
   ConnectionSPtr connection_;
 
-  static manager::metadata::ErrorCode convert_pgresult_to_ptree(
+  manager::metadata::ErrorCode convert_pgresult_to_ptree(
       const PGresult* res, const int ordinal_position,
-      boost::property_tree::ptree& table);
-  static std::vector<std::string> split(const std::string& source,
-                                        const char& delimiter);
+      boost::property_tree::ptree& table) const;
+  std::vector<std::string> split(const std::string& source,
+                                        const char& delimiter) const;
 };  // class TablesDAO
 
 }  // namespace manager::metadata::db::postgresql

@@ -430,8 +430,6 @@ void confirm_permission_in_acls(std::string_view role_name,
                                 const char* permission) {
   ErrorCode error = ErrorCode::UNKNOWN;
 
-std::cout << role_name << ", " << permission << std::endl;
-
   auto tables = std::make_unique<Tables>(TEST_DB);
   error = tables->init();
   if (error != ErrorCode::OK) {

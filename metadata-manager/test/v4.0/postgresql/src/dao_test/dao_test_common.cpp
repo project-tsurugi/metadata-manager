@@ -244,10 +244,66 @@ TEST_F(DaoTestCommonIfConnectionNotOpened, is_open) {
  * to "true" or "false" in application.
  */
 TEST_F(DaoTestCommon, convert_boolean_expression) {
-  EXPECT_EQ("", DbcUtils::convert_boolean_expression(nullptr));
   EXPECT_EQ("true", DbcUtils::convert_boolean_expression("t"));
+  EXPECT_EQ("true", DbcUtils::convert_boolean_expression("T"));
+  EXPECT_EQ("true", DbcUtils::convert_boolean_expression("true"));
+  EXPECT_EQ("true", DbcUtils::convert_boolean_expression("True"));
+  EXPECT_EQ("true", DbcUtils::convert_boolean_expression("TRUE"));
+  EXPECT_EQ("true", DbcUtils::convert_boolean_expression("yes"));
+  EXPECT_EQ("true", DbcUtils::convert_boolean_expression("Yes"));
+  EXPECT_EQ("true", DbcUtils::convert_boolean_expression("YES"));
+  EXPECT_EQ("true", DbcUtils::convert_boolean_expression("1"));
   EXPECT_EQ("false", DbcUtils::convert_boolean_expression("f"));
+  EXPECT_EQ("false", DbcUtils::convert_boolean_expression("F"));
+  EXPECT_EQ("false", DbcUtils::convert_boolean_expression("false"));
+  EXPECT_EQ("false", DbcUtils::convert_boolean_expression("False"));
+  EXPECT_EQ("false", DbcUtils::convert_boolean_expression("FALSE"));
+  EXPECT_EQ("false", DbcUtils::convert_boolean_expression("no"));
+  EXPECT_EQ("false", DbcUtils::convert_boolean_expression("No"));
+  EXPECT_EQ("false", DbcUtils::convert_boolean_expression("NO"));
+  EXPECT_EQ("false", DbcUtils::convert_boolean_expression("0"));
+  EXPECT_EQ("", DbcUtils::convert_boolean_expression(nullptr));
   EXPECT_EQ("", DbcUtils::convert_boolean_expression(""));
+  EXPECT_EQ("", DbcUtils::convert_boolean_expression("Unknown"));
+}
+
+/**
+ * @brief Converts boolean expression ("t" or "f") in metadata repository
+ * to "true" or "false" in application.
+ */
+TEST_F(DaoTestCommon, str_to_boolean) {
+  EXPECT_TRUE(DbcUtils::str_to_boolean("t"));
+  EXPECT_TRUE(DbcUtils::str_to_boolean("T"));
+  EXPECT_TRUE(DbcUtils::str_to_boolean("true"));
+  EXPECT_TRUE(DbcUtils::str_to_boolean("True"));
+  EXPECT_TRUE(DbcUtils::str_to_boolean("TRUE"));
+  EXPECT_TRUE(DbcUtils::str_to_boolean("yes"));
+  EXPECT_TRUE(DbcUtils::str_to_boolean("Yes"));
+  EXPECT_TRUE(DbcUtils::str_to_boolean("YES"));
+  EXPECT_TRUE(DbcUtils::str_to_boolean("1"));
+  EXPECT_FALSE(DbcUtils::str_to_boolean("f"));
+  EXPECT_FALSE(DbcUtils::str_to_boolean("F"));
+  EXPECT_FALSE(DbcUtils::str_to_boolean("false"));
+  EXPECT_FALSE(DbcUtils::str_to_boolean("False"));
+  EXPECT_FALSE(DbcUtils::str_to_boolean("FALSE"));
+  EXPECT_FALSE(DbcUtils::str_to_boolean("no"));
+  EXPECT_FALSE(DbcUtils::str_to_boolean("No"));
+  EXPECT_FALSE(DbcUtils::str_to_boolean("NO"));
+  EXPECT_FALSE(DbcUtils::str_to_boolean("0"));
+  EXPECT_FALSE(DbcUtils::str_to_boolean(nullptr));
+  EXPECT_FALSE(DbcUtils::str_to_boolean(""));
+  EXPECT_FALSE(DbcUtils::str_to_boolean("Unknown"));
+}
+
+/**
+ * @brief Converts boolean expression ("t" or "f") in metadata repository
+ * to "true" or "false" in application.
+ */
+TEST_F(DaoTestCommon, boolean_to_str) {
+  EXPECT_EQ("true", DbcUtils::boolean_to_str(true));
+  EXPECT_EQ("true", DbcUtils::boolean_to_str(1));
+  EXPECT_EQ("false", DbcUtils::boolean_to_str(false));
+  EXPECT_EQ("false", DbcUtils::boolean_to_str(0));
 }
 
 /**

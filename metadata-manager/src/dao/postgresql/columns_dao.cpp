@@ -18,7 +18,6 @@
 #include <libpq-fe.h>
 
 #include <boost/format.hpp>
-#include <boost/property_tree/json_parser.hpp>
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -28,6 +27,7 @@
 
 #include "manager/metadata/dao/common/message.h"
 #include "manager/metadata/dao/common/statement_name.h"
+#include "manager/metadata/dao/common/utilitys.h"
 #include "manager/metadata/dao/postgresql/common.h"
 #include "manager/metadata/dao/postgresql/dbc_utils.h"
 
@@ -116,8 +116,6 @@ std::string delete_all_column_metadata(std::string_view column_name) {
 // =============================================================================
 namespace manager::metadata::db::postgresql {
 
-namespace json_parser = boost::property_tree::json_parser;
-using boost::property_tree::json_parser_error;
 using boost::property_tree::ptree;
 using manager::metadata::ErrorCode;
 using manager::metadata::db::StatementName;
@@ -258,20 +256,11 @@ ErrorCode ColumnsDAO::insert_one_column_metadata(
     if (p_data_length.empty()) {
       param_values.emplace_back(p_data_length.data().c_str());
     } else {
-      std::stringstream ss;
-      try {
-        json_parser::write_json(ss, p_data_length, false);
-      } catch (json_parser_error& e) {
-        std::cerr << Message::WRITE_JSON_FAILURE << e.what() << std::endl;
-        error = ErrorCode::INVALID_PARAMETER;
-        return error;
-      } catch (...) {
-        std::cerr << Message::WRITE_JSON_FAILURE << std::endl;
-        error = ErrorCode::INVALID_PARAMETER;
+      // Converts a property_tree to a JSON string.
+      error = Utilitys::ptree_to_json(p_data_length, s_data_length);
+      if (error != ErrorCode::OK) {
         return error;
       }
-      s_data_length = ss.str();
-
       param_values.emplace_back(s_data_length.c_str());
     }
   }
@@ -433,6 +422,9 @@ ErrorCode ColumnsDAO::convert_pgresult_to_ptree(
     boost::property_tree::ptree& column) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
+  // Initialization.
+  column.clear();
+
   // Set the value of the format_version column to ptree.
   column.put(Tables::Column::FORMAT_VERSION,
              PQgetvalue(res, ordinal_position,
@@ -448,22 +440,22 @@ ErrorCode ColumnsDAO::convert_pgresult_to_ptree(
              PQgetvalue(res, ordinal_position,
                         static_cast<int>(OrdinalPosition::kId)));
 
-  // Set the value of the table_id to ptree.
-  column.put(Tables::Column::TABLE_ID,
-             PQgetvalue(res, ordinal_position,
-                        static_cast<int>(OrdinalPosition::kTableId)));
-
   // Set the value of the name to ptree.
   column.put(Tables::Column::NAME,
              PQgetvalue(res, ordinal_position,
                         static_cast<int>(OrdinalPosition::kName)));
 
+  // Set the value of the table_id to ptree.
+  column.put(Tables::Column::TABLE_ID,
+             PQgetvalue(res, ordinal_position,
+                        static_cast<int>(OrdinalPosition::kTableId)));
+
   // Set the value of the ordinal_position to ptree.
   column.put(Tables::Column::ORDINAL_POSITION,
              PQgetvalue(res, ordinal_position,
                         static_cast<int>(OrdinalPosition::kOrdinalPosition)));
-  // Set the value of the data_type_id to ptree.
 
+  // Set the value of the data_type_id to ptree.
   column.put(Tables::Column::DATA_TYPE_ID,
              PQgetvalue(res, ordinal_position,
                         static_cast<int>(OrdinalPosition::kDataTypeId)));
@@ -472,22 +464,12 @@ ErrorCode ColumnsDAO::convert_pgresult_to_ptree(
   std::string data_length = std::string(PQgetvalue(
       res, ordinal_position, static_cast<int>(OrdinalPosition::kDataLength)));
   if (!data_length.empty()) {
-    std::stringstream ss;
-    ss << data_length;
-
     ptree p_data_length;
-    try {
-      json_parser::read_json(ss, p_data_length);
-    } catch (json_parser_error& e) {
-      std::cerr << Message::READ_JSON_FAILURE << e.what() << std::endl;
-      error = ErrorCode::INTERNAL_ERROR;
-      return error;
-    } catch (...) {
-      std::cerr << Message::READ_JSON_FAILURE << std::endl;
-      error = ErrorCode::INTERNAL_ERROR;
+    // Converts a JSON string to a property_tree.
+    error = Utilitys::json_to_ptree(data_length, p_data_length);
+    if (error != ErrorCode::OK) {
       return error;
     }
-
     column.add_child(Tables::Column::DATA_LENGTH, p_data_length);
   }
 

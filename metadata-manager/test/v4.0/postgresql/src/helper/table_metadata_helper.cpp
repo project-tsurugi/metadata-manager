@@ -277,12 +277,10 @@ void TableMetadataHelper::check_table_metadata_expected(
       expected.get_optional<std::string>(Tables::NAMESPACE);
   boost::optional<std::string> o_namespace_actual =
       actual.get_optional<std::string>(Tables::NAMESPACE);
-
   bool namespace_empty_expected =
       (o_namespace_expected ? o_namespace_expected.value().empty() : true);
   bool namespace_empty_actual =
       (o_namespace_actual ? o_namespace_actual.value().empty() : true);
-
   if (!namespace_empty_expected && !namespace_empty_actual) {
     std::string& s_namespace_expected = o_namespace_expected.value();
     std::string& s_namespace_actual = o_namespace_actual.value();
@@ -326,21 +324,18 @@ void TableMetadataHelper::check_table_metadata_expected(
     // Verifies that the number of column metadata is expected number.
     EXPECT_EQ(p_columns_expected.size(), p_columns_actual.size());
 
-    for (int op = 0; static_cast<size_t>(op) < p_columns_expected.size();
-         op++) {
+    for (std::size_t op = 0; op < p_columns_expected.size(); op += 1) {
       ptree column_expected = p_columns_expected[op];
       ptree column_actual = p_columns_actual[op];
 
       // column metadata id
       boost::optional<ObjectIdType> id_actual =
           column_actual.get<ObjectIdType>(Tables::Column::ID);
-      EXPECT_GT(id_actual, static_cast<ObjectIdType>(0));
-
+      EXPECT_GT(id_actual.value(), static_cast<ObjectIdType>(0));
       // column metadata table id
       boost::optional<ObjectIdType> table_id_actual =
           column_actual.get<ObjectIdType>(Tables::Column::TABLE_ID);
-      EXPECT_EQ(table_id_expected, table_id_actual);
-
+      EXPECT_EQ(table_id_expected, table_id_actual.value());
       // column name
       check_column_metadata_expecetd<std::string>(
           column_expected, column_actual, Tables::Column::NAME);

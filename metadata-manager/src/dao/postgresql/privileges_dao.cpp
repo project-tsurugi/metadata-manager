@@ -281,16 +281,13 @@ ErrorCode PrivilegesDAO::check_of_privilege(const PGresult* res,
                                             bool& check_result) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
-  std::regex regex_boolean = std::regex(R"(^([tTyY].*|1)$)");
-
   check_result = true;
   for (; *permission != 0x00; permission++) {
     std::size_t find_position = kValidPrivileges.find(*permission);
     if (find_position != std::string_view::npos) {
-      std::string privilege_value(
+      check_result = DbcUtils::str_to_boolean(
           PQgetvalue(res, ordinal_position, find_position));
-      if (!std::regex_match(privilege_value, regex_boolean)) {
-        check_result = false;
+      if (!check_result) {
         break;
       }
     }
@@ -324,11 +321,8 @@ ErrorCode PrivilegesDAO::check_exists_authid(std::string_view auth_id,
     if (nrows == 1) {
       int ordinal_position = 0;
       int column_position = 0;
-      std::regex regex_boolean = std::regex(R"(^([tTyY].*|1)$)");
-
-      std::string exists_value(
+      exists_result = DbcUtils::str_to_boolean(
           PQgetvalue(res, ordinal_position, column_position));
-      exists_result = std::regex_match(exists_value, regex_boolean);
     }
   }
 

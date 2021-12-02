@@ -140,6 +140,12 @@ ErrorCode TablesProvider::get_table_metadata(
     boost::property_tree::ptree& object) {
   ErrorCode error = ErrorCode::UNKNOWN;
 
+  // Parameter value check.
+  if ((key != Tables::ID) && (key != Tables::NAME)) {
+    error = ErrorCode::INVALID_PARAMETER;
+    return error;
+  }
+
   // Initialization
   error = init();
   if (error != ErrorCode::OK) {
@@ -152,14 +158,19 @@ ErrorCode TablesProvider::get_table_metadata(
     return error;
   }
 
-  // Get column metadata.
+  // Set the search key for column metadata.
+  std::string table_id;
   if (key == Tables::ID) {
-    error = get_column_metadata(value, object);
-  } else if (key == Tables::NAME) {
-    error = get_all_column_metadata(object);
+    table_id = value;
   } else {
-    error = ErrorCode::INVALID_PARAMETER;
+    auto o_table_id = object.get_optional<std::string>(Tables::ID);
+    if (o_table_id) {
+      table_id = o_table_id.value();
+    }
   }
+
+  // Get column metadata.
+  error = get_column_metadata(table_id, object);
 
   return error;
 }
@@ -188,7 +199,15 @@ ErrorCode TablesProvider::get_table_metadata(
 
   // Get column metadata.
   BOOST_FOREACH (auto& table_object, container) {
-    error = get_all_column_metadata(table_object);
+    std::string table_id = "";
+    auto o_table_id = table_object.get_optional<std::string>(Tables::ID);
+    if (!o_table_id) {
+      error = ErrorCode::INTERNAL_ERROR;
+      break;
+    }
+
+    // Get column metadata.
+    error = get_column_metadata(o_table_id.value(), table_object);
     if (error != ErrorCode::OK) {
       break;
     }
@@ -386,67 +405,27 @@ ErrorCode TablesProvider::confirm_permission(std::string_view key,
 
 /**
  * @brief Get column metadata-object based on the given table id.
- * @param (tables)  [out] table metadata-object.
- * @return ErrorCode::OK if success, otherwise an error code.
- */
-ErrorCode TablesProvider::get_all_column_metadata(
-    boost::property_tree::ptree& tables) const {
-  ErrorCode error = ErrorCode::UNKNOWN;
-
-  error = ErrorCode::OK;
-  BOOST_FOREACH (ptree::value_type& node, tables) {
-    ptree& table = node.second;
-
-    if (table.empty()) {
-      boost::optional<std::string> o_table_id =
-          tables.get_optional<std::string>(Tables::ID);
-      if (!o_table_id) {
-        error = ErrorCode::INTERNAL_ERROR;
-        return error;
-      }
-
-      error = get_column_metadata(o_table_id.get(), tables);
-      break;
-    } else {
-      boost::optional<std::string> o_table_id =
-          table.get_optional<std::string>(Tables::ID);
-      if (!o_table_id) {
-        error = ErrorCode::INTERNAL_ERROR;
-        break;
-      }
-
-      error = get_column_metadata(o_table_id.get(), table);
-      if (error != ErrorCode::OK) {
-        break;
-      }
-    }
-  }
-
-  return error;
-}
-
-/**
- * @brief Get column metadata-object based on the given table id.
- * @param (table_id) [in]  table id.
- * @param (tables)   [out] table metadata-object
+ * @param (table_id)      [in]  table id.
+ * @param (table_object)  [out] table metadata-object
  *   with the specified table id.
  * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode TablesProvider::get_column_metadata(
-    std::string_view table_id, boost::property_tree::ptree& tables) const {
+    std::string_view table_id,
+    boost::property_tree::ptree& table_object) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
-  auto option_column = tables.get_child_optional(Tables::COLUMNS_NODE);
-  if (!option_column) {
-    ptree columns;
-    error = columns_dao_->select_column_metadata(Tables::Column::TABLE_ID,
-                                                table_id, columns);
-    if ((error == ErrorCode::OK) || (error == ErrorCode::INVALID_PARAMETER)) {
-      tables.add_child(Tables::COLUMNS_NODE, columns);
-      error = ErrorCode::OK;
-    }
-  } else {
-      error = ErrorCode::OK;
+  if (table_id.empty()) {
+    error = ErrorCode::INTERNAL_ERROR;
+    return error;
+  }
+
+  ptree columns;
+  error = columns_dao_->select_column_metadata(Tables::Column::TABLE_ID,
+                                               table_id, columns);
+  if ((error == ErrorCode::OK) || (error == ErrorCode::INVALID_PARAMETER)) {
+    table_object.add_child(Tables::COLUMNS_NODE, columns);
+    error = ErrorCode::OK;
   }
 
   return error;

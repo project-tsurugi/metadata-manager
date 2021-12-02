@@ -41,8 +41,8 @@ class ApiTestTableMetadata : public ::testing::Test {
 };
 
 /**
- * @brief happy test for adding one new table metadata
- *  and getting it by table name.
+ * @brief Test that adds metadata for a new table and retrieves
+ *   it using the table name as the key with the ptree type.
  */
 TEST_F(ApiTestTableMetadata, add_get_table_metadata_by_table_name) {
   // prepare test data for adding table metadata.
@@ -124,7 +124,7 @@ TEST_F(ApiTestTableMetadata,
 
 /**
  * @brief happy test for adding two same table metadata
- *  and getting them by table name.
+ *   and getting them by table name.
  */
 TEST_F(ApiTestTableMetadata, get_two_table_metadata_by_table_name) {
   // prepare test data for adding table metadata.
@@ -164,7 +164,7 @@ TEST_F(ApiTestTableMetadata, get_two_table_metadata_by_table_name) {
 
 /**
  * @brief happy test for adding one new table metadata
- *  and getting it by table id.
+ *   and getting it by table id.
  */
 TEST_F(ApiTestTableMetadata, add_get_table_metadata_by_table_id) {
   // prepare test data for adding table metadata.
@@ -345,7 +345,7 @@ TEST_F(ApiTestTableMetadata, remove_table_metadata_by_table_id) {
 
 /**
  * @brief happy test for adding, getting and removing
- *  one new table metadata without initialization of all api.
+ *   one new table metadata without initialization of all api.
  */
 TEST_F(ApiTestTableMetadata,
        add_get_remove_table_metadata_without_initialized) {

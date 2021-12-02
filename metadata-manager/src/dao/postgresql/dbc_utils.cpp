@@ -21,6 +21,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
+#include <regex>
 #include <string>
 
 #include "manager/metadata/dao/common/message.h"
@@ -39,25 +40,49 @@ bool DbcUtils::is_open(const ConnectionSPtr& connection) {
 }
 
 /**
- * @brief Converts boolean expression ("t" or "f") in metadata repository
+ * @brief Converts boolean expression in metadata repository
  *   to "true" or "false" in application.
- * @param (string)   [in]  "t" , "f" or an other string.
- * @return "true" if "t" is input,
- *   "false" if "f" is input,
- *   otherwise an empty string.
+ * @param (string)   [in]  boolean expression.
+ * @return "true" or "false", otherwise an empty string.
  */
 std::string DbcUtils::convert_boolean_expression(const char* string) {
-  if (!string) {
-    return "";
+  std::stringstream ss;
+  if (string) {
+    std::regex regex_true = std::regex(R"(^([tTyY].*|1)$)");
+    std::regex regex_false = std::regex(R"(^([fFnN].*|0)$)");
+    if (std::regex_match(string, regex_true)) {
+      ss << std::boolalpha << true;
+    } else if (std::regex_match(string, regex_false)) {
+      ss << std::boolalpha << false;
+    }
   }
+  return ss.str();
+}
 
-  if (strcmp(string, "t") == 0) {
-    return "true";
-  } else if (strcmp(string, "f") == 0) {
-    return "false";
-  } else {
-    return "";
+/**
+ * @brief Converts boolean expression in metadata repository
+ *   to boolean value in application.
+ * @param (string)  [in]  boolean expression.
+ * @return Converted boolean value of the string.
+ */
+bool DbcUtils::str_to_boolean(const char* string) {
+  bool result = false;
+
+  if (string) {
+    std::regex regex_boolean = std::regex(R"(^([tTyY].*|1)$)");
+    result = std::regex_match(string, regex_boolean);
   }
+  return result;
+}
+
+/**
+ * @brief Converts boolean value in application to boolean expression
+ *   in metadata repository.
+ * @param (value)  [in]  boolean expression.
+ * @return Converted string of the boolean value.
+ */
+std::string DbcUtils::boolean_to_str(const bool value) {
+  return value ? "true" : "false";
 }
 
 /**
