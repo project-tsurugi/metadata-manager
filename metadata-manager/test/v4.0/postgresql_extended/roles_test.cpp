@@ -22,6 +22,7 @@
 #include "manager/metadata/dao/common/config.h"
 #include "manager/metadata/dao/postgresql/common.h"
 #include "manager/metadata/roles.h"
+#include "manager/metadata/tables.h"
 
 namespace {
 
@@ -31,6 +32,7 @@ using manager::metadata::FormatVersionType;
 using manager::metadata::GenerationType;
 using manager::metadata::ObjectIdType;
 using manager::metadata::Roles;
+using manager::metadata::Tables;
 using manager::metadata::db::postgresql::ConnectionSPtr;
 
 static constexpr const char* const TEST_DB = "test";
@@ -351,16 +353,16 @@ void roles_test() {
   expect_metadata.put(Roles::FORMAT_VERSION, Roles::format_version());
   expect_metadata.put(Roles::GENERATION, Roles::generation());
   expect_metadata.put(Roles::ROLE_ROLNAME, ROLE_NAME);
-  expect_metadata.put(Roles::ROLE_ROLSUPER, "false");        // false
-  expect_metadata.put(Roles::ROLE_ROLINHERIT, "false");      // false
+  expect_metadata.put(Roles::ROLE_ROLSUPER, "false");       // false
+  expect_metadata.put(Roles::ROLE_ROLINHERIT, "false");     // false
   expect_metadata.put(Roles::ROLE_ROLCREATEROLE, "true");   // true
   expect_metadata.put(Roles::ROLE_ROLCREATEDB, "true");     // true
-  expect_metadata.put(Roles::ROLE_ROLCANLOGIN, "false");     // false
+  expect_metadata.put(Roles::ROLE_ROLCANLOGIN, "false");    // false
   expect_metadata.put(Roles::ROLE_ROLREPLICATION, "true");  // true
-  expect_metadata.put(Roles::ROLE_ROLBYPASSRLS, "false");    // false
-  expect_metadata.put(Roles::ROLE_ROLCONNLIMIT, "10");   // 10
-  expect_metadata.put(Roles::ROLE_ROLPASSWORD, "");      // empty
-  expect_metadata.put(Roles::ROLE_ROLVALIDUNTIL, "");    // empty
+  expect_metadata.put(Roles::ROLE_ROLBYPASSRLS, "false");   // false
+  expect_metadata.put(Roles::ROLE_ROLCONNLIMIT, "10");      // 10
+  expect_metadata.put(Roles::ROLE_ROLPASSWORD, "");         // empty
+  expect_metadata.put(Roles::ROLE_ROLVALIDUNTIL, "");       // empty
 
   // test getting by role id.
   error = roles->get(role_id, role_metadata);
@@ -391,7 +393,7 @@ void roles_test() {
 
 /*
  * @biref Retrieve and display the Roles metadata.
- * @param (role_name)  [in]   role name.
+ * @param (role_name)  [in]  role name.
  */
 void get_metadata(std::string_view role_name) {
   ErrorCode error = ErrorCode::UNKNOWN;
@@ -417,6 +419,43 @@ void get_metadata(std::string_view role_name) {
   }
 }
 
+/*
+ * @biref Retrieve and display the Roles metadata.
+ * @param (role_name)     [in]  role name.
+ * @param (permission)    [in]  permissions.
+ * @param (check_result)  [out] presence or absence of the specified
+ *   permissions.
+ */
+void confirm_permission_in_acls(std::string_view role_name,
+                                const char* permission) {
+  ErrorCode error = ErrorCode::UNKNOWN;
+
+std::cout << role_name << ", " << permission << std::endl;
+
+  auto tables = std::make_unique<Tables>(TEST_DB);
+  error = tables->init();
+  if (error != ErrorCode::OK) {
+    std::cout << "Failed to initialize the metadata management object."
+              << std::endl
+              << "  error code: " << static_cast<int32_t>(error) << std::endl
+              << std::endl;
+    return;
+  }
+
+  bool check_result;
+  error =
+      tables->confirm_permission_in_acls(role_name, permission, check_result);
+  if (error == ErrorCode::OK) {
+    std::cout << "  Role name: " << role_name << std::endl;
+    std::cout << "  Permission: " << permission << std::endl;
+    std::cout << "  Result: " << std::boolalpha << check_result << std::endl;
+  } else {
+    std::cout << "Failed to confirm permission." << std::endl
+              << "  error code: " << static_cast<int32_t>(error) << std::endl
+              << std::endl;
+  }
+}
+
 }  // namespace test
 
 /*
@@ -425,6 +464,8 @@ void get_metadata(std::string_view role_name) {
 int main(int argc, char* argv[]) {
   if (argc == 2) {
     test::get_metadata(argv[1]);
+  } else if (argc == 3) {
+    test::confirm_permission_in_acls(argv[1], argv[2]);
   } else {
     std::cout << "*** RolesMetadta test start. ***" << std::endl << std::endl;
 
