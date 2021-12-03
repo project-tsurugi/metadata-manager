@@ -3,7 +3,9 @@
 * metadata-manager
   * Manages metadata
 * message-broker
-  * Mediates communication among components in order to be able to exchange messages
+    * Mediates communication among components in order to be able to exchange messages
+* authentication-manager
+    * Provide user authentication function using PostgreSQL.
 
 ## Requirements
 
@@ -16,7 +18,7 @@
 ```dockerfile
 FROM ubuntu:18.04
 
-RUN apt update -y && apt install -y git build-essential cmake doxygen libboost-system-dev
+RUN apt update -y && apt install -y git build-essential cmake ninja-build doxygen libboost-system-dev
 ```
 
 ## How to build
@@ -42,12 +44,11 @@ RUN apt update -y && apt install -y git build-essential cmake doxygen libboost-s
     ```sh
     mkdir build
     cd build
-    cmake -DCMAKE_BUILD_TYPE=Debug ..
-    make
+    cmake -G Ninja -DCMAKE_BUILD_TYPE=Debug ..
+    ninja
     ```
 
 available options:
-
 * `-DBUILD_DOCUMENTS=OFF` - never build documents by doxygen
 * `-DDATA_STORAGE=postgresql` - specifies the data-storage where the metadata is stored. "postgresql" or "json".
 * `-DBUILD_TARGET=ALL` - specifies the library to be built. "ALL" or "AUTH" or "METADATA".
@@ -59,8 +60,18 @@ available options:
 ### install
 
 ```sh
-make install
+ninja install
 ```
+
+- Notice
+
+  If you chose `-DDATA_STORAGE=json` option, you should make the following directory manually.
+
+  `$HOME/.local/tsurugi/metadata`
+
+  You can change the above path by set the following environment variable.
+
+  `TSURUGI_METADATA_DIR`
 
 ### run tests
 
