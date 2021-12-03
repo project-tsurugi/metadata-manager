@@ -4,6 +4,8 @@
     * Manages metadata 
 * message-broker
     * Mediates communication among components in order to be able to exchange messages
+* authentication-manager
+    * Provide user authentication function using PostgreSQL.
 
 ## Requirements
 
