@@ -46,8 +46,8 @@ RUN apt update -y && apt install -y git build-essential cmake ninja-build doxyge
     ```
 
 available options:
-* `-DBUILD_TARGET=ALL` - specifies the library to be built. "METADATA", "AUTH" or "ALL" (default: ALL)
-* `-DDATA_STORAGE=postgresql` - specifies the data-storage where the metadata is stored. "postgresql" or "json" (default: postgresql)
+* `-DBUILD_TARGET=ALL` - specifies the library to be built. `METADATA`, `AUTH` or `ALL` (default: ALL)
+* `-DDATA_STORAGE=postgresql` - specifies the data-storage where the metadata is stored. `postgresql` or `json` (default: postgresql)
 * `-DFORCE_INSTALL_RPATH=ON` - force set RPATH for non-default library paths
 * `-DCMAKE_PREFIX_PATH=<installation directory>` - indicate prerequiste installation directory
 * `-DBUILD_DOCUMENTS=OFF` - never build documents by doxygen
@@ -61,6 +61,16 @@ available options:
 ```sh
 ninja install
 ```
+
+- Notice
+
+  If you chose `-DDATA_STORAGE=json` option, you should make the following directory manually.
+
+  `$HOME/.local/tsurugi/metadata`
+
+  You can change the above path by set the following environment variable.
+
+  `TSURUGI_METADATA_DIR`
 
 ### run tests
 
