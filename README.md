@@ -46,9 +46,11 @@ RUN apt update -y && apt install -y git build-essential cmake ninja-build doxyge
     ```
 
 available options:
+* `-DBUILD_TARGET=ALL` - specifies the library to be built. "METADATA", "AUTH" or "ALL" (default: ALL)
+* `-DDATA_STORAGE=postgresql` - specifies the data-storage where the metadata is stored. "postgresql" or "json" (default: postgresql)
+* `-DFORCE_INSTALL_RPATH=ON` - force set RPATH for non-default library paths
+* `-DCMAKE_PREFIX_PATH=<installation directory>` - indicate prerequiste installation directory
 * `-DBUILD_DOCUMENTS=OFF` - never build documents by doxygen
-* `-DDATA_STORAGE=postgresql` - specifies the data-storage where the metadata is stored. "postgresql" or "json".
-* `-DBUILD_TARGET=ALL` - specifies the library to be built. "ALL" or "AUTH" or "METADATA".
 * for debugging only
   * `-DENABLE_SANITIZER=OFF` - disable sanitizers (requires `-DCMAKE_BUILD_TYPE=Debug`)
   * `-DENABLE_UB_SANITIZER=ON` - enable undefined behavior sanitizer (requires `-DENABLE_SANITIZER=ON`)
@@ -57,7 +59,7 @@ available options:
 ### install 
 
 ```sh
-make install
+ninja install
 ```
 
 ### run tests
