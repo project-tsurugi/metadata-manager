@@ -5,7 +5,7 @@
 * message-broker
     * Mediates communication among components in order to be able to exchange messages
 * authentication-manager
-    * Provide user authentication function using PostgreSQL.
+    * Provides user authentication using PostgreSQL.
 
 ## Requirements
 
@@ -69,7 +69,7 @@ ninja install
 
   `$HOME/.local/tsurugi/metadata`
 
-  You can change the above path by set the following environment variable.
+  And you can change the above path by set the following environment variable.
 
   `TSURUGI_METADATA_DIR`
 
