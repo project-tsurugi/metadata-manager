@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 tsurugi project.
+ * Copyright 2020-2021 tsurugi project.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,39 +13,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-#ifndef COLUMNS_DAO_H_
-#define COLUMNS_DAO_H_
+#ifndef MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_DAO_COLUMNS_DAO_H_
+#define MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_DAO_COLUMNS_DAO_H_
 
 #include <boost/property_tree/ptree.hpp>
 #include <string>
+#include <string_view>
 
-#include "manager/metadata/dao/common/dbc_utils.h"
 #include "manager/metadata/dao/generic_dao.h"
 #include "manager/metadata/error_code.h"
-#include "manager/metadata/metadata.h"
+#include "manager/metadata/tables.h"
 
 namespace manager::metadata::db {
 
 class ColumnsDAO : public GenericDAO {
-   public:
-    explicit ColumnsDAO(ConnectionSPtr connection)
-        : GenericDAO(connection, TableName::COLUMNS) {}
+ public:
+  virtual ~ColumnsDAO() {}
 
-    manager::metadata::ErrorCode prepare() const override;
+  virtual manager::metadata::ErrorCode insert_one_column_metadata(
+      const ObjectIdType table_id,
+      const boost::property_tree::ptree& column) const = 0;
 
-    manager::metadata::ErrorCode insert_one_column_metadata(
-        ObjectIdType table_id, boost::property_tree::ptree& column) const;
-    manager::metadata::ErrorCode select_column_metadata(
-        const std::string& object_key, const std::string& object_value,
-        boost::property_tree::ptree& object) const;
+  virtual manager::metadata::ErrorCode select_column_metadata(
+      std::string_view object_key, std::string_view object_value,
+      boost::property_tree::ptree& object) const = 0;
 
-   private:
-    manager::metadata::ErrorCode get_ptree_from_p_gresult(
-        PGresult*& res, int ordinal_position,
-        boost::property_tree::ptree& column) const;
-};
+  virtual manager::metadata::ErrorCode delete_column_metadata(
+      std::string_view object_key, std::string_view object_value) const = 0;
+};  // class ColumnsDAO
 
 }  // namespace manager::metadata::db
 
-#endif  // COLUMNS_DAO_H_
+#endif  // MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_DAO_COLUMNS_DAO_H_

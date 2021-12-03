@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 tsurugi project.
+ * Copyright 2020-2021 tsurugi project.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,55 +13,43 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-#ifndef TABLES_DAO_H_
-#define TABLES_DAO_H_
+#ifndef MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_DAO_TABLES_DAO_H_
+#define MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_DAO_TABLES_DAO_H_
 
 #include <boost/property_tree/ptree.hpp>
 #include <string>
+#include <string_view>
+#include <vector>
 
-#include "manager/metadata/dao/common/dbc_utils.h"
 #include "manager/metadata/dao/generic_dao.h"
-#include "manager/metadata/entity/table_statistic.h"
-#include "manager/metadata/metadata.h"
+#include "manager/metadata/error_code.h"
+#include "manager/metadata/tables.h"
 
 namespace manager::metadata::db {
 
 class TablesDAO : public GenericDAO {
-   public:
-    explicit TablesDAO(ConnectionSPtr connection);
+ public:
+  virtual ~TablesDAO() {}
 
-    manager::metadata::ErrorCode prepare() const override;
+  virtual manager::metadata::ErrorCode insert_table_metadata(
+      const boost::property_tree::ptree& table,
+      ObjectIdType& table_id) const = 0;
 
-    manager::metadata::ErrorCode update_reltuples_by_table_id(
-        float reltuples, ObjectIdType table_id) const;
-    manager::metadata::ErrorCode update_reltuples_by_table_name(
-        float reltuples, const std::string& table_name,
-        ObjectIdType& table_id) const;
-    manager::metadata::ErrorCode select_table_statistic_by_table_id(
-        ObjectIdType table_id,
-        manager::metadata::TableStatistic& table_statistic) const;
-    manager::metadata::ErrorCode select_table_statistic_by_table_name(
-        const std::string& table_name, TableStatistic& table_statistic) const;
-    manager::metadata::ErrorCode insert_table_metadata(
-        boost::property_tree::ptree& table, ObjectIdType& table_id) const;
-    manager::metadata::ErrorCode select_table_metadata(
-        const std::string& object_key, const std::string& object_value,
-        boost::property_tree::ptree& object) const;
-    manager::metadata::ErrorCode delete_table_metadata_by_table_id(
-        ObjectIdType table_id) const;
-    manager::metadata::ErrorCode delete_table_metadata_by_table_name(
-        const std::string& table_name, ObjectIdType& table_id) const;
+  virtual manager::metadata::ErrorCode select_table_metadata(
+      std::string_view object_key, std::string_view object_value,
+      boost::property_tree::ptree& object) const = 0;
+  virtual manager::metadata::ErrorCode select_table_metadata(
+      std::vector<boost::property_tree::ptree>& container) const = 0;
 
-   private:
-    manager::metadata::ErrorCode get_table_statistic_from_p_gresult(
-        PGresult*& res, int ordinal_position,
-        TableStatistic& table_statistic) const;
-    manager::metadata::ErrorCode get_ptree_from_p_gresult(
-        PGresult*& res, int ordinal_position,
-        boost::property_tree::ptree& table) const;
-};
+  virtual manager::metadata::ErrorCode update_reltuples(
+      const float reltuples, std::string_view object_key,
+      std::string_view object_value, ObjectIdType& table_id) const = 0;
+
+  virtual manager::metadata::ErrorCode delete_table_metadata(
+      std::string_view object_key, std::string_view object_value,
+      ObjectIdType& table_id) const = 0;
+};  // class TablesDAO
 
 }  // namespace manager::metadata::db
 
-#endif  // TABLES_DAO_H_
+#endif  // MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_DAO_TABLES_DAO_H_

@@ -1,3 +1,5 @@
 BasedOnStyle: Google
 IncludeBlocks: Preserve
-IndentWidth: 4
+IndentWidth: 2
+DerivePointerAlignment: false
+PointerAlignment: Left

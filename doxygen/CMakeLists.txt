@@ -18,7 +18,7 @@ endif()
 
 set(TARGET_INCLUDES "")
 foreach (target_name
-        metadata-interface message-interface)
+        metadata-interface authentication-interface message-interface)
     get_target_property(
         _includes
         ${target_name} INTERFACE_INCLUDE_DIRECTORIES

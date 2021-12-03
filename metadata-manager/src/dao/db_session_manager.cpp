@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 tsurugi project.
+ * Copyright 2020-2021 tsurugi project.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,195 +13,114 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#if !defined(STORAGE_POSTGRESQL) && !defined(STORAGE_JSON)
+#define STORAGE_POSTGRESQL
+#endif
 
 #include "manager/metadata/dao/db_session_manager.h"
 
-#include <iostream>
-#include <memory>
-#include <string>
+#if defined(STORAGE_POSTGRESQL)
+#include "manager/metadata/dao/postgresql/columns_dao.h"
+#include "manager/metadata/dao/postgresql/datatypes_dao.h"
+#include "manager/metadata/dao/postgresql/privileges_dao.h"
+#include "manager/metadata/dao/postgresql/roles_dao.h"
+#include "manager/metadata/dao/postgresql/statistics_dao.h"
+#include "manager/metadata/dao/postgresql/tables_dao.h"
+#elif defined(STORAGE_JSON)
+#include "manager/metadata/dao/json/columns_dao.h"
+#include "manager/metadata/dao/json/datatypes_dao.h"
+#include "manager/metadata/dao/json/privileges_dao.h"
+#include "manager/metadata/dao/json/tables_dao.h"
+#endif
 
-#include <libpq-fe.h>
-
-#include "manager/metadata/dao/columns_dao.h"
-#include "manager/metadata/dao/common/config.h"
-#include "manager/metadata/dao/common/message.h"
-#include "manager/metadata/dao/datatypes_dao.h"
-#include "manager/metadata/dao/statistics_dao.h"
-#include "manager/metadata/dao/tables_dao.h"
-
+// =============================================================================
 namespace manager::metadata::db {
 
-/**
- *  @brief  Establishes a connection to the metadata repository
- *  using connection information in a string.
- *  @param  none.
- *  @return ErrorCode::OK if success, otherwise an error code.
+#if defined(STORAGE_POSTGRESQL)
+namespace storage = manager::metadata::db::postgresql;
+#elif defined(STORAGE_JSON)
+namespace storage = manager::metadata::db::json;
+#endif
+
+/* =============================================================================
+ * Private method area
  */
-manager::metadata::ErrorCode DBSessionManager::connect() {
-    connection = DbcUtils::make_connection_sptr(
-        PQconnectdb(Config::get_connection_string().c_str()));
-
-    if (!DbcUtils::is_open(connection)) {
-        std::cerr << Message::CONNECT_FAILURE << std::endl;
-        return ErrorCode::DATABASE_ACCESS_FAILURE;
-    }
-
-    return ErrorCode::OK;
-}
 
 /**
- *  @brief  Gets Dao instance for the requested table name
- *  if all the following steps are successfully completed.
- *  1. Establishes a connection to the metadata repository.
- *  2. Sends a query to set always-secure search path
- *     to the metadata repository.
- *  3. Defines prepared statements for returned Dao
- *     in the metadata repository.
- *  @param  (table_name)   [in]  unique id for the Dao.
- *  @param  (gdao)         [out] Dao instance if success.
- *  for the requested table name.
- *  @return ErrorCode::OK if success, otherwise an error code.
+ * @brief Create Dao instance for the requested table name.
+ * @param (table_name)   [in]  unique id for the Dao.
+ * @param (session_manager)   [in]  Data connector for the Dao.
+ * @param (gdao)         [out] Dao instance if success.
+ *     for the requested table name.
+ * @return ErrorCode::OK if success, otherwise an error code.
  */
-manager::metadata::ErrorCode DBSessionManager::get_dao(
-    GenericDAO::TableName table_name, std::shared_ptr<GenericDAO> &gdao) {
-    if (!DbcUtils::is_open(connection)) {
-        ErrorCode error = connect();
+manager::metadata::ErrorCode DBSessionManager::create_dao(
+    GenericDAO::TableName table_name, const DBSessionManager* session_manager,
+    std::shared_ptr<GenericDAO>& gdao) const {
+  ErrorCode error = ErrorCode::UNKNOWN;
 
-        if (error != ErrorCode::OK) {
-            return error;
-        }
+  storage::DBSessionManager* strage_session_manager =
+      (storage::DBSessionManager*)session_manager;
 
-        error = set_always_secure_search_path();
-
-        if (error != ErrorCode::OK) {
-            return error;
-        }
+  switch (table_name) {
+    case GenericDAO::TableName::TABLES: {
+      auto tdao = std::make_shared<storage::TablesDAO>(strage_session_manager);
+      gdao = tdao;
+      break;
     }
-
-    switch (table_name) {
-        case GenericDAO::TableName::TABLES: {
-            auto tdao = std::make_shared<TablesDAO>(connection);
-            gdao = tdao;
-            break;
-        }
-        case GenericDAO::TableName::STATISTICS: {
-            auto sdao = std::make_shared<StatisticsDAO>(connection);
-            gdao = sdao;
-            break;
-        }
-        case GenericDAO::TableName::DATATYPES: {
-            auto ddao = std::make_shared<DataTypesDAO>(connection);
-            gdao = ddao;
-            break;
-        }
-        case GenericDAO::TableName::COLUMNS: {
-            auto cdao = std::make_shared<ColumnsDAO>(connection);
-            gdao = cdao;
-            break;
-        }
-        default: {
-            return ErrorCode::INTERNAL_ERROR;
-            break;
-        }
+    case GenericDAO::TableName::STATISTICS: {
+#if defined(STORAGE_POSTGRESQL)
+      auto sdao =
+          std::make_shared<storage::StatisticsDAO>(strage_session_manager);
+      gdao = sdao;
+      break;
+#elif defined(STORAGE_JSON)
+      // Statistics are not supported in JSON.
+      return ErrorCode::NOT_SUPPORTED;
+#endif
     }
-
-    if (gdao == nullptr) {
-        return ErrorCode::INTERNAL_ERROR;
+    case GenericDAO::TableName::DATATYPES: {
+      auto ddao =
+          std::make_shared<storage::DataTypesDAO>(strage_session_manager);
+      gdao = ddao;
+      break;
     }
-
-    return gdao->prepare();
-}
-
-/**
- *  @brief  Starts a transaction scope managed by this DBSessionManager.
- *  @param  none.
- *  @return ErrorCode::OK if success, otherwise an error code.
- */
-manager::metadata::ErrorCode DBSessionManager::start_transaction() {
-    if (!DbcUtils::is_open(connection)) {
-        std::cerr << Message::START_TRANSACTION_FAILURE
-                  << Message::NOT_INITIALIZED << std::endl;
-        return ErrorCode::NOT_INITIALIZED;
+    case GenericDAO::TableName::COLUMNS: {
+      auto cdao = std::make_shared<storage::ColumnsDAO>(strage_session_manager);
+      gdao = cdao;
+      break;
     }
-    ResultUPtr res =
-        DbcUtils::make_result_uptr(PQexec(connection.get(), "BEGIN"));
-    if (PQresultStatus(res.get()) != PGRES_COMMAND_OK) {
-        std::cerr << Message::START_TRANSACTION_FAILURE
-                  << PQerrorMessage(connection.get()) << std::endl;
-        return ErrorCode::DATABASE_ACCESS_FAILURE;
+    case GenericDAO::TableName::ROLES: {
+#if defined(STORAGE_POSTGRESQL)
+      auto sdao = std::make_shared<storage::RolesDAO>(strage_session_manager);
+      gdao = sdao;
+      break;
+#elif defined(STORAGE_JSON)
+      // Roles are not supported in JSON.
+      return ErrorCode::NOT_SUPPORTED;
+#endif
     }
-
-    return ErrorCode::OK;
-}
-
-/**
- *  @brief  Commits all transactions currently started for all DAO contexts
- *  managed by this DBSessionManager.
- *  @param  none.
- *  @return ErrorCode::OK if success, otherwise an error code.
- */
-manager::metadata::ErrorCode DBSessionManager::commit() {
-    if (!DbcUtils::is_open(connection)) {
-        std::cerr << Message::COMMIT_FAILURE << Message::NOT_INITIALIZED
-                  << std::endl;
-        return ErrorCode::NOT_INITIALIZED;
+    case GenericDAO::TableName::PRIVILEGES: {
+      auto sdao =
+          std::make_shared<storage::PrivilegesDAO>(strage_session_manager);
+      gdao = sdao;
+      break;
     }
-    ResultUPtr res =
-        DbcUtils::make_result_uptr(PQexec(connection.get(), "COMMIT"));
-    if (PQresultStatus(res.get()) != PGRES_COMMAND_OK) {
-        std::cerr << Message::COMMIT_FAILURE << PQerrorMessage(connection.get())
-                  << std::endl;
-        return ErrorCode::DATABASE_ACCESS_FAILURE;
+    default: {
+      error = ErrorCode::INTERNAL_ERROR;
+      return error;
     }
+  }
 
-    return ErrorCode::OK;
-}
+  if (gdao == nullptr) {
+    error = ErrorCode::INTERNAL_ERROR;
+    return error;
+  }
 
-/**
- *  @brief  Rollbacks all transactions currently started for all DAO contexts
- *  managed by this DBSessionManager.
- *  @param  none.
- *  @return ErrorCode::OK if success, otherwise an error code.
- */
-manager::metadata::ErrorCode DBSessionManager::rollback() {
-    if (!DbcUtils::is_open(connection)) {
-        std::cerr << Message::ROLLBACK_FAILURE << Message::NOT_INITIALIZED
-                  << std::endl;
-        return ErrorCode::NOT_INITIALIZED;
-    }
-    ResultUPtr res =
-        DbcUtils::make_result_uptr(PQexec(connection.get(), "ROLLBACK"));
-    if (PQresultStatus(res.get()) != PGRES_COMMAND_OK) {
-        std::cerr << Message::ROLLBACK_FAILURE
-                  << PQerrorMessage(connection.get()) << std::endl;
-        return ErrorCode::DATABASE_ACCESS_FAILURE;
-    }
+  // Prepare for DAO.
+  error = gdao->prepare();
 
-    return ErrorCode::OK;
-}
-
-/**
- *  @brief  Sends a query to set always-secure search path
- *  to the metadata repository.
- *  @param  none.
- *  @return ErrorCode::OK if success, otherwise an error code.
- */
-manager::metadata::ErrorCode DBSessionManager::set_always_secure_search_path() {
-    if (!DbcUtils::is_open(connection)) {
-        std::cerr << Message::SET_ALWAYS_SECURE_SEARCH_PATH
-                  << Message::NOT_INITIALIZED << std::endl;
-        return ErrorCode::NOT_INITIALIZED;
-    }
-    ResultUPtr res = DbcUtils::make_result_uptr(
-        PQexec(connection.get(),
-               "SELECT pg_catalog.set_config('search_path', '', false)"));
-    if (PQresultStatus(res.get()) != PGRES_TUPLES_OK) {
-        std::cerr << Message::SET_ALWAYS_SECURE_SEARCH_PATH
-                  << PQerrorMessage(connection.get()) << std::endl;
-        return ErrorCode::DATABASE_ACCESS_FAILURE;
-    }
-
-    return ErrorCode::OK;
+  return error;
 }
 
 }  // namespace manager::metadata::db
