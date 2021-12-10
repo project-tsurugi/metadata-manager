@@ -1,0 +1,12 @@
+<map id="metadata&#45;manager/include/manager/metadata/dao/postgresql/roles_dao.h" name="metadata&#45;manager/include/manager/metadata/dao/postgresql/roles_dao.h">
+<area shape="rect" id="node3" href="$metadata-manager_2include_2manager_2metadata_2dao_2postgresql_2db__session__manager_8h.html" title="manager/metadata/dao\l/postgresql/db_session\l_manager.h" alt="" coords="896,109,1071,165"/>
+<area shape="rect" id="node8" href="$metadata-manager_2include_2manager_2metadata_2error__code_8h.html" title="manager/metadata/error\l_code.h" alt="" coords="655,392,837,433"/>
+<area shape="rect" id="node12" href="$dbc__utils_8h.html" title="manager/metadata/dao\l/postgresql/dbc_utils.h" alt="" coords="1373,117,1548,158"/>
+<area shape="rect" id="node16" href="$roles__dao_8h.html" title="manager/metadata/dao\l/roles_dao.h" alt="" coords="399,117,573,158"/>
+<area shape="rect" id="node5" href="$metadata-manager_2include_2manager_2metadata_2dao_2db__session__manager_8h.html" title="manager/metadata/dao\l/db_session_manager.h" alt="" coords="896,213,1071,255"/>
+<area shape="rect" id="node9" href="$common_8h.html" title="manager/metadata/dao\l/postgresql/common.h" alt="" coords="1197,213,1372,255"/>
+<area shape="rect" id="node7" href="$generic__dao_8h.html" title="manager/metadata/dao\l/generic_dao.h" alt="" coords="721,303,896,344"/>
+<area shape="rect" id="node15" href="$statement__name_8h.html" title="manager/metadata/dao\l/common/statement_name.h" alt="" coords="1498,213,1709,255"/>
+<area shape="rect" id="node18" href="$roles_8h.html" title="manager/metadata/roles.h" alt="" coords="317,221,511,247"/>
+<area shape="rect" id="node19" href="$metadata_8h.html" title="manager/metadata/metadata.h" alt="" coords="267,310,494,337"/>
+</map>

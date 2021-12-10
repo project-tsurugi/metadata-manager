@@ -1,0 +1,9 @@
+<map id="metadata&#45;manager/include/manager/metadata/dao/privileges_dao.h" name="metadata&#45;manager/include/manager/metadata/dao/privileges_dao.h">
+<area shape="rect" id="node2" href="$json_2privileges__dao_8h.html" title="metadata&#45;manager/include\l/manager/metadata/dao/json\l/privileges_dao.h" alt="" coords="5,95,216,151"/>
+<area shape="rect" id="node3" href="$postgresql_2privileges__dao_8h.html" title="metadata&#45;manager/include\l/manager/metadata/dao/postgresql\l/privileges_dao.h" alt="" coords="240,95,491,151"/>
+<area shape="rect" id="node6" href="$tables__provider_8h.html" title="metadata&#45;manager/include\l/manager/metadata/provider\l/tables_provider.h" alt="" coords="515,95,725,151"/>
+<area shape="rect" id="node4" href="$metadata-manager_2src_2dao_2db__session__manager_8cpp.html" title="metadata&#45;manager/src\l/dao/db_session_manager.cpp" alt="" coords="35,206,253,247"/>
+<area shape="rect" id="node5" href="$privileges__dao_8cpp.html" title="metadata&#45;manager/src\l/dao/postgresql/privileges\l_dao.cpp" alt="" coords="277,199,467,255"/>
+<area shape="rect" id="node7" href="$tables__provider_8cpp.html" title="metadata&#45;manager/src\l/provider/tables_provider.cpp" alt="" coords="507,206,717,247"/>
+<area shape="rect" id="node8" href="$tables_8cpp.html" title="metadata&#45;manager/src\l/tables.cpp" alt="" coords="741,206,912,247"/>
+</map>

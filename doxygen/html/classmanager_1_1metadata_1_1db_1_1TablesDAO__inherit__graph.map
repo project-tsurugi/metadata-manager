@@ -1,0 +1,5 @@
+<map id="manager::metadata::db::TablesDAO" name="manager::metadata::db::TablesDAO">
+<area shape="rect" id="node3" href="$classmanager_1_1metadata_1_1db_1_1json_1_1TablesDAO.html" title="manager::metadata::\ldb::json::TablesDAO" alt="" coords="435,5,594,47"/>
+<area shape="rect" id="node4" href="$classmanager_1_1metadata_1_1db_1_1postgresql_1_1TablesDAO.html" title="manager::metadata::\ldb::postgresql::TablesDAO" alt="" coords="419,71,611,112"/>
+<area shape="rect" id="node2" href="$classmanager_1_1metadata_1_1db_1_1GenericDAO.html" title="manager::metadata::\ldb::GenericDAO" alt="" coords="5,39,164,80"/>
+</map>

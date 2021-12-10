@@ -1,0 +1,12 @@
+<map id="metadata&#45;manager/include/manager/metadata/dao/columns_dao.h" name="metadata&#45;manager/include/manager/metadata/dao/columns_dao.h">
+<area shape="rect" id="node2" href="$json_2columns__dao_8h.html" title="metadata&#45;manager/include\l/manager/metadata/dao/json\l/columns_dao.h" alt="" coords="187,95,397,151"/>
+<area shape="rect" id="node4" href="$postgresql_2columns__dao_8h.html" title="metadata&#45;manager/include\l/manager/metadata/dao/postgresql\l/columns_dao.h" alt="" coords="515,95,765,151"/>
+<area shape="rect" id="node9" href="$tables__provider_8h.html" title="metadata&#45;manager/include\l/manager/metadata/provider\l/tables_provider.h" alt="" coords="1082,95,1291,151"/>
+<area shape="rect" id="node3" href="$metadata-manager_2src_2dao_2json_2db__session__manager_8cpp.html" title="metadata&#45;manager/src\l/dao/json/db_session\l_manager.cpp" alt="" coords="5,199,176,255"/>
+<area shape="rect" id="node5" href="$metadata-manager_2src_2dao_2db__session__manager_8cpp.html" title="metadata&#45;manager/src\l/dao/db_session_manager.cpp" alt="" coords="201,206,418,247"/>
+<area shape="rect" id="node6" href="$columns__dao_8cpp.html" title="metadata&#45;manager/src\l/dao/postgresql/columns\l_dao.cpp" alt="" coords="443,199,624,255"/>
+<area shape="rect" id="node7" href="$metadata-manager_2src_2dao_2postgresql_2db__session__manager_8cpp.html" title="metadata&#45;manager/src\l/dao/postgresql/db_session\l_manager.cpp" alt="" coords="649,199,847,255"/>
+<area shape="rect" id="node8" href="$statistics__dao_8cpp.html" title="metadata&#45;manager/src\l/dao/postgresql/statistics\l_dao.cpp" alt="" coords="871,199,1057,255"/>
+<area shape="rect" id="node10" href="$tables__provider_8cpp.html" title="metadata&#45;manager/src\l/provider/tables_provider.cpp" alt="" coords="1081,206,1292,247"/>
+<area shape="rect" id="node11" href="$tables_8cpp.html" title="metadata&#45;manager/src\l/tables.cpp" alt="" coords="1316,206,1487,247"/>
+</map>

@@ -1,0 +1,5 @@
+<map id="manager::metadata::db::ColumnsDAO" name="manager::metadata::db::ColumnsDAO">
+<area shape="rect" id="node3" href="$classmanager_1_1metadata_1_1db_1_1json_1_1ColumnsDAO.html" title="manager::metadata::\ldb::json::ColumnsDAO" alt="" coords="439,5,606,47"/>
+<area shape="rect" id="node4" href="$classmanager_1_1metadata_1_1db_1_1postgresql_1_1ColumnsDAO.html" title="manager::metadata::\ldb::postgresql::ColumnsDAO" alt="" coords="419,71,627,112"/>
+<area shape="rect" id="node2" href="$classmanager_1_1metadata_1_1db_1_1GenericDAO.html" title="manager::metadata::\ldb::GenericDAO" alt="" coords="5,39,164,80"/>
+</map>
