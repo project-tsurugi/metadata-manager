@@ -39,13 +39,15 @@ set_target_properties(${PROJECT_NAME}
 
 if (DATA_STORAGE_PG)
     set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -L${PG_LIBDIR}")
+    target_link_libraries(${PROJECT_NAME}
+        PRIVATE pq
+    )
 endif (DATA_STORAGE_PG)
 
 target_link_libraries(${PROJECT_NAME}
     PUBLIC ${PROJECT_NAME}-interface
     ${Boost_FILESYSTEM_LIBRARY}
     ${Boost_SYSTEM_LIBRARY}
-    PRIVATE pq
 )
 
 install_custom(${PROJECT_NAME} ${export_name})
