@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 tsurugi project.
+ * Copyright 2020-2021 tsurugi project.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,9 +15,10 @@
  */
 #include "manager/metadata/dao/postgresql/db_session_manager.h"
 
+#include <libpq-fe.h>
+
 #include <iostream>
 
-#include <libpq-fe.h>
 #include "manager/metadata/dao/common/config.h"
 #include "manager/metadata/dao/common/message.h"
 #include "manager/metadata/dao/postgresql/columns_dao.h"
@@ -32,22 +33,24 @@ namespace manager::metadata::db::postgresql {
 using manager::metadata::ErrorCode;
 
 /**
- *  @brief  Gets Dao instance for the requested table name
- *  if all the following steps are successfully completed.
- *  1. Establishes a connection_ to the metadata repository.
- *  2. Sends a query to set always-secure search path
- *     to the metadata repository.
- *  3. Defines prepared statements for returned Dao
- *     in the metadata repository.
- *  @param  (table_name)   [in]  unique id for the Dao.
- *  @param  (gdao)         [out] Dao instance if success.
- *  for the requested table name.
- *  @return ErrorCode::OK if success, otherwise an error code.
+ * @brief Gets Dao instance for the requested table name
+ *   if all the following steps are successfully completed.
+ *   1. Establishes a connection_ to the metadata repository.
+ *   2. Sends a query to set always-secure search path
+ *      to the metadata repository.
+ *   3. Defines prepared statements for returned Dao
+ *      in the metadata repository.
+ * @param (table_name)   [in]  unique id for the Dao.
+ * @param (gdao)         [out] Dao instance if success.
+ *   for the requested table name.
+ * @return ErrorCode::OK if success, otherwise an error code.
  */
-ErrorCode DBSessionManager::get_dao(GenericDAO::TableName table_name,
-                                    std::shared_ptr<GenericDAO> &gdao) {
+ErrorCode DBSessionManager::get_dao(const GenericDAO::TableName table_name,
+                                    std::shared_ptr<GenericDAO>& gdao) {
+  ErrorCode error = ErrorCode::UNKNOWN;
+
   if (!DbcUtils::is_open(connection_)) {
-    ErrorCode error = connect();
+    error = connect();
     if (error != ErrorCode::OK) {
       return error;
     }
@@ -58,121 +61,152 @@ ErrorCode DBSessionManager::get_dao(GenericDAO::TableName table_name,
     }
   }
 
-  return create_dao(table_name, (manager::metadata::db::DBSessionManager *)this,
-                    gdao);
+  error = create_dao(table_name, (manager::metadata::db::DBSessionManager*)this,
+                     gdao);
+
+  return error;
 }
 
 /**
- *  @brief  Starts a transaction scope managed by this DBSessionManager.
- *  @param  none.
- *  @return ErrorCode::OK if success, otherwise an error code.
+ * @brief Starts a transaction scope managed by this DBSessionManager.
+ * @param none.
+ * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode DBSessionManager::start_transaction() {
+  ErrorCode error = ErrorCode::UNKNOWN;
+
   if (!DbcUtils::is_open(connection_)) {
     std::cerr << Message::START_TRANSACTION_FAILURE << Message::NOT_INITIALIZED
               << std::endl;
-    return ErrorCode::NOT_INITIALIZED;
-  }
-  ResultUPtr res =
-      DbcUtils::make_result_uptr(PQexec(connection_.get(), "BEGIN"));
-  if (PQresultStatus(res.get()) != PGRES_COMMAND_OK) {
-    std::cerr << Message::START_TRANSACTION_FAILURE
-              << PQerrorMessage(connection_.get()) << std::endl;
-    return ErrorCode::DATABASE_ACCESS_FAILURE;
+    error = ErrorCode::NOT_INITIALIZED;
+    return error;
   }
 
-  return ErrorCode::OK;
+  ResultUPtr res =
+      DbcUtils::make_result_uptr(PQexec(connection_.get(), "BEGIN"));
+  if (PQresultStatus(res.get()) == PGRES_COMMAND_OK) {
+    error = ErrorCode::OK;
+  } else {
+    std::cerr << Message::START_TRANSACTION_FAILURE
+              << PQerrorMessage(connection_.get()) << std::endl;
+    error = ErrorCode::DATABASE_ACCESS_FAILURE;
+  }
+
+  return error;
 }
 
 /**
- *  @brief  Commits all transactions currently started for all DAO contexts
- *  managed by this DBSessionManager.
- *  @param  none.
- *  @return ErrorCode::OK if success, otherwise an error code.
+ * @brief Commits all transactions currently started for all DAO contexts
+ *   managed by this DBSessionManager.
+ * @param none.
+ * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode DBSessionManager::commit() {
+  ErrorCode error = ErrorCode::UNKNOWN;
+
   if (!DbcUtils::is_open(connection_)) {
     std::cerr << Message::COMMIT_FAILURE << Message::NOT_INITIALIZED
               << std::endl;
-    return ErrorCode::NOT_INITIALIZED;
-  }
-  ResultUPtr res =
-      DbcUtils::make_result_uptr(PQexec(connection_.get(), "COMMIT"));
-  if (PQresultStatus(res.get()) != PGRES_COMMAND_OK) {
-    std::cerr << Message::COMMIT_FAILURE << PQerrorMessage(connection_.get())
-              << std::endl;
-    return ErrorCode::DATABASE_ACCESS_FAILURE;
+    error = ErrorCode::NOT_INITIALIZED;
+    return error;
   }
 
-  return ErrorCode::OK;
+  ResultUPtr res =
+      DbcUtils::make_result_uptr(PQexec(connection_.get(), "COMMIT"));
+  if (PQresultStatus(res.get()) == PGRES_COMMAND_OK) {
+    error = ErrorCode::OK;
+  } else {
+    std::cerr << Message::COMMIT_FAILURE << PQerrorMessage(connection_.get())
+              << std::endl;
+    error = ErrorCode::DATABASE_ACCESS_FAILURE;
+  }
+
+  return error;
 }
 
 /**
- *  @brief  Rollbacks all transactions currently started for all DAO contexts
- *  managed by this DBSessionManager.
- *  @param  none.
- *  @return ErrorCode::OK if success, otherwise an error code.
+ * @brief Rollbacks all transactions currently started for all DAO contexts
+ *   managed by this DBSessionManager.
+ * @param none.
+ * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode DBSessionManager::rollback() {
+  ErrorCode error = ErrorCode::UNKNOWN;
+
   if (!DbcUtils::is_open(connection_)) {
     std::cerr << Message::ROLLBACK_FAILURE << Message::NOT_INITIALIZED
               << std::endl;
-    return ErrorCode::NOT_INITIALIZED;
+    error = ErrorCode::NOT_INITIALIZED;
+    return error;
   }
   ResultUPtr res =
       DbcUtils::make_result_uptr(PQexec(connection_.get(), "ROLLBACK"));
-  if (PQresultStatus(res.get()) != PGRES_COMMAND_OK) {
+  if (PQresultStatus(res.get()) == PGRES_COMMAND_OK) {
+    error = ErrorCode::OK;
+  } else {
     std::cerr << Message::ROLLBACK_FAILURE << PQerrorMessage(connection_.get())
               << std::endl;
-    return ErrorCode::DATABASE_ACCESS_FAILURE;
+    error = ErrorCode::DATABASE_ACCESS_FAILURE;
   }
 
-  return ErrorCode::OK;
+  return error;
 }
 
-// -----------------------------------------------------------------------------
-// Private method area
+/* =============================================================================
+ * Private method area
+ */
 
 /**
- *  @brief  Establishes a connection_ to the metadata repository
- *  using connection_ information in a string.
- *  @param  none.
- *  @return ErrorCode::OK if success, otherwise an error code.
+ * @brief Establishes a connection_ to the metadata repository
+ *   using connection_ information in a string.
+ * @param none.
+ * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode DBSessionManager::connect() {
+  ErrorCode error = ErrorCode::UNKNOWN;
+
   connection_ = DbcUtils::make_connection_sptr(
       PQconnectdb(Config::get_connection_string().c_str()));
 
-  if (!DbcUtils::is_open(connection_)) {
+  if (DbcUtils::is_open(connection_)) {
+    error = ErrorCode::OK;
+  } else {
     std::cerr << Message::CONNECT_FAILURE << std::endl;
-    return ErrorCode::DATABASE_ACCESS_FAILURE;
+    error = ErrorCode::DATABASE_ACCESS_FAILURE;
   }
 
-  return ErrorCode::OK;
+  return error;
 }
 
 /**
- *  @brief  Sends a query to set always-secure search path
- *  to the metadata repository.
- *  @param  none.
- *  @return ErrorCode::OK if success, otherwise an error code.
+ * @brief Sends a query to set always-secure search path
+ *   to the metadata repository.
+ * @param none.
+ * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode DBSessionManager::set_always_secure_search_path() const {
+  ErrorCode error = ErrorCode::UNKNOWN;
+
   if (!DbcUtils::is_open(connection_)) {
     std::cerr << Message::SET_ALWAYS_SECURE_SEARCH_PATH
               << Message::NOT_INITIALIZED << std::endl;
-    return ErrorCode::NOT_INITIALIZED;
-  }
-  ResultUPtr res = DbcUtils::make_result_uptr(
-      PQexec(connection_.get(),
-             "SELECT pg_catalog.set_config('search_path', '', false)"));
-  if (PQresultStatus(res.get()) != PGRES_TUPLES_OK) {
-    std::cerr << Message::SET_ALWAYS_SECURE_SEARCH_PATH
-              << PQerrorMessage(connection_.get()) << std::endl;
-    return ErrorCode::DATABASE_ACCESS_FAILURE;
+    error = ErrorCode::NOT_INITIALIZED;
+    return error;
   }
 
-  return ErrorCode::OK;
+  std::string statement =
+      "SELECT pg_catalog.set_config('search_path', '', false)";
+  ResultUPtr res =
+      DbcUtils::make_result_uptr(PQexec(connection_.get(), statement.data()));
+  if (PQresultStatus(res.get()) == PGRES_TUPLES_OK) {
+    error = ErrorCode::OK;
+  } else {
+    std::cerr << Message::SET_ALWAYS_SECURE_SEARCH_PATH
+              << PQerrorMessage(connection_.get()) << std::endl;
+    error = ErrorCode::DATABASE_ACCESS_FAILURE;
+  }
+
+  return error;
 }
 
 }  // namespace manager::metadata::db::postgresql

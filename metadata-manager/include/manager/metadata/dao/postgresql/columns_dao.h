@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 tsurugi project.
+ * Copyright 2020-2021 tsurugi project.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,39 +13,87 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef MANAGER_METADATA_DAO_POSTGRESQL_COLUMNS_DAO_H_
-#define MANAGER_METADATA_DAO_POSTGRESQL_COLUMNS_DAO_H_
+#ifndef MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_DAO_POSTGRESQL_COLUMNS_DAO_H_
+#define MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_DAO_POSTGRESQL_COLUMNS_DAO_H_
+
+#include <boost/property_tree/ptree.hpp>
 
 #include "manager/metadata/dao/columns_dao.h"
 #include "manager/metadata/dao/postgresql/common.h"
 #include "manager/metadata/dao/postgresql/db_session_manager.h"
+#include "manager/metadata/error_code.h"
 
 namespace manager::metadata::db::postgresql {
 
 class ColumnsDAO : public manager::metadata::db::ColumnsDAO {
  public:
-  explicit ColumnsDAO(DBSessionManager *session_manager)
-      : connection_(session_manager->get_connection()){};
+  /**
+   * @brief Column name of the column metadata table in the metadata repository.
+   */
+  class ColumnName {
+   public:
+    static constexpr const char* const kFormatVersion = "format_version";
+    static constexpr const char* const kGeneration = "generation";
+    static constexpr const char* const kId = "id";
+    static constexpr const char* const kName = "name";
+    static constexpr const char* const kTableId = "table_id";
+    static constexpr const char* const kOrdinalPosition = "ordinal_position";
+    static constexpr const char* const kDataTypeId = "data_type_id";
+    static constexpr const char* const kDataLength = "data_length";
+    static constexpr const char* const kVarying = "varying";
+    static constexpr const char* const kNullable = "nullable";
+    static constexpr const char* const kDefaultExpr = "default_expr";
+    static constexpr const char* const kDirection = "direction";
+  };  // class ColumnName
+
+  /**
+   * @brief Column ordinal position of the column metadata table
+   *   in the metadata repository.
+   */
+  enum class OrdinalPosition {
+    kFormatVersion = 0,
+    kGeneration,
+    kId,
+    kName,
+    kTableId,
+    kOrdinalPosition,
+    kDataTypeId,
+    kDataLength,
+    kVarying,
+    kNullable,
+    kDefaultExpr,
+    kDirection
+  };  // enum class OrdinalPosition
+
+  /**
+   * @brief column metadata table name.
+   */
+  static constexpr const char* const kTableName = "tsurugi_attribute";
+
+  explicit ColumnsDAO(DBSessionManager* session_manager);
 
   manager::metadata::ErrorCode prepare() const override;
 
   manager::metadata::ErrorCode insert_one_column_metadata(
-      ObjectIdType table_id,
-      boost::property_tree::ptree &column) const override;
+      const ObjectIdType table_id,
+      const boost::property_tree::ptree& column) const override;
+
   manager::metadata::ErrorCode select_column_metadata(
       std::string_view object_key, std::string_view object_value,
-      boost::property_tree::ptree &object) const override;
-  manager::metadata::ErrorCode delete_column_metadata_by_table_id(
-      ObjectIdType table_id) const override;
+      boost::property_tree::ptree& object) const override;
+
+  manager::metadata::ErrorCode delete_column_metadata(
+      std::string_view object_key,
+      std::string_view object_value) const override;
 
  private:
   ConnectionSPtr connection_;
 
-  manager::metadata::ErrorCode get_ptree_from_p_gresult(
-      PGresult *&res, int ordinal_position,
-      boost::property_tree::ptree &column) const;
+  manager::metadata::ErrorCode convert_pgresult_to_ptree(
+      const PGresult* res, const int ordinal_position,
+      boost::property_tree::ptree& column) const;
 };  // class ColumnsDAO
 
 }  // namespace manager::metadata::db::postgresql
 
-#endif  // MANAGER_METADATA_DAO_POSTGRESQL_COLUMNS_DAO_H_
+#endif  // MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_DAO_POSTGRESQL_COLUMNS_DAO_H_

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 tsurugi project.
+ * Copyright 2021 tsurugi project.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,35 +13,38 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef MANAGER_METADATA_DAO_JSON_DB_SESSION_MANAGER_H_
-#define MANAGER_METADATA_DAO_JSON_DB_SESSION_MANAGER_H_
+#ifndef MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_DAO_JSON_DB_SESSION_MANAGER_H_
+#define MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_DAO_JSON_DB_SESSION_MANAGER_H_
 
 #include <boost/property_tree/ptree.hpp>
+#include <memory>
+#include <string>
 
 #include "manager/metadata/dao/db_session_manager.h"
+#include "manager/metadata/error_code.h"
 
 namespace manager::metadata::db::json {
 
 class DBSessionManager : public manager::metadata::db::DBSessionManager {
  public:
-  DBSessionManager(): meta_object_(std::make_unique<boost::property_tree::ptree>()) {}
+  DBSessionManager()
+      : meta_object_(std::make_unique<boost::property_tree::ptree>()) {}
 
   manager::metadata::ErrorCode get_dao(
-      GenericDAO::TableName table_name,
-      std::shared_ptr<GenericDAO> &gdao) override;
+      const GenericDAO::TableName table_name,
+      std::shared_ptr<GenericDAO>& gdao) override;
 
   manager::metadata::ErrorCode start_transaction() override;
   manager::metadata::ErrorCode commit() override;
   manager::metadata::ErrorCode rollback() override;
 
-
   manager::metadata::ErrorCode connect(std::string_view file_name,
                                        std::string_view initial_node);
-  boost::property_tree::ptree *get_container() const;
+  boost::property_tree::ptree* get_container() const;
   manager::metadata::ErrorCode load_object() const;
 
-  DBSessionManager(const DBSessionManager &) = delete;
-  DBSessionManager &operator=(const DBSessionManager &) = delete;
+  DBSessionManager(const DBSessionManager&) = delete;
+  DBSessionManager& operator=(const DBSessionManager&) = delete;
 
  private:
   std::string file_name_;
@@ -53,4 +56,4 @@ class DBSessionManager : public manager::metadata::db::DBSessionManager {
 
 }  // namespace manager::metadata::db::json
 
-#endif  // MANAGER_METADATA_DAO_JSON_DB_SESSION_MANAGER_H_
+#endif  // MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_DAO_JSON_DB_SESSION_MANAGER_H_

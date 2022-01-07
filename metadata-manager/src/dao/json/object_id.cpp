@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 tsurugi project.
+ * Copyright 2021 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,22 +15,13 @@
  */
 #include "manager/metadata/dao/json/object_id.h"
 
+#include <boost/format.hpp>
+#include <boost/property_tree/ini_parser.hpp>
+#include <boost/property_tree/ptree.hpp>
 #include <fstream>
 #include <iostream>
 
-#include <boost/format.hpp>
-#include <boost/optional.hpp>
-#include <boost/property_tree/ini_parser.hpp>
-#include <boost/property_tree/ptree.hpp>
-
 #include "manager/metadata/dao/common/config.h"
-
-// =============================================================================
-namespace {
-
-std::string oid_file_name;
-
-}  // namespace
 
 // =============================================================================
 namespace manager::metadata::db::json {
@@ -43,43 +34,50 @@ using manager::metadata::ErrorCode;
 static ObjectIdType INVALID_OID = 0;
 
 /**
- *  @brief  initialize object-ID metadata-table.
+ * @brief Contractor.
  */
-ErrorCode ObjectId::init() {
+ObjectId::ObjectId() {
   // Filename of the table metadata.
   boost::format filename = boost::format("%s/%s") %
                            Config::get_storage_dir_path() %
                            std::string(ObjectId::OID_NAME);
+  oid_file_name_ = filename.str();
+}
 
-  oid_file_name = filename.str();
-  std::ifstream file(oid_file_name);
+/**
+ * @brief initialize object-ID metadata-table.
+ */
+ErrorCode ObjectId::init() {
+  ErrorCode error = ErrorCode::UNKNOWN;
 
+  std::ifstream file(oid_file_name_);
   try {
     if (!file) {
       // create oid-metadata-table.
       ptree root;
-      ini_parser::write_ini(oid_file_name, root);
+      ini_parser::write_ini(oid_file_name_, root);
     }
+    error = ErrorCode::OK;
   } catch (...) {
-    return ErrorCode::UNKNOWN;
+    error = ErrorCode::INTERNAL_ERROR;
   }
 
-  return ErrorCode::OK;
+  return error;
 }
 
 /**
- *  @brief  current object-ID.
- *  @return ErrorCode::OK if success, otherwise an error code.
+ * @brief current object-ID.
+ * @return ErrorCode::OK if success, otherwise an error code.
  */
-ObjectIdType ObjectId::current(const std::string table_name) {
-  if (ObjectId::init() != ErrorCode::OK) {
+ObjectIdType ObjectId::current(std::string_view table_name) {
+  if (init() != ErrorCode::OK) {
     return INVALID_OID;
   }
 
   ptree pt;
   try {
-    ini_parser::read_ini(oid_file_name, pt);
-  } catch (ini_parser_error &e) {
+    ini_parser::read_ini(oid_file_name_, pt);
+  } catch (ini_parser_error& e) {
     std::wcout << "read_ini() error. " << e.what() << std::endl;
     return INVALID_OID;
   } catch (...) {
@@ -87,29 +85,30 @@ ObjectIdType ObjectId::current(const std::string table_name) {
     return INVALID_OID;
   }
 
-  boost::optional<ObjectIdType> oid = pt.get_optional<ObjectIdType>(table_name);
+  boost::optional<ObjectIdType> oid =
+      pt.get_optional<ObjectIdType>(table_name.data());
   if (!oid) {
     // create OID key for specified metadata.
-    pt.put(table_name, 0);
-    oid = pt.get_optional<ObjectIdType>(table_name);
+    pt.put(table_name.data(), 0);
+    oid = pt.get_optional<ObjectIdType>(table_name.data());
   }
 
   return oid.get();
 }
 
 /**
- *  @brief  generate new object-ID.
- *  @return ErrorCode::OK if success, otherwise an error code.
+ * @brief generate new object-ID.
+ * @return ErrorCode::OK if success, otherwise an error code.
  */
-ObjectIdType ObjectId::generate(const std::string table_name) {
-  if (ObjectId::init() != ErrorCode::OK) {
+ObjectIdType ObjectId::generate(std::string_view table_name) {
+  if (init() != ErrorCode::OK) {
     return INVALID_OID;
   }
 
   ptree pt;
   try {
-    ini_parser::read_ini(oid_file_name, pt);
-  } catch (ini_parser_error &e) {
+    ini_parser::read_ini(oid_file_name_, pt);
+  } catch (ini_parser_error& e) {
     std::wcout << "read_ini() error. " << e.what() << std::endl;
     return INVALID_OID;
   } catch (...) {
@@ -117,19 +116,20 @@ ObjectIdType ObjectId::generate(const std::string table_name) {
     return INVALID_OID;
   }
 
-  boost::optional<ObjectIdType> oid = pt.get_optional<ObjectIdType>(table_name);
+  boost::optional<ObjectIdType> oid =
+      pt.get_optional<ObjectIdType>(table_name.data());
   if (!oid) {
     // create OID key for specified metadata.
-    pt.put(table_name, 0);
-    oid = pt.get_optional<ObjectIdType>(table_name);
+    pt.put(table_name.data(), 0);
+    oid = pt.get_optional<ObjectIdType>(table_name.data());
   }
 
   // generate new OID
-  pt.put(table_name, ++oid.get());
+  pt.put(table_name.data(), ++oid.get());
 
   try {
-    ini_parser::write_ini(oid_file_name, pt);
-  } catch (ini_parser_error &e) {
+    ini_parser::write_ini(oid_file_name_, pt);
+  } catch (ini_parser_error& e) {
     std::wcout << "write_ini() error. " << e.what() << std::endl;
     return INVALID_OID;
   } catch (...) {
@@ -141,102 +141,3 @@ ObjectIdType ObjectId::generate(const std::string table_name) {
 }
 
 }  // namespace manager::metadata::db::json
-
-/* =============================================================================================
- */
-namespace manager::metadata_manager {
-
-using namespace boost::property_tree;
-
-static ObjectIdType INVALID_OID = 0;
-
-const char *ObjectId::TABLE_NAME = "object_id.ini";
-
-/**
- *  @brief  initialize object-ID metadata-table.
- */
-ErrorCode ObjectId::init() {
-  std::ifstream file(ObjectId::TABLE_NAME);
-
-  try {
-    if (!file.is_open()) {
-      // create oid-metadata-table.
-      ptree root;
-      write_ini(ObjectId::TABLE_NAME, root);
-    }
-  } catch (...) {
-    return ErrorCode::UNKNOWN;
-  }
-
-  return ErrorCode::OK;
-}
-
-/**
- *  @brief  current object-ID.
- *  @return ErrorCode::OK if success, otherwise an error code.
- */
-ObjectIdType ObjectId::current(const std::string table_name) {
-  boost::property_tree::ptree pt;
-
-  init();
-
-  try {
-    read_ini(ObjectId::TABLE_NAME, pt);
-  } catch (boost::property_tree::ini_parser_error &e) {
-    std::wcout << "read_ini() error. " << e.what() << std::endl;
-    return INVALID_OID;
-  } catch (...) {
-    std::cout << "read_ini() error." << std::endl;
-    return INVALID_OID;
-  }
-
-  boost::optional<ObjectIdType> oid = pt.get_optional<ObjectIdType>(table_name);
-  if (!oid) {
-    // create OID key for specified metadata.
-    pt.put(table_name, 0);
-    oid = pt.get_optional<ObjectIdType>(table_name);
-  }
-
-  return oid.get();
-}
-
-/**
- *  @brief  generate new object-ID.
- *  @return ErrorCode::OK if success, otherwise an error code.
- */
-ObjectIdType ObjectId::generate(const std::string table_name) {
-  boost::property_tree::ptree pt;
-
-  init();
-
-  try {
-    read_ini(ObjectId::TABLE_NAME, pt);
-  } catch (boost::property_tree::ini_parser_error &e) {
-    std::wcout << "read_ini() error. " << e.what() << std::endl;
-    return INVALID_OID;
-  } catch (...) {
-    std::cout << "read_ini() error." << std::endl;
-    return INVALID_OID;
-  }
-
-  boost::optional<ObjectIdType> oid = pt.get_optional<ObjectIdType>(table_name);
-  if (!oid) {
-    // create OID key for specified metadata.
-    pt.put(table_name, 0);
-    oid = pt.get_optional<ObjectIdType>(table_name);
-  }
-
-  // generate new OID
-  pt.put(table_name, ++oid.get());
-
-  try {
-    write_ini(ObjectId::TABLE_NAME, pt);
-  } catch (...) {
-    std::cout << "read_ini() error." << std::endl;
-    return INVALID_OID;
-  }
-
-  return oid.get();
-}
-
-}  // namespace manager::metadata_manager

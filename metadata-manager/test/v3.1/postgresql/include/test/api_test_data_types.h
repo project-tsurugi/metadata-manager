@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 tsurugi project.
+ * Copyright 2020-2021 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,15 +25,15 @@ namespace manager::metadata::testing {
 typedef std::tuple<std::string, std::string> TupleApiTestDataTypes;
 
 class ApiTestDataTypes {
-   public:
-    static std::vector<TupleApiTestDataTypes> make_datatypes_tuple();
-    static void check_datatype_metadata_expected(
-        const boost::property_tree::ptree& datatype);
+ public:
+  static std::vector<TupleApiTestDataTypes> make_datatypes_tuple();
+  static void check_datatype_metadata_expected(
+      const boost::property_tree::ptree& datatype);
 
-   private:
-    static void make_datatypes_tuple(std::string key,
-                                     std::vector<std::string> values,
-                                     ::std::vector<TupleApiTestDataTypes>& v);
+ private:
+  static void make_datatypes_tuple(std::string key,
+                                   std::vector<std::string> values,
+                                   ::std::vector<TupleApiTestDataTypes>& v);
 };
 
 }  // namespace manager::metadata::testing

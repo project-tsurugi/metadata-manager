@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 tsurugi project.
+ * Copyright 2020-2021 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
 
 #include <memory>
 
-#include "manager/metadata/dao/common/message.h"
 #include "manager/metadata/provider/statistics_provider.h"
 
 // =============================================================================
@@ -31,12 +30,11 @@ std::unique_ptr<manager::metadata::db::StatisticsProvider> provider = nullptr;
 namespace manager::metadata {
 
 using manager::metadata::ErrorCode;
-using manager::metadata::db::Message;
 
 /**
- *  @brief  Constructor
- *  @param  (database) [in]  database name.
- *  @param  (component) [in]  component name.
+ * @brief Constructor
+ * @param (database)   [in]  database name.
+ * @param (component)  [in]  component name.
  */
 Statistics::Statistics(std::string_view database, std::string_view component)
     : Metadata(database, component) {
@@ -45,173 +43,467 @@ Statistics::Statistics(std::string_view database, std::string_view component)
 }
 
 /**
- *  @brief  Initialization.
- *  @param  none.
- *  @return  ErrorCode::OK if success, otherwise an error code.
+ * @brief Initialization.
+ * @param none.
+ * @return ErrorCode::OK if success, otherwise an error code.
  */
-ErrorCode Statistics::init() {
+ErrorCode Statistics::init() const {
+  ErrorCode error = ErrorCode::UNKNOWN;
+
   // Initialize the provider.
-  ErrorCode error = provider->init();
+  error = provider->init();
 
   return error;
 }
 
 /**
- *  @brief  Adds or updates one column statistic
- *  to the column statistics table
- *  based on the given table id and the given column ordinal position.
- *  Adds one column statistic if it not exists in the metadata repository.
- *  Updates one column statistic if it already exists.
- *  @param  (table_id)          [in]  table id.
- *  @param  (ordinal_position)  [in]  column ordinal position.
- *  @param  (column_statistic)  [in]  one column statistic to add or update.
- *  @return ErrorCode::OK if success, otherwise an error code.
+ * @brief Add column statistics to statistics table.
+ * @param (object) [in]  statistics to add.
+ * @return ErrorCode::OK if success, otherwise an error code.
  */
-ErrorCode Statistics::add_one_column_statistic(
-    ObjectIdType table_id, ObjectIdType ordinal_position,
-    boost::property_tree::ptree &column_statistic) {
-  // Adds or updates the column statistic through the provider.
-  ErrorCode error = provider->add_column_statistic(table_id, ordinal_position,
-                                                   column_statistic);
+ErrorCode Statistics::add(const boost::property_tree::ptree& object) const {
+  ErrorCode error = ErrorCode::UNKNOWN;
+
+  // Adds the column statistics through the class method.
+  error = add(object, nullptr);
 
   return error;
 }
 
 /**
- *  @brief  Adds or updates table statistic
- *  to the table metadata table based on the given table id.
- *  Adds table statistic if it not exists in the metadata repository.
- *  Updates table statistic if it already exists.
- *  @param  (table_id)   [in]  table id.
- *  @param  (reltuples)  [in]  the number of rows to add or update.
- *  @return ErrorCode::OK if success, otherwise an error code.
+ * @brief Add column statistics to statistics table.
+ * @param (object)      [in]  statistics to add.
+ * @param (object_id)   [out] ID of the added statistic.
+ * @return ErrorCode::OK if success, otherwise an error code.
  */
-ErrorCode Statistics::add_table_statistic(ObjectIdType table_id,
-                                          float reltuples) {
-  // Adds or updates the table statistic through the provider.
-  ErrorCode error = provider->add_table_statistic(table_id, reltuples);
+ErrorCode Statistics::add(const boost::property_tree::ptree& object,
+                          ObjectIdType* object_id) const {
+  ErrorCode error = ErrorCode::UNKNOWN;
+
+  // Parameter value check.
+  error = param_check_statistics_add(object);
+  if (error != ErrorCode::OK) {
+    return error;
+  }
+
+  // Adds the column statistics through the provider.
+  ObjectIdType retval_object_id = 0;
+  error = provider->add_column_statistic(object, retval_object_id);
+
+  // Set a value if object_id is not null.
+  if ((error == ErrorCode::OK) && (object_id != nullptr)) {
+    *object_id = retval_object_id;
+  }
 
   return error;
 }
 
 /**
- *  @brief  Adds or updates table statistic
- *  to the table metadata table based on the given table name.
- *  Adds table statistic if it not exists in the metadata repository.
- *  Updates table statistic if it already exists.
- *  @param  (table_name) [in]  table name.
- *  @param  (reltuples)  [in]  the number of rows to add or update.
- *  @param  (table_id)   [out] table id of the row updated.
- *  @return ErrorCode::OK if success, otherwise an error code.
+ * @brief Get column statistics.
+ * @param (object_id)  [in]  statistic id.
+ * @param (object)     [out] column statistics with the specified ID.
+ * @retval ErrorCode::OK if success.
+ * @retval ErrorCode::ID_NOT_FOUND if the statistic id does not exist.
+ * @retval otherwise an error code.
  */
-ErrorCode Statistics::add_table_statistic(std::string_view table_name,
-                                          float reltuples,
-                                          ObjectIdType *table_id) {
-  // Adds or updates the table statistic through the provider.
-  ErrorCode error =
-      provider->add_table_statistic(table_name, reltuples, table_id);
+ErrorCode Statistics::get(const ObjectIdType object_id,
+                          boost::property_tree::ptree& object) const {
+  ErrorCode error = ErrorCode::UNKNOWN;
+
+  // Parameter value check.
+  if (object_id <= 0) {
+    error = ErrorCode::ID_NOT_FOUND;
+    return error;
+  }
+
+  // Get the column statistics through the provider.
+  error = provider->get_column_statistic(Statistics::ID,
+                                         std::to_string(object_id), object);
 
   return error;
 }
 
 /**
- *  @brief  Gets one column statistic from the column statistics table
- *  based on the given table id and the given column ordinal position.
- *  @param  (table_id)          [in]  table id.
- *  @param  (ordinal_position)  [in]  column ordinal position.
- *  @param  (column_statistic)  [out] one column statistic
- *  with the specified table id and column ordinal position.
- *  @return ErrorCode::OK if success, otherwise an error code.
+ * @brief Get column statistics object based on statistic name.
+ * @param (object_name)  [in]  statistic name. (Value of "name" key.)
+ * @param (object)       [out] column statistics object
+ *   with the specified name.
+ * @retval ErrorCode::OK if success.
+ * @retval ErrorCode::NAME_NOT_FOUND if the statistic name does not exist.
+ * @retval otherwise an error code.
  */
-ErrorCode Statistics::get_one_column_statistic(
-    ObjectIdType table_id, ObjectIdType ordinal_position,
-    ColumnStatistic &column_statistic) {
+ErrorCode Statistics::get(std::string_view object_name,
+                          boost::property_tree::ptree& object) const {
+  ErrorCode error = ErrorCode::UNKNOWN;
+
+  // Parameter value check.
+  if (object_name.empty()) {
+    error = ErrorCode::NAME_NOT_FOUND;
+    return error;
+  }
+
+  // Get the column statistics through the provider.
+  error = provider->get_column_statistic(Statistics::NAME, object_name, object);
+
+  return error;
+}
+
+/**
+ * @brief Gets one column statistic from the column statistics table
+ *   based on the given column id.
+ * @param (column_id)  [in]  column id.
+ * @param (object)     [out] one column statistic
+ *   with the specified column id.
+ * @retval ErrorCode::OK if success.
+ * @retval ErrorCode::ID_NOT_FOUND if the column id does not exist.
+ * @retval otherwise an error code.
+ */
+ErrorCode Statistics::get_by_column_id(
+    const ObjectIdType column_id, boost::property_tree::ptree& object) const {
+  ErrorCode error = ErrorCode::UNKNOWN;
+
+  // Parameter value check.
+  if (column_id <= 0) {
+    error = ErrorCode::ID_NOT_FOUND;
+    return error;
+  }
+
+  // Get the column statistics through the provider.
+  error = provider->get_column_statistic(Statistics::COLUMN_ID,
+                                         std::to_string(column_id), object);
+
+  return error;
+}
+
+/**
+ * @brief Gets one column statistic from the column statistics table
+ *   based on the given table id and the given column ordinal position.
+ * @param (table_id)          [in]  table id.
+ * @param (ordinal_position)  [in]  column ordinal position.
+ * @param (object)            [out] one column statistic
+ *   with the specified table id and column ordinal position.
+ * @retval ErrorCode::OK if success.
+ * @retval ErrorCode::ID_NOT_FOUND if the table id or ordinal position
+ *   does not exist.
+ * @retval otherwise an error code.
+ */
+ErrorCode Statistics::get_by_column_number(
+    const ObjectIdType table_id, const int64_t ordinal_position,
+    boost::property_tree::ptree& object) const {
+  ErrorCode error = ErrorCode::UNKNOWN;
+
+  // Parameter value check.
+  if ((table_id <= 0) || (ordinal_position <= 0)) {
+    error = ErrorCode::ID_NOT_FOUND;
+    return error;
+  }
+
   // Get the column statistic through the provider.
-  ErrorCode error = provider->get_column_statistic(table_id, ordinal_position,
-                                                   column_statistic);
+  error =
+      provider->get_column_statistic(table_id, Statistics::ORDINAL_POSITION,
+                                     std::to_string(ordinal_position), object);
 
   return error;
 }
 
 /**
- *  @brief  Gets all column statistics from the column statistics table
- *  based on the given table id.
- *  @param  (table_id)           [in]  table id.
- *  @param  (column_statistics)  [out] all column statistics
- *  with the specified table id.
- *  key : column ordinal position
- *  value : one column statistic
- *  @return ErrorCode::OK if success, otherwise an error code.
+ * @brief Gets one column statistic from the column statistics table
+ *   based on the given table id and the given column name.
+ * @param (table_id)     [in]  table id.
+ * @param (column_name)  [in]  column name.
+ * @param (object)       [out] one column statistic
+ *   with the specified table id and column name.
+ * @retval ErrorCode::OK if success.
+ * @retval ErrorCode::ID_NOT_FOUND if the table id does not exist.
+ * @retval ErrorCode::NAME_NOT_FOUND if the column name does not exist.
+ * @retval otherwise an error code.
  */
-ErrorCode Statistics::get_all_column_statistics(
-    ObjectIdType table_id,
-    std::unordered_map<ObjectIdType, ColumnStatistic> &column_statistics) {
-  // Get the all column statistics through the provider.
-  ErrorCode error =
-      provider->get_all_column_statistics(table_id, column_statistics);
+ErrorCode Statistics::get_by_column_name(
+    const ObjectIdType table_id, std::string_view column_name,
+    boost::property_tree::ptree& object) const {
+  ErrorCode error = ErrorCode::UNKNOWN;
+
+  // Parameter value check.
+  if (table_id <= 0) {
+    error = ErrorCode::ID_NOT_FOUND;
+    return error;
+  }
+  if (column_name.empty()) {
+    error = ErrorCode::NAME_NOT_FOUND;
+    return error;
+  }
+
+  // Get the column statistic through the provider.
+  error = provider->get_column_statistic(table_id, Statistics::COLUMN_NAME,
+                                         column_name, object);
 
   return error;
 }
 
 /**
- *  @brief  Gets one table statistic from the table metadata table
- *  based on the given table id.
- *  @param  (table_id)         [in]  table id.
- *  @param  (table_statistic)  [out] one table statistic
- *  with the specified table id.
- *  @return ErrorCode::OK if success, otherwise an error code.
+ * @brief Gets all column statistics from the column statistics table.
+ *   If the column statistic does not exist, return the container as empty.
+ * @param (container)  [out] Container for statistics-objects.
+ * @return ErrorCode::OK if success, otherwise an error code.
  */
-ErrorCode Statistics::get_table_statistic(
-    ObjectIdType table_id, manager::metadata::TableStatistic &table_statistic) {
-  // Get the table statistic through the provider.
-  ErrorCode error = provider->get_table_statistic(table_id, table_statistic);
+ErrorCode Statistics::get_all(
+    std::vector<boost::property_tree::ptree>& container) const {
+  ErrorCode error = ErrorCode::UNKNOWN;
+
+  // Get the column statistic through the provider.
+  error = provider->get_column_statistics(container);
 
   return error;
 }
 
 /**
- *  @brief  Gets one table statistic from the table metadata table
- *  based on the given table name.
- *  @param  (table_name)       [in]  table name.
- *  @param  (table_statistic)  [out] one table statistic
- *  with the specified table name.
- *  @return ErrorCode::OK if success, otherwise an error code.
+ * @brief Gets all column statistics from the column statistics table
+ *   based on the given table id.
+ *   If the column statistic does not exist, return the container as empty.
+ * @param (table_id)   [in]  table id.
+ * @param (container)  [out] Container for statistics-objects.
+ *   with the specified table id.
+ *   key : column ordinal position
+ *   value : one column statistic
+ * @return ErrorCode::OK if success, otherwise an error code.
  */
-ErrorCode Statistics::get_table_statistic(
-    std::string_view table_name,
-    manager::metadata::TableStatistic &table_statistic) {
-  // Get the table statistic through the provider.
-  ErrorCode error = provider->get_table_statistic(table_name, table_statistic);
+ErrorCode Statistics::get_all(
+    const ObjectIdType table_id,
+    std::vector<boost::property_tree::ptree>& container) const {
+  ErrorCode error = ErrorCode::UNKNOWN;
+
+  // Parameter value check.
+  if (table_id <= 0) {
+    error = ErrorCode::ID_NOT_FOUND;
+    return error;
+  }
+
+  // Get the column statistic through the provider.
+  error = provider->get_column_statistics(table_id, container);
 
   return error;
 }
 
 /**
- *  @brief  Removes one column statistic from the column statistics table
- *  based on the given table id and the given column ordinal position.
- *  @param  (table_id)          [in]  table id.
- *  @param  (ordinal_position)  [in]  column ordinal position.
- *  @return ErrorCode::OK if success, otherwise an error code.
+ * @brief Remove column statistics based on the given statistics id.
+ * @param (object_id)  [in]  statistic id.
+ * @retval ErrorCode::OK if success.
+ * @retval ErrorCode::ID_NOT_FOUND if the statistic id does not exist.
+ * @retval otherwise an error code.
  */
-ErrorCode Statistics::remove_one_column_statistic(
-    ObjectIdType table_id, ObjectIdType ordinal_position) {
-  // Remove the column statistic through the provider.
-  ErrorCode error =
-      provider->remove_column_statistic(table_id, ordinal_position);
+ErrorCode Statistics::remove(const ObjectIdType object_id) const {
+  ErrorCode error = ErrorCode::UNKNOWN;
 
-  return error;
-}
+  // Parameter value check.
+  if (object_id <= 0) {
+    error = ErrorCode::ID_NOT_FOUND;
+    return error;
+  }
 
-/**
- *  @brief  Removes all column statistics
- *  from the column statistics table
- *  based on the given table id.
- *  @param  (table_id)          [in]  table id.
- *  @return ErrorCode::OK if success, otherwise an error code.
- */
-ErrorCode Statistics::remove_all_column_statistics(ObjectIdType table_id) {
+  ObjectIdType retval_object_id = 0;
   // Remove the all column statistics through the provider.
-  ErrorCode error = provider->remove_all_column_statistics(table_id);
+  error = provider->remove_column_statistic(
+      Statistics::ID, std::to_string(object_id), retval_object_id);
+
+  return error;
+}
+
+/**
+ * @brief Remove column statistics based on the given statistics name.
+ * @param (object_name)  [in]  statistic name.
+ * @param (object_id)    [out] object id of statistic removed.
+ * @retval ErrorCode::OK if success.
+ * @retval ErrorCode::NAME_NOT_FOUND if the statistic name does not exist.
+ * @retval otherwise an error code.
+ */
+ErrorCode Statistics::remove(std::string_view object_name,
+                             ObjectIdType* object_id) const {
+  ErrorCode error = ErrorCode::UNKNOWN;
+  std::string_view s_object_name = std::string_view(object_name);
+
+  // Parameter value check.
+  if (s_object_name.empty()) {
+    error = ErrorCode::NAME_NOT_FOUND;
+    return error;
+  }
+
+  ObjectIdType retval_object_id = 0;
+  // Remove the table metadata through the provider.
+  error = provider->remove_column_statistic(Statistics::NAME, s_object_name,
+                                            retval_object_id);
+
+  // Set a value if object_id is not null.
+  if ((error == ErrorCode::OK) && (object_id != nullptr)) {
+    *object_id = retval_object_id;
+  }
+
+  return error;
+}
+
+/**
+ * @brief Removes all column statistics
+ *   from the column statistics table based on the given table id.
+ * @param (table_id)  [in]  table id.
+ * @retval ErrorCode::OK if success.
+ * @retval ErrorCode::ID_NOT_FOUND if the table id does not exist.
+ * @retval otherwise an error code.
+ */
+ErrorCode Statistics::remove_by_table_id(const ObjectIdType table_id) const {
+  ErrorCode error = ErrorCode::UNKNOWN;
+
+  // Parameter value check.
+  if (table_id <= 0) {
+    error = ErrorCode::ID_NOT_FOUND;
+    return error;
+  }
+
+  // Remove the all column statistics through the provider.
+  error = provider->remove_column_statistics(table_id);
+
+  return error;
+}
+
+/**
+ * @brief Removes column statistic from the column statistics table
+ *   based on the given column id.
+ * @param (column_id)  [in]  column id.
+ * @retval ErrorCode::OK if success.
+ * @retval ErrorCode::ID_NOT_FOUND if the column id does not exist.
+ * @retval otherwise an error code.
+ */
+ErrorCode Statistics::remove_by_column_id(const ObjectIdType column_id) const {
+  ErrorCode error = ErrorCode::UNKNOWN;
+
+  // Parameter value check.
+  if (column_id <= 0) {
+    error = ErrorCode::ID_NOT_FOUND;
+    return error;
+  }
+
+  ObjectIdType retval_object_id = 0;
+  // Remove the all column statistics through the provider.
+  error = provider->remove_column_statistic(
+      Statistics::COLUMN_ID, std::to_string(column_id), retval_object_id);
+
+  return error;
+}
+
+/**
+ * @brief Removes column statistic from the column statistics table
+ *   based on the given table id and the given column ordinal position.
+ * @param (table_id)          [in]  table id.
+ * @param (ordinal_position)  [in]  column ordinal position.
+ * @retval ErrorCode::OK if success.
+ * @retval ErrorCode::ID_NOT_FOUND if the table id or ordinal position does not
+ * exist.
+ * @retval otherwise an error code.
+ */
+ErrorCode Statistics::remove_by_column_number(
+    const ObjectIdType table_id, const int64_t ordinal_position) const {
+  ErrorCode error = ErrorCode::UNKNOWN;
+
+  // Parameter value check.
+  if ((table_id <= 0) || (ordinal_position <= 0)) {
+    error = ErrorCode::ID_NOT_FOUND;
+    return error;
+  }
+
+  ObjectIdType retval_object_id = 0;
+  // Remove the column statistic through the provider.
+  error = provider->remove_column_statistic(
+      table_id, Statistics::ORDINAL_POSITION, std::to_string(ordinal_position),
+      retval_object_id);
+
+  return error;
+}
+
+/**
+ * @brief Removes one column statistic from the column statistics table
+ *   based on the given table id and the given column ordinal position.
+ * @param (table_id)     [in]  table id.
+ * @param (column_name)  [in]  column name.
+ * @retval ErrorCode::OK if success.
+ * @retval ErrorCode::ID_NOT_FOUND if the table id does not exist.
+ * @retval ErrorCode::NAME_NOT_FOUND if the column name does not exist.
+ * @retval otherwise an error code.
+ */
+ErrorCode Statistics::remove_by_column_name(
+    const ObjectIdType table_id, std::string_view column_name) const {
+  ErrorCode error = ErrorCode::UNKNOWN;
+
+  // Parameter value check.
+  if (table_id <= 0) {
+    error = ErrorCode::ID_NOT_FOUND;
+    return error;
+  }
+  if (column_name.empty()) {
+    error = ErrorCode::NAME_NOT_FOUND;
+    return error;
+  }
+
+  ObjectIdType retval_object_id = 0;
+  // Remove the column statistic through the provider.
+  error = provider->remove_column_statistic(table_id, Statistics::COLUMN_NAME,
+                                            column_name, retval_object_id);
+
+  return error;
+}
+
+/* =============================================================================
+ * Private method area
+ */
+
+/**
+ * @brief Checks if the parameters are correct.
+ * @param (object)  [in]  metadata-object
+ * @return ErrorCode::OK if success, otherwise an error code.
+ */
+ErrorCode Statistics::param_check_statistics_add(
+    const boost::property_tree::ptree& object) const {
+  ErrorCode error = ErrorCode::UNKNOWN;
+
+  // Check the specified parameters.
+  // column_id
+  boost::optional<ObjectIdType> column_id =
+      object.get_optional<ObjectIdType>(Statistics::COLUMN_ID);
+  bool specified_column_id = (column_id && (column_id.get() > 0));
+
+  // table_id
+  boost::optional<ObjectIdType> table_id =
+      object.get_optional<ObjectIdType>(Statistics::TABLE_ID);
+  bool specified_table_id = (table_id && (table_id.get() > 0));
+
+  // ordinal_position
+  boost::optional<std::int64_t> ordinal_position =
+      object.get_optional<std::int64_t>(Statistics::ORDINAL_POSITION);
+  bool specified_ordinal_position =
+      (ordinal_position && (ordinal_position.get() > 0));
+
+  // column_name
+  boost::optional<std::string> column_name =
+      object.get_optional<std::string>(Statistics::COLUMN_NAME);
+  bool specified_column_name = (column_name && !(column_name.get().empty()));
+
+  // Check for required parameters.
+  //   If column_id is not specified,
+  //   and table_id and column_name or ordinal_position are not specified,
+  //   it will return a parameter error.
+  if (specified_column_id) {
+    // column_id is specified.
+    error = ErrorCode::OK;
+  } else if (specified_table_id) {
+    // table_id is specified.
+    if (specified_ordinal_position || specified_column_name) {
+      // ordinal_position or column_name is specified.
+      error = ErrorCode::OK;
+    } else {
+      // ordinal_position and column_name is not specified.
+      error = ErrorCode::INVALID_PARAMETER;
+    }
+  } else {
+    // column_id and table_id is not specified.
+    error = ErrorCode::INVALID_PARAMETER;
+  }
 
   return error;
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 tsurugi project.
+ * Copyright 2020-2021 tsurugi project.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,32 +13,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef MANAGER_METADATA_DAO_JSON_DATA_TYPES_DAO_H_
-#define MANAGER_METADATA_DAO_JSON_DATA_TYPES_DAO_H_
+#ifndef MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_DAO_JSON_DATATYPES_DAO_H_
+#define MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_DAO_JSON_DATATYPES_DAO_H_
 
 #include <boost/property_tree/ptree.hpp>
 #include <string>
 
 #include "manager/metadata/dao/datatypes_dao.h"
 #include "manager/metadata/dao/json/db_session_manager.h"
+#include "manager/metadata/error_code.h"
 
 namespace manager::metadata::db::json {
 
 class DataTypesDAO : public manager::metadata::db::DataTypesDAO {
  public:
-  explicit DataTypesDAO(DBSessionManager *session_manager)
-      : session_manager_(session_manager){};
+  explicit DataTypesDAO(DBSessionManager* session_manager)
+      : session_manager_(session_manager) {}
 
   manager::metadata::ErrorCode prepare() const override;
 
   manager::metadata::ErrorCode select_one_data_type_metadata(
       std::string_view object_key, std::string_view object_value,
-      boost::property_tree::ptree &object) const;
+      boost::property_tree::ptree& object) const override;
 
  private:
-  DBSessionManager *session_manager_;
+  // root object.
+  static constexpr const char* const DATATYPES_NODE = "data_types";
+
+  DBSessionManager* session_manager_;
 };  // class DataTypesDAO
 
 }  // namespace manager::metadata::db::json
 
-#endif  // MANAGER_METADATA_DAO_JSON_DATA_TYPES_DAO_H_
+#endif  // MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_DAO_JSON_DATATYPES_DAO_H_

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 tsurugi project.
+ * Copyright 2021 tsurugi project.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef MANAGER_METADATA_PROVIDER_PROVIDER_BASE_H_
-#define MANAGER_METADATA_PROVIDER_PROVIDER_BASE_H_
+#ifndef MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_PROVIDER_PROVIDER_BASE_H_
+#define MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_PROVIDER_PROVIDER_BASE_H_
 
 #include <memory>
 
@@ -25,6 +25,7 @@ namespace manager::metadata::db {
 class ProviderBase {
  public:
   ProviderBase();
+  virtual ~ProviderBase() {}
 
  protected:
   std::unique_ptr<DBSessionManager> session_manager_;
@@ -32,4 +33,4 @@ class ProviderBase {
 
 }  // namespace manager::metadata::db
 
-#endif  // MANAGER_METADATA_PROVIDER_PROVIDER_BASE_H_
+#endif  // MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_PROVIDER_PROVIDER_BASE_H_

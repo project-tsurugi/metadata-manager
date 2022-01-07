@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 tsurugi project.
+ * Copyright 2021 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,9 @@
 #include "manager/metadata/provider/statistics_provider.h"
 
 #include <boost/property_tree/json_parser.hpp>
-#include <iostream>
 
 #include "manager/metadata/dao/common/message.h"
+#include "manager/metadata/statistics.h"
 
 // =============================================================================
 namespace manager::metadata::db {
@@ -28,359 +28,349 @@ using boost::property_tree::ptree;
 using manager::metadata::ErrorCode;
 
 /**
- *  @brief  Initialize and prepare to access the metadata repository.
- *  @return  ErrorCode::OK if success, otherwise an error code.
+ * @brief Initialize and prepare to access the metadata repository.
+ * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode StatisticsProvider::init() {
-  ErrorCode result = ErrorCode::OK;
+  ErrorCode error = ErrorCode::UNKNOWN;
   std::shared_ptr<GenericDAO> gdao = nullptr;
 
-  if (tables_dao_ == nullptr) {
-    // Get an instance of the TablesDAO class.
-    result = session_manager_->get_dao(GenericDAO::TableName::TABLES, gdao);
-    tables_dao_ = (result == ErrorCode::OK)
-                      ? std::static_pointer_cast<TablesDAO>(gdao)
-                      : nullptr;
-  }
-  if ((statistics_dao_ == nullptr) && (result == ErrorCode::OK)) {
+  if (statistics_dao_ != nullptr) {
+    // Instance of the StatisticsDAO class has already been obtained.
+    error = ErrorCode::OK;
+  } else {
     // Get an instance of the StatisticsDAO class.
-    result = session_manager_->get_dao(GenericDAO::TableName::STATISTICS, gdao);
-    statistics_dao_ = (result == ErrorCode::OK)
-                          ? std::static_pointer_cast<StatisticsDAO>(gdao)
-                          : nullptr;
+    error = session_manager_->get_dao(GenericDAO::TableName::STATISTICS, gdao);
+    if (error != ErrorCode::OK) {
+      return error;
+    }
+    // Set StatisticsDAO instance.
+    statistics_dao_ = std::static_pointer_cast<StatisticsDAO>(gdao);
   }
 
-  return result;
+  return error;
 }
 
 /**
- *  @brief  Adds or updates table statistic
- *  to the table metadata table based on the given table id.
- *  Adds table statistic if it not exists in the metadata repository.
- *  Updates table statistic if it already exists.
- *  @param  (table_id)   [in]  table id.
- *  @param  (reltuples)  [in]  the number of rows to add or update.
- *  @return  ErrorCode::OK if success, otherwise an error code.
- */
-ErrorCode StatisticsProvider::add_table_statistic(ObjectIdType table_id,
-                                                  float reltuples) {
-  // Initialization
-  ErrorCode result = init();
-  if (result != ErrorCode::OK) {
-    return result;
-  }
-
-  if (table_id <= 0) {
-    return ErrorCode::INVALID_PARAMETER;
-  }
-
-  result = session_manager_->start_transaction();
-  if (result != ErrorCode::OK) {
-    return result;
-  }
-
-  result = tables_dao_->update_reltuples_by_table_id(reltuples, table_id);
-  if (result == ErrorCode::OK) {
-    result = session_manager_->commit();
-  } else {
-    ErrorCode rollback_result = session_manager_->rollback();
-    if (rollback_result != ErrorCode::OK) {
-      return rollback_result;
-    }
-  }
-  return result;
-}
-
-/**
- *  @brief  Adds or updates table statistic
- *  to the table metadata table based on the given table name.
- *  Adds table statistic if it not exists in the metadata repository.
- *  Updates table statistic if it already exists.
- *  @param  (table_name) [in]  table name.
- *  @param  (reltuples)  [in]  the number of rows to add or update.
- *  @param  (table_id)   [out] table id of the row updated.
- *  @return  ErrorCode::OK if success, otherwise an error code.
- */
-ErrorCode StatisticsProvider::add_table_statistic(std::string_view table_name,
-                                                  float reltuples,
-                                                  ObjectIdType *table_id) {
-  // Initialization
-  ErrorCode result = init();
-  if (result != ErrorCode::OK) {
-    return result;
-  }
-
-  if (table_name.empty()) {
-    return ErrorCode::INVALID_PARAMETER;
-  }
-
-  result = session_manager_->start_transaction();
-  if (result != ErrorCode::OK) {
-    return result;
-  }
-
-  ObjectIdType retval_object_id = 0;
-  result = tables_dao_->update_reltuples_by_table_name(
-      reltuples, table_name.data(), retval_object_id);
-  if (result == ErrorCode::OK) {
-    result = session_manager_->commit();
-    if ((result == ErrorCode::OK) && (table_id != nullptr)) {
-      *table_id = retval_object_id;
-    }
-  } else {
-    ErrorCode rollback_result = session_manager_->rollback();
-    if (rollback_result != ErrorCode::OK) {
-      return rollback_result;
-    }
-  }
-  return result;
-}
-
-/**
- *  @brief  Adds or updates one column statistic
- *  to the column statistics table
- *  based on the given table id and the given column ordinal position.
- *  Adds one column statistic if it not exists in the metadata repository.
- *  Updates one column statistic if it already exists.
- *  @param  (table_id)          [in]  table id.
- *  @param  (ordinal_position)  [in]  column ordinal position.
- *  @param  (column_statistic)  [in]  one column statistic to add or update.
- *  @return  ErrorCode::OK if success, otherwise an error code.
+ * @brief Adds or updates one column statistic
+ *   to the column statistics table
+ *   based on the given table id and the given column ordinal position.
+ *   Adds one column statistic if it not exists in the metadata repository.
+ *   Updates one column statistic if it already exists.
+ * @param (object)        [in]  one column statistic to add or update.
+ * @param (statistic_id)  [out] ID of the added column statistic.
+ * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode StatisticsProvider::add_column_statistic(
-    ObjectIdType table_id, ObjectIdType ordinal_position,
-    ptree &column_statistic) {
+    const boost::property_tree::ptree& object, ObjectIdType& statistic_id) {
+  ErrorCode error = ErrorCode::UNKNOWN;
+
   // Initialization
-  ErrorCode result = init();
-  if (result != ErrorCode::OK) {
-    return result;
+  error = init();
+  if (error != ErrorCode::OK) {
+    return error;
   }
 
-  if ((table_id <= 0) || (ordinal_position <= 0)) {
-    return ErrorCode::INVALID_PARAMETER;
+  // column_id
+  boost::optional<ObjectIdType> optional_column_id =
+      object.get_optional<ObjectIdType>(Statistics::COLUMN_ID);
+  // table_id
+  boost::optional<ObjectIdType> optional_table_id =
+      object.get_optional<ObjectIdType>(Statistics::TABLE_ID);
+  // ordinal_position
+  boost::optional<std::int64_t> optional_ordinal_position =
+      object.get_optional<std::int64_t>(Statistics::ORDINAL_POSITION);
+  // column_name
+  boost::optional<std::string> optional_column_name =
+      object.get_optional<std::string>(Statistics::COLUMN_NAME);
+
+  // statistic_name
+  boost::optional<std::string> optional_statistic_name =
+      object.get_optional<std::string>(Statistics::NAME);
+  std::string* statistic_name =
+      (optional_statistic_name ? optional_statistic_name.get_ptr() : nullptr);
+
+  // column_statistic
+  boost::optional<const ptree&> optional_column_statistic =
+      object.get_child_optional(Statistics::COLUMN_STATISTIC);
+  ptree column_statistic;
+  if (optional_column_statistic) {
+    column_statistic = optional_column_statistic.value();
   }
 
-  std::string s_column_statistic;
-  if (!column_statistic.empty()) {
-    std::stringstream ss;
-    try {
-      json_parser::write_json(ss, column_statistic, false);
-    } catch (json_parser::json_parser_error &e) {
-      std::cerr << Message::WRITE_JSON_FAILURE << e.what() << std::endl;
-      return ErrorCode::INTERNAL_ERROR;
-    } catch (...) {
-      std::cerr << Message::WRITE_JSON_FAILURE << std::endl;
-      return ErrorCode::INTERNAL_ERROR;
+  // Start the transaction.
+  error = session_manager_->start_transaction();
+  if (error != ErrorCode::OK) {
+    return error;
+  }
+
+  if (optional_column_id) {
+    // Register column statistics via DAO using column_id.
+    error = statistics_dao_->upsert_column_statistic(
+        optional_column_id.get(), statistic_name, column_statistic,
+        statistic_id);
+  } else {
+    // Set the key items and values to be register.
+    std::string key;
+    std::string value;
+    if (optional_ordinal_position) {
+      key = Statistics::ORDINAL_POSITION;
+      value = std::to_string(optional_ordinal_position.get());
+    } else {
+      key = Statistics::COLUMN_NAME;
+      value = optional_column_name.get();
     }
 
-    s_column_statistic = ss.str();
+    // Register column statistics via DAO.
+    error = statistics_dao_->upsert_column_statistic(
+        optional_table_id.get(), key, value, statistic_name, column_statistic,
+        statistic_id);
   }
 
-  result = session_manager_->start_transaction();
-  if (result != ErrorCode::OK) {
-    return result;
-  }
-
-  result =
-      statistics_dao_
-          ->upsert_one_column_statistic_by_table_id_column_ordinal_position(
-              table_id, ordinal_position, s_column_statistic);
-  if (result == ErrorCode::OK) {
-    result = session_manager_->commit();
+  if (error == ErrorCode::OK) {
+    // Commit the transaction.
+    error = session_manager_->commit();
   } else {
+    // Roll back the transaction.
     ErrorCode rollback_result = session_manager_->rollback();
     if (rollback_result != ErrorCode::OK) {
       return rollback_result;
     }
   }
-  return result;
+
+  return error;
 }
 
 /**
- *  @brief  Gets one column statistic from the column statistics table
- *  based on the given table id and the given column ordinal position.
- *  @param  (table_id)          [in]  table id.
- *  @param  (ordinal_position)  [in]  column ordinal position.
- *  @param  (column_statistic)  [out] one column statistic
- *  with the specified table id and column ordinal position.
- *  @return  ErrorCode::OK if success, otherwise an error code.
+ * @brief Gets column statistic from the column statistics table,
+ *   where key = value.
+ * @param (key)     [in]  key of column statistics object.
+ * @param (value)   [in]  value of column statistics object.
+ * @param (object)  [out] one column statistics object to get,
+ *   where key = value.
+ * @retval ErrorCode::OK if success.
+ * @retval ErrorCode::ID_NOT_FOUND if the statistic id or column id
+ *   does not exist.
+ * @retval ErrorCode::NAME_NOT_FOUND if the statistic name does not exist.
+ * @retval otherwise an error code.
  */
 ErrorCode StatisticsProvider::get_column_statistic(
-    ObjectIdType table_id, ObjectIdType ordinal_position,
-    ColumnStatistic &column_statistic) {
+    std::string_view key, std::string_view value,
+    boost::property_tree::ptree& object) {
+  ErrorCode error = ErrorCode::UNKNOWN;
+
   // Initialization
-  ErrorCode result = init();
-  if (result != ErrorCode::OK) {
-    return result;
+  error = init();
+  if (error != ErrorCode::OK) {
+    return error;
   }
 
-  if ((table_id <= 0) || (ordinal_position <= 0)) {
-    return ErrorCode::INVALID_PARAMETER;
-  }
+  error = statistics_dao_->select_column_statistic(key, value, object);
 
-  result =
-      statistics_dao_
-          ->select_one_column_statistic_by_table_id_column_ordinal_position(
-              table_id, ordinal_position, column_statistic);
-
-  return result;
+  return error;
 }
 
 /**
- *  @brief  Gets all column statistics from the column statistics table
- *  based on the given table id.
- *  @param  (table_id)           [in]  table id.
- *  @param  (column_statistics)  [out] all column statistics
- *  with the specified table id.
- *  key : column ordinal position
- *  value : one column statistic
- *  @return  ErrorCode::OK if success, otherwise an error code.
+ * @brief Gets one column statistic from the column statistics table
+ *   based on the given table id and the given column ordinal position.
+ * @param (table_id)  [in]  table id.
+ * @param (key)       [in]  key. column name of a column statistic table.
+ * @param (value)     [in]  value to be filtered.
+ * @param (object)    [out] one column statistics object to get,
+ *   where key = value.
+ * @retval ErrorCode::OK if success.
+ * @retval ErrorCode::ID_NOT_FOUND if the ordinal position does not exist.
+ * @retval ErrorCode::NAME_NOT_FOUND if the statistic name does not exist.
+ * @retval otherwise an error code.
  */
-ErrorCode StatisticsProvider::get_all_column_statistics(
-    ObjectIdType table_id,
-    std::unordered_map<ObjectIdType, ColumnStatistic> &column_statistics) {
+ErrorCode StatisticsProvider::get_column_statistic(
+    const ObjectIdType table_id, std::string_view key, std::string_view value,
+    boost::property_tree::ptree& object) {
+  ErrorCode error = ErrorCode::UNKNOWN;
+
   // Initialization
-  ErrorCode result = init();
-  if (result != ErrorCode::OK) {
-    return result;
+  error = init();
+  if (error != ErrorCode::OK) {
+    return error;
   }
 
-  if (table_id <= 0) {
-    return ErrorCode::INVALID_PARAMETER;
-  }
+  error =
+      statistics_dao_->select_column_statistic(table_id, key, value, object);
 
-  result = statistics_dao_->select_all_column_statistic_by_table_id(
-      table_id, column_statistics);
-
-  return result;
+  return error;
 }
 
 /**
- *  @brief  Gets one table statistic from the table metadata table
- *  based on the given table id.
- *  @param  (table_id)         [in]  table id.
- *  @param  (table_statistic)  [out] one table statistic
- *  with the specified table id.
- *  @return  ErrorCode::OK if success, otherwise an error code.
+ * @brief Get column statistics from the column statistics table.
+ *   If the column statistic does not exist, return the container as empty.
+ * @param (container)  [out] all column statistics.
+ * @return ErrorCode::OK if success, otherwise an error code.
  */
-ErrorCode StatisticsProvider::get_table_statistic(
-    ObjectIdType table_id, manager::metadata::TableStatistic &table_statistic) {
+ErrorCode StatisticsProvider::get_column_statistics(
+    std::vector<boost::property_tree::ptree>& container) {
+  ErrorCode error = ErrorCode::UNKNOWN;
+
   // Initialization
-  ErrorCode result = init();
-  if (result != ErrorCode::OK) {
-    return result;
+  error = init();
+  if (error != ErrorCode::OK) {
+    return error;
   }
 
-  if (table_id <= 0) {
-    return ErrorCode::INVALID_PARAMETER;
-  }
+  error = statistics_dao_->select_column_statistic(container);
 
-  result = tables_dao_->select_table_statistic_by_table_id(table_id,
-                                                           table_statistic);
-
-  return result;
+  return error;
 }
 
 /**
- *  @brief  Gets one table statistic from the table metadata table
- *  based on the given table name.
- *  @param  (table_name)       [in]  table name.
- *  @param  (table_statistic)  [out] one table statistic
- *  with the specified table name.
- *  @return  ErrorCode::OK if success, otherwise an error code.
+ * @brief Retrieves statistics of a column from the column statistics table
+ *   based on the specified table ID.
+ *   If the column statistic does not exist, return the container as empty.
+ * @param (table_id)   [in]  table id.
+ * @param (container)  [out] all column statistics.
+ * @retval ErrorCode::OK if success.
+ * @retval ErrorCode::ID_NOT_FOUND if the table id does not exist.
+ * @retval otherwise an error code.
  */
-ErrorCode StatisticsProvider::get_table_statistic(
-    std::string_view table_name,
-    manager::metadata::TableStatistic &table_statistic) {
+ErrorCode StatisticsProvider::get_column_statistics(
+    const ObjectIdType table_id,
+    std::vector<boost::property_tree::ptree>& container) {
+  ErrorCode error = ErrorCode::UNKNOWN;
+
   // Initialization
-  ErrorCode result = init();
-  if (result != ErrorCode::OK) {
-    return result;
+  error = init();
+  if (error != ErrorCode::OK) {
+    return error;
   }
 
-  if (table_name.empty()) {
-    return ErrorCode::INVALID_PARAMETER;
-  }
+  error = statistics_dao_->select_column_statistic(table_id, container);
 
-  result = tables_dao_->select_table_statistic_by_table_name(table_name.data(),
-                                                             table_statistic);
-
-  return result;
+  return error;
 }
 
 /**
- *  @brief  Removes one column statistic from the column statistics table
- *  based on the given table id and the given column ordinal position.
- *  @param  (table_id)          [in]  table id.
- *  @param  (ordinal_position)  [in]  column ordinal position.
- *  @return  ErrorCode::OK if success, otherwise an error code.
+ * @brief Removes one column statistic from the column statistics table,
+ *   where key = value.
+ * @param (key)           [in]  key of column statistics object.
+ * @param (value)         [in]  value of column statistics object.
+ * @param (statistic_id)  [out] statistic id of the row deleted.
+ * @retval ErrorCode::OK if success.
+ * @retval ErrorCode::ID_NOT_FOUND if the statistic id does not exist.
+ * @retval ErrorCode::NAME_NOT_FOUND if the statistic name does not exist.
+ * @retval otherwise an error code.
  */
 ErrorCode StatisticsProvider::remove_column_statistic(
-    ObjectIdType table_id, ObjectIdType ordinal_position) {
+    std::string_view key, std::string_view value, ObjectIdType& statistic_id) {
+  ErrorCode error = ErrorCode::UNKNOWN;
+
   // Initialization
-  ErrorCode result = init();
-  if (result != ErrorCode::OK) {
-    return result;
+  error = init();
+  if (error != ErrorCode::OK) {
+    return error;
   }
 
-  if ((table_id <= 0) || (ordinal_position <= 0)) {
-    return ErrorCode::INVALID_PARAMETER;
+  // Start the transaction.
+  error = session_manager_->start_transaction();
+  if (error != ErrorCode::OK) {
+    return error;
   }
 
-  result = session_manager_->start_transaction();
-  if (result != ErrorCode::OK) {
-    return result;
-  }
-
-  result =
-      statistics_dao_
-          ->delete_one_column_statistic_by_table_id_column_ordinal_position(
-              table_id, ordinal_position);
-  if (result == ErrorCode::OK) {
-    result = session_manager_->commit();
+  error = statistics_dao_->delete_column_statistic(key, value, statistic_id);
+  if (error == ErrorCode::OK) {
+    // Commit the transaction.
+    error = session_manager_->commit();
   } else {
+    // Roll back the transaction.
     ErrorCode rollback_result = session_manager_->rollback();
     if (rollback_result != ErrorCode::OK) {
-      return rollback_result;
+      error = rollback_result;
     }
   }
-  return result;
+
+  return error;
 }
 
 /**
- *  @brief  Removes all column statistics
- *  from the column statistics table
- *  based on the given table id.
- *  @param  (table_id)          [in]  table id.
- *  @return  ErrorCode::OK if success, otherwise an error code.
+ * @brief Removes all column statistic from the column statistics table
+ *   based on the given table id.
+ * @param (table_id)  [in]  table id.
+ * @retval ErrorCode::OK if success.
+ * @retval ErrorCode::ID_NOT_FOUND if the table id does not exist.
+ * @retval otherwise an error code.
  */
-ErrorCode StatisticsProvider::remove_all_column_statistics(
-    ObjectIdType table_id) {
+ErrorCode StatisticsProvider::remove_column_statistics(
+    const ObjectIdType table_id) {
+  ErrorCode error = ErrorCode::UNKNOWN;
+
   // Initialization
-  ErrorCode result = init();
-  if (result != ErrorCode::OK) {
-    return result;
+  error = init();
+  if (error != ErrorCode::OK) {
+    return error;
   }
 
-  if (table_id <= 0) {
-    return ErrorCode::INVALID_PARAMETER;
+  // Start the transaction.
+  error = session_manager_->start_transaction();
+  if (error != ErrorCode::OK) {
+    return error;
   }
 
-  result = session_manager_->start_transaction();
-  if (result != ErrorCode::OK) {
-    return result;
-  }
-
-  result = statistics_dao_->delete_all_column_statistic_by_table_id(table_id);
-  if (result == ErrorCode::OK) {
-    result = session_manager_->commit();
+  error = statistics_dao_->delete_column_statistic(table_id);
+  if (error == ErrorCode::OK) {
+    // Commit the transaction.
+    error = session_manager_->commit();
   } else {
+    // Roll back the transaction.
     ErrorCode rollback_result = session_manager_->rollback();
     if (rollback_result != ErrorCode::OK) {
-      return rollback_result;
+      error = rollback_result;
     }
   }
-  return result;
+
+  return error;
+}
+
+/**
+ * @brief Removes one column statistic from the column statistics table
+ *   based on the given table id and the given column name or ordinal position.
+ * @param (table_id)      [in]  table id.
+ * @param (key)           [in]  key. column name of a column statistic table.
+ * @param (value)         [in]  value to be filtered.
+ * @param (statistic_id)  [out] statistic id of the row deleted.
+ * @retval ErrorCode::OK if success.
+ * @retval ErrorCode::ID_NOT_FOUND if the ordinal position does not exist.
+ * @retval ErrorCode::NAME_NOT_FOUND if the statistic name does not exist.
+ * @retval otherwise an error code.
+ */
+ErrorCode StatisticsProvider::remove_column_statistic(
+    const ObjectIdType table_id, std::string_view key, std::string_view value,
+    ObjectIdType& statistic_id) {
+  ErrorCode error = ErrorCode::UNKNOWN;
+
+  // Initialization
+  error = init();
+  if (error != ErrorCode::OK) {
+    return error;
+  }
+
+  // Start the transaction.
+  error = session_manager_->start_transaction();
+  if (error != ErrorCode::OK) {
+    return error;
+  }
+
+  error = statistics_dao_->delete_column_statistic(table_id, key, value,
+                                                   statistic_id);
+  if (error == ErrorCode::OK) {
+    // Commit the transaction.
+    error = session_manager_->commit();
+  } else {
+    // Roll back the transaction.
+    ErrorCode rollback_result = session_manager_->rollback();
+    if (rollback_result != ErrorCode::OK) {
+      error = rollback_result;
+    }
+  }
+
+  return error;
 }
 
 }  // namespace manager::metadata::db

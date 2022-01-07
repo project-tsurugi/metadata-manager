@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 tsurugi project.
+ * Copyright 2020-2021 tsurugi project.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ namespace manager::metadata::db {
  * @return Connection Strings.
  */
 std::string Config::get_connection_string() {
-  const char *tmp_cs = std::getenv(TSURUGI_CONNECTION_STRING);
+  const char* tmp_cs = std::getenv(TSURUGI_CONNECTION_STRING);
 
   if (tmp_cs != nullptr) {
     return tmp_cs;
@@ -41,13 +41,13 @@ std::string Config::get_connection_string() {
  * @return Directory that stores the metadata.
  */
 std::string Config::get_storage_dir_path() {
-  const char *tmp_dir = std::getenv(TSURUGI_METADATA_DIR);
+  const char* tmp_dir = std::getenv(TSURUGI_METADATA_DIR);
   if (tmp_dir != nullptr) {
     return tmp_dir;
   }
   // Returns the default value.
   boost::format storage_dir = boost::format("%s/%s") %
-                              std::string(getenv(HOME_DIR)) %
+                              std::string(std::getenv(HOME_DIR)) %
                               DEFAULT_TSURUGI_METADATA_DIR;
   return storage_dir.str();
 }

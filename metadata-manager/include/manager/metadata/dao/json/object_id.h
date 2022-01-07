@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 tsurugi project.
+ * Copyright 2020-2021 tsurugi project.
  *
  * Licensed under the Apache License, generation 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,10 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef MANAGER_METADATA_DAO_JSON_OBJECT_ID_H_
-#define MANAGER_METADATA_DAO_JSON_OBJECT_ID_H_
+#ifndef MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_DAO_JSON_OBJECT_ID_H_
+#define MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_DAO_JSON_OBJECT_ID_H_
 
 #include <string>
+#include <string_view>
 
 #include "manager/metadata/error_code.h"
 #include "manager/metadata/metadata.h"
@@ -25,30 +26,17 @@ namespace manager::metadata::db::json {
 
 class ObjectId {
  public:
-  static manager::metadata::ErrorCode init();
-  static ObjectIdType current(const std::string table_name);
-  static ObjectIdType generate(const std::string table_name);
+  ObjectId();
+
+  manager::metadata::ErrorCode init();
+  ObjectIdType current(std::string_view table_name);
+  ObjectIdType generate(std::string_view table_name);
 
  private:
-  static constexpr const char *const OID_NAME = "oid";
+  static constexpr const char* const OID_NAME = "oid";
+  std::string oid_file_name_;
 };
 
 }  // namespace manager::metadata::db::json
 
-/* =============================================================================================
- */
-namespace manager::metadata_manager {
-
-class ObjectId {
- public:
-  static ErrorCode init();
-  static ObjectIdType current(const std::string table_name);
-  static ObjectIdType generate(const std::string table_name);
-
- private:
-  static const char *TABLE_NAME;
-};
-
-}  // namespace manager::metadata_manager
-
-#endif  // MANAGER_METADATA_DAO_JSON_OBJECT_ID_H_
+#endif  // MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_DAO_JSON_OBJECT_ID_H_

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 tsurugi project.
+ * Copyright 2020-2021 tsurugi project.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef MANAGER_METADATA_DAO_DB_SESSION_MANAGER_H_
-#define MANAGER_METADATA_DAO_DB_SESSION_MANAGER_H_
+#ifndef MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_DAO_DB_SESSION_MANAGER_H_
+#define MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_DAO_DB_SESSION_MANAGER_H_
 
 #include <memory>
 #include <string>
@@ -26,10 +26,11 @@ namespace manager::metadata::db {
 
 class DBSessionManager {
  public:
-  virtual ~DBSessionManager(){};
+  virtual ~DBSessionManager() {}
 
   virtual manager::metadata::ErrorCode get_dao(
-      GenericDAO::TableName table_name, std::shared_ptr<GenericDAO> &gdao) = 0;
+      const GenericDAO::TableName table_name,
+      std::shared_ptr<GenericDAO>& gdao) = 0;
 
   virtual manager::metadata::ErrorCode start_transaction() = 0;
   virtual manager::metadata::ErrorCode commit() = 0;
@@ -37,12 +38,11 @@ class DBSessionManager {
 
  protected:
   manager::metadata::ErrorCode create_dao(
-      GenericDAO::TableName table_name,
-      manager::metadata::db::DBSessionManager *session_manager,
-      std::shared_ptr<GenericDAO> &gdao) const;
-
+      const GenericDAO::TableName table_name,
+      const manager::metadata::db::DBSessionManager* session_manager,
+      std::shared_ptr<GenericDAO>& gdao) const;
 };  // class DBSessionManager
 
 }  // namespace manager::metadata::db
 
-#endif  // MANAGER_METADATA_DAO_DB_SESSION_MANAGER_H_
+#endif  // MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_DAO_DB_SESSION_MANAGER_H_

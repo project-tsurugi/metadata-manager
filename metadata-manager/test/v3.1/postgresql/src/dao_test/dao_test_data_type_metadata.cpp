@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 tsurugi project.
+ * Copyright 2020-2021 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,9 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 #include <gtest/gtest.h>
-
 #include <boost/property_tree/ptree.hpp>
 #include <memory>
 #include <string>
@@ -23,10 +21,9 @@
 #include <vector>
 
 #include "manager/metadata/dao/datatypes_dao.h"
-#include "manager/metadata/dao/postgresql/db_session_manager.h"
 #include "manager/metadata/dao/generic_dao.h"
+#include "manager/metadata/dao/postgresql/db_session_manager.h"
 #include "manager/metadata/error_code.h"
-
 #include "test/api_test_data_types.h"
 #include "test/global_test_environment.h"
 #include "test/utility/ut_utils.h"
@@ -39,65 +36,65 @@ namespace storage = manager::metadata::db::postgresql;
 
 class DaoTestDataTypesByKeyValue
     : public ::testing::TestWithParam<TupleApiTestDataTypes> {
-    void SetUp() override { UTUtils::skip_if_connection_not_opened(); }
+  void SetUp() override { UTUtils::skip_if_connection_not_opened(); }
 };
 /**
- * @brief Happy test for getting all data type metadatas based on data type
+ * @brief Happy test for getting all data type metadata based on data type
  * key/value pair.
  */
 TEST_P(DaoTestDataTypesByKeyValue, get_datatypes_by_key_value) {
-    auto param = GetParam();
-    std::string key = std::get<0>(param);
-    std::string value = std::get<1>(param);
+  auto param = GetParam();
+  std::string key = std::get<0>(param);
+  std::string value = std::get<1>(param);
 
-    std::shared_ptr<GenericDAO> d_gdao = nullptr;
-    storage::DBSessionManager db_session_manager;
+  std::shared_ptr<GenericDAO> d_gdao = nullptr;
+  storage::DBSessionManager db_session_manager;
 
-    ErrorCode error =
-        db_session_manager.get_dao(GenericDAO::TableName::DATATYPES, d_gdao);
-    EXPECT_EQ(ErrorCode::OK, error);
+  ErrorCode error =
+      db_session_manager.get_dao(GenericDAO::TableName::DATATYPES, d_gdao);
+  EXPECT_EQ(ErrorCode::OK, error);
 
-    std::shared_ptr<DataTypesDAO> ddao =
-        std::static_pointer_cast<DataTypesDAO>(d_gdao);
+  std::shared_ptr<DataTypesDAO> ddao =
+      std::static_pointer_cast<DataTypesDAO>(d_gdao);
 
-    ptree datatype;
-    error = ddao->select_one_data_type_metadata(key, value, datatype);
-    EXPECT_EQ(ErrorCode::OK, error);
+  ptree datatype;
+  error = ddao->select_one_data_type_metadata(key, value, datatype);
+  EXPECT_EQ(ErrorCode::OK, error);
 
-    UTUtils::print("-- get data type metadata --");
-    UTUtils::print(UTUtils::get_tree_string(datatype));
+  UTUtils::print("-- get data type metadata --");
+  UTUtils::print(UTUtils::get_tree_string(datatype));
 
-    // Verifies that returned data type metadata equals expected one.
-    ApiTestDataTypes::check_datatype_metadata_expected(datatype);
+  // Verifies that returned data type metadata equals expected one.
+  ApiTestDataTypes::check_datatype_metadata_expected(datatype);
 }
 
 /**
- * @brief Exception path test for getting non-existing data type metadatas
+ * @brief Exception path test for getting non-existing data type metadata
  * based on invalid data type key/value pair.
  */
 TEST_F(DaoTestDataTypesByKeyValue, get_non_existing_datatypes_by_key_value) {
-    std::shared_ptr<GenericDAO> d_gdao = nullptr;
+  std::shared_ptr<GenericDAO> d_gdao = nullptr;
 
-    storage::DBSessionManager db_session_manager;
-    ErrorCode error =
-        db_session_manager.get_dao(GenericDAO::TableName::DATATYPES, d_gdao);
-    EXPECT_EQ(ErrorCode::OK, error);
+  storage::DBSessionManager db_session_manager;
+  ErrorCode error =
+      db_session_manager.get_dao(GenericDAO::TableName::DATATYPES, d_gdao);
+  EXPECT_EQ(ErrorCode::OK, error);
 
-    std::shared_ptr<DataTypesDAO> ddao =
-        std::static_pointer_cast<DataTypesDAO>(d_gdao);
+  std::shared_ptr<DataTypesDAO> ddao =
+      std::static_pointer_cast<DataTypesDAO>(d_gdao);
 
-    std::string key = "invalid_key";
-    std::string value = "INT32";
+  std::string key = "invalid_key";
+  std::string value = "INT32";
 
-    ptree datatype;
-    error = ddao->select_one_data_type_metadata(key.c_str(), value, datatype);
+  ptree datatype;
+  error = ddao->select_one_data_type_metadata(key.c_str(), value, datatype);
 
-    EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);
+  EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);
 
-    // Verifies that returned data type metadata equals expected one.
-    ptree empty_ptree;
-    EXPECT_EQ(UTUtils::get_tree_string(empty_ptree),
-              UTUtils::get_tree_string(datatype));
+  // Verifies that returned data type metadata equals expected one.
+  ptree empty_ptree;
+  EXPECT_EQ(UTUtils::get_tree_string(empty_ptree),
+            UTUtils::get_tree_string(datatype));
 }
 
 INSTANTIATE_TEST_CASE_P(

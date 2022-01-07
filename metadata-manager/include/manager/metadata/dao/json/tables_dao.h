@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 tsurugi project.
+ * Copyright 2020-2021 tsurugi project.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,55 +13,61 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef MANAGER_METADATA_DAO_JSON_TABLES_DAO_H_
-#define MANAGER_METADATA_DAO_JSON_TABLES_DAO_H_
+#ifndef MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_DAO_JSON_TABLES_DAO_H_
+#define MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_DAO_JSON_TABLES_DAO_H_
 
+#include <boost/property_tree/ptree.hpp>
 #include <memory>
+#include <string_view>
+#include <vector>
 
 #include "manager/metadata/dao/json/db_session_manager.h"
 #include "manager/metadata/dao/tables_dao.h"
+#include "manager/metadata/error_code.h"
 
 namespace manager::metadata::db::json {
 
 class TablesDAO : public manager::metadata::db::TablesDAO {
  public:
-  explicit TablesDAO(DBSessionManager *session_manager)
-      : session_manager_(session_manager){};
+  explicit TablesDAO(DBSessionManager* session_manager)
+      : session_manager_(session_manager) {}
 
   manager::metadata::ErrorCode prepare() const override;
 
-  manager::metadata::ErrorCode update_reltuples_by_table_id(
-      float reltuples, ObjectIdType table_id) const override;
-  manager::metadata::ErrorCode update_reltuples_by_table_name(
-      float reltuples, std::string_view table_name,
-      ObjectIdType &table_id) const override;
-  manager::metadata::ErrorCode select_table_statistic_by_table_id(
-      ObjectIdType table_id,
-      manager::metadata::TableStatistic &table_statistic) const override;
-  manager::metadata::ErrorCode select_table_statistic_by_table_name(
-      std::string_view table_name,
-      TableStatistic &table_statistic) const override;
   manager::metadata::ErrorCode insert_table_metadata(
-      boost::property_tree::ptree &table,
-      ObjectIdType &table_id) const override;
+      const boost::property_tree::ptree& table,
+      ObjectIdType& table_id) const override;
+
   manager::metadata::ErrorCode select_table_metadata(
       std::string_view object_key, std::string_view object_value,
-      boost::property_tree::ptree &object) const override;
-  manager::metadata::ErrorCode delete_table_metadata_by_table_id(
-      ObjectIdType table_id) const override;
-  manager::metadata::ErrorCode delete_table_metadata_by_table_name(
-      std::string_view table_name, ObjectIdType &table_id) const override;
+      boost::property_tree::ptree& object) const override;
+  manager::metadata::ErrorCode select_table_metadata(
+      std::vector<boost::property_tree::ptree>& container) const override;
+
+  manager::metadata::ErrorCode update_reltuples(
+      [[maybe_unused]] const float reltuples,
+      [[maybe_unused]] std::string_view object_key,
+      [[maybe_unused]] std::string_view object_value,
+      [[maybe_unused]] ObjectIdType& table_id) const override {
+    return ErrorCode::NOT_SUPPORTED;
+  }
+
+  manager::metadata::ErrorCode delete_table_metadata(
+      std::string_view object_key, std::string_view object_value,
+      ObjectIdType& table_id) const override;
 
  private:
-  static constexpr const char *const TABLE_NAME = "tables";
-  DBSessionManager *session_manager_;
+  // root node.
+  static constexpr const char* const TABLES_NODE = "tables";
+  // table name.
+  static constexpr const char* const TABLE_NAME = "tables";
+  DBSessionManager* session_manager_;
 
   manager::metadata::ErrorCode get_metadata_object(
-      std::string_view object_name, boost::property_tree::ptree &object) const;
-  manager::metadata::ErrorCode fill_parameters(
-      boost::property_tree::ptree &table) const;
+      std::string_view object_key, std::string_view object_value,
+      boost::property_tree::ptree& object) const;
 };  // class TablesDAO
 
 }  // namespace manager::metadata::db::json
 
-#endif  // MANAGER_METADATA_DAO_JSON_TABLES_DAO_H_
+#endif  // MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_DAO_JSON_TABLES_DAO_H_

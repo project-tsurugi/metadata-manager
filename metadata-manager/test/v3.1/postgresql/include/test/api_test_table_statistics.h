@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 tsurugi project.
+ * Copyright 2020-2021 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,9 +25,9 @@ namespace manager::metadata::testing {
 typedef std::tuple<std::string, float, float> TupleApiTestTableStatistics;
 
 class ApiTestTableStatistics {
-   public:
-    static std::vector<TupleApiTestTableStatistics> make_tuple_table_statistics(
-        const std::string& test_number);
+ public:
+  static std::vector<TupleApiTestTableStatistics> make_tuple_table_statistics(
+      const std::string& test_number);
 };
 
 }  // namespace manager::metadata::testing

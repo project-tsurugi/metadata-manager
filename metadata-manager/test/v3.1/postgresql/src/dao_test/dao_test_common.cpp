@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 tsurugi project.
+ * Copyright 2020-2021 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,11 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-extern "C" {
-#include <libpq-fe.h>
-}
-
 #include <gtest/gtest.h>
 #include <cmath>
 #include <iostream>
@@ -25,21 +20,23 @@ extern "C" {
 #include <tuple>
 #include <vector>
 
-#include "manager/metadata/error_code.h"
-#include "manager/metadata/metadata.h"
-
 #include "manager/metadata/dao/common/config.h"
 #include "manager/metadata/dao/postgresql/common.h"
 #include "manager/metadata/dao/postgresql/dbc_utils.h"
-
+#include "manager/metadata/error_code.h"
+#include "manager/metadata/metadata.h"
 #include "test/utility/ut_utils.h"
+
+extern "C" {
+#include <libpq-fe.h>
+}
 
 namespace manager::metadata::testing {
 
 using namespace manager::metadata::db;
 using postgresql::ConnectionSPtr;
-using postgresql::ResultUPtr;
 using postgresql::DbcUtils;
+using postgresql::ResultUPtr;
 
 typedef std::tuple<const char*, float> TupleConvertFloatToString;
 class DaoTestCommonStrToFloat
@@ -61,11 +58,11 @@ class DaoTestCommonStrToInt64_tException
     : public ::testing::TestWithParam<const char*> {};
 
 class DaoTestCommonIfConnectionOpened : public ::testing::Test {
-    void SetUp() override { UTUtils::skip_if_connection_not_opened(); }
+  void SetUp() override { UTUtils::skip_if_connection_not_opened(); }
 };
 
 class DaoTestCommonIfConnectionNotOpened : public ::testing::Test {
-    void SetUp() override { UTUtils::skip_if_connection_opened(); }
+  void SetUp() override { UTUtils::skip_if_connection_opened(); }
 };
 
 class DaoTestCommon : public ::testing::Test {};
@@ -202,15 +199,15 @@ INSTANTIATE_TEST_SUITE_P(
  * @brief Gets Connection Strings from OS environment variable.
  */
 TEST_F(DaoTestCommon, get_connection_string) {
-    const char* tmp_cs = std::getenv("TSURUGI_CONNECTION_STRING");
+  const char* tmp_cs = std::getenv("TSURUGI_CONNECTION_STRING");
 
-    if (tmp_cs == nullptr) {
-        EXPECT_EQ("dbname=tsurugi", Config::get_connection_string());
-        UTUtils::print("Connection Strings:", Config::get_connection_string());
-    } else {
-        EXPECT_EQ(tmp_cs, Config::get_connection_string());
-        UTUtils::print("Connection Strings:", Config::get_connection_string());
-    }
+  if (tmp_cs == nullptr) {
+    EXPECT_EQ("dbname=tsurugi", Config::get_connection_string());
+    UTUtils::print("Connection Strings:", Config::get_connection_string());
+  } else {
+    EXPECT_EQ(tmp_cs, Config::get_connection_string());
+    UTUtils::print("Connection Strings:", Config::get_connection_string());
+  }
 }
 
 /**
@@ -218,14 +215,14 @@ TEST_F(DaoTestCommon, get_connection_string) {
  * if a connection to metadata repository is opened.
  */
 TEST_F(DaoTestCommonIfConnectionOpened, is_open) {
-    ConnectionSPtr no_connection;
-    // If input nullptr, returned false
-    EXPECT_EQ(false, DbcUtils::is_open(no_connection));
+  ConnectionSPtr no_connection;
+  // If input nullptr, returned false
+  EXPECT_EQ(false, DbcUtils::is_open(no_connection));
 
-    // Verifies that a connection is opened if it is opened.
-    ConnectionSPtr connection = DbcUtils::make_connection_sptr(
-        PQconnectdb(Config::get_connection_string().c_str()));
-    EXPECT_EQ(true, DbcUtils::is_open(connection));
+  // Verifies that a connection is opened if it is opened.
+  ConnectionSPtr connection = DbcUtils::make_connection_sptr(
+      PQconnectdb(Config::get_connection_string().c_str()));
+  EXPECT_EQ(true, DbcUtils::is_open(connection));
 }
 
 /**
@@ -233,14 +230,14 @@ TEST_F(DaoTestCommonIfConnectionOpened, is_open) {
  * if a connection to metadata repository is closed.
  */
 TEST_F(DaoTestCommonIfConnectionNotOpened, is_open) {
-    ConnectionSPtr no_connection;
-    // If input nullptr, returns false
-    EXPECT_EQ(false, DbcUtils::is_open(no_connection));
+  ConnectionSPtr no_connection;
+  // If input nullptr, returns false
+  EXPECT_EQ(false, DbcUtils::is_open(no_connection));
 
-    // Verifies that a connection is closed if it is closed.
-    ConnectionSPtr connection = DbcUtils::make_connection_sptr(
-        PQconnectdb(Config::get_connection_string().c_str()));
-    EXPECT_EQ(false, DbcUtils::is_open(connection));
+  // Verifies that a connection is closed if it is closed.
+  ConnectionSPtr connection = DbcUtils::make_connection_sptr(
+      PQconnectdb(Config::get_connection_string().c_str()));
+  EXPECT_EQ(false, DbcUtils::is_open(connection));
 }
 
 /**
@@ -248,152 +245,152 @@ TEST_F(DaoTestCommonIfConnectionNotOpened, is_open) {
  * to "true" or "false" in application.
  */
 TEST_F(DaoTestCommon, convert_boolean_expression) {
-    EXPECT_EQ("", DbcUtils::convert_boolean_expression(nullptr));
-    EXPECT_EQ("true", DbcUtils::convert_boolean_expression("t"));
-    EXPECT_EQ("false", DbcUtils::convert_boolean_expression("f"));
-    EXPECT_EQ("", DbcUtils::convert_boolean_expression(""));
+  EXPECT_EQ("", DbcUtils::convert_boolean_expression(nullptr));
+  EXPECT_EQ("true", DbcUtils::convert_boolean_expression("t"));
+  EXPECT_EQ("false", DbcUtils::convert_boolean_expression("f"));
+  EXPECT_EQ("", DbcUtils::convert_boolean_expression(""));
 }
 
 /**
  * @brief Happy test for converting string to floating point.
  */
 TEST_P(DaoTestCommonStrToFloat, str_to_float) {
-    auto params = GetParam();
+  auto params = GetParam();
 
-    const char* input = std::get<0>(params);
-    float actual = -10;
+  const char* input = std::get<0>(params);
+  float actual = -10;
 
-    ErrorCode error = DbcUtils::str_to_floating_point(input, actual);
-    EXPECT_EQ(ErrorCode::OK, error);
+  ErrorCode error = DbcUtils::str_to_floating_point(input, actual);
+  EXPECT_EQ(ErrorCode::OK, error);
 
-    if (std::isnan(actual)) {
-        EXPECT_TRUE(std::isnan(actual));
-    } else {
-        float expected = std::get<1>(params);
-        EXPECT_FLOAT_EQ(expected, actual);
-    }
+  if (std::isnan(actual)) {
+    EXPECT_TRUE(std::isnan(actual));
+  } else {
+    float expected = std::get<1>(params);
+    EXPECT_FLOAT_EQ(expected, actual);
+  }
 }
 
 /**
  * @brief Exception path test for converting string to floating point.
  */
 TEST_P(DaoTestCommonStrToFloatException, str_to_float) {
-    const char* input = GetParam();
+  const char* input = GetParam();
 
-    float actual = -10;
-    ErrorCode error = DbcUtils::str_to_floating_point(input, actual);
+  float actual = -10;
+  ErrorCode error = DbcUtils::str_to_floating_point(input, actual);
 
-    EXPECT_EQ(ErrorCode::INTERNAL_ERROR, error);
-    EXPECT_EQ(-10, actual);
+  EXPECT_EQ(ErrorCode::INTERNAL_ERROR, error);
+  EXPECT_EQ(-10, actual);
 }
 
 /**
  * @brief Converts nullptr to floating point.
  */
 TEST_F(DaoTestCommonStrToFloatException, null_to_float) {
-    float actual = -10;
-    ErrorCode error = DbcUtils::str_to_floating_point(nullptr, actual);
+  float actual = -10;
+  ErrorCode error = DbcUtils::str_to_floating_point(nullptr, actual);
 
-    EXPECT_EQ(ErrorCode::INTERNAL_ERROR, error);
-    EXPECT_EQ(-10, actual);
+  EXPECT_EQ(ErrorCode::INTERNAL_ERROR, error);
+  EXPECT_EQ(-10, actual);
 }
 
 /**
  * @brief Happy path test for converting string to uint64_t.
  */
 TEST_P(DaoTestCommonStrToUint64_t, str_to_integral) {
-    auto params = GetParam();
-    const char* input = std::get<0>(params);
+  auto params = GetParam();
+  const char* input = std::get<0>(params);
 
-    uint64_t actual = -10;
-    ErrorCode error = DbcUtils::str_to_integral(input, actual);
+  uint64_t actual = -10;
+  ErrorCode error = DbcUtils::str_to_integral(input, actual);
 
-    EXPECT_EQ(ErrorCode::OK, error);
+  EXPECT_EQ(ErrorCode::OK, error);
 
-    uint64_t expected = std::get<1>(params);
-    EXPECT_EQ(expected, actual);
+  uint64_t expected = std::get<1>(params);
+  EXPECT_EQ(expected, actual);
 }
 
 /**
  * @brief Exception path test for converting string to uint64_t.
  */
 TEST_P(DaoTestCommonStrToUint64_tException, str_to_integral) {
-    const char* input = GetParam();
+  const char* input = GetParam();
 
-    uint64_t actual = -10;
-    ErrorCode error = DbcUtils::str_to_integral(input, actual);
+  uint64_t actual = -10;
+  ErrorCode error = DbcUtils::str_to_integral(input, actual);
 
-    EXPECT_EQ(ErrorCode::INTERNAL_ERROR, error);
-    EXPECT_EQ(-10, actual);
+  EXPECT_EQ(ErrorCode::INTERNAL_ERROR, error);
+  EXPECT_EQ(-10, actual);
 }
 
 /**
  * @brief Exception path test for converting nullptr to uint64_t.
  */
 TEST_F(DaoTestCommonStrToUint64_tException, null_to_integral) {
-    uint64_t actual = -10;
-    ErrorCode error = DbcUtils::str_to_integral(nullptr, actual);
+  uint64_t actual = -10;
+  ErrorCode error = DbcUtils::str_to_integral(nullptr, actual);
 
-    EXPECT_EQ(ErrorCode::INTERNAL_ERROR, error);
-    EXPECT_EQ(-10, actual);
+  EXPECT_EQ(ErrorCode::INTERNAL_ERROR, error);
+  EXPECT_EQ(-10, actual);
 }
 
 /**
  * @brief Happy path test for converting string to int64_t.
  */
 TEST_P(DaoTestCommonStrToInt64_t, str_to_integral) {
-    auto params = GetParam();
-    const char* input = std::get<0>(params);
+  auto params = GetParam();
+  const char* input = std::get<0>(params);
 
-    ObjectIdType actual = -10;
-    ErrorCode error = DbcUtils::str_to_integral(input, actual);
+  ObjectIdType actual = -10;
+  ErrorCode error = DbcUtils::str_to_integral(input, actual);
 
-    EXPECT_EQ(ErrorCode::OK, error);
+  EXPECT_EQ(ErrorCode::OK, error);
 
-    ObjectIdType expected = std::get<1>(params);
-    EXPECT_EQ(expected, actual);
+  ObjectIdType expected = std::get<1>(params);
+  EXPECT_EQ(expected, actual);
 }
 
 /**
  * @brief Exception path test for converting string to int64_t.
  */
 TEST_P(DaoTestCommonStrToInt64_tException, str_to_integral) {
-    const char* input = GetParam();
+  const char* input = GetParam();
 
-    ObjectIdType actual = -10;
-    ErrorCode error = DbcUtils::str_to_integral(input, actual);
+  ObjectIdType actual = -10;
+  ErrorCode error = DbcUtils::str_to_integral(input, actual);
 
-    EXPECT_EQ(ErrorCode::INTERNAL_ERROR, error);
-    EXPECT_EQ(-10, actual);
+  EXPECT_EQ(ErrorCode::INTERNAL_ERROR, error);
+  EXPECT_EQ(-10, actual);
 }
 
 /**
  * @brief Converts nullptr to int64_t.
  */
 TEST_F(DaoTestCommonStrToInt64_tException, null_to_integral) {
-    ObjectIdType actual = -10;
-    ErrorCode error = DbcUtils::str_to_integral(nullptr, actual);
+  ObjectIdType actual = -10;
+  ErrorCode error = DbcUtils::str_to_integral(nullptr, actual);
 
-    EXPECT_EQ(ErrorCode::INTERNAL_ERROR, error);
-    EXPECT_EQ(-10, actual);
+  EXPECT_EQ(ErrorCode::INTERNAL_ERROR, error);
+  EXPECT_EQ(-10, actual);
 }
 
 /**
  * @brief By inputting nullptr, make ConnectionSPtr.
  */
 TEST_F(DaoTestCommon, make_connection_sptr) {
-    ConnectionSPtr conn_sptr = DbcUtils::make_connection_sptr(nullptr);
-    EXPECT_EQ(nullptr, conn_sptr.get());
-    EXPECT_EQ(nullptr, conn_sptr);
+  ConnectionSPtr conn_sptr = DbcUtils::make_connection_sptr(nullptr);
+  EXPECT_EQ(nullptr, conn_sptr.get());
+  EXPECT_EQ(nullptr, conn_sptr);
 }
 
 /**
  * @brief By inputting nullptr, make ResultUPtr.
  */
 TEST_F(DaoTestCommon, make_result_uptr) {
-    ResultUPtr res_uptr = DbcUtils::make_result_uptr(nullptr);
-    EXPECT_EQ(nullptr, res_uptr.get());
-    EXPECT_EQ(nullptr, res_uptr);
+  ResultUPtr res_uptr = DbcUtils::make_result_uptr(nullptr);
+  EXPECT_EQ(nullptr, res_uptr.get());
+  EXPECT_EQ(nullptr, res_uptr);
 }
 
 }  // namespace manager::metadata::testing

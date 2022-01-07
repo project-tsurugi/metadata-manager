@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 tsurugi project.
+ * Copyright 2021 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,12 +37,11 @@ namespace storage = json;
 #endif
 
 /**
- *  @brief  Constructor
- *  @return none.
+ * @brief Constructor.
+ *   Create an instance of the DBSessionManager class.
+ * @return none.
  */
-ProviderBase::ProviderBase() {
-  // Create an instance of the DBSessionManager class.
-  session_manager_ = std::make_unique<storage::DBSessionManager>();
-};
+ProviderBase::ProviderBase()
+    : session_manager_(std::make_unique<storage::DBSessionManager>()) {}
 
 }  // namespace manager::metadata::db

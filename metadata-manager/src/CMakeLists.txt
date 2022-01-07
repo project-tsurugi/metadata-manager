@@ -21,8 +21,6 @@ if (DATA_STORAGE_JSON)
 else()
     list(FILTER SOURCES EXCLUDE REGEX "/?json/*")
 endif()
-list(FILTER SOURCES EXCLUDE REGEX "/?datatype_metadata.cpp$")
-list(FILTER SOURCES EXCLUDE REGEX "/?table_metadata.cpp$")
 
 add_library(${PROJECT_NAME}
     SHARED ${SOURCES}

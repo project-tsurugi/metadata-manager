@@ -14,41 +14,41 @@
  * limitations under the License.
  */
 
-#ifndef MANAGER_METADATA_DAO_COMMON_MESSAGE_H_
-#define MANAGER_METADATA_DAO_COMMON_MESSAGE_H_
+#ifndef MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_DAO_COMMON_MESSAGE_H_
+#define MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_DAO_COMMON_MESSAGE_H_
 
 namespace manager::metadata::db {
 /**
  * @brief message.
  */
 struct Message {
-  static constexpr const char *const CONNECT_FAILURE =
+  static constexpr const char* const CONNECT_FAILURE =
       "Failed to open connection to database.";
-  static constexpr const char *const CLOSE_FAILURE =
+  static constexpr const char* const CLOSE_FAILURE =
       "Failed to close connection to database.";
-  static constexpr const char *const NOT_INITIALIZED = "not initialized.";
-  static constexpr const char *const START_TRANSACTION_FAILURE =
+  static constexpr const char* const NOT_INITIALIZED = "not initialized.";
+  static constexpr const char* const START_TRANSACTION_FAILURE =
       "Failed to start transaction.: ";
-  static constexpr const char *const COMMIT_FAILURE = "Failed to commit.: ";
-  static constexpr const char *const ROLLBACK_FAILURE = "Failed to rollback: ";
-  static constexpr const char *const SET_ALWAYS_SECURE_SEARCH_PATH =
+  static constexpr const char* const COMMIT_FAILURE = "Failed to commit.: ";
+  static constexpr const char* const ROLLBACK_FAILURE = "Failed to rollback: ";
+  static constexpr const char* const SET_ALWAYS_SECURE_SEARCH_PATH =
       "Failed to set always-secure search path.: ";
-  static constexpr const char *const PREPARE_FAILURE =
+  static constexpr const char* const PREPARE_FAILURE =
       "Failed to prepare of prepared statement.: ";
-  static constexpr const char *const PREPARED_STATEMENT_EXECUTION_FAILURE =
+  static constexpr const char* const PREPARED_STATEMENT_EXECUTION_FAILURE =
       "Failed to execute prepared statement.: ";
-  static constexpr const char *const READ_JSON_FAILURE =
+  static constexpr const char* const READ_JSON_FAILURE =
       "Failed to read json. ";
-  static constexpr const char *const WRITE_JSON_FAILURE =
+  static constexpr const char* const WRITE_JSON_FAILURE =
       "Failed to write json. ";
-  static constexpr const char *const CONVERT_STRING_TO_FLOAT_FAILURE =
+  static constexpr const char* const CONVERT_STRING_TO_FLOAT_FAILURE =
       "Failed to convert a string to a floating point. ";
-  static constexpr const char *const CONVERT_STRING_TO_INT_FAILURE =
+  static constexpr const char* const CONVERT_STRING_TO_INT_FAILURE =
       "Failed to convert a string to an integer. ";
-  static constexpr const char *const METADATA_KEY_NOT_FOUND =
+  static constexpr const char* const METADATA_KEY_NOT_FOUND =
       "Could not find such column name of metadata.: ";
 };  // class Message
 
 }  // namespace manager::metadata::db
 
-#endif  // MANAGER_METADATA_DAO_COMMON_MESSAGE_H_
+#endif  // MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_DAO_COMMON_MESSAGE_H_

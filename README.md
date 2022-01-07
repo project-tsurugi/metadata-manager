@@ -3,7 +3,9 @@
 * metadata-manager
   * Manages metadata
 * message-broker
-  * Mediates communication among components in order to be able to exchange messages
+    * Mediates communication among components in order to be able to exchange messages
+* authentication-manager
+    * Provides user authentication using PostgreSQL.
 
 ## Requirements
 
@@ -47,9 +49,9 @@ RUN apt update -y && apt install -y git build-essential cmake ninja-build doxyge
     ```
 
 available options:
-
 * `-DBUILD_DOCUMENTS=OFF` - never build documents by doxygen
 * `-DDATA_STORAGE=postgresql` - specifies the data-storage where the metadata is stored. "postgresql" or "json".
+* `-DBUILD_TARGET=ALL` - specifies the library to be built. "ALL" or "AUTH" or "METADATA".
 * for debugging only
 * `-DENABLE_SANITIZER=OFF` - disable sanitizers (requires `-DCMAKE_BUILD_TYPE=Debug`)
 * `-DENABLE_UB_SANITIZER=ON` - enable undefined behavior sanitizer (requires `-DENABLE_SANITIZER=ON`)
@@ -58,8 +60,18 @@ available options:
 ### install
 
 ```sh
-make install
+ninja install
 ```
+
+- Notice
+
+  If you chose `-DDATA_STORAGE=json` option, you should make the following directory manually.
+
+  `$HOME/.local/tsurugi/metadata`
+
+  And you can change the above path by set the following environment variable.
+
+  `TSURUGI_METADATA_DIR`
 
 ### run tests
 

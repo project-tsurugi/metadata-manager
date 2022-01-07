@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 tsurugi project.
+ * Copyright 2020-2021 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 #ifndef UT_TABLE_METADATA_H_
 #define UT_TABLE_METADATA_H_
 
@@ -26,20 +25,20 @@
 namespace manager::metadata::testing {
 
 class UTTableMetadata {
-   public:
-    int64_t id = NOT_INITIALIZED;
-    std::string name;
-    std::string namespace_name;
-    std::vector<int64_t> primary_keys;
-    float reltuples = 0;
-    boost::property_tree::ptree tables;
-    std::vector<UTColumnMetadata> columns;
-    UTTableMetadata() = delete;
-    explicit UTTableMetadata(std::string name) : name(name){};
-    void generate_ptree();
+ public:
+  int64_t id = NOT_INITIALIZED;
+  std::string name;
+  std::string namespace_name;
+  std::vector<int64_t> primary_keys;
+  float reltuples = 0;
+  boost::property_tree::ptree tables;
+  std::vector<UTColumnMetadata> columns;
+  UTTableMetadata() = delete;
+  explicit UTTableMetadata(std::string name) : name(name){};
+  void generate_ptree();
 
-   private:
-    static constexpr int64_t NOT_INITIALIZED = -1;
+ private:
+  static constexpr int64_t NOT_INITIALIZED = -1;
 };
 
 }  // namespace manager::metadata::testing

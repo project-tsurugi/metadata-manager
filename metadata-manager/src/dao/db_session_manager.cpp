@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 tsurugi project.
+ * Copyright 2020-2021 tsurugi project.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,25 +19,17 @@
 
 #include "manager/metadata/dao/db_session_manager.h"
 
-#include <iostream>
-#include <memory>
-#include <string>
-
-#include "manager/metadata/dao/common/config.h"
-#include "manager/metadata/dao/common/message.h"
-
 #if defined(STORAGE_POSTGRESQL)
-#include <libpq-fe.h>
 #include "manager/metadata/dao/postgresql/columns_dao.h"
-// #include "manager/metadata/dao/postgresql/dbc_utils.h"
 #include "manager/metadata/dao/postgresql/datatypes_dao.h"
-// #include "manager/metadata/dao/postgresql/db_session_manager.h"
+#include "manager/metadata/dao/postgresql/privileges_dao.h"
+#include "manager/metadata/dao/postgresql/roles_dao.h"
 #include "manager/metadata/dao/postgresql/statistics_dao.h"
 #include "manager/metadata/dao/postgresql/tables_dao.h"
 #elif defined(STORAGE_JSON)
 #include "manager/metadata/dao/json/columns_dao.h"
 #include "manager/metadata/dao/json/datatypes_dao.h"
-// #include "manager/metadata/dao/json/db_session_manager.h"
+#include "manager/metadata/dao/json/privileges_dao.h"
 #include "manager/metadata/dao/json/tables_dao.h"
 #endif
 
@@ -50,22 +42,25 @@ namespace storage = manager::metadata::db::postgresql;
 namespace storage = manager::metadata::db::json;
 #endif
 
-// -----------------------------------------------------------------------------
-// Protected method area
+/* =============================================================================
+ * Private method area
+ */
 
 /**
- *  @brief  Create Dao instance for the requested table name.
- *  @param  (table_name)   [in]  unique id for the Dao.
- *  @param  (session_manager)   [in]  Data connector for the Dao.
- *  @param  (gdao)         [out] Dao instance if success.
+ * @brief Create Dao instance for the requested table name.
+ * @param (table_name)   [in]  unique id for the Dao.
+ * @param (session_manager)   [in]  Data connector for the Dao.
+ * @param (gdao)         [out] Dao instance if success.
  *     for the requested table name.
- *  @return ErrorCode::OK if success, otherwise an error code.
+ * @return ErrorCode::OK if success, otherwise an error code.
  */
 manager::metadata::ErrorCode DBSessionManager::create_dao(
-    GenericDAO::TableName table_name, DBSessionManager *session_manager,
-    std::shared_ptr<GenericDAO> &gdao) const {
+    GenericDAO::TableName table_name, const DBSessionManager* session_manager,
+    std::shared_ptr<GenericDAO>& gdao) const {
+  ErrorCode error = ErrorCode::UNKNOWN;
 
-  storage::DBSessionManager *strage_session_manager = (storage::DBSessionManager *)session_manager;
+  storage::DBSessionManager* strage_session_manager =
+      (storage::DBSessionManager*)session_manager;
 
   switch (table_name) {
     case GenericDAO::TableName::TABLES: {
@@ -75,16 +70,18 @@ manager::metadata::ErrorCode DBSessionManager::create_dao(
     }
     case GenericDAO::TableName::STATISTICS: {
 #if defined(STORAGE_POSTGRESQL)
-      auto sdao = std::make_shared<storage::StatisticsDAO>(strage_session_manager);
+      auto sdao =
+          std::make_shared<storage::StatisticsDAO>(strage_session_manager);
       gdao = sdao;
+      break;
 #elif defined(STORAGE_JSON)
       // Statistics are not supported in JSON.
       return ErrorCode::NOT_SUPPORTED;
 #endif
-      break;
     }
     case GenericDAO::TableName::DATATYPES: {
-      auto ddao = std::make_shared<storage::DataTypesDAO>(strage_session_manager);
+      auto ddao =
+          std::make_shared<storage::DataTypesDAO>(strage_session_manager);
       gdao = ddao;
       break;
     }
@@ -93,18 +90,37 @@ manager::metadata::ErrorCode DBSessionManager::create_dao(
       gdao = cdao;
       break;
     }
-    default: {
-      return ErrorCode::INTERNAL_ERROR;
+    case GenericDAO::TableName::ROLES: {
+#if defined(STORAGE_POSTGRESQL)
+      auto sdao = std::make_shared<storage::RolesDAO>(strage_session_manager);
+      gdao = sdao;
       break;
+#elif defined(STORAGE_JSON)
+      // Roles are not supported in JSON.
+      return ErrorCode::NOT_SUPPORTED;
+#endif
+    }
+    case GenericDAO::TableName::PRIVILEGES: {
+      auto sdao =
+          std::make_shared<storage::PrivilegesDAO>(strage_session_manager);
+      gdao = sdao;
+      break;
+    }
+    default: {
+      error = ErrorCode::INTERNAL_ERROR;
+      return error;
     }
   }
 
   if (gdao == nullptr) {
-    return ErrorCode::INTERNAL_ERROR;
+    error = ErrorCode::INTERNAL_ERROR;
+    return error;
   }
 
   // Prepare for DAO.
-  return gdao->prepare();
+  error = gdao->prepare();
+
+  return error;
 }
 
 }  // namespace manager::metadata::db

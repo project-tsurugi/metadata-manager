@@ -14,6 +14,7 @@
 
 if (DATA_STORAGE_JSON)
   add_subdirectory(json)
+  add_subdirectory(json_extended)
 else()
   add_subdirectory(postgresql)
 endif()
