@@ -1,17 +1,17 @@
 # manager
 
-* metadata-manager
-  * Manages metadata
-* message-broker
-    * Mediates communication among components in order to be able to exchange messages
-* authentication-manager
-    * Provides user authentication using PostgreSQL.
+- metadata-manager
+  - Manages metadata
+- message-broker
+  - Mediates communication among components in order to be able to exchange messages
+- authentication-manager
+  - Provides user authentication using PostgreSQL.
 
 ## Requirements
 
-* CMake `>= 3.10`
-* C++ Compiler `>= C++17`
-* libpq
+- CMake `>= 3.10`
+- C++ Compiler `>= C++17`
+- libpq
 
 ### Dockerfile
 
@@ -49,13 +49,14 @@ RUN apt update -y && apt install -y git build-essential cmake ninja-build doxyge
     ```
 
 available options:
-* `-DBUILD_DOCUMENTS=OFF` - never build documents by doxygen
-* `-DDATA_STORAGE=postgresql` - specifies the data-storage where the metadata is stored. "postgresql" or "json".
-* `-DBUILD_TARGET=ALL` - specifies the library to be built. "ALL" or "AUTH" or "METADATA".
-* for debugging only
-* `-DENABLE_SANITIZER=OFF` - disable sanitizers (requires `-DCMAKE_BUILD_TYPE=Debug`)
-* `-DENABLE_UB_SANITIZER=ON` - enable undefined behavior sanitizer (requires `-DENABLE_SANITIZER=ON`)
-* `-DENABLE_COVERAGE=ON` - enable code coverage analysis (requires `-DCMAKE_BUILD_TYPE=Debug`)
+
+- `-DBUILD_DOCUMENTS=OFF` - never build documents by doxygen
+- `-DDATA_STORAGE=postgresql` - specifies the data-storage where the metadata is stored. "postgresql" or "json".
+- `-DBUILD_TARGET=ALL` - specifies the library to be built. "ALL" or "AUTH" or "METADATA".
+- for debugging only
+  - `-DENABLE_SANITIZER=OFF` - disable sanitizers (requires `-DCMAKE_BUILD_TYPE=Debug`)
+  - `-DENABLE_UB_SANITIZER=ON` - enable undefined behavior sanitizer (requires `-DENABLE_SANITIZER=ON`)
+  - `-DENABLE_COVERAGE=ON` - enable code coverage analysis (requires `-DCMAKE_BUILD_TYPE=Debug`)
 
 ### install
 
@@ -76,13 +77,13 @@ ninja install
 ### run tests
 
 1. Update the shared library search path for libpq.  
-    The method to set the shared library search path varies between platforms,  
-    but the most widely-used method is to set the environment variable LD_LIBRARY_PATH like so:  
-    In Bourne shells (sh, ksh, bash, zsh):  
+  The method to set the shared library search path varies between platforms,  
+  but the most widely-used method is to set the environment variable LD_LIBRARY_PATH like so:  
+  In Bourne shells (sh, ksh, bash, zsh):  
 
- ```sh
- export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:<PostgreSQL install directory>/lib
- ```
+    ```sh
+    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:<PostgreSQL install directory>/lib
+    ```
 
 1. run tests
 
