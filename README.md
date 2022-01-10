@@ -36,7 +36,7 @@ RUN apt update -y && apt install -y git build-essential cmake ninja-build doxyge
     The default database name is `tsurugi`.  
     How to change the database name.
 
-     1. Change the database name in the `sql / ddl.sql` file.
+     1. Change the database name in the `sql/ddl.sql` file.
         > CREATE DATABASE *`database-name`* LC_COLLATE 'C' LC_CTYPE 'C' ENCODING 'UTF8' template=template0;
         >  
         > \c *`database-name`*
