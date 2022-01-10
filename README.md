@@ -33,6 +33,17 @@ RUN apt update -y && apt install -y git build-essential cmake ninja-build doxyge
     psql postgres < sql/ddl.sql
     ```
 
+    The default database name is `tsurugi`.  
+    How to change the database name.
+
+     1. Change the database name in the `sql / ddl.sql` file.
+        > CREATE DATABASE *`database-name`* LC_COLLATE 'C' LC_CTYPE 'C' ENCODING 'UTF8' template=template0;
+        >  
+        > \c *`database-name`*
+
+     1. Set the database name to the environment variable (TSURUGI_CONNECTION_STRING).
+        > export TSURUGI_CONNECTION_STRING=dbname=*`database-name`*
+
 1. Retrieve third party modules.
 
     ```sh
