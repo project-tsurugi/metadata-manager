@@ -1,5 +1,0 @@
-<map id="manager::metadata::db::PrivilegesDAO" name="manager::metadata::db::PrivilegesDAO">
-<area shape="rect" id="node3" href="$classmanager_1_1metadata_1_1db_1_1json_1_1PrivilegesDAO.html" title="manager::metadata::\ldb::json::PrivilegesDAO" alt="" coords="439,5,613,47"/>
-<area shape="rect" id="node4" href="$classmanager_1_1metadata_1_1db_1_1postgresql_1_1PrivilegesDAO.html" title="manager::metadata::\ldb::postgresql::PrivilegesDAO" alt="" coords="419,71,633,112"/>
-<area shape="rect" id="node2" href="$classmanager_1_1metadata_1_1db_1_1GenericDAO.html" title="manager::metadata::\ldb::GenericDAO" alt="" coords="5,39,164,80"/>
-</map>
