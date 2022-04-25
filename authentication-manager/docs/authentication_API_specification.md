@@ -319,7 +319,7 @@ public class Authentication {
 - **使用例**
 
   ```Java
-  import com.nec.tsurugi.manager.authentiction.Authentication;
+  import com.nec.tsurugi.manager.authentication.Authentication;
   ```
 
   ```Java
