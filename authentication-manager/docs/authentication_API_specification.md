@@ -20,7 +20,7 @@
     - [C++ I/F](#c-if-1)
       - [is_valid_tokenメソッド](#is_valid_tokenメソッド)
     - [Java I/F](#java-if-1)
-      - [isAuthenticatedメソッド](#isauthenticatedメソッド)
+      - [isValidTokenメソッド](#isvalidtokenメソッド)
   - [認可情報提供機能](#認可情報提供機能)
     - [C++ I/F](#c-if-2)
       - [get_aclsメソッド](#get_aclsメソッド)
@@ -285,7 +285,7 @@ namespace manager::authentication {
 
 ### Java I/F
 
-#### isAuthenticatedメソッド
+#### isValidTokenメソッド
 
 **ライブラリ**：認証管理基盤Javaライブラリ(`tsurugi-manager-authentication.jar`)  
 **パッケージ**：`com.nec.tsurugi.manager.authentication`  
@@ -295,7 +295,7 @@ namespace manager::authentication {
 package com.nec.tsurugi.manager.authentication;
 
 public class Authentication {
-  public static boolean isAuthenticated(final String token) {...}
+  public static boolean isValidToken(final String token) {...}
 }
 ```
 
@@ -325,7 +325,7 @@ public class Authentication {
   ```Java
   String token = "Header.Payload.Signature";
 
-  if (Authentication.isAuthenticated(token)) {
+  if (Authentication.isValidToken(token)) {
     // トークン有効
     ...
   } else {
