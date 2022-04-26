@@ -445,10 +445,10 @@ namespace manager::metadata {
 
   ```cpp
   // std::string token = "Header.Payload.Signature";
-  boost::property_tree::ptree authorization;
+  boost::property_tree::ptree acls;
 
   // テーブル認可情報の取得
-  error = tables->get_authorization(token, authorization);
+  error = tables->get_acls(token, acls);
   if (result != ErrorCode::OK) {
     // 正常終了
     ...
@@ -464,12 +464,12 @@ namespace manager::metadata {
   }
 
   // 認可情報オブジェクト
-  auto table_authorization = authorization.get_child_optional(Tables::TABLE_ACL_NODE);
-  if (!table_authorization) {
+  auto table_acls = acls.get_child_optional(Tables::TABLE_ACL_NODE);
+  if (!table_acls) {
     // エラー処理
   }
   
-  BOOST_FOREACH (const auto& node, table_authorization.get()) {
+  BOOST_FOREACH (const auto& node, table_acls.get()) {
     std::string table_name = node.first.data();
     std::string table_acl = node.second.data();
     std::cout << table_name  << ": [" << table_acl << "]" << std::endl;
@@ -591,9 +591,9 @@ public class Tables {
   ```Java
   String token = "Header.Payload.Signature";
 
-  String authorization = "";
+  String acls = "";
   try {
-    authorization = Tables.getAcls(token);
+    acls = Tables.getAcls(token);
   } catch (InvalidTokenException e) {
     // 無効なトークン
     ...
@@ -602,7 +602,7 @@ public class Tables {
     ...
   }
 
-  JSONObject rootNode = new JSONObject(authorization);
+  JSONObject rootNode = new JSONObject(acls);
   JSONObject tableNode = rootNode.optJSONObject(Tables.TABLE_ACL_NODE);
   if (tableNode != null) {
     for (String tableName : tableNode.keySet()) {
