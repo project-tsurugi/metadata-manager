@@ -593,7 +593,7 @@ public class Tables {
 
   String authorization = "";
   try {
-    authorization = Tables.getAuthorization(token);
+    authorization = Tables.getAcls(token);
   } catch (InvalidTokenException e) {
     // 無効なトークン
     ...
