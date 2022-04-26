@@ -76,7 +76,7 @@
     classDef disabled color:#9a9a9a, fill:#f5f5f5, stroke:#888, stroke-dasharray:2 3
     Client
     subgraph Manager
-      AuthJava("認証管理基盤Javaライブラリ")
+      AuthJava("管理基盤Javaライブラリ")
       AuthMgr("認証管理基盤ライブラリ"):::disabled
       MetaMgr("メタデータ管理基盤ライブラリ"):::disabled
     end
@@ -164,7 +164,7 @@ namespace manager::authentication {
 
 #### authUserメソッド
 
-**ライブラリ**：認証管理基盤Javaライブラリ(`tsurugi-manager-authentication.jar`)  
+**ライブラリ**：管理基盤Javaライブラリ(`tsurugi-managers.jar`)  
 **パッケージ**：`com.nec.tsurugi.manager.authentication`  
 **クラス**　　：`Authentication`
 
@@ -287,7 +287,7 @@ namespace manager::authentication {
 
 #### isValidTokenメソッド
 
-**ライブラリ**：認証管理基盤Javaライブラリ(`tsurugi-manager-authentication.jar`)  
+**ライブラリ**：管理基盤Javaライブラリ(`tsurugi-managers.jar`)  
 **パッケージ**：`com.nec.tsurugi.manager.authentication`  
 **クラス**　　：`Authentication`
 
@@ -506,7 +506,7 @@ namespace manager::metadata {
 
 #### getAclsメソッド
 
-**ライブラリ**：認証管理基盤Javaライブラリ(`tsurugi-manager-authentication.jar`)  
+**ライブラリ**：管理基盤Javaライブラリ(`tsurugi-managers.jar`)  
 **パッケージ**：`com.nec.tsurugi.manager.metadata`  
 **クラス**　　：`Tables`
 
@@ -621,7 +621,7 @@ public class Tables {
 
 #### TABLE_ACL_NODE定数
 
-**ライブラリ**：認証管理基盤Javaライブラリ(`tsurugi-manager-authentication.jar`)  
+**ライブラリ**：管理基盤Javaライブラリ(`tsurugi-managers.jar`)  
 **パッケージ**：`com.nec.tsurugi.manager.metadata`  
 **クラス**　　：`Tables`
 
