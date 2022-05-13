@@ -2,32 +2,24 @@
 
 # 認証管理基盤 API仕様書
 
-2022.04.22 KCC 初版
+2022.05.13 KCC 初版
 
 ## 目次
 
 - [認証管理基盤 API仕様書](#認証管理基盤-api仕様書)
   - [目次](#目次)
   - [機能概要](#機能概要)
-    - [構成](#構成)
-      - [コンポーネント関係図](#コンポーネント関係図)
+    - [コンポーネント関係図](#コンポーネント関係図)
   - [ユーザ認証機能](#ユーザ認証機能)
-    - [C++ I/F](#c-if)
-      - [auth_userメソッド](#auth_userメソッド)
     - [Java I/F](#java-if)
       - [authUserメソッド](#authuserメソッド)
   - [トークン検証機能](#トークン検証機能)
-    - [C++ I/F](#c-if-1)
-      - [is_valid_tokenメソッド](#is_valid_tokenメソッド)
     - [Java I/F](#java-if-1)
-      - [isValidTokenメソッド](#isvalidtokenメソッド)
+      - [isAuthenticatedメソッド](#isauthenticatedメソッド)
   - [認可情報提供機能](#認可情報提供機能)
-    - [C++ I/F](#c-if-2)
+    - [C++ I/F](#c-if)
       - [get_aclsメソッド](#get_aclsメソッド)
       - [TABLE_ACL_NODE定数](#table_acl_node定数)
-    - [Java I/F](#java-if-2)
-      - [getAclsメソッド](#getaclsメソッド)
-      - [TABLE_ACL_NODE定数](#table_acl_node定数-1)
   - [付録](#付録)
     - [コンフィギュレーション](#コンフィギュレーション)
       - [環境変数](#環境変数)
@@ -40,131 +32,48 @@
 
 認証管理基盤は、ユーザ認証に関連する下記機能を提供する。
 
-|#|機能|概要|コンポーネント名|
-|--:|---|---|---|
-|1.|ユーザ認証機能|ユーザ名およびパスワードを用いた認証を行い、認証トークンを発行する機能|認証管理基盤ライブラリ|
-|2.|トークン検証機能|認証トークンの有効性を検証する機能|認証管理基盤ライブラリ|
-|3.|認可情報提供機能|認証済みユーザのテーブル認可情報を取得する機能|メタデータ管理基盤ライブラリ|
+|#|機能|概要|コンポーネント名|Java I/F|C++ I/F|
+|--:|---|---|---|:-:|:-:|
+|1.|ユーザ認証機能|ユーザ名およびパスワードを用いた認証を行い、認証トークンを発行する機能|認証管理基盤|○|<span style="color: #bbb">×</span>|
+|2.|トークン検証機能|認証トークンの有効性を検証する機能|認証管理基盤|○|<span style="color: #bbb">×</span>|
+|3.|認可情報提供機能|認証済みユーザのテーブル認可情報を提供する機能|メタデータ管理基盤|<span style="color: #bbb">×</span>|○|
 
-### 構成
+### コンポーネント関係図
 
-- 認証および認可情報取得の各機能は、C++およびJavaライブラリで提供する。
-- コア処理は、C++ライブラリ（認証管理基盤ライブラリ（認証機能、認証チェック機能）、メタデータ管理基盤ライブラリ（認可情報取得機能））で実装し、Javaライブラリは当該機能を外部関数インタフェースを用いて使用することで実現する。
-- それぞれの機能は独立するため、C++とJavaが混成する構成も可能（認証：Java API、認可情報取得：C++ APIなど）。
+```mermaid
+graph LR
+  classDef request stroke-width:0px, fill:#ecf5e7
+  classDef manager stroke-width:2px, stroke:#f66, fill:#fee
+  classDef library color:#777, fill:#eee, stroke-dasharray:2 2
 
-#### コンポーネント関係図
+  Authentication((認証要求)):::request
+  Authorization(("認可情報<br>要求")):::request
+  ComponentAuth["User Component (Java)"]
+  ComponentMeta["User Component (C++)"]
+  subgraph Manager
+    AuthMng("認証管理基盤 (Java)"):::manager
+    MetaMng("メタデータ管理基盤 (C++)"):::manager
+  end
+  DB[("PostgreSQL")]:::library
 
-- **C++インタフェース**
+  Authentication .-> ComponentAuth
+  ComponentAuth --"[Java I/F]"--- AuthMng
+  AuthMng ...- DB
 
-  ```mermaid
-  graph LR
-    Client
-    subgraph Manager
-      AuthMgr("認証管理基盤ライブラリ")
-      MetaMgr("メタデータ管理基盤ライブラリ")
-    end
-
-    Client -- "[ ユーザ認証機能 ]" --> AuthMgr
-    Client -- "[ トークン検証機能 ]" --> AuthMgr
-    Client -- "[ 認可情報提供機能 ]" --> MetaMgr
-  ```
-
-- **Javaインタフェース**
-
-  ```mermaid
-  graph LR
-    classDef disabled color:#9a9a9a, fill:#f5f5f5, stroke:#888, stroke-dasharray:2 3
-    Client
-    subgraph Manager
-      AuthJava("管理基盤Javaライブラリ")
-      AuthMgr("認証管理基盤ライブラリ"):::disabled
-      MetaMgr("メタデータ管理基盤ライブラリ"):::disabled
-    end
-
-    Client -- "[ ユーザ認証機能]" --> AuthJava
-    Client -- "[ トークン検証機能]" --> AuthJava
-    Client -- "[ 認可情報提供機能]" --> AuthJava
-    AuthJava ..-> AuthMgr
-    AuthJava ..-> MetaMgr
-  ```
+  Authorization .-> ComponentMeta
+  ComponentMeta --"[C++ I/F]"--- MetaMng
+  MetaMng ...- DB
+```
 
 ---
 
 ## ユーザ認証機能
 
-### C++ I/F
-
-#### auth_userメソッド
-
-**ライブラリ**　　：認証管理基盤ライブラリ(`libmanager-authentication.so`)  
-**ヘッダファイル**：`include/manager/authentication/authentication.h`  
-**名前空間**　　　：`manager::authentication`  
-**クラス**　　　　：`Authentication`  
-
-```cpp
-namespace manager::authentication {
-  class Authentication {
-   public:
-    static ErrorCode auth_user(std::string_view user_name, std::string_view password, std::string* token);
-  }
-}
-```
-
-- **概要**  
-  指定された認証情報（ユーザ名およびパスワード）を用いて認証を試行する。  
-  認証トークン(`token`)が指定されている場合は、認証トークンを発行し格納する。
-
-- **引数**
-  - `userName`  
-    認証するユーザ名。
-  - `password`  
-    パスワード。
-  - `token`  
-    発行された認証トークン（詳細は「[認証トークン](#認証トークン)」を参照）を格納するためのポインタ。
-
-- **戻り値**
-  - `ErrorCode::OK`  
-    入力された接続情報が有効である場合。
-  - `ErrorCode::AUTHENTICATION_FAILURE`  
-    入力された接続情報が無効である場合。
-  - `ErrorCode::CONNECTION_FAILURE`  
-    データベースへの接続に失敗した場合。
-
-- **例外**  
-  なし
-
-- **使用例**
-
-  ```cpp
-  #include "manager/authentication/authentication.h"
-  
-  using manager::authentication::Authentication;
-  using manager::authentication::ErrorCode;
-  ```
-
-  ```cpp
-  std::string user_name = "user01";
-  std::string password = "1q2w3e4r";
-  std::string token = "";
-
-  ErrorCode result = Authentication::auth_user(user_name, password, &token);
-  if (result == ErrorCode::OK) {
-    // 認証成功
-    ...
-  } else if (result == ErrorCode::AUTHENTICATION_FAILURE) {
-    // 認証エラー
-    ...
-  } else if (result == ErrorCode::CONNECTION_FAILURE) {
-    // データベース接続エラー
-    ...
-  } 
-  ```
-
 ### Java I/F
 
 #### authUserメソッド
 
-**ライブラリ**：管理基盤Javaライブラリ(`tsurugi-managers.jar`)  
+**ライブラリ**：認証管理基盤ライブラリ(`tsurugi-manager-authentication.jar`)  
 **パッケージ**：`com.nec.tsurugi.manager.authentication`  
 **クラス**　　：`Authentication`
 
@@ -228,66 +137,11 @@ public class Authentication {
 
 ## トークン検証機能
 
-### C++ I/F
-
-#### is_valid_tokenメソッド
-
-**ライブラリ**　　：認証管理基盤ライブラリ(`libmanager-authentication.so`)  
-**ヘッダファイル**：`include/manager/authentication/authentication.h`  
-**名前空間**　　　：`manager::authentication`  
-**クラス**　　　　：`Authentication`  
-
-```cpp
-namespace manager::authentication {
-  class Authentication {
-   public:
-    static bool is_valid_token(std::string_view token);
-  }
-}
-```
-
-- **概要**  
-  指定された認証トークンの有効性を検証する。
-
-- **引数**
-  - `token`  
-    検証する認証トークン。
-
-- **戻り値**
-  - トークン状態
-    - `true`  
-      認証トークンが有効である場合。
-    - `false`  
-      認証トークンが無効である場合。
-
-- **例外**  
-  なし
-
-- **使用例**
-
-  ```cpp
-  #include "manager/authentication/authentication.h"
-
-  using manager::authentication::Authentication;
-  ```
-
-  ```cpp
-  std::string token = "Header.Payload.Signature";
-
-  if (Authentication::is_valid_token(token)) {
-    // トークン有効
-    ...
-  } else {
-    // トークン無効
-    ...
-  } 
-  ```
-
 ### Java I/F
 
-#### isValidTokenメソッド
+#### isAuthenticatedメソッド
 
-**ライブラリ**：管理基盤Javaライブラリ(`tsurugi-managers.jar`)  
+**ライブラリ**：認証管理基盤ライブラリ(`tsurugi-manager-authentication.jar`)  
 **パッケージ**：`com.nec.tsurugi.manager.authentication`  
 **クラス**　　：`Authentication`
 
@@ -295,7 +149,7 @@ namespace manager::authentication {
 package com.nec.tsurugi.manager.authentication;
 
 public class Authentication {
-  public static boolean isValidToken(final String token) {...}
+  public static boolean isAuthenticated(final String token) {...}
 }
 ```
 
@@ -319,13 +173,13 @@ public class Authentication {
 - **使用例**
 
   ```Java
-  import com.nec.tsurugi.manager.authentication.Authentication;
+  import com.nec.tsurugi.manager.authentiction.Authentication;
   ```
 
   ```Java
   String token = "Header.Payload.Signature";
 
-  if (Authentication.isValidToken(token)) {
+  if (Authentication.isAuthenticated(token)) {
     // トークン有効
     ...
   } else {
@@ -357,7 +211,7 @@ namespace manager::metadata {
 ```
 
 - **概要**  
-  全テーブルのACL情報を元に、引数で指定された認証トークンより抽出したユーザ名（ロール名）に対する認可情報を生成して返す。
+  全テーブルのACL情報を基に、引数で指定された認証トークンより抽出したユーザ名（ロール名）に対する認可情報を生成して返す。
 
 - **引数**
   - `token`  
@@ -445,10 +299,10 @@ namespace manager::metadata {
 
   ```cpp
   // std::string token = "Header.Payload.Signature";
-  boost::property_tree::ptree acls;
+  boost::property_tree::ptree authorization;
 
   // テーブル認可情報の取得
-  error = tables->get_acls(token, acls);
+  error = tables->get_authorization(token, authorization);
   if (result != ErrorCode::OK) {
     // 正常終了
     ...
@@ -464,12 +318,12 @@ namespace manager::metadata {
   }
 
   // 認可情報オブジェクト
-  auto table_acls = acls.get_child_optional(Tables::TABLE_ACL_NODE);
-  if (!table_acls) {
+  auto table_authorization = authorization.get_child_optional(Tables::TABLE_ACL_NODE);
+  if (!table_authorization) {
     // エラー処理
   }
   
-  BOOST_FOREACH (const auto& node, table_acls.get()) {
+  BOOST_FOREACH (const auto& node, table_authorization.get()) {
     std::string table_name = node.first.data();
     std::string table_acl = node.second.data();
     std::cout << table_name  << ": [" << table_acl << "]" << std::endl;
@@ -485,7 +339,6 @@ namespace manager::metadata {
 
 #### TABLE_ACL_NODE定数
 
-**ライブラリ**　　：メタデータ管理基盤ライブラリ(`libmanager-metadata.so`)  
 **ヘッダファイル**：`include/manager/metadata/tables.h`  
 **名前空間**　　　：`manager::metadata`  
 **クラス**　　　　：`Tables`  
@@ -502,140 +355,6 @@ namespace manager::metadata {
 - **概要**  
   テーブル認可情報を示すメタデータのフィールド名定数。
 
-### Java I/F
-
-#### getAclsメソッド
-
-**ライブラリ**：管理基盤Javaライブラリ(`tsurugi-managers.jar`)  
-**パッケージ**：`com.nec.tsurugi.manager.metadata`  
-**クラス**　　：`Tables`
-
-```java
-package com.nec.tsurugi.manager.metadata;
-
-public class Tables {
-  public static String getAcls(final String token)
-    throws InvalidTokenException, DBAccessException { ... }
-}
-```
-
-- **概要**  
-  メタデータ管理基盤を介して取得したテーブル一覧を元に、認証済みユーザの認可情報を生成して返す。
-
-- **引数**
-  - `token`  
-    認証トークン。
-
-- **戻り値**
-  - 認可情報（JSON文字列）  
-    認証済みユーザに認可された情報。  
-
-    - データ構成(JSON文字列)  
-      |#|フィールド|データ型|説明|
-      |--:|---|---|---|
-      |1.|`tables`|object|テーブル一覧|
-      |2.|&emsp;*`<テーブル名>`*|String|テーブルに対するアクセス権|
-
-    - アクセス権
-
-      |アクセス権<br>(PostgreSQL準拠)|意味|
-      |:-:|---|
-      |`a`|`INSERT`|
-      |`r`|`SELECT`|
-      |`w`|`UPDATE`|
-      |`d`|`DELETE`|
-      |`D`|`TRUNCATE`|
-      |`x`|`REFERENCES`|
-      |`t`|`TRIGGER`|
-
-    - データイメージ
-
-      ```sql
-      table-name | acl
-      -----------+--------------------------------------------------
-      table_01   | {admin=arwdDxt/admin, tsurugi_user=arwdDxt/admin}    # 全ての権限
-      table_02   | {admin=arwdDxt/admin, tsurugi_user=r/admin}          # 読み取りのみ
-      table_03   | {admin=arwdDxt/admin, other_user=arwdDxt/admin}      # 権限なし
-      table_04   | {admin=arwdDxt/admin, =arwd/admin}                   # PUBLIC
-      ```
-
-      ```json
-      // ユーザ名：tsurugi_user
-      {
-        "tables": {
-          "table-01": "arwdDxt",
-          "table-02": "r",
-          "table-04": "arwd"
-        }
-      }
-      ```
-
-- **例外**
-  - `InvalidTokenException`  
-    無効なトークンが指定された場合。
-  - `DBAccessException`  
-    データベースへのアクセスエラーが発生した場合。
-  - `InternalException`  
-    予期しない内部エラーが発生した場合。
-
-- **使用例**
-
-  ```Java
-  import com.nec.tsurugi.manager.metadata.Tables;
-  import com.nec.tsurugi.manager.exceptions.InvalidTokenException;
-  import com.nec.tsurugi.manager.exceptions.DBAccessException;
-
-  import org.json.JSONObject;
-  ```
-
-  ```Java
-  String token = "Header.Payload.Signature";
-
-  String acls = "";
-  try {
-    acls = Tables.getAcls(token);
-  } catch (InvalidTokenException e) {
-    // 無効なトークン
-    ...
-  } catch (DBAccessException e) {
-    // データベースアクセスエラー
-    ...
-  }
-
-  JSONObject rootNode = new JSONObject(acls);
-  JSONObject tableNode = rootNode.optJSONObject(Tables.TABLE_ACL_NODE);
-  if (tableNode != null) {
-    for (String tableName : tableNode.keySet()) {
-      String tableAcl = tableNode.getString(tableName);
-      System.out.println(tableName + ": [" + tableAcl + "]");
-    }
-  }
-  ```
-
-  ```sh
-  # 出力例
-  table_01: [arwdDxt]
-  table_02: [r]
-  table_04: [arwd]
-  ```
-
-#### TABLE_ACL_NODE定数
-
-**ライブラリ**：管理基盤Javaライブラリ(`tsurugi-managers.jar`)  
-**パッケージ**：`com.nec.tsurugi.manager.metadata`  
-**クラス**　　：`Tables`
-
-```java
-package com.nec.tsurugi.manager.metadata;
-
-public class Tables {
-  public static final String TABLE_ACL_NODE = "tables";
-}
-```
-
-- **概要**  
-  テーブル認可情報を示すメタデータのフィールド名定数。
-
 ---
 
 ## 付録
@@ -644,10 +363,15 @@ public class Tables {
 
 #### 環境変数
 
-|#|環境変数|説明|設定例 (PostgreSQL)|
-|:-:|---|---|---|
-|1.|`TSURUGI_CONNECTION_STRING_AUTH` **(仮)**|ユーザの認証に使用するDBサーバへの接続文字列|`postgresql://localhost:5432/tsurugi_db`|
-|2.|`TSURUGI_CONNECTION_STRING`|テーブルメタデータが格納されているDBサーバへの接続文字列|`postgresql://admin:pswd1234@localhost:5432/tsurugi_db`|
+|#|環境変数|説明|認証<br>管理基盤|メタデータ<br>管理基盤|設定例|デフォルト値|
+|--:|---|---|:-:|:-:|---|---|
+|1.|`TSURUGI_CONNECTION_STRING_AUTH`|ユーザ認証に使用するDBサーバへの接続文字列(JDBC)|○|<span style="color: #bbb">×</span>|`jdbc:postgresql://localhost:5432/tsurugi_db`|`jdbc:postgresql:tsurugi`|
+|2.|`TSURUGI_CONNECTION_STRING`|テーブルメタデータが格納されているDBサーバへの接続文字列|<span style="color: #bbb">×</span>|○|`postgresql://admin:pswd123@localhost:5432/tsurugi_db`|`dbname=tsurugi`|
+|3.|`TSURUGI_JWT_CLAIM_ISS`|認証トークンの発行者(Issuer)に設定するクレーム値|○|<span style="color: #bbb">×</span>|`authentication-manager`|`authentication-manager`|
+|4.|`TSURUGI_JWT_CLAIM_AUD`|認証トークンの利用者(Audience)に設定するクレーム値|○|<span style="color: #bbb">×</span>|`metadata-manager`|`metadata-manager`|
+|5.|`TSURUGI_JWT_CLAIM_SUB`|認証トークンの用途(Subject)に設定するクレーム値|○|<span style="color: #bbb">×</span>|`AuthenticationToken`|`AuthenticationToken`|
+|6.|`TSURUGI_JWT_CLAIM_EXP`|認証トークンの有効期間（秒）|○|<span style="color: #bbb">×</span>|`300`|`300`|
+|7.|`TSURUGI_JWT_SECRET_KEY`|認証トークンの署名に使用する共通キーフレーズ|○|○|`tsurugi-256-bit-secret-sample-key`|システム固定値|
 
 ※実効ユーザーの環境変数に設定する
 
@@ -667,17 +391,18 @@ JWT(JWS)に準拠（[RFC7515](https://datatracker.ietf.org/doc/html/rfc7515)参�
   下記JSONデータをBase64urlエンコードした文字列
   |#|クレーム名|値|備考|
   |--:|---|---|---|
-  |1.|`iss`|`"authentication-manager"` **(仮)**|固定値|
-  |2.|`aud`|`"metadata-manager"` **(仮)**|固定値|
-  |3.|`sub`|`"AuthenticationToken"` **(仮)**|固定値|
-  |4.|`exp`|*UNIXタイム*|トークン生成日時+有効期限(300秒程度？)|
-  |5.|`userName`|認証済みユーザ名||
+  |1.|`iss`|環境変数値(`TSURUGI_JWT_CLAIM_ISS`)||
+  |2.|`aud`|環境変数値(`TSURUGI_JWT_CLAIM_AUD`)||
+  |3.|`sub`|環境変数値(`TSURUGI_JWT_CLAIM_SUB`)||
+  |4.|`nbf`|*UNIXタイム*|トークン生成日時|
+  |5.|`exp`|*UNIXタイム*|トークン生成日時+環境変数値(`TSURUGI_JWT_CLAIM_EXP`)|
+  |6.|`userName`|認証済みユーザ名||
 - JWSシグネチャ  
   エンコード済みのヘッダとペイロードを"."で結合、"alg"の暗号アルゴリズムで署名し、Base64urlエンコードした文字列
   - 暗号アルゴリズム
     - HS256(HMAC using SHA-256 hash)固定
   - 共通キー
-    - 環境変数にて設定（デフォルトはシステム固定値）
+    - システム固定値と環境変数値(`TSURUGI_JWT_SECRET_KEY`)を基に構成した値
 
 #### 認証トークンサンプル
 
@@ -692,6 +417,7 @@ JWT(JWS)に準拠（[RFC7515](https://datatracker.ietf.org/doc/html/rfc7515)参�
     "iss": "authentication-manager",
     "aud": "metadata-manager",
     "sub": "AuthenticationToken",
+    "nbf": 1649050631,
     "exp": 1649050931,
     "userName": "tsurugi_user"
   }
@@ -700,5 +426,5 @@ JWT(JWS)に準拠（[RFC7515](https://datatracker.ietf.org/doc/html/rfc7515)参�
   ```
 
   ```sh
-  eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJhdXRoZW50aWNhdGlvbi1tYW5hZ2VyIiwiYXVkIjoibWV0YWRhdGEtbWFuYWdlciIsInN1YiI6IkF1dGhlbnRpY2F0aW9uVG9rZW4iLCJleHAiOjE2NDkwNTA5MzEsInVzZXJOYW1lIjoidHN1cnVnaV91c2VyIn0.Q2nKzUaZo1p1IE5Ejh695L56DxpuEPT8bldleyGHJOs
+  eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJhdXRoZW50aWNhdGlvbi1tYW5hZ2VyIiwiYXVkIjoibWV0YWRhdGEtbWFuYWdlciIsInN1YiI6IkF1dGhlbnRpY2F0aW9uVG9rZW4iLCJuYmYiOjE2NDkwNTA2MzEsImV4cCI6MTY0OTA1MDkzMSwidXNlck5hbWUiOiJ0c3VydWdpX3VzZXIifQ.ryWxKQT54gG0Iso4AC2xJonLOfeoak_Me2FG9ydgb2g
   ```
