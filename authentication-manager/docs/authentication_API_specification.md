@@ -23,6 +23,8 @@
   - [付録](#付録)
     - [コンフィギュレーション](#コンフィギュレーション)
       - [環境変数](#環境変数)
+        - [認証管理基盤](#認証管理基盤)
+        - [メタデータ管理基盤](#メタデータ管理基盤)
     - [認証トークン](#認証トークン)
       - [認証トークンサンプル](#認証トークンサンプル)
 
@@ -363,17 +365,29 @@ namespace manager::metadata {
 
 #### 環境変数
 
-|#|環境変数|説明|認証<br>管理基盤|メタデータ<br>管理基盤|設定例|デフォルト値|
-|--:|---|---|:-:|:-:|---|---|
-|1.|`TSURUGI_CONNECTION_STRING_AUTH`|ユーザ認証に使用するDBサーバへの接続文字列(JDBC)|○|<span style="color: #bbb">×</span>|`jdbc:postgresql://localhost:5432/tsurugi_db`|`jdbc:postgresql:tsurugi`|
-|2.|`TSURUGI_CONNECTION_STRING`|テーブルメタデータが格納されているDBサーバへの接続文字列|<span style="color: #bbb">×</span>|○|`postgresql://admin:pswd123@localhost:5432/tsurugi_db`|`dbname=tsurugi`|
-|3.|`TSURUGI_JWT_CLAIM_ISS`|認証トークンの発行者(Issuer)に設定するクレーム値|○|<span style="color: #bbb">×</span>|`authentication-manager`|`authentication-manager`|
-|4.|`TSURUGI_JWT_CLAIM_AUD`|認証トークンの利用者(Audience)に設定するクレーム値|○|<span style="color: #bbb">×</span>|`metadata-manager`|`metadata-manager`|
-|5.|`TSURUGI_JWT_CLAIM_SUB`|認証トークンの用途(Subject)に設定するクレーム値|○|<span style="color: #bbb">×</span>|`AuthenticationToken`|`AuthenticationToken`|
-|6.|`TSURUGI_JWT_CLAIM_EXP`|認証トークンの有効期間（秒）|○|<span style="color: #bbb">×</span>|`300`|`300`|
-|7.|`TSURUGI_JWT_SECRET_KEY`|認証トークンの署名に使用する共通キーフレーズ|○|○|`tsurugi-256-bit-secret-sample-key`|システム固定値|
+##### 認証管理基盤
 
-※実効ユーザーの環境変数に設定する
+認証管理基盤で使用する環境変数。  
+※実効ユーザの環境変数に設定する。
+
+|#|環境変数|説明|設定例|デフォルト値|
+|--:|---|---|---|---|
+|1.|`TSURUGI_CONNECTION_STRING_AUTH`|ユーザ認証に使用するDBサーバへの接続文字列(JDBC)|`jdbc:postgresql://localhost:5432/tsurugi_db`|`jdbc:postgresql:tsurugi`|
+|3.|`TSURUGI_JWT_CLAIM_ISS`|認証トークンの発行者(Issuer)に設定するクレーム値|`authentication-manager`|`authentication-manager`|
+|4.|`TSURUGI_JWT_CLAIM_AUD`|認証トークンの利用者(Audience)に設定するクレーム値|`metadata-manager`|`metadata-manager`|
+|5.|`TSURUGI_JWT_CLAIM_SUB`|認証トークンの用途(Subject)に設定するクレーム値|`AuthenticationToken`|`AuthenticationToken`|
+|6.|`TSURUGI_JWT_CLAIM_EXP`|認証トークンの有効期間（秒）|`300`|`300`|
+|7.|`TSURUGI_JWT_SECRET_KEY`|認証トークンの署名に使用する共通キーフレーズ|`tsurugi-256-bit-secret-sample-key`|システム固定値|
+
+##### メタデータ管理基盤
+
+メタデータ管理基盤で使用する環境変数。  
+※実効ユーザの環境変数に設定する。
+
+|#|環境変数|説明|設定例|デフォルト値|
+|--:|---|---|---|---|
+|1.|`TSURUGI_CONNECTION_STRING`|テーブルメタデータが格納されているDBサーバへの接続文字列|`postgresql://admin:pswd123@localhost:5432/tsurugi_db`|`dbname=tsurugi`|
+|2.|`TSURUGI_JWT_SECRET_KEY`|認証トークンの署名に使用する共通キーフレーズ|`tsurugi-256-bit-secret-sample-key`|システム固定値|
 
 ### 認証トークン
 
@@ -402,7 +416,7 @@ JWT(JWS)に準拠（[RFC7515](https://datatracker.ietf.org/doc/html/rfc7515)参�
   - 暗号アルゴリズム
     - HS256(HMAC using SHA-256 hash)固定
   - 共通キー
-    - システム固定値と環境変数値(`TSURUGI_JWT_SECRET_KEY`)を基に構成した値
+    - 環境変数値(`TSURUGI_JWT_SECRET_KEY`)
 
 #### 認証トークンサンプル
 
