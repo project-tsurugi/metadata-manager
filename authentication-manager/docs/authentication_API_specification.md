@@ -373,11 +373,11 @@ namespace manager::metadata {
 |#|環境変数|説明|設定例|デフォルト値|
 |--:|---|---|---|---|
 |1.|`TSURUGI_CONNECTION_STRING_AUTH`|ユーザ認証に使用するDBサーバへの接続文字列(JDBC)|`jdbc:postgresql://localhost:5432/tsurugi_db`|`jdbc:postgresql:tsurugi`|
-|3.|`TSURUGI_JWT_CLAIM_ISS`|認証トークンの発行者(Issuer)に設定するクレーム値|`authentication-manager`|`authentication-manager`|
-|4.|`TSURUGI_JWT_CLAIM_AUD`|認証トークンの利用者(Audience)に設定するクレーム値|`metadata-manager`|`metadata-manager`|
-|5.|`TSURUGI_JWT_CLAIM_SUB`|認証トークンの用途(Subject)に設定するクレーム値|`AuthenticationToken`|`AuthenticationToken`|
-|6.|`TSURUGI_JWT_CLAIM_EXP`|認証トークンの有効期間（秒）|`300`|`300`|
-|7.|`TSURUGI_JWT_SECRET_KEY`|認証トークンの署名に使用する共通キーフレーズ|`tsurugi-256-bit-secret-sample-key`|システム固定値|
+|2.|`TSURUGI_JWT_CLAIM_ISS`|認証トークンの発行者(Issuer)に設定するクレーム値|`authentication-manager`|`authentication-manager`|
+|3.|`TSURUGI_JWT_CLAIM_AUD`|認証トークンの利用者(Audience)に設定するクレーム値|`metadata-manager`|`metadata-manager`|
+|4.|`TSURUGI_JWT_CLAIM_SUB`|認証トークンの用途(Subject)に設定するクレーム値|`AuthenticationToken`|`AuthenticationToken`|
+|5.|`TSURUGI_JWT_CLAIM_EXP`|認証トークンの有効期間（秒）|`300`|`300`|
+|6.|`TSURUGI_JWT_SECRET_KEY`|認証トークンの署名に使用する共通キーフレーズ|`tsurugi-256-bit-secret-sample-key`|システム固定値|
 
 ##### メタデータ管理基盤
 
