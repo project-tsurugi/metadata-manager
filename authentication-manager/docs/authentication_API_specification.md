@@ -1,8 +1,8 @@
-【Project-Tsurugi Intern User Only】
+【Project-Tsurugi Internal User Only】
 
 # 認証管理基盤 API仕様書
 
-2022.05.13 KCC 初版
+2022.05.20 KCC 初版
 
 ## 目次
 
@@ -442,3 +442,5 @@ JWT(JWS)に準拠（[RFC7515](https://datatracker.ietf.org/doc/html/rfc7515)参�
   ```sh
   eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJhdXRoZW50aWNhdGlvbi1tYW5hZ2VyIiwiYXVkIjoibWV0YWRhdGEtbWFuYWdlciIsInN1YiI6IkF1dGhlbnRpY2F0aW9uVG9rZW4iLCJuYmYiOjE2NDkwNTA2MzEsImV4cCI6MTY0OTA1MDkzMSwidXNlck5hbWUiOiJ0c3VydWdpX3VzZXIifQ.ryWxKQT54gG0Iso4AC2xJonLOfeoak_Me2FG9ydgb2g
   ```
+
+以上
