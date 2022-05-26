@@ -2,7 +2,7 @@
 
 # 認証管理基盤 API仕様書
 
-2022.05.20 KCC 初版
+2022.05.27 KCC 初版
 
 ## 目次
 
@@ -11,13 +11,17 @@
   - [機能概要](#機能概要)
     - [コンポーネント関係図](#コンポーネント関係図)
   - [ユーザ認証機能](#ユーザ認証機能)
+    - [C++ I/F](#c-if)
+      - [auth_userメソッド](#auth_userメソッド)
     - [Java I/F](#java-if)
       - [authUserメソッド](#authuserメソッド)
   - [トークン検証機能](#トークン検証機能)
+    - [C++ I/F](#c-if-1)
+      - [is_valid_tokenメソッド](#is_valid_tokenメソッド)
     - [Java I/F](#java-if-1)
-      - [isAuthenticatedメソッド](#isauthenticatedメソッド)
+      - [isValidTokenメソッド](#isvalidtokenメソッド)
   - [認可情報提供機能](#認可情報提供機能)
-    - [C++ I/F](#c-if)
+    - [C++ I/F](#c-if-2)
       - [get_aclsメソッド](#get_aclsメソッド)
       - [TABLE_ACL_NODE定数](#table_acl_node定数)
   - [付録](#付録)
@@ -34,11 +38,11 @@
 
 認証管理基盤は、ユーザ認証に関連する下記機能を提供する。
 
-|#|機能|概要|コンポーネント名|Java I/F|C++ I/F|
+|#|機能|概要|コンポーネント名|C++ I/F|Java I/F|
 |--:|---|---|---|:-:|:-:|
-|1.|ユーザ認証機能|ユーザ名およびパスワードを用いた認証を行い、認証トークンを発行する機能|認証管理基盤|○|<span style="color: #bbb">×</span>|
-|2.|トークン検証機能|認証トークンの有効性を検証する機能|認証管理基盤|○|<span style="color: #bbb">×</span>|
-|3.|認可情報提供機能|認証済みユーザのテーブル認可情報を提供する機能|メタデータ管理基盤|<span style="color: #bbb">×</span>|○|
+|1.|ユーザ認証機能|ユーザ名およびパスワードを用いた認証を行い、認証トークンを発行する機能|認証管理基盤|○|○|
+|2.|トークン検証機能|認証トークンの有効性を検証する機能|認証管理基盤|○|○|
+|3.|認可情報提供機能|認証済みユーザのテーブル認可情報を提供する機能|メタデータ管理基盤|○|<span style="color: #bbb">×</span>|
 
 ### コンポーネント関係図
 
@@ -50,17 +54,22 @@ graph LR
 
   Authentication((認証要求)):::request
   Authorization(("認可情報<br>要求")):::request
-  ComponentAuth["User Component (Java)"]
+  ComponentAuthJava["User Component (Java)"]
+  ComponentAuthCpp["User Component (C++)"]
   ComponentMeta["User Component (C++)"]
   subgraph Manager
-    AuthMng("認証管理基盤 (Java)"):::manager
+    AuthMngJava("認証管理基盤 (Java)"):::manager
+    AuthMngCpp("認証管理基盤 (C++)"):::manager
     MetaMng("メタデータ管理基盤 (C++)"):::manager
   end
   DB[("PostgreSQL")]:::library
 
-  Authentication .-> ComponentAuth
-  ComponentAuth --"[Java I/F]"--- AuthMng
-  AuthMng ...- DB
+  Authentication .-> ComponentAuthJava
+  ComponentAuthJava --"[Java I/F]"--- AuthMngJava
+  AuthMngJava .- AuthMngCpp
+  Authentication .-> ComponentAuthCpp
+  ComponentAuthCpp --"[C++ I/F]"---- AuthMngCpp
+  AuthMngCpp .- DB
 
   Authorization .-> ComponentMeta
   ComponentMeta --"[C++ I/F]"--- MetaMng
@@ -71,16 +80,84 @@ graph LR
 
 ## ユーザ認証機能
 
+### C++ I/F
+
+#### auth_userメソッド
+
+**ライブラリ**　　：認証管理基盤ライブラリ(`libmanager-authentication.so`)  
+**ヘッダファイル**：`include/manager/authentication/authentication.h`  
+**名前空間**　　　：`manager::authentication`  
+**クラス**　　　　：`Authentication`  
+
+```cpp
+namespace manager::authentication {
+  class Authentication {
+   public:
+    static ErrorCode auth_user(std::string_view user_name, std::string_view password, std::string* token);
+  }
+}
+```
+
+- **概要**  
+  指定された認証情報（ユーザ名およびパスワード）を用いて認証を試行する。  
+  認証トークン(`token`)が指定されている場合(`nullptr`以外の場合)は、認証トークンを発行し格納する。
+
+- **引数**
+  - `userName`  
+    認証するユーザ名。
+  - `password`  
+    パスワード。
+  - `token`  
+    発行された認証トークン（詳細は「[認証トークン](#認証トークン)」を参照）を格納するためのポインタ。
+
+- **戻り値**
+  - `ErrorCode::OK`  
+    入力された接続情報が有効である場合。
+  - `ErrorCode::AUTHENTICATION_FAILURE`  
+    入力された接続情報が無効である場合。
+  - `ErrorCode::CONNECTION_FAILURE`  
+    データベースへの接続に失敗した場合。
+
+- **例外**  
+  なし
+
+- **使用例**
+
+  ```cpp
+  #include "manager/authentication/authentication.h"
+  
+  using manager::authentication::Authentication;
+  using manager::authentication::ErrorCode;
+  ```
+
+  ```cpp
+  std::string user_name = "user01";
+  std::string password = "1q2w3e4r";
+  std::string token = "";
+
+  ErrorCode result = Authentication::auth_user(user_name, password, &token);
+  if (result == ErrorCode::OK) {
+    // 認証成功
+    ...
+  } else if (result == ErrorCode::AUTHENTICATION_FAILURE) {
+    // 認証エラー
+    ...
+  } else if (result == ErrorCode::CONNECTION_FAILURE) {
+    // データベース接続エラー
+    ...
+  } 
+  ```
+
 ### Java I/F
 
 #### authUserメソッド
 
 **ライブラリ**：認証管理基盤ライブラリ(`tsurugi-manager-authentication.jar`)  
-**パッケージ**：`com.nec.tsurugi.manager.authentication`  
+**パッケージ**：`com.github.project_tsurugi.manager.authentication`  
 **クラス**　　：`Authentication`
 
 ```java
-package com.nec.tsurugi.manager.authentication;
+package com.github.project_tsurugi.manager.authentication;
 
 public class Authentication {
   public static String authUser(final String userName, final String password)
@@ -112,9 +189,9 @@ public class Authentication {
 - **使用例**
 
   ```Java
-  import com.nec.tsurugi.manager.authentication.Authentication;
-  import com.nec.tsurugi.manager.exceptions.AuthenticationException;
-  import com.nec.tsurugi.manager.exceptions.DBAccessException;
+  import com.github.project_tsurugi.manager.authentication.Authentication;
+  import com.github.project_tsurugi.manager.exceptions.AuthenticationException;
+  import com.github.project_tsurugi.manager.exceptions.DBAccessException;
   ```
 
   ```Java
@@ -139,19 +216,74 @@ public class Authentication {
 
 ## トークン検証機能
 
+### C++ I/F
+
+#### is_valid_tokenメソッド
+
+**ライブラリ**　　：認証管理基盤ライブラリ(`libmanager-authentication.so`)  
+**ヘッダファイル**：`include/manager/authentication/authentication.h`  
+**名前空間**　　　：`manager::authentication`  
+**クラス**　　　　：`Authentication`  
+
+```cpp
+namespace manager::authentication {
+  class Authentication {
+   public:
+    static bool is_valid_token(std::string_view token);
+  }
+}
+```
+
+- **概要**  
+  指定された認証トークンの有効性を検証する。
+
+- **引数**
+  - `token`  
+    検証する認証トークン。
+
+- **戻り値**
+  - トークン状態
+    - `true`  
+      認証トークンが有効である場合。
+    - `false`  
+      認証トークンが無効である場合。
+
+- **例外**  
+  なし
+
+- **使用例**
+
+  ```cpp
+  #include "manager/authentication/authentication.h"
+
+  using manager::authentication::Authentication;
+  ```
+
+  ```cpp
+  std::string token = "Header.Payload.Signature";
+
+  if (Authentication::is_valid_token(token)) {
+    // トークン有効
+    ...
+  } else {
+    // トークン無効
+    ...
+  } 
+  ```
+
 ### Java I/F
 
-#### isAuthenticatedメソッド
+#### isValidTokenメソッド
 
 **ライブラリ**：認証管理基盤ライブラリ(`tsurugi-manager-authentication.jar`)  
-**パッケージ**：`com.nec.tsurugi.manager.authentication`  
+**パッケージ**：`com.github.project_tsurugi.manager.authentication`  
 **クラス**　　：`Authentication`
 
 ```java
-package com.nec.tsurugi.manager.authentication;
+package com.github.project_tsurugi.manager.authentication;
 
 public class Authentication {
-  public static boolean isAuthenticated(final String token) {...}
+  public static boolean isValidToken(final String token) {...}
 }
 ```
 
@@ -175,13 +307,13 @@ public class Authentication {
 - **使用例**
 
   ```Java
-  import com.nec.tsurugi.manager.authentiction.Authentication;
+  import com.github.project_tsurugi.manager.authentication.Authentication;
   ```
 
   ```Java
   String token = "Header.Payload.Signature";
 
-  if (Authentication.isAuthenticated(token)) {
+  if (Authentication.isValidToken(token)) {
     // トークン有効
     ...
   } else {
@@ -304,7 +436,7 @@ namespace manager::metadata {
   boost::property_tree::ptree authorization;
 
   // テーブル認可情報の取得
-  error = tables->get_authorization(token, authorization);
+  error = tables->get_acls(token, authorization);
   if (result != ErrorCode::OK) {
     // 正常終了
     ...
@@ -320,12 +452,12 @@ namespace manager::metadata {
   }
 
   // 認可情報オブジェクト
-  auto table_authorization = authorization.get_child_optional(Tables::TABLE_ACL_NODE);
-  if (!table_authorization) {
+  auto table_acls = authorization.get_child_optional(Tables::TABLE_ACL_NODE);
+  if (!table_acls) {
     // エラー処理
   }
   
-  BOOST_FOREACH (const auto& node, table_authorization.get()) {
+  BOOST_FOREACH (const auto& node, table_acls.get()) {
     std::string table_name = node.first.data();
     std::string table_acl = node.second.data();
     std::cout << table_name  << ": [" << table_acl << "]" << std::endl;
@@ -372,7 +504,7 @@ namespace manager::metadata {
 
 |#|環境変数|説明|設定例|デフォルト値|
 |--:|---|---|---|---|
-|1.|`TSURUGI_CONNECTION_STRING_AUTH`|ユーザ認証に使用するDBサーバへの接続文字列(JDBC)|`jdbc:postgresql://localhost:5432/tsurugi_db`|`jdbc:postgresql:tsurugi`|
+|1.|`TSURUGI_CONNECTION_STRING_AUTH`|ユーザ認証に使用するDBサーバへの接続文字列|`postgresql://localhost:5432/tsurugi`|`dbname=tsurugi`|
 |2.|`TSURUGI_JWT_CLAIM_ISS`|認証トークンの発行者(Issuer)に設定するクレーム値|`authentication-manager`|`authentication-manager`|
 |3.|`TSURUGI_JWT_CLAIM_AUD`|認証トークンの利用者(Audience)に設定するクレーム値|`metadata-manager`|`metadata-manager`|
 |4.|`TSURUGI_JWT_CLAIM_SUB`|認証トークンの用途(Subject)に設定するクレーム値|`AuthenticationToken`|`AuthenticationToken`|
@@ -386,7 +518,7 @@ namespace manager::metadata {
 
 |#|環境変数|説明|設定例|デフォルト値|
 |--:|---|---|---|---|
-|1.|`TSURUGI_CONNECTION_STRING`|テーブルメタデータが格納されているDBサーバへの接続文字列|`postgresql://admin:pswd123@localhost:5432/tsurugi_db`|`dbname=tsurugi`|
+|1.|`TSURUGI_CONNECTION_STRING`|テーブルメタデータが格納されているDBサーバへの接続文字列|`postgresql://admin:pswd123@localhost:5432/tsurugi`|`dbname=tsurugi`|
 |2.|`TSURUGI_JWT_SECRET_KEY`|認証トークンの署名に使用する共通キーフレーズ|`tsurugi-256-bit-secret-sample-key`|システム固定値|
 
 ### 認証トークン
