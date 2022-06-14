@@ -27,6 +27,7 @@
     - [C++ I/F](#c-if-2)
       - [showメソッド](#showメソッド)
       - [is_validメソッド](#is_validメソッド)
+      - [is_availableメソッド](#is_availableメソッド)
       - [user_nameメソッド](#user_nameメソッド)
       - [issued_timeメソッド](#issued_timeメソッド)
       - [expiration_timeメソッド](#expiration_timeメソッド)
@@ -35,6 +36,7 @@
     - [Java I/F](#java-if-2)
       - [showメソッド](#showメソッド-1)
       - [isValidメソッド](#isvalidメソッド)
+      - [isAvailableメソッド](#isavailableメソッド)
       - [getUserNameメソッド](#getusernameメソッド)
       - [getIssuedTimeメソッド](#getissuedtimeメソッド)
       - [getExpirationTimeメソッド](#getexpirationtimeメソッド)
@@ -51,6 +53,7 @@
         - [メタデータ管理基盤](#メタデータ管理基盤)
     - [アクセストークン](#アクセストークン)
       - [トークンの有効性検証](#トークンの有効性検証)
+      - [トークンの使用可否検証](#トークンの使用可否検証)
       - [トークンの期限](#トークンの期限)
         - [各期限の状態におけるトークンの状態](#各期限の状態におけるトークンの状態)
         - [リフレッシュに伴うトークン状態イメージ](#リフレッシュに伴うトークン状態イメージ)
@@ -216,12 +219,12 @@ namespace manager::authentication {
   // 接続文字列は認証管理基盤の環境変数を使用するケース
   std::string user_name = "user01";
   std::string password = "1q2w3e4r";
-  std::string token = "";
+  std::string token_string = "";
 
-  ErrorCode result = Authentication::auth_user(user_name, password, &token);
+  ErrorCode result = Authentication::auth_user(user_name, password, &token_string);
   if (result == ErrorCode::OK) {
     // 認証成功
-    std::cout << token << std::endl;
+    std::cout << token_string << std::endl;
   } else if (result == ErrorCode::AUTHENTICATION_FAILURE) {
     // 認証エラー
     std::cout << "認証エラー" << std::endl;
@@ -236,12 +239,12 @@ namespace manager::authentication {
   std::string connection_string = "postgresql://localhost:5432/tsurugi";
   std::string user_name = "user01";
   std::string password = "1q2w3e4r";
-  std::string token = "";
+  std::string token_string = "";
 
-  ErrorCode result = Authentication::auth_user(connection_string, user_name, password, &token);
+  ErrorCode result = Authentication::auth_user(connection_string, user_name, password, &token_string);
   if (result == ErrorCode::OK) {
     // 認証成功
-    std::cout << token << std::endl;
+    std::cout << token_string << std::endl;
   } else if (result == ErrorCode::AUTHENTICATION_FAILURE) {
     // 認証エラー
     std::cout << "認証エラー" << std::endl;
@@ -312,11 +315,11 @@ public class Authentication {
   String userName = "user01";
   String password = "1q2w3e4r";
 
-  String token = "";
+  String tokenString = "";
   try {
-    token = Authentication.authUser(userName, password);
+    tokenString = Authentication.authUser(userName, password);
     // 認証成功
-    System.out.println(token);
+    System.out.println(tokenString);
   } catch (AuthenticationException e) {
     // 認証エラー
     System.out.println("認証エラー");
@@ -332,11 +335,11 @@ public class Authentication {
   String userName = "user01";
   String password = "1q2w3e4r";
 
-  String token = "";
+  String tokenString = "";
   try {
-    token = Authentication.authUser(connectionString, userName, password);
+    tokenString = Authentication.authUser(connectionString, userName, password);
     // 認証成功
-    System.out.println(token);
+    System.out.println(tokenString);
   } catch (AuthenticationException e) {
     // 認証エラー
     System.out.println("認証エラー");
@@ -409,17 +412,17 @@ namespace manager::authentication {
   ```
 
   ```cpp
-  std::string token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJhdXRoZW50aWNhdGlvbi1tYW5hZ2VyIiwiYXVkIjoibWV0YWRhdGEtbWFuYWdlciIsInN1YiI6IkF1dGhlbnRpY2F0aW9uVG9rZW4iLCJpYXQiOjE2NDkwNTA2MzEsImV4cCI6MTY0OTA1MDkzMSwidHN1cnVnaS9leHAvcmVmcmVzaCI6MTY0OTEzNzAzMSwidHN1cnVnaS9leHAvdXNlIjoxNjQ5NjU1NDMxLCJ0c3VydWdpL2F1dGgvbmFtZSI6InRzdXJ1Z2lfdXNlciJ9.YRtavvDPqJ3CaG1ZavXsB4eNi5vdvQkE5-1X2uMfOhk";
-  AccessToken access_token(token);
+  std::string token_string = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJhdXRoZW50aWNhdGlvbi1tYW5hZ2VyIiwiYXVkIjoibWV0YWRhdGEtbWFuYWdlciIsInN1YiI6IkF1dGhlbnRpY2F0aW9uVG9rZW4iLCJpYXQiOjE2NDkwNTA2MzEsImV4cCI6MTY0OTA1MDkzMSwidHN1cnVnaS9leHAvcmVmcmVzaCI6MTY0OTEzNzAzMSwidHN1cnVnaS9leHAvdXNlIjoxNjQ5NjU1NDMxLCJ0c3VydWdpL2F1dGgvbmFtZSI6InRzdXJ1Z2lfdXNlciJ9.YRtavvDPqJ3CaG1ZavXsB4eNi5vdvQkE5-1X2uMfOhk";
+  AccessToken access_token(token_string);
 
   std::time_t expiration_time = access_token.expiration_time();
   std::cout << "Before: " << std::put_time(std::localtime(&expiration_time), "%Y/%m/%d %H:%M:%S") << std::endl;
 
   // 有効期限を30分延長
-  ErrorCode result = Authentication::refresh_token(token, std::chrono::minutes{30});
+  ErrorCode result = Authentication::refresh_token(token_string, std::chrono::minutes{30});
   if (result == ErrorCode::OK) {
     // リフレッシュ成功
-    access_token = token;
+    access_token = token_string;
     expiration_time = access_token.expiration_time();
     std::cout << "After: " << std::put_time(std::localtime(&expiration_time), "%Y/%m/%d %H:%M:%S") << std::endl;
   } else if (result == ErrorCode::INVALID_PARAMETER) {
@@ -488,9 +491,9 @@ public class Authentication {
   SimpleDateFormat jstSdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
   jstSdf.setTimeZone(TimeZone.getTimeZone("Asia/Tokyo"));
 
-  String token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJhdXRoZW50aWNhdGlvbi1tYW5hZ2VyIiwiYXVkIjoibWV0YWRhdGEtbWFuYWdlciIsInN1YiI6IkF1dGhlbnRpY2F0aW9uVG9rZW4iLCJpYXQiOjE2NDkwNTA2MzEsImV4cCI6MTY0OTA1MDkzMSwidHN1cnVnaS9leHAvcmVmcmVzaCI6MTY0OTEzNzAzMSwidHN1cnVnaS9leHAvdXNlIjoxNjQ5NjU1NDMxLCJ0c3VydWdpL2F1dGgvbmFtZSI6InRzdXJ1Z2lfdXNlciJ9.YRtavvDPqJ3CaG1ZavXsB4eNi5vdvQkE5-1X2uMfOhk";
+  String tokenString = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJhdXRoZW50aWNhdGlvbi1tYW5hZ2VyIiwiYXVkIjoibWV0YWRhdGEtbWFuYWdlciIsInN1YiI6IkF1dGhlbnRpY2F0aW9uVG9rZW4iLCJpYXQiOjE2NDkwNTA2MzEsImV4cCI6MTY0OTA1MDkzMSwidHN1cnVnaS9leHAvcmVmcmVzaCI6MTY0OTEzNzAzMSwidHN1cnVnaS9leHAvdXNlIjoxNjQ5NjU1NDMxLCJ0c3VydWdpL2F1dGgvbmFtZSI6InRzdXJ1Z2lfdXNlciJ9.YRtavvDPqJ3CaG1ZavXsB4eNi5vdvQkE5-1X2uMfOhk";
 
-  AccessToken accessToken = new AccessToken(token);
+  AccessToken accessToken = new AccessToken(tokenString);
   Date expirationTime = accessToken.getExpirationTime();
   if (!expirationTime) {
     System.out.println("Before: " + jstSdf.format(expirationTime));
@@ -498,7 +501,7 @@ public class Authentication {
  
   try {
     // 有効期限を30分延長
-    String newToken = Authentication.refreshToken(token, 30, TimeUnit.MINUTES);
+    String newToken = Authentication.refreshToken(tokenString, 30, TimeUnit.MINUTES);
 
     // リフレッシュ成功
     accessToken = new AccessToken(newToken);
@@ -562,8 +565,8 @@ namespace manager::authentication {
   ```
 
   ```cpp
-  std::string token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJhdXRoZW50aWNhdGlvbi1tYW5hZ2VyIiwiYXVkIjoibWV0YWRhdGEtbWFuYWdlciIsInN1YiI6IkF1dGhlbnRpY2F0aW9uVG9rZW4iLCJpYXQiOjE2NDkwNTA2MzEsImV4cCI6MTY0OTA1MDkzMSwidHN1cnVnaS9leHAvcmVmcmVzaCI6MTY0OTEzNzAzMSwidHN1cnVnaS9leHAvdXNlIjoxNjQ5NjU1NDMxLCJ0c3VydWdpL2F1dGgvbmFtZSI6InRzdXJ1Z2lfdXNlciJ9.YRtavvDPqJ3CaG1ZavXsB4eNi5vdvQkE5-1X2uMfOhk";
-  AccessToken access_token(token);
+  std::string token_string = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJhdXRoZW50aWNhdGlvbi1tYW5hZ2VyIiwiYXVkIjoibWV0YWRhdGEtbWFuYWdlciIsInN1YiI6IkF1dGhlbnRpY2F0aW9uVG9rZW4iLCJpYXQiOjE2NDkwNTA2MzEsImV4cCI6MTY0OTA1MDkzMSwidHN1cnVnaS9leHAvcmVmcmVzaCI6MTY0OTEzNzAzMSwidHN1cnVnaS9leHAvdXNlIjoxNjQ5NjU1NDMxLCJ0c3VydWdpL2F1dGgvbmFtZSI6InRzdXJ1Z2lfdXNlciJ9.YRtavvDPqJ3CaG1ZavXsB4eNi5vdvQkE5-1X2uMfOhk";
+  AccessToken access_token(token_string);
  
   std::cout << access_token.show() << std::endl;
   ```
@@ -616,10 +619,64 @@ namespace manager::authentication {
   ```
 
   ```cpp
-  std::string token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJhdXRoZW50aWNhdGlvbi1tYW5hZ2VyIiwiYXVkIjoibWV0YWRhdGEtbWFuYWdlciIsInN1YiI6IkF1dGhlbnRpY2F0aW9uVG9rZW4iLCJpYXQiOjE2NDkwNTA2MzEsImV4cCI6MTY0OTA1MDkzMSwidHN1cnVnaS9leHAvcmVmcmVzaCI6MTY0OTEzNzAzMSwidHN1cnVnaS9leHAvdXNlIjoxNjQ5NjU1NDMxLCJ0c3VydWdpL2F1dGgvbmFtZSI6InRzdXJ1Z2lfdXNlciJ9.YRtavvDPqJ3CaG1ZavXsB4eNi5vdvQkE5-1X2uMfOhk";
-  AccessToken access_token(token);
+  std::string token_string = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJhdXRoZW50aWNhdGlvbi1tYW5hZ2VyIiwiYXVkIjoibWV0YWRhdGEtbWFuYWdlciIsInN1YiI6IkF1dGhlbnRpY2F0aW9uVG9rZW4iLCJpYXQiOjE2NDkwNTA2MzEsImV4cCI6MTY0OTA1MDkzMSwidHN1cnVnaS9leHAvcmVmcmVzaCI6MTY0OTEzNzAzMSwidHN1cnVnaS9leHAvdXNlIjoxNjQ5NjU1NDMxLCJ0c3VydWdpL2F1dGgvbmFtZSI6InRzdXJ1Z2lfdXNlciJ9.YRtavvDPqJ3CaG1ZavXsB4eNi5vdvQkE5-1X2uMfOhk";
+  AccessToken access_token(token_string);
 
   std::cout << std::boolalpha << access_token.is_valid() << std::endl;
+  ```
+
+  ```text
+  true
+  ```
+
+#### is_availableメソッド
+
+**ライブラリ**　　：認証管理基盤ライブラリ(`libmanager-authentication.so`)  
+**ヘッダファイル**：`include/manager/authentication/access_token.h`  
+**名前空間**　　　：`manager::authentication`  
+**クラス**　　　　：`AccessToken`  
+
+```cpp
+namespace manager::authentication {
+  class AccessToken {
+   public:
+    bool is_available();
+  }
+}
+```
+
+- **概要**  
+  アクセストークンが使用可能か否かを検証する。  
+  検証内容は「[トークンの使用可否検証](#トークンの使用可否検証)」を参照。
+
+- **引数**
+  - なし
+
+- **戻り値**
+  - トークン状態
+    - `true`  
+      アクセストークンが使用可能である場合。
+    - `false`  
+      アクセストークンが使用不可である場合。
+
+- **例外**  
+  なし
+
+- **使用例**
+
+  ```cpp
+  #include <iostream>
+
+  #include "manager/authentication/access_token.h"
+
+  using manager::authentication::AccessToken;
+  ```
+
+  ```cpp
+  std::string token_string = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJhdXRoZW50aWNhdGlvbi1tYW5hZ2VyIiwiYXVkIjoibWV0YWRhdGEtbWFuYWdlciIsInN1YiI6IkF1dGhlbnRpY2F0aW9uVG9rZW4iLCJpYXQiOjE2NDkwNTA2MzEsImV4cCI6MTY0OTA1MDkzMSwidHN1cnVnaS9leHAvcmVmcmVzaCI6MTY0OTEzNzAzMSwidHN1cnVnaS9leHAvdXNlIjoxNjQ5NjU1NDMxLCJ0c3VydWdpL2F1dGgvbmFtZSI6InRzdXJ1Z2lfdXNlciJ9.YRtavvDPqJ3CaG1ZavXsB4eNi5vdvQkE5-1X2uMfOhk";
+  AccessToken access_token(token_string);
+
+  std::cout << std::boolalpha << access_token.is_available() << std::endl;
   ```
 
   ```text
@@ -666,8 +723,8 @@ namespace manager::authentication {
   ```
 
   ```cpp
-  std::string token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJhdXRoZW50aWNhdGlvbi1tYW5hZ2VyIiwiYXVkIjoibWV0YWRhdGEtbWFuYWdlciIsInN1YiI6IkF1dGhlbnRpY2F0aW9uVG9rZW4iLCJpYXQiOjE2NDkwNTA2MzEsImV4cCI6MTY0OTA1MDkzMSwidHN1cnVnaS9leHAvcmVmcmVzaCI6MTY0OTEzNzAzMSwidHN1cnVnaS9leHAvdXNlIjoxNjQ5NjU1NDMxLCJ0c3VydWdpL2F1dGgvbmFtZSI6InRzdXJ1Z2lfdXNlciJ9.YRtavvDPqJ3CaG1ZavXsB4eNi5vdvQkE5-1X2uMfOhk";
-  AccessToken access_token(token);
+  std::string token_string = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJhdXRoZW50aWNhdGlvbi1tYW5hZ2VyIiwiYXVkIjoibWV0YWRhdGEtbWFuYWdlciIsInN1YiI6IkF1dGhlbnRpY2F0aW9uVG9rZW4iLCJpYXQiOjE2NDkwNTA2MzEsImV4cCI6MTY0OTA1MDkzMSwidHN1cnVnaS9leHAvcmVmcmVzaCI6MTY0OTEzNzAzMSwidHN1cnVnaS9leHAvdXNlIjoxNjQ5NjU1NDMxLCJ0c3VydWdpL2F1dGgvbmFtZSI6InRzdXJ1Z2lfdXNlciJ9.YRtavvDPqJ3CaG1ZavXsB4eNi5vdvQkE5-1X2uMfOhk";
+  AccessToken access_token(token_string);
 
   std::string user_name = access_token.user_name();
   if (!user_name.empty()) {
@@ -724,8 +781,8 @@ namespace manager::authentication {
   ```
 
   ```cpp
-  std::string token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJhdXRoZW50aWNhdGlvbi1tYW5hZ2VyIiwiYXVkIjoibWV0YWRhdGEtbWFuYWdlciIsInN1YiI6IkF1dGhlbnRpY2F0aW9uVG9rZW4iLCJpYXQiOjE2NDkwNTA2MzEsImV4cCI6MTY0OTA1MDkzMSwidHN1cnVnaS9leHAvcmVmcmVzaCI6MTY0OTEzNzAzMSwidHN1cnVnaS9leHAvdXNlIjoxNjQ5NjU1NDMxLCJ0c3VydWdpL2F1dGgvbmFtZSI6InRzdXJ1Z2lfdXNlciJ9.YRtavvDPqJ3CaG1ZavXsB4eNi5vdvQkE5-1X2uMfOhk";
-  AccessToken access_token(token);
+  std::string token_string = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJhdXRoZW50aWNhdGlvbi1tYW5hZ2VyIiwiYXVkIjoibWV0YWRhdGEtbWFuYWdlciIsInN1YiI6IkF1dGhlbnRpY2F0aW9uVG9rZW4iLCJpYXQiOjE2NDkwNTA2MzEsImV4cCI6MTY0OTA1MDkzMSwidHN1cnVnaS9leHAvcmVmcmVzaCI6MTY0OTEzNzAzMSwidHN1cnVnaS9leHAvdXNlIjoxNjQ5NjU1NDMxLCJ0c3VydWdpL2F1dGgvbmFtZSI6InRzdXJ1Z2lfdXNlciJ9.YRtavvDPqJ3CaG1ZavXsB4eNi5vdvQkE5-1X2uMfOhk";
+  AccessToken access_token(token_string);
 
   std::time_t issued_time = access_token.issued_time();
   if (issued_time != 0) {
@@ -782,8 +839,8 @@ namespace manager::authentication {
   ```
 
   ```cpp
-  std::string token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJhdXRoZW50aWNhdGlvbi1tYW5hZ2VyIiwiYXVkIjoibWV0YWRhdGEtbWFuYWdlciIsInN1YiI6IkF1dGhlbnRpY2F0aW9uVG9rZW4iLCJpYXQiOjE2NDkwNTA2MzEsImV4cCI6MTY0OTA1MDkzMSwidHN1cnVnaS9leHAvcmVmcmVzaCI6MTY0OTEzNzAzMSwidHN1cnVnaS9leHAvdXNlIjoxNjQ5NjU1NDMxLCJ0c3VydWdpL2F1dGgvbmFtZSI6InRzdXJ1Z2lfdXNlciJ9.YRtavvDPqJ3CaG1ZavXsB4eNi5vdvQkE5-1X2uMfOhk";
-  AccessToken access_token(token);
+  std::string token_string = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJhdXRoZW50aWNhdGlvbi1tYW5hZ2VyIiwiYXVkIjoibWV0YWRhdGEtbWFuYWdlciIsInN1YiI6IkF1dGhlbnRpY2F0aW9uVG9rZW4iLCJpYXQiOjE2NDkwNTA2MzEsImV4cCI6MTY0OTA1MDkzMSwidHN1cnVnaS9leHAvcmVmcmVzaCI6MTY0OTEzNzAzMSwidHN1cnVnaS9leHAvdXNlIjoxNjQ5NjU1NDMxLCJ0c3VydWdpL2F1dGgvbmFtZSI6InRzdXJ1Z2lfdXNlciJ9.YRtavvDPqJ3CaG1ZavXsB4eNi5vdvQkE5-1X2uMfOhk";
+  AccessToken access_token(token_string);
 
   std::time_t expiration_time = access_token.expiration_time();
   if (expiration_time != 0) {
@@ -840,8 +897,8 @@ namespace manager::authentication {
   ```
 
   ```cpp
-  std::string token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJhdXRoZW50aWNhdGlvbi1tYW5hZ2VyIiwiYXVkIjoibWV0YWRhdGEtbWFuYWdlciIsInN1YiI6IkF1dGhlbnRpY2F0aW9uVG9rZW4iLCJpYXQiOjE2NDkwNTA2MzEsImV4cCI6MTY0OTA1MDkzMSwidHN1cnVnaS9leHAvcmVmcmVzaCI6MTY0OTEzNzAzMSwidHN1cnVnaS9leHAvdXNlIjoxNjQ5NjU1NDMxLCJ0c3VydWdpL2F1dGgvbmFtZSI6InRzdXJ1Z2lfdXNlciJ9.YRtavvDPqJ3CaG1ZavXsB4eNi5vdvQkE5-1X2uMfOhk";
-  AccessToken access_token(token);
+  std::string token_string = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJhdXRoZW50aWNhdGlvbi1tYW5hZ2VyIiwiYXVkIjoibWV0YWRhdGEtbWFuYWdlciIsInN1YiI6IkF1dGhlbnRpY2F0aW9uVG9rZW4iLCJpYXQiOjE2NDkwNTA2MzEsImV4cCI6MTY0OTA1MDkzMSwidHN1cnVnaS9leHAvcmVmcmVzaCI6MTY0OTEzNzAzMSwidHN1cnVnaS9leHAvdXNlIjoxNjQ5NjU1NDMxLCJ0c3VydWdpL2F1dGgvbmFtZSI6InRzdXJ1Z2lfdXNlciJ9.YRtavvDPqJ3CaG1ZavXsB4eNi5vdvQkE5-1X2uMfOhk";
+  AccessToken access_token(token_string);
 
   std::time_t refresh_expiration_time = access_token.refresh_expiration_time();
   if (refresh_expiration_time != 0) {
@@ -898,8 +955,8 @@ namespace manager::authentication {
   ```
 
   ```cpp
-  std::string token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJhdXRoZW50aWNhdGlvbi1tYW5hZ2VyIiwiYXVkIjoibWV0YWRhdGEtbWFuYWdlciIsInN1YiI6IkF1dGhlbnRpY2F0aW9uVG9rZW4iLCJpYXQiOjE2NDkwNTA2MzEsImV4cCI6MTY0OTA1MDkzMSwidHN1cnVnaS9leHAvcmVmcmVzaCI6MTY0OTEzNzAzMSwidHN1cnVnaS9leHAvdXNlIjoxNjQ5NjU1NDMxLCJ0c3VydWdpL2F1dGgvbmFtZSI6InRzdXJ1Z2lfdXNlciJ9.YRtavvDPqJ3CaG1ZavXsB4eNi5vdvQkE5-1X2uMfOhk";
-  AccessToken access_token(token);
+  std::string token_string = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJhdXRoZW50aWNhdGlvbi1tYW5hZ2VyIiwiYXVkIjoibWV0YWRhdGEtbWFuYWdlciIsInN1YiI6IkF1dGhlbnRpY2F0aW9uVG9rZW4iLCJpYXQiOjE2NDkwNTA2MzEsImV4cCI6MTY0OTA1MDkzMSwidHN1cnVnaS9leHAvcmVmcmVzaCI6MTY0OTEzNzAzMSwidHN1cnVnaS9leHAvdXNlIjoxNjQ5NjU1NDMxLCJ0c3VydWdpL2F1dGgvbmFtZSI6InRzdXJ1Z2lfdXNlciJ9.YRtavvDPqJ3CaG1ZavXsB4eNi5vdvQkE5-1X2uMfOhk";
+  AccessToken access_token(token_string);
 
   std::time_t use_expiration_time = access_token.use_expiration_time();
   if (use_expiration_time != 0) {
@@ -950,8 +1007,8 @@ public class AccessToken {
   ```
 
   ```Java
-  String token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJhdXRoZW50aWNhdGlvbi1tYW5hZ2VyIiwiYXVkIjoibWV0YWRhdGEtbWFuYWdlciIsInN1YiI6IkF1dGhlbnRpY2F0aW9uVG9rZW4iLCJpYXQiOjE2NDkwNTA2MzEsImV4cCI6MTY0OTA1MDkzMSwidHN1cnVnaS9leHAvcmVmcmVzaCI6MTY0OTEzNzAzMSwidHN1cnVnaS9leHAvdXNlIjoxNjQ5NjU1NDMxLCJ0c3VydWdpL2F1dGgvbmFtZSI6InRzdXJ1Z2lfdXNlciJ9.YRtavvDPqJ3CaG1ZavXsB4eNi5vdvQkE5-1X2uMfOhk";
-  AccessToken accessToken = new AccessToken(token);
+  String tokenString = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJhdXRoZW50aWNhdGlvbi1tYW5hZ2VyIiwiYXVkIjoibWV0YWRhdGEtbWFuYWdlciIsInN1YiI6IkF1dGhlbnRpY2F0aW9uVG9rZW4iLCJpYXQiOjE2NDkwNTA2MzEsImV4cCI6MTY0OTA1MDkzMSwidHN1cnVnaS9leHAvcmVmcmVzaCI6MTY0OTEzNzAzMSwidHN1cnVnaS9leHAvdXNlIjoxNjQ5NjU1NDMxLCJ0c3VydWdpL2F1dGgvbmFtZSI6InRzdXJ1Z2lfdXNlciJ9.YRtavvDPqJ3CaG1ZavXsB4eNi5vdvQkE5-1X2uMfOhk";
+  AccessToken accessToken = new AccessToken(tokenString);
 
   System.out.println(accessToken.show());
   ```
@@ -998,10 +1055,58 @@ public class AccessToken {
   ```
 
   ```Java
-  String token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJhdXRoZW50aWNhdGlvbi1tYW5hZ2VyIiwiYXVkIjoibWV0YWRhdGEtbWFuYWdlciIsInN1YiI6IkF1dGhlbnRpY2F0aW9uVG9rZW4iLCJpYXQiOjE2NDkwNTA2MzEsImV4cCI6MTY0OTA1MDkzMSwidHN1cnVnaS9leHAvcmVmcmVzaCI6MTY0OTEzNzAzMSwidHN1cnVnaS9leHAvdXNlIjoxNjQ5NjU1NDMxLCJ0c3VydWdpL2F1dGgvbmFtZSI6InRzdXJ1Z2lfdXNlciJ9.YRtavvDPqJ3CaG1ZavXsB4eNi5vdvQkE5-1X2uMfOhk";
-  AccessToken accessToken = new AccessToken(token);
+  String tokenString = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJhdXRoZW50aWNhdGlvbi1tYW5hZ2VyIiwiYXVkIjoibWV0YWRhdGEtbWFuYWdlciIsInN1YiI6IkF1dGhlbnRpY2F0aW9uVG9rZW4iLCJpYXQiOjE2NDkwNTA2MzEsImV4cCI6MTY0OTA1MDkzMSwidHN1cnVnaS9leHAvcmVmcmVzaCI6MTY0OTEzNzAzMSwidHN1cnVnaS9leHAvdXNlIjoxNjQ5NjU1NDMxLCJ0c3VydWdpL2F1dGgvbmFtZSI6InRzdXJ1Z2lfdXNlciJ9.YRtavvDPqJ3CaG1ZavXsB4eNi5vdvQkE5-1X2uMfOhk";
+  AccessToken accessToken = new AccessToken(tokenString);
 
   System.out.println(accessToken.isValid());
+  ```
+
+  ```text
+  true
+  ```
+
+#### isAvailableメソッド
+
+**ライブラリ**：認証管理基盤ライブラリ(`tsurugi-manager-authentication.jar`)  
+**パッケージ**：`com.github.project_tsurugi.manager.authentication`  
+**クラス**　　：`AccessToken`
+
+```java
+package com.github.project_tsurugi.manager.authentication;
+
+public class AccessToken {
+  public boolean isAvailable() {...}
+}
+```
+
+- **概要**  
+  アクセストークンが使用可能か否かを検証する。  
+  検証内容は「[トークンの使用可否検証](#トークンの使用可否検証)」を参照。
+
+- **引数**
+  - なし
+
+- **戻り値**
+  - トークン状態
+    - `true`  
+      アクセストークンが使用可能である場合。
+    - `false`  
+      アクセストークンが使用不可である場合。
+
+- **例外**  
+  なし
+
+- **使用例**
+
+  ```Java
+  import com.github.project_tsurugi.manager.authentication.AccessToken;
+  ```
+
+  ```Java
+  String tokenString = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJhdXRoZW50aWNhdGlvbi1tYW5hZ2VyIiwiYXVkIjoibWV0YWRhdGEtbWFuYWdlciIsInN1YiI6IkF1dGhlbnRpY2F0aW9uVG9rZW4iLCJpYXQiOjE2NDkwNTA2MzEsImV4cCI6MTY0OTA1MDkzMSwidHN1cnVnaS9leHAvcmVmcmVzaCI6MTY0OTEzNzAzMSwidHN1cnVnaS9leHAvdXNlIjoxNjQ5NjU1NDMxLCJ0c3VydWdpL2F1dGgvbmFtZSI6InRzdXJ1Z2lfdXNlciJ9.YRtavvDPqJ3CaG1ZavXsB4eNi5vdvQkE5-1X2uMfOhk";
+  AccessToken accessToken = new AccessToken(tokenString);
+
+  System.out.println(accessToken.isAvailable());
   ```
 
   ```text
@@ -1042,8 +1147,8 @@ public class AccessToken {
   ```
 
   ```Java
-  String token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJhdXRoZW50aWNhdGlvbi1tYW5hZ2VyIiwiYXVkIjoibWV0YWRhdGEtbWFuYWdlciIsInN1YiI6IkF1dGhlbnRpY2F0aW9uVG9rZW4iLCJpYXQiOjE2NDkwNTA2MzEsImV4cCI6MTY0OTA1MDkzMSwidHN1cnVnaS9leHAvcmVmcmVzaCI6MTY0OTEzNzAzMSwidHN1cnVnaS9leHAvdXNlIjoxNjQ5NjU1NDMxLCJ0c3VydWdpL2F1dGgvbmFtZSI6InRzdXJ1Z2lfdXNlciJ9.YRtavvDPqJ3CaG1ZavXsB4eNi5vdvQkE5-1X2uMfOhk";
-  AccessToken accessToken = new AccessToken(token);
+  String tokenString = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJhdXRoZW50aWNhdGlvbi1tYW5hZ2VyIiwiYXVkIjoibWV0YWRhdGEtbWFuYWdlciIsInN1YiI6IkF1dGhlbnRpY2F0aW9uVG9rZW4iLCJpYXQiOjE2NDkwNTA2MzEsImV4cCI6MTY0OTA1MDkzMSwidHN1cnVnaS9leHAvcmVmcmVzaCI6MTY0OTEzNzAzMSwidHN1cnVnaS9leHAvdXNlIjoxNjQ5NjU1NDMxLCJ0c3VydWdpL2F1dGgvbmFtZSI6InRzdXJ1Z2lfdXNlciJ9.YRtavvDPqJ3CaG1ZavXsB4eNi5vdvQkE5-1X2uMfOhk";
+  AccessToken accessToken = new AccessToken(tokenString);
 
   String user_name = accessToken.getUserName();
   if (!user_name) {
@@ -1100,8 +1205,8 @@ public class AccessToken {
   SimpleDateFormat jstSdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
   jstSdf.setTimeZone(TimeZone.getTimeZone("Asia/Tokyo"));
 
-  String token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJhdXRoZW50aWNhdGlvbi1tYW5hZ2VyIiwiYXVkIjoibWV0YWRhdGEtbWFuYWdlciIsInN1YiI6IkF1dGhlbnRpY2F0aW9uVG9rZW4iLCJpYXQiOjE2NDkwNTA2MzEsImV4cCI6MTY0OTA1MDkzMSwidHN1cnVnaS9leHAvcmVmcmVzaCI6MTY0OTEzNzAzMSwidHN1cnVnaS9leHAvdXNlIjoxNjQ5NjU1NDMxLCJ0c3VydWdpL2F1dGgvbmFtZSI6InRzdXJ1Z2lfdXNlciJ9.YRtavvDPqJ3CaG1ZavXsB4eNi5vdvQkE5-1X2uMfOhk";
-  AccessToken accessToken = new AccessToken(token);
+  String tokenString = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJhdXRoZW50aWNhdGlvbi1tYW5hZ2VyIiwiYXVkIjoibWV0YWRhdGEtbWFuYWdlciIsInN1YiI6IkF1dGhlbnRpY2F0aW9uVG9rZW4iLCJpYXQiOjE2NDkwNTA2MzEsImV4cCI6MTY0OTA1MDkzMSwidHN1cnVnaS9leHAvcmVmcmVzaCI6MTY0OTEzNzAzMSwidHN1cnVnaS9leHAvdXNlIjoxNjQ5NjU1NDMxLCJ0c3VydWdpL2F1dGgvbmFtZSI6InRzdXJ1Z2lfdXNlciJ9.YRtavvDPqJ3CaG1ZavXsB4eNi5vdvQkE5-1X2uMfOhk";
+  AccessToken accessToken = new AccessToken(tokenString);
 
   Date issuedTime = accessToken.getIssuedTime();
   if (!issuedTime) {
@@ -1158,8 +1263,8 @@ public class AccessToken {
   SimpleDateFormat jstSdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
   jstSdf.setTimeZone(TimeZone.getTimeZone("Asia/Tokyo"));
 
-  String token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJhdXRoZW50aWNhdGlvbi1tYW5hZ2VyIiwiYXVkIjoibWV0YWRhdGEtbWFuYWdlciIsInN1YiI6IkF1dGhlbnRpY2F0aW9uVG9rZW4iLCJpYXQiOjE2NDkwNTA2MzEsImV4cCI6MTY0OTA1MDkzMSwidHN1cnVnaS9leHAvcmVmcmVzaCI6MTY0OTEzNzAzMSwidHN1cnVnaS9leHAvdXNlIjoxNjQ5NjU1NDMxLCJ0c3VydWdpL2F1dGgvbmFtZSI6InRzdXJ1Z2lfdXNlciJ9.YRtavvDPqJ3CaG1ZavXsB4eNi5vdvQkE5-1X2uMfOhk";
-  AccessToken accessToken = new AccessToken(token);
+  String tokenString = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJhdXRoZW50aWNhdGlvbi1tYW5hZ2VyIiwiYXVkIjoibWV0YWRhdGEtbWFuYWdlciIsInN1YiI6IkF1dGhlbnRpY2F0aW9uVG9rZW4iLCJpYXQiOjE2NDkwNTA2MzEsImV4cCI6MTY0OTA1MDkzMSwidHN1cnVnaS9leHAvcmVmcmVzaCI6MTY0OTEzNzAzMSwidHN1cnVnaS9leHAvdXNlIjoxNjQ5NjU1NDMxLCJ0c3VydWdpL2F1dGgvbmFtZSI6InRzdXJ1Z2lfdXNlciJ9.YRtavvDPqJ3CaG1ZavXsB4eNi5vdvQkE5-1X2uMfOhk";
+  AccessToken accessToken = new AccessToken(tokenString);
 
   Date expirationTime = accessToken.getExpirationTime();
   if (!expirationTime) {
@@ -1216,8 +1321,8 @@ public class AccessToken {
   SimpleDateFormat jstSdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
   jstSdf.setTimeZone(TimeZone.getTimeZone("Asia/Tokyo"));
 
-  String token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJhdXRoZW50aWNhdGlvbi1tYW5hZ2VyIiwiYXVkIjoibWV0YWRhdGEtbWFuYWdlciIsInN1YiI6IkF1dGhlbnRpY2F0aW9uVG9rZW4iLCJpYXQiOjE2NDkwNTA2MzEsImV4cCI6MTY0OTA1MDkzMSwidHN1cnVnaS9leHAvcmVmcmVzaCI6MTY0OTEzNzAzMSwidHN1cnVnaS9leHAvdXNlIjoxNjQ5NjU1NDMxLCJ0c3VydWdpL2F1dGgvbmFtZSI6InRzdXJ1Z2lfdXNlciJ9.YRtavvDPqJ3CaG1ZavXsB4eNi5vdvQkE5-1X2uMfOhk";
-  AccessToken accessToken = new AccessToken(token);
+  String tokenString = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJhdXRoZW50aWNhdGlvbi1tYW5hZ2VyIiwiYXVkIjoibWV0YWRhdGEtbWFuYWdlciIsInN1YiI6IkF1dGhlbnRpY2F0aW9uVG9rZW4iLCJpYXQiOjE2NDkwNTA2MzEsImV4cCI6MTY0OTA1MDkzMSwidHN1cnVnaS9leHAvcmVmcmVzaCI6MTY0OTEzNzAzMSwidHN1cnVnaS9leHAvdXNlIjoxNjQ5NjU1NDMxLCJ0c3VydWdpL2F1dGgvbmFtZSI6InRzdXJ1Z2lfdXNlciJ9.YRtavvDPqJ3CaG1ZavXsB4eNi5vdvQkE5-1X2uMfOhk";
+  AccessToken accessToken = new AccessToken(tokenString);
 
   Date refreshExpirationTime = accessToken.getRefreshExpirationTime();
   if (!refreshExpirationTime) {
@@ -1274,8 +1379,8 @@ public class AccessToken {
   SimpleDateFormat jstSdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
   jstSdf.setTimeZone(TimeZone.getTimeZone("Asia/Tokyo"));
 
-  String token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJhdXRoZW50aWNhdGlvbi1tYW5hZ2VyIiwiYXVkIjoibWV0YWRhdGEtbWFuYWdlciIsInN1YiI6IkF1dGhlbnRpY2F0aW9uVG9rZW4iLCJpYXQiOjE2NDkwNTA2MzEsImV4cCI6MTY0OTA1MDkzMSwidHN1cnVnaS9leHAvcmVmcmVzaCI6MTY0OTEzNzAzMSwidHN1cnVnaS9leHAvdXNlIjoxNjQ5NjU1NDMxLCJ0c3VydWdpL2F1dGgvbmFtZSI6InRzdXJ1Z2lfdXNlciJ9.YRtavvDPqJ3CaG1ZavXsB4eNi5vdvQkE5-1X2uMfOhk";
-  AccessToken accessToken = new AccessToken(token);
+  String tokenString = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJhdXRoZW50aWNhdGlvbi1tYW5hZ2VyIiwiYXVkIjoibWV0YWRhdGEtbWFuYWdlciIsInN1YiI6IkF1dGhlbnRpY2F0aW9uVG9rZW4iLCJpYXQiOjE2NDkwNTA2MzEsImV4cCI6MTY0OTA1MDkzMSwidHN1cnVnaS9leHAvcmVmcmVzaCI6MTY0OTEzNzAzMSwidHN1cnVnaS9leHAvdXNlIjoxNjQ5NjU1NDMxLCJ0c3VydWdpL2F1dGgvbmFtZSI6InRzdXJ1Z2lfdXNlciJ9.YRtavvDPqJ3CaG1ZavXsB4eNi5vdvQkE5-1X2uMfOhk";
+  AccessToken accessToken = new AccessToken(tokenString);
 
   Date useExpirationTime = accessToken.getUseExpirationTime();
   if (!useExpirationTime) {
@@ -1401,11 +1506,11 @@ namespace manager::metadata {
   ```
 
   ```cpp
-  std::string token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJhdXRoZW50aWNhdGlvbi1tYW5hZ2VyIiwiYXVkIjoibWV0YWRhdGEtbWFuYWdlciIsInN1YiI6IkF1dGhlbnRpY2F0aW9uVG9rZW4iLCJpYXQiOjE2NDkwNTA2MzEsImV4cCI6MTY0OTA1MDkzMSwidHN1cnVnaS9leHAvcmVmcmVzaCI6MTY0OTEzNzAzMSwidHN1cnVnaS9leHAvdXNlIjoxNjQ5NjU1NDMxLCJ0c3VydWdpL2F1dGgvbmFtZSI6InRzdXJ1Z2lfdXNlciJ9.YRtavvDPqJ3CaG1ZavXsB4eNi5vdvQkE5-1X2uMfOhk";
+  std::string token_string = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJhdXRoZW50aWNhdGlvbi1tYW5hZ2VyIiwiYXVkIjoibWV0YWRhdGEtbWFuYWdlciIsInN1YiI6IkF1dGhlbnRpY2F0aW9uVG9rZW4iLCJpYXQiOjE2NDkwNTA2MzEsImV4cCI6MTY0OTA1MDkzMSwidHN1cnVnaS9leHAvcmVmcmVzaCI6MTY0OTEzNzAzMSwidHN1cnVnaS9leHAvdXNlIjoxNjQ5NjU1NDMxLCJ0c3VydWdpL2F1dGgvbmFtZSI6InRzdXJ1Z2lfdXNlciJ9.YRtavvDPqJ3CaG1ZavXsB4eNi5vdvQkE5-1X2uMfOhk";
   boost::property_tree::ptree authorization;
 
   // テーブル認可情報の取得
-  error = tables->get_acls(token, authorization);
+  error = tables->get_acls(token_string, authorization);
   if (result == ErrorCode::OK) {
     // 認可情報オブジェクト
     auto table_acls = authorization.get_child_optional(Tables::TABLE_ACL_NODE);
@@ -1531,6 +1636,14 @@ JWT(JWS)に準拠（[RFC7515](https://datatracker.ietf.org/doc/html/rfc7515)参�
   - 有効期限(`exp`)が現在日時以降（有効期限≧現在日時）であることを検証
   - 使用期限(`tsurugi/exp/use`)が現在日時以降（使用期限≧現在日時）であることを検証
 
+#### トークンの使用可否検証
+
+トークンのクレームを検証することでトークンの使用可否の判定を行う。
+
+- クレーム検証
+  - リフレッシュ期限(`tsurugi/exp/refresh`)が現在日時以降（リフレッシュ期限≧現在日時）であることを検証
+  - 使用期限(`tsurugi/exp/use`)が現在日時以降（使用期限≧現在日時）であることを検証
+
 #### トークンの期限
 
 - **有効期限**
@@ -1557,13 +1670,13 @@ JWT(JWS)に準拠（[RFC7515](https://datatracker.ietf.org/doc/html/rfc7515)参�
 
 ##### 各期限の状態におけるトークンの状態
 
-|#|有効期限|リフレッシュ期限|使用期限|トークン状態|is_valid() / isValid()|
-|--:|:-:|:-:|:-:|---|---|
-|1.|`○`|`○`|`○`|有効トークン|`true`|
-|2.|`○`|`×`|`○`|有効トークン|`true`|
-|3.|`×`|`○`|`○`|リフレッシュ可能トークン|`false`|
-|4.|`×`|`×`|`○`|無効トークン|`false`|
-|5.|<span style="color: #bbb">－</span>|<span style="color: #bbb">－</span>|`×`|無効トークン|`false`|
+|#|有効期限|リフレッシュ期限|使用期限|トークン状態|is_valid() / isValid()|is_available() / isAvailable()|
+|--:|:-:|:-:|:-:|---|---|---|---|
+|1.|`○`|`○`|`○`|有効トークン|`true`|`true`|
+|2.|`○`|`×`|`○`|有効トークン|`true`|`true`|
+|3.|`×`|`○`|`○`|リフレッシュ可能トークン|`false`|`true`|
+|4.|`×`|`×`|`○`|無効トークン|`false`|`false`|
+|5.|<span style="color: #bbb">－</span>|<span style="color: #bbb">－</span>|`×`|無効トークン|`false`|`false`|
 
 `○`：期限内　`×`：期限切れ
 
@@ -1580,18 +1693,17 @@ gantt
   axisFormat %d日 %H時
   todayMarker off
 
+  section  
+    トークン使用期限（4日 0時） : crit, active, 01 00:00, 04 00:00
   section 発行(認証)
     有効期限（1日 1時） : active, 01 00:00, 1h
     リフレッシュ期限（1日12時） : active, 01 00:00, 12h
-    トークン使用期限（4日 0時） : active, 01 00:00, 04 00:00
   section 1日10時にリフレッシュ
     有効期限（1日11時） : active, 01 10:00, 1h
     リフレッシュ期限（1日22時） : active, 01 10:00, 12h
-    トークン使用期限（4日 0時） : active, 01 10:00, 04 00:00
   section 1日22時にリフレッシュ
     有効期限（1日23時） : active, 01 22:00, 1h
     リフレッシュ期限（2日10時） : active, 01 22:00, 12h
-    トークン使用期限（4日 0時） : active, 01 22:00, 04 00:00
   section ：
     ： : 01 00:00
   section ：  
@@ -1599,7 +1711,6 @@ gantt
   section 3日22時にリフレッシュ ※4日0時を超えない
     有効期限（3日23時） : active, 03 22:00, 1h
     リフレッシュ期限（4日 0時） : active, 03 22:00, 2h
-    トークン使用期限（4日 0時） : active, 03 22:00, 04 00:00
     無効トークン : done, 04 00:00, 6h
 ```
 
