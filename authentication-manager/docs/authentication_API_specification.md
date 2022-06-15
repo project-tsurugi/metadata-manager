@@ -413,17 +413,17 @@ namespace manager::authentication {
 
   ```cpp
   std::string token_string = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJhdXRoZW50aWNhdGlvbi1tYW5hZ2VyIiwiYXVkIjoibWV0YWRhdGEtbWFuYWdlciIsInN1YiI6IkF1dGhlbnRpY2F0aW9uVG9rZW4iLCJpYXQiOjE2NDkwNTA2MzEsImV4cCI6MTY0OTA1MDkzMSwidHN1cnVnaS9leHAvcmVmcmVzaCI6MTY0OTEzNzAzMSwidHN1cnVnaS9leHAvdXNlIjoxNjQ5NjU1NDMxLCJ0c3VydWdpL2F1dGgvbmFtZSI6InRzdXJ1Z2lfdXNlciJ9.YRtavvDPqJ3CaG1ZavXsB4eNi5vdvQkE5-1X2uMfOhk";
-  AccessToken access_token(token_string);
+  AccessToken token(token_string);
 
-  std::time_t expiration_time = access_token.expiration_time();
+  std::time_t expiration_time = token.expiration_time();
   std::cout << "Before: " << std::put_time(std::localtime(&expiration_time), "%Y/%m/%d %H:%M:%S") << std::endl;
 
   // 有効期限を30分延長
   ErrorCode result = Authentication::refresh_token(token_string, std::chrono::minutes{30});
   if (result == ErrorCode::OK) {
     // リフレッシュ成功
-    access_token = token_string;
-    expiration_time = access_token.expiration_time();
+    token = token_string;
+    expiration_time = token.expiration_time();
     std::cout << "After: " << std::put_time(std::localtime(&expiration_time), "%Y/%m/%d %H:%M:%S") << std::endl;
   } else if (result == ErrorCode::INVALID_PARAMETER) {
     // 無効なトークン
@@ -566,9 +566,9 @@ namespace manager::authentication {
 
   ```cpp
   std::string token_string = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJhdXRoZW50aWNhdGlvbi1tYW5hZ2VyIiwiYXVkIjoibWV0YWRhdGEtbWFuYWdlciIsInN1YiI6IkF1dGhlbnRpY2F0aW9uVG9rZW4iLCJpYXQiOjE2NDkwNTA2MzEsImV4cCI6MTY0OTA1MDkzMSwidHN1cnVnaS9leHAvcmVmcmVzaCI6MTY0OTEzNzAzMSwidHN1cnVnaS9leHAvdXNlIjoxNjQ5NjU1NDMxLCJ0c3VydWdpL2F1dGgvbmFtZSI6InRzdXJ1Z2lfdXNlciJ9.YRtavvDPqJ3CaG1ZavXsB4eNi5vdvQkE5-1X2uMfOhk";
-  AccessToken access_token(token_string);
+  AccessToken token(token_string);
  
-  std::cout << access_token.show() << std::endl;
+  std::cout << token.show() << std::endl;
   ```
 
   ```text
@@ -620,9 +620,9 @@ namespace manager::authentication {
 
   ```cpp
   std::string token_string = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJhdXRoZW50aWNhdGlvbi1tYW5hZ2VyIiwiYXVkIjoibWV0YWRhdGEtbWFuYWdlciIsInN1YiI6IkF1dGhlbnRpY2F0aW9uVG9rZW4iLCJpYXQiOjE2NDkwNTA2MzEsImV4cCI6MTY0OTA1MDkzMSwidHN1cnVnaS9leHAvcmVmcmVzaCI6MTY0OTEzNzAzMSwidHN1cnVnaS9leHAvdXNlIjoxNjQ5NjU1NDMxLCJ0c3VydWdpL2F1dGgvbmFtZSI6InRzdXJ1Z2lfdXNlciJ9.YRtavvDPqJ3CaG1ZavXsB4eNi5vdvQkE5-1X2uMfOhk";
-  AccessToken access_token(token_string);
+  AccessToken token(token_string);
 
-  std::cout << std::boolalpha << access_token.is_valid() << std::endl;
+  std::cout << std::boolalpha << token.is_valid() << std::endl;
   ```
 
   ```text
@@ -674,9 +674,9 @@ namespace manager::authentication {
 
   ```cpp
   std::string token_string = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJhdXRoZW50aWNhdGlvbi1tYW5hZ2VyIiwiYXVkIjoibWV0YWRhdGEtbWFuYWdlciIsInN1YiI6IkF1dGhlbnRpY2F0aW9uVG9rZW4iLCJpYXQiOjE2NDkwNTA2MzEsImV4cCI6MTY0OTA1MDkzMSwidHN1cnVnaS9leHAvcmVmcmVzaCI6MTY0OTEzNzAzMSwidHN1cnVnaS9leHAvdXNlIjoxNjQ5NjU1NDMxLCJ0c3VydWdpL2F1dGgvbmFtZSI6InRzdXJ1Z2lfdXNlciJ9.YRtavvDPqJ3CaG1ZavXsB4eNi5vdvQkE5-1X2uMfOhk";
-  AccessToken access_token(token_string);
+  AccessToken token(token_string);
 
-  std::cout << std::boolalpha << access_token.is_available() << std::endl;
+  std::cout << std::boolalpha << token.is_available() << std::endl;
   ```
 
   ```text
@@ -724,9 +724,9 @@ namespace manager::authentication {
 
   ```cpp
   std::string token_string = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJhdXRoZW50aWNhdGlvbi1tYW5hZ2VyIiwiYXVkIjoibWV0YWRhdGEtbWFuYWdlciIsInN1YiI6IkF1dGhlbnRpY2F0aW9uVG9rZW4iLCJpYXQiOjE2NDkwNTA2MzEsImV4cCI6MTY0OTA1MDkzMSwidHN1cnVnaS9leHAvcmVmcmVzaCI6MTY0OTEzNzAzMSwidHN1cnVnaS9leHAvdXNlIjoxNjQ5NjU1NDMxLCJ0c3VydWdpL2F1dGgvbmFtZSI6InRzdXJ1Z2lfdXNlciJ9.YRtavvDPqJ3CaG1ZavXsB4eNi5vdvQkE5-1X2uMfOhk";
-  AccessToken access_token(token_string);
+  AccessToken token(token_string);
 
-  std::string user_name = access_token.user_name();
+  std::string user_name = token.user_name();
   if (!user_name.empty()) {
     // ユーザ名の取得成功
     std::cout << user_name << std::endl;
@@ -782,9 +782,9 @@ namespace manager::authentication {
 
   ```cpp
   std::string token_string = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJhdXRoZW50aWNhdGlvbi1tYW5hZ2VyIiwiYXVkIjoibWV0YWRhdGEtbWFuYWdlciIsInN1YiI6IkF1dGhlbnRpY2F0aW9uVG9rZW4iLCJpYXQiOjE2NDkwNTA2MzEsImV4cCI6MTY0OTA1MDkzMSwidHN1cnVnaS9leHAvcmVmcmVzaCI6MTY0OTEzNzAzMSwidHN1cnVnaS9leHAvdXNlIjoxNjQ5NjU1NDMxLCJ0c3VydWdpL2F1dGgvbmFtZSI6InRzdXJ1Z2lfdXNlciJ9.YRtavvDPqJ3CaG1ZavXsB4eNi5vdvQkE5-1X2uMfOhk";
-  AccessToken access_token(token_string);
+  AccessToken token(token_string);
 
-  std::time_t issued_time = access_token.issued_time();
+  std::time_t issued_time = token.issued_time();
   if (issued_time != 0) {
     // 発行日時の取得成功
     std::cout << std::put_time(std::localtime(&issued_time), "%Y/%m/%d %H:%M:%S") << std::endl;
@@ -840,9 +840,9 @@ namespace manager::authentication {
 
   ```cpp
   std::string token_string = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJhdXRoZW50aWNhdGlvbi1tYW5hZ2VyIiwiYXVkIjoibWV0YWRhdGEtbWFuYWdlciIsInN1YiI6IkF1dGhlbnRpY2F0aW9uVG9rZW4iLCJpYXQiOjE2NDkwNTA2MzEsImV4cCI6MTY0OTA1MDkzMSwidHN1cnVnaS9leHAvcmVmcmVzaCI6MTY0OTEzNzAzMSwidHN1cnVnaS9leHAvdXNlIjoxNjQ5NjU1NDMxLCJ0c3VydWdpL2F1dGgvbmFtZSI6InRzdXJ1Z2lfdXNlciJ9.YRtavvDPqJ3CaG1ZavXsB4eNi5vdvQkE5-1X2uMfOhk";
-  AccessToken access_token(token_string);
+  AccessToken token(token_string);
 
-  std::time_t expiration_time = access_token.expiration_time();
+  std::time_t expiration_time = token.expiration_time();
   if (expiration_time != 0) {
     // 有効期限の取得成功
     std::cout << std::put_time(std::localtime(&expiration_time), "%Y/%m/%d %H:%M:%S") << std::endl;
@@ -898,9 +898,9 @@ namespace manager::authentication {
 
   ```cpp
   std::string token_string = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJhdXRoZW50aWNhdGlvbi1tYW5hZ2VyIiwiYXVkIjoibWV0YWRhdGEtbWFuYWdlciIsInN1YiI6IkF1dGhlbnRpY2F0aW9uVG9rZW4iLCJpYXQiOjE2NDkwNTA2MzEsImV4cCI6MTY0OTA1MDkzMSwidHN1cnVnaS9leHAvcmVmcmVzaCI6MTY0OTEzNzAzMSwidHN1cnVnaS9leHAvdXNlIjoxNjQ5NjU1NDMxLCJ0c3VydWdpL2F1dGgvbmFtZSI6InRzdXJ1Z2lfdXNlciJ9.YRtavvDPqJ3CaG1ZavXsB4eNi5vdvQkE5-1X2uMfOhk";
-  AccessToken access_token(token_string);
+  AccessToken token(token_string);
 
-  std::time_t refresh_expiration_time = access_token.refresh_expiration_time();
+  std::time_t refresh_expiration_time = token.refresh_expiration_time();
   if (refresh_expiration_time != 0) {
     // リフレッシュ期限の取得成功
     std::cout << std::put_time(std::localtime(&refresh_expiration_time), "%Y/%m/%d %H:%M:%S") << std::endl;
@@ -956,9 +956,9 @@ namespace manager::authentication {
 
   ```cpp
   std::string token_string = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJhdXRoZW50aWNhdGlvbi1tYW5hZ2VyIiwiYXVkIjoibWV0YWRhdGEtbWFuYWdlciIsInN1YiI6IkF1dGhlbnRpY2F0aW9uVG9rZW4iLCJpYXQiOjE2NDkwNTA2MzEsImV4cCI6MTY0OTA1MDkzMSwidHN1cnVnaS9leHAvcmVmcmVzaCI6MTY0OTEzNzAzMSwidHN1cnVnaS9leHAvdXNlIjoxNjQ5NjU1NDMxLCJ0c3VydWdpL2F1dGgvbmFtZSI6InRzdXJ1Z2lfdXNlciJ9.YRtavvDPqJ3CaG1ZavXsB4eNi5vdvQkE5-1X2uMfOhk";
-  AccessToken access_token(token_string);
+  AccessToken token(token_string);
 
-  std::time_t use_expiration_time = access_token.use_expiration_time();
+  std::time_t use_expiration_time = token.use_expiration_time();
   if (use_expiration_time != 0) {
     // トークン使用期限の取得成功
     std::cout << std::put_time(std::localtime(&use_expiration_time), "%Y/%m/%d %H:%M:%S") << std::endl;
