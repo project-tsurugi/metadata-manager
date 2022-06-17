@@ -13,13 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-#ifndef MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_DAO_COMMON_CONFIG_H_
-#define MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_DAO_COMMON_CONFIG_H_
+#ifndef MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_COMMON_CONFIG_H_
+#define MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_COMMON_CONFIG_H_
 
 #include <string>
 
-namespace manager::metadata::db {
+namespace manager::metadata {
 
 class Config {
  public:
@@ -66,6 +65,6 @@ class Config {
       ".local/tsurugi/metadata";
 };  // class Config
 
-}  // namespace manager::metadata::db
+}  // namespace manager::metadata
 
-#endif  // MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_DAO_COMMON_CONFIG_H_
+#endif  // MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_COMMON_CONFIG_H_

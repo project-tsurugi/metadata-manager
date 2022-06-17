@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-#ifndef MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_DAO_COMMON_MESSAGE_H_
-#define MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_DAO_COMMON_MESSAGE_H_
+#ifndef MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_COMMON_MESSAGE_H_
+#define MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_COMMON_MESSAGE_H_
 
-namespace manager::metadata::db {
+namespace manager::metadata {
 /**
  * @brief message.
  */
@@ -49,6 +49,6 @@ struct Message {
       "Could not find such column name of metadata.: ";
 };  // class Message
 
-}  // namespace manager::metadata::db
+}  // namespace manager::metadata
 
-#endif  // MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_DAO_COMMON_MESSAGE_H_
+#endif  // MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_COMMON_MESSAGE_H_

@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "manager/metadata/dao/common/config.h"
+#include "manager/metadata/common/config.h"
 
 #include <boost/format.hpp>
 #include <cstdlib>
 #include <string>
 
 // =============================================================================
-namespace manager::metadata::db {
+namespace manager::metadata {
 
 /**
  * @brief Gets Connection Strings.
@@ -52,4 +52,4 @@ std::string Config::get_storage_dir_path() {
   return storage_dir.str();
 }
 
-}  // namespace manager::metadata::db
+}  // namespace manager::metadata

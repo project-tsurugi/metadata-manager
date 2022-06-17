@@ -21,7 +21,7 @@
 #include <tuple>
 #include <vector>
 
-#include "manager/metadata/dao/common/config.h"
+#include "manager/metadata/common/config.h"
 #include "manager/metadata/dao/postgresql/common.h"
 #include "manager/metadata/dao/postgresql/dbc_utils.h"
 #include "manager/metadata/error_code.h"
@@ -201,11 +201,11 @@ TEST_F(DaoTestCommon, get_connection_string) {
   const char* tmp_cs = std::getenv("TSURUGI_CONNECTION_STRING");
 
   if (tmp_cs == nullptr) {
-    EXPECT_EQ("dbname=tsurugi", db::Config::get_connection_string());
-    UTUtils::print("Connection Strings:", db::Config::get_connection_string());
+    EXPECT_EQ("dbname=tsurugi", Config::get_connection_string());
+    UTUtils::print("Connection Strings:", Config::get_connection_string());
   } else {
-    EXPECT_EQ(tmp_cs, db::Config::get_connection_string());
-    UTUtils::print("Connection Strings:", db::Config::get_connection_string());
+    EXPECT_EQ(tmp_cs, Config::get_connection_string());
+    UTUtils::print("Connection Strings:", Config::get_connection_string());
   }
 }
 
@@ -220,7 +220,7 @@ TEST_F(DaoTestCommonIfConnectionOpened, is_open) {
 
   // Verifies that a connection is opened if it is opened.
   ConnectionSPtr connection = DbcUtils::make_connection_sptr(
-      PQconnectdb(db::Config::get_connection_string().c_str()));
+      PQconnectdb(Config::get_connection_string().c_str()));
   EXPECT_EQ(true, DbcUtils::is_open(connection));
 }
 
@@ -235,7 +235,7 @@ TEST_F(DaoTestCommonIfConnectionNotOpened, is_open) {
 
   // Verifies that a connection is closed if it is closed.
   ConnectionSPtr connection = DbcUtils::make_connection_sptr(
-      PQconnectdb(db::Config::get_connection_string().c_str()));
+      PQconnectdb(Config::get_connection_string().c_str()));
   EXPECT_EQ(false, DbcUtils::is_open(connection));
 }
 

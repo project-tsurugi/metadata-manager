@@ -19,7 +19,7 @@
 
 #include <limits>
 
-#include "manager/metadata/dao/common/config.h"
+#include "manager/metadata/common/config.h"
 #include "manager/metadata/dao/postgresql/dbc_utils.h"
 #include "test/helper/column_statistics_helper.h"
 #include "test/helper/table_metadata_helper.h"
@@ -61,7 +61,7 @@ void GlobalTestEnvironment::SetUp() {
 
   // check if a connection to the metadata repository is opened or not.
   ConnectionSPtr connection = DbcUtils::make_connection_sptr(
-      PQconnectdb(db::Config::get_connection_string().c_str()));
+      PQconnectdb(Config::get_connection_string().c_str()));
 
   if (DbcUtils::is_open(connection)) {
     is_open_ = true;

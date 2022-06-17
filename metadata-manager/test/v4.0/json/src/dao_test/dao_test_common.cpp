@@ -15,12 +15,12 @@
  */
 #include <gtest/gtest.h>
 
-#include "manager/metadata/dao/common/config.h"
+#include "manager/metadata/common/config.h"
 #include "test/utility/ut_utils.h"
 
 namespace manager::metadata::testing {
 
-using manager::metadata::db::Config;
+using manager::metadata::Config;
 
 class DaoTestCommon : public ::testing::Test {};
 

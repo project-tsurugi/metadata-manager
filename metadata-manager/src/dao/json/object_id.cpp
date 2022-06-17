@@ -21,7 +21,7 @@
 #include <fstream>
 #include <iostream>
 
-#include "manager/metadata/dao/common/config.h"
+#include "manager/metadata/common/config.h"
 
 // =============================================================================
 namespace manager::metadata::db::json {
@@ -29,7 +29,6 @@ namespace manager::metadata::db::json {
 namespace ini_parser = boost::property_tree::ini_parser;
 using boost::property_tree::ini_parser_error;
 using boost::property_tree::ptree;
-using manager::metadata::ErrorCode;
 
 static ObjectIdType INVALID_OID = 0;
 

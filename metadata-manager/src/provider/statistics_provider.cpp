@@ -17,7 +17,6 @@
 
 #include <boost/property_tree/json_parser.hpp>
 
-#include "manager/metadata/dao/common/message.h"
 #include "manager/metadata/statistics.h"
 
 // =============================================================================
@@ -25,7 +24,6 @@ namespace manager::metadata::db {
 
 namespace json_parser = boost::property_tree::json_parser;
 using boost::property_tree::ptree;
-using manager::metadata::ErrorCode;
 
 /**
  * @brief Initialize and prepare to access the metadata repository.

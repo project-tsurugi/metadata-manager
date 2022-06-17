@@ -27,6 +27,9 @@ namespace manager::metadata {
 
 class Tables : public Metadata {
  public:
+  // table ACL object.
+  static constexpr const char* const TABLE_ACL_NODE = "tables";
+
   // table metadata-object.
   // FORMAT_VERSION is defined in base class.
   // GENERATION is defined in base class.
@@ -104,6 +107,9 @@ class Tables : public Metadata {
   ErrorCode remove(const ObjectIdType object_id) const override;
   ErrorCode remove(std::string_view object_name,
                    ObjectIdType* object_id) const override;
+
+  ErrorCode get_acls(std::string_view token,
+                     boost::property_tree::ptree& acls) const;
 
   ErrorCode confirm_permission_in_acls(const ObjectIdType object_id,
                                        const char* permission,

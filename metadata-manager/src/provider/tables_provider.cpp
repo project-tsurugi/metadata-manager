@@ -24,7 +24,6 @@
 namespace manager::metadata::db {
 
 using boost::property_tree::ptree;
-using manager::metadata::ErrorCode;
 
 /**
  * @brief Initialize and prepare to access the metadata repository.

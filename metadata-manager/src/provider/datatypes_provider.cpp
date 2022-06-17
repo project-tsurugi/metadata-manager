@@ -20,8 +20,6 @@
 // =============================================================================
 namespace manager::metadata::db {
 
-using manager::metadata::ErrorCode;
-
 /**
  * @brief Initialize and prepare to access the metadata repository.
  * @return ErrorCode::OK if success, otherwise an error code.

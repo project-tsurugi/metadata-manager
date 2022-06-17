@@ -21,7 +21,7 @@
 #include <memory>
 #include <string>
 
-#include "manager/metadata/dao/common/config.h"
+#include "manager/metadata/common/config.h"
 #include "manager/metadata/dao/postgresql/dbc_utils.h"
 
 namespace {
@@ -54,18 +54,17 @@ ObjectIdType ForeignTableHelper::create_table(std::string_view table_name,
 
   // create dummy data for TABLE.
   statement =
-      boost::format("CREATE TABLE tsurugi_catalog.%s (id bigint, name text)") %
-      table_name;
+      boost::format("CREATE TABLE %s (id bigint, name text)") % table_name;
   res = PQexec(connection.get(), statement.str().c_str());
   PQclear(res);
 
   // set dummy data for privileges.
   if (!privileges.empty()) {
-    statement = boost::format("GRANT %s ON tsurugi_catalog.%s TO %s") %
-                privileges % table_name % role_name;
-  } else {
-    statement = boost::format("REVOKE ALL ON tsurugi_catalog.%s TO %s") %
+    statement = boost::format("GRANT %s ON %s TO %s") % privileges %
                 table_name % role_name;
+  } else {
+    statement =
+        boost::format("REVOKE ALL ON %s TO %s") % table_name % role_name;
   }
   res = PQexec(connection.get(), statement.str().c_str());
   PQclear(res);
@@ -90,7 +89,7 @@ void ForeignTableHelper::drop_table(std::string_view table_name) {
 
   // remove dummy data for TABLE.
   boost::format statement =
-      boost::format("DROP TABLE tsurugi_catalog.%s") % table_name;
+      boost::format("DROP TABLE %s") % table_name;
   PGresult* res = PQexec(connection.get(), statement.str().c_str());
   PQclear(res);
 }
@@ -110,7 +109,7 @@ ObjectIdType ForeignTableHelper::insert_foreign_table(
       boost::format(
           "INSERT into pg_foreign_table VALUES"
           " ((%s) + 1, 1"
-          " , '{schema_name=tsurugi_catalog,table_name=%s}')"
+          " , '{schema_name=public,table_name=%s}')"
           " RETURNING ftrelid") %
       ft_statement_sub % table_name;
   PGresult* res = PQexec(connection.get(), statement.str().c_str());
@@ -142,7 +141,7 @@ void ForeignTableHelper::delete_foreign_table(ObjectIdType foreign_table_id) {
 void ForeignTableHelper::db_connection() {
   if (!DbcUtils::is_open(connection)) {
     // db connection.
-    PGconn* pgconn = PQconnectdb(db::Config::get_connection_string().c_str());
+    PGconn* pgconn = PQconnectdb(Config::get_connection_string().c_str());
     connection = DbcUtils::make_connection_sptr(pgconn);
 
     ASSERT_TRUE(DbcUtils::is_open(connection));

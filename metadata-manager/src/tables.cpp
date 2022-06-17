@@ -32,7 +32,6 @@ std::unique_ptr<manager::metadata::db::TablesProvider> provider = nullptr;
 namespace manager::metadata {
 
 using boost::property_tree::ptree;
-using manager::metadata::ErrorCode;
 
 /**
  * @brief Constructor

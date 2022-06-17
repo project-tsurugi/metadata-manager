@@ -29,8 +29,6 @@ std::unique_ptr<manager::metadata::db::StatisticsProvider> provider = nullptr;
 // =============================================================================
 namespace manager::metadata {
 
-using manager::metadata::ErrorCode;
-
 /**
  * @brief Constructor
  * @param (database)   [in]  database name.

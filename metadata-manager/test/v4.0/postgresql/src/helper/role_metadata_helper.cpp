@@ -21,7 +21,7 @@
 #include <memory>
 #include <string>
 
-#include "manager/metadata/dao/common/config.h"
+#include "manager/metadata/common/config.h"
 #include "manager/metadata/dao/postgresql/dbc_utils.h"
 #include "manager/metadata/roles.h"
 
@@ -204,7 +204,7 @@ void RoleMetadataHelper::check_roles_expected(
 void RoleMetadataHelper::db_connection() {
   if (!DbcUtils::is_open(connection)) {
     // db connection.
-    PGconn* pgconn = PQconnectdb(db::Config::get_connection_string().c_str());
+    PGconn* pgconn = PQconnectdb(Config::get_connection_string().c_str());
     connection = DbcUtils::make_connection_sptr(pgconn);
 
     ASSERT_TRUE(DbcUtils::is_open(connection));

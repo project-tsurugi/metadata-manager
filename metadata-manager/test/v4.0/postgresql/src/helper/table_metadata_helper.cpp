@@ -24,7 +24,7 @@
 #include <string>
 #include <vector>
 
-#include "manager/metadata/dao/common/config.h"
+#include "manager/metadata/common/config.h"
 #include "manager/metadata/dao/postgresql/tables_dao.h"
 #include "manager/metadata/datatypes.h"
 #include "test/global_test_environment.h"
@@ -43,7 +43,7 @@ using manager::metadata::db::postgresql::TablesDAO;
  * @return Current number of records.
  */
 std::int64_t TableMetadataHelper::get_record_count() {
-  PGconn* connection = PQconnectdb(db::Config::get_connection_string().c_str());
+  PGconn* connection = PQconnectdb(Config::get_connection_string().c_str());
 
   boost::format statement = boost::format("SELECT COUNT(*) FROM %s.%s") %
                             storage::SCHEMA_NAME % TablesDAO::kTableName;

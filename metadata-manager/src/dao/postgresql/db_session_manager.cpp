@@ -19,8 +19,8 @@
 
 #include <iostream>
 
-#include "manager/metadata/dao/common/config.h"
-#include "manager/metadata/dao/common/message.h"
+#include "manager/metadata/common/config.h"
+#include "manager/metadata/common/message.h"
 #include "manager/metadata/dao/postgresql/columns_dao.h"
 #include "manager/metadata/dao/postgresql/datatypes_dao.h"
 #include "manager/metadata/dao/postgresql/dbc_utils.h"
@@ -29,8 +29,6 @@
 
 // =============================================================================
 namespace manager::metadata::db::postgresql {
-
-using manager::metadata::ErrorCode;
 
 /**
  * @brief Gets Dao instance for the requested table name

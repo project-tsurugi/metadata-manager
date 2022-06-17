@@ -29,8 +29,6 @@ namespace manager::metadata::db::json {
 
 namespace json_parser = boost::property_tree::json_parser;
 using boost::property_tree::json_parser_error;
-using manager::metadata::ErrorCode;
-using manager::metadata::Metadata;
 
 /**
  * @brief Gets Dao instance for the requested table name
