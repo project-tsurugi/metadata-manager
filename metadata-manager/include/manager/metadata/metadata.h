@@ -32,11 +32,20 @@ using ObjectIdType = std::int64_t;
 class Metadata {
  public:
   /**
-   * @brief key of metadata.
+   * @brief Field name constant indicating the format version of the metadata.
    */
   static constexpr const char* const FORMAT_VERSION = "formatVersion";
+  /**
+   * @brief Field name constant indicating the generation of the metadata.
+   */
   static constexpr const char* const GENERATION = "generation";
+  /**
+   * @brief Field name constant indicating the object id of the metadata.
+   */
   static constexpr const char* const ID = "id";
+  /**
+   * @brief Field name constant indicating the object name of the metadata.
+   */
   static constexpr const char* const NAME = "name";
 
   /**

@@ -17,23 +17,78 @@
 
 #include <boost/format.hpp>
 #include <cstdlib>
-#include <string>
+
+// =============================================================================
+namespace {
+
+namespace key {
+
+/**
+ * @brief The name of an OS environment variable for a Connection Strings.
+ */
+static constexpr const char* const kTsurugiConnectionString =
+    "TSURUGI_CONNECTION_STRING";
+
+/**
+ * @brief The name of the OS environment variable for the directory that
+ *   stores the metadata.
+ */
+static constexpr const char* const kTsurugiMetadataDir = "TSURUGI_METADATA_DIR";
+
+/**
+ * @brief The name of the OS environment variable in the user's home
+ *   directory.
+ */
+static constexpr const char* const kHomeDir = "HOME";
+
+/**
+ * @brief The name of an OS environment variable for the JWT secret key.
+ */
+static constexpr const char* const kJwtSecretKey = "TSURUGI_JWT_SECRET_KEY";
+
+}  // namespace key
+
+namespace default_value {
+
+/**
+ * @brief Default Connection Strings.
+ *   By default, several libpq functions parse this default connection strings
+ *   to obtain connection parameters.
+ */
+static constexpr const char* const kConnectionString = "dbname=tsurugi";
+
+/**
+ * @brief Default user's home directory.
+ */
+static constexpr const char* const kHomeDir = ".";
+
+/**
+ * @brief Default directory that stores the metadata.
+ *   Metadata is stored under $HOME/[default directory].
+ */
+static constexpr const char* const kTsurugiMetadataDir =
+    ".local/tsurugi/metadata";
+
+/**
+ * @brief Default JWT secret key.
+ */
+static constexpr const char* const kJwtSecretKey =
+    "qiZB8rXTdet7Z3HTaU9t2TtcpmV6FXy7";
+
+}  // namespace default_value
+
+}  // namespace
 
 // =============================================================================
 namespace manager::metadata {
 
 /**
- * @brief Gets Connection Strings.
+ * @brief Gets connection string to the DB where the metadata is stored.
  * @return Connection Strings.
  */
 std::string Config::get_connection_string() {
-  const char* tmp_cs = std::getenv(TSURUGI_CONNECTION_STRING);
-
-  if (tmp_cs != nullptr) {
-    return tmp_cs;
-  }
-
-  return DEFAULT_CONNECTION_STRING;
+  const char* env_value = std::getenv(key::kTsurugiConnectionString);
+  return (env_value != nullptr ? env_value : default_value::kConnectionString);
 }
 
 /**
@@ -41,15 +96,31 @@ std::string Config::get_connection_string() {
  * @return Directory that stores the metadata.
  */
 std::string Config::get_storage_dir_path() {
-  const char* tmp_dir = std::getenv(TSURUGI_METADATA_DIR);
-  if (tmp_dir != nullptr) {
-    return tmp_dir;
+  std::string result_value = "";
+
+  const char* env_value = std::getenv(key::kTsurugiMetadataDir);
+  if (env_value != nullptr) {
+    result_value = env_value;
+  } else {
+    const char* env_value_home = std::getenv(key::kHomeDir);
+    env_value_home =
+        (env_value_home != nullptr ? env_value_home : default_value::kHomeDir);
+
+    // default value.
+    boost::format storage_dir = boost::format("%s/%s") % env_value_home %
+                                default_value::kTsurugiMetadataDir;
+    result_value = storage_dir.str();
   }
-  // Returns the default value.
-  boost::format storage_dir = boost::format("%s/%s") %
-                              std::string(std::getenv(HOME_DIR)) %
-                              DEFAULT_TSURUGI_METADATA_DIR;
-  return storage_dir.str();
+  return result_value;
+}
+
+/**
+ * @brief Gets JWT secret key.
+ * @return JWT secret key.
+ */
+std::string Config::get_jwt_secret_key() {
+  const char* env_value = std::getenv(key::kJwtSecretKey);
+  return (env_value != nullptr ? env_value : default_value::kJwtSecretKey);
 }
 
 }  // namespace manager::metadata

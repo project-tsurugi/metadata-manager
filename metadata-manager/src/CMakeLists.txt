@@ -27,8 +27,8 @@ add_library(${PROJECT_NAME}
 )
 
 target_include_directories(${PROJECT_NAME}
-    PRIVATE ${PROJECT_SOURCE_DIR}/include/manager/metadata
     PRIVATE ${PG_INCLUDEDIR}
+    PRIVATE ${JWT-CPP_INCLUDE_DIR}
 )
 
 set_target_properties(${PROJECT_NAME}
@@ -45,9 +45,11 @@ if (DATA_STORAGE_PG)
 endif (DATA_STORAGE_PG)
 
 target_link_libraries(${PROJECT_NAME}
-    PUBLIC ${PROJECT_NAME}-interface
-    ${Boost_FILESYSTEM_LIBRARY}
-    ${Boost_SYSTEM_LIBRARY}
+    PUBLIC
+        ${PROJECT_NAME}-interface
+        ${Boost_FILESYSTEM_LIBRARY}
+        ${Boost_SYSTEM_LIBRARY}
+    PRIVATE crypto
 )
 
 install_custom(${PROJECT_NAME} ${export_name})

@@ -27,34 +27,86 @@ namespace manager::metadata {
 
 class Tables : public Metadata {
  public:
-  // table ACL object.
-  static constexpr const char* const TABLE_ACL_NODE = "tables";
-
   // table metadata-object.
   // FORMAT_VERSION is defined in base class.
   // GENERATION is defined in base class.
   // ID is defined in base class.
   // NAME is defined in base class.
+
+  /**
+   * @brief Field name constant indicating the namespace of the metadata.
+   */
   static constexpr const char* const NAMESPACE = "namespace";
+  /**
+   * @brief Field name constant indicating the columns node of the metadata.
+   */
   static constexpr const char* const COLUMNS_NODE = "columns";
+  /**
+   * @brief Field name constant indicating the primary keys of the metadata.
+   */
   static constexpr const char* const PRIMARY_KEY_NODE = "primaryKey";
+  /**
+   * @brief Field name constant indicating the tuples of the metadata.
+   */
   static constexpr const char* const TUPLES = "tuples";
+  /**
+   * @brief Field name constant indicating the owner role id of the metadata.
+   */
   static constexpr const char* const OWNER_ROLE_ID = "ownerRoleId";
+  /**
+   * @brief Field name constant indicating the acl of the metadata.
+   */
   static constexpr const char* const ACL = "acl";
 
   // column metadata-object.
   struct Column {
+    /**
+     * @brief Field name constant indicating the format version of the metadata.
+     */
     static constexpr const char* const FORMAT_VERSION = "formatVersion";
+    /**
+     * @brief Field name constant indicating the generation of the metadata.
+     */
     static constexpr const char* const GENERATION = "generation";
+    /**
+     * @brief Field name constant indicating the object id of the metadata.
+     */
     static constexpr const char* const ID = "id";
+    /**
+     * @brief Field name constant indicating the table id of the metadata.
+     */
     static constexpr const char* const TABLE_ID = "tableId";
+    /**
+     * @brief Field name constant indicating the column name of the metadata.
+     */
     static constexpr const char* const NAME = "name";
+    /**
+     * @brief Field name constant indicating the ordinal position of the metadata.
+     */
     static constexpr const char* const ORDINAL_POSITION = "ordinalPosition";
+    /**
+     * @brief Field name constant indicating the data type id of the metadata.
+     */
     static constexpr const char* const DATA_TYPE_ID = "dataTypeId";
+    /**
+     * @brief Field name constant indicating the data length of the metadata.
+     */
     static constexpr const char* const DATA_LENGTH = "dataLength";
+    /**
+     * @brief Field name constant indicating the varying of the metadata.
+     */
     static constexpr const char* const VARYING = "varying";
+    /**
+     * @brief Field name constant indicating the nullable of the metadata.
+     */
     static constexpr const char* const NULLABLE = "nullable";
+    /**
+     * @brief Field name constant indicating the default expression of the metadata.
+     */
     static constexpr const char* const DEFAULT = "defaultExpr";
+    /**
+     * @brief Field name constant indicating the direction of the metadata.
+     */
     static constexpr const char* const DIRECTION = "direction";
 
     /**
@@ -77,6 +129,12 @@ class Tables : public Metadata {
       DESCENDANT,
     };
   };
+
+  /**
+   * @brief Field name constants for metadata indicating
+   *    table authorization information.
+   */
+  static constexpr const char* const TABLE_ACL_NODE = "tables";
 
   explicit Tables(std::string_view database)
       : Tables(database, kDefaultComponent) {}

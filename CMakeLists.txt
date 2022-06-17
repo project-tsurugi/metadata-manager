@@ -132,12 +132,16 @@ if(DATA_STORAGE_PG OR BUILD_TARGET_AUTH)
 endif(DATA_STORAGE_PG OR BUILD_TARGET_AUTH)
 
 add_custom_target(format
-    COMMAND           git ls-files '*.cpp' '*.h' | xargs clang-format -i --style=file -verbose
+    COMMAND
+      git ls-files '*.cpp' '*.h' | xargs clang-format -i --style=file -verbose
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
+set(SUBMODULE_DIR ${CMAKE_SOURCE_DIR}/third_party)
+set(JWT-CPP_INCLUDE_DIR ${SUBMODULE_DIR}/jwt-cpp/include)
+
 add_subdirectory(message-broker)
-add_subdirectory(third_party/googletest)
+add_subdirectory(${SUBMODULE_DIR}/googletest)
 
 if(BUILD_TARGET_META)
   add_subdirectory(metadata-manager)

@@ -32,10 +32,26 @@ class Statistics : public Metadata {
   // GENERATION is defined in base class.
   // ID is defined in base class.
   // NAME is defined in base class.
+
+  /**
+   * @brief Field name constant indicating the table id of the metadata.
+   */
   static constexpr const char* const TABLE_ID = "tableId";
+  /**
+   * @brief Field name constant indicating the ordinal position of the metadata.
+   */
   static constexpr const char* const ORDINAL_POSITION = "ordinalPosition";
+  /**
+   * @brief Field name constant indicating the columns id of the metadata.
+   */
   static constexpr const char* const COLUMN_ID = "columnId";
+  /**
+   * @brief Field name constant indicating the columns name of the metadata.
+   */
   static constexpr const char* const COLUMN_NAME = "columnName";
+  /**
+   * @brief Field name constant indicating the columns statistic of the metadata.
+   */
   static constexpr const char* const COLUMN_STATISTIC = "columnStatistic";
 
   explicit Statistics(std::string_view database)

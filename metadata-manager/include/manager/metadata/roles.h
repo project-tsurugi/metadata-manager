@@ -30,17 +30,54 @@ class Roles : public Metadata {
   // role metadata-object.
   // FORMAT_VERSION is defined in base class.
   // GENERATION is defined in base class.
+
+  /**
+   * @brief Field name constant indicating the role id of the metadata.
+   */
   static constexpr const char* const ROLE_OID = Metadata::ID;
+  /**
+   * @brief Field name constant indicating the role name of the metadata.
+   */
   static constexpr const char* const ROLE_ROLNAME = Metadata::NAME;
+  /**
+   * @brief Field name constant indicating the super of the metadata.
+   */
   static constexpr const char* const ROLE_ROLSUPER = "super";
+  /**
+   * @brief Field name constant indicating the inherit of the metadata.
+   */
   static constexpr const char* const ROLE_ROLINHERIT = "inherit";
+  /**
+   * @brief Field name constant indicating the createrole of the metadata.
+   */
   static constexpr const char* const ROLE_ROLCREATEROLE = "createrole";
+  /**
+   * @brief Field name constant indicating the createdb of the metadata.
+   */
   static constexpr const char* const ROLE_ROLCREATEDB = "createdb";
+  /**
+   * @brief Field name constant indicating the canlogin of the metadata.
+   */
   static constexpr const char* const ROLE_ROLCANLOGIN = "canlogin";
+  /**
+   * @brief Field name constant indicating the replication of the metadata.
+   */
   static constexpr const char* const ROLE_ROLREPLICATION = "replication";
+  /**
+   * @brief Field name constant indicating the bypassrls of the metadata.
+   */
   static constexpr const char* const ROLE_ROLBYPASSRLS = "bypassrls";
+  /**
+   * @brief Field name constant indicating the connlimit of the metadata.
+   */
   static constexpr const char* const ROLE_ROLCONNLIMIT = "connlimit";
+  /**
+   * @brief Field name constant indicating the password of the metadata.
+   */
   static constexpr const char* const ROLE_ROLPASSWORD = "password";
+  /**
+   * @brief Field name constant indicating the validuntil of the metadata.
+   */
   static constexpr const char* const ROLE_ROLVALIDUNTIL = "validuntil";
 
   explicit Roles(std::string_view database)

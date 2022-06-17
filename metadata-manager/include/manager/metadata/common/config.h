@@ -24,45 +24,7 @@ class Config {
  public:
   static std::string get_connection_string();
   static std::string get_storage_dir_path();
-
- private:
-  /**
-   * @brief The name of an OS environment variable
-   * for a Connection Strings.
-   * A Connection Strings is set to this environment variable.
-   */
-  static constexpr const char* const TSURUGI_CONNECTION_STRING =
-      "TSURUGI_CONNECTION_STRING";
-
-  /**
-   * @brief Default Connection Strings.
-   * By default, several libpq functions parse
-   * this default connection strings
-   * to obtain connection parameters.
-   */
-  static constexpr const char* const DEFAULT_CONNECTION_STRING =
-      "dbname=tsurugi";
-
-  /**
-   * @brief The name of the OS environment variable for the directory that
-   * stores the metadata. Directory that stores the metadata is set to this
-   * environment variable.
-   */
-  static constexpr const char* const TSURUGI_METADATA_DIR =
-      "TSURUGI_METADATA_DIR";
-
-  /**
-   * @brief The name of the OS environment variable in the user's home
-   * directory.
-   */
-  static constexpr const char* const HOME_DIR = "HOME";
-
-  /**
-   * @brief Default directory that stores the metadata.
-   * Metadata is stored under $HOME/[default directory].
-   */
-  static constexpr const char* const DEFAULT_TSURUGI_METADATA_DIR =
-      ".local/tsurugi/metadata";
+  static std::string get_jwt_secret_key();
 };  // class Config
 
 }  // namespace manager::metadata
