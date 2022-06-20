@@ -95,6 +95,33 @@ void ForeignTableHelper::drop_table(std::string_view table_name) {
 }
 
 /**
+ * @brief grant a table metadata for testing.
+ * @param (table_name)  [in]   table name.
+ * @param (role_name)   [in]   role name.
+ * @param (privileges)  [in]   privileges.
+ */
+void ForeignTableHelper::grant_table(std::string_view table_name,
+                                              std::string_view role_name,
+                                              std::string_view privileges) {
+  boost::format statement;
+  PGresult* res = nullptr;
+
+  // db connection.
+  db_connection();
+
+  // set dummy data for privileges.
+  if (!privileges.empty()) {
+    statement = boost::format("GRANT %s ON %s TO %s") % privileges %
+                table_name % role_name;
+  } else {
+    statement =
+        boost::format("REVOKE ALL ON %s TO %s") % table_name % role_name;
+  }
+  res = PQexec(connection.get(), statement.str().c_str());
+  PQclear(res);
+}
+
+/**
  * @brief insert a foreign table for testing.
  * @param (table_name)  [in]   table name.
  * @return table_id.

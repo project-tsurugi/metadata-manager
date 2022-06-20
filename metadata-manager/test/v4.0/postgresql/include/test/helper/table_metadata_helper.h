@@ -17,6 +17,7 @@
 #define MANAGER_METADATA_MANAGER_TEST_V4_0_POSTGRESQL_INCLUDE_TEST_HELPER_TABLE_METADATA_HELPER_H_
 
 #include <boost/property_tree/ptree.hpp>
+#include <map>
 #include <memory>
 #include <string_view>
 
@@ -46,6 +47,10 @@ class TableMetadataHelper {
 
   static void check_table_metadata_expected(
       const boost::property_tree::ptree& expected,
+      const boost::property_tree::ptree& actual);
+
+  static void check_table_acls_expected(
+      const std::map<std::string_view, std::string_view>& expected,
       const boost::property_tree::ptree& actual);
 
  private:

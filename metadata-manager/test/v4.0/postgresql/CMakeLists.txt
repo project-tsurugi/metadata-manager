@@ -11,6 +11,7 @@ set_compile_options(${PROJECT_NAME})
 target_include_directories(
     ${PROJECT_NAME}
     PRIVATE ${PG_INCLUDEDIR}
+    PRIVATE ${JWT-CPP_INCLUDE_DIR}
     PRIVATE ${PROJECT_SOURCE_DIR}/include/manager/metadata
     PRIVATE include
 )
@@ -21,6 +22,7 @@ target_link_libraries(${PROJECT_NAME}
   PRIVATE
     gtest_main
     metadata
+    crypto
     pq
 )
 
