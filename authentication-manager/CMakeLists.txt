@@ -14,10 +14,15 @@
 
 add_library(authentication-interface INTERFACE)
 
+if(AUTHENTICATE_PG)
+    message(STATUS "  Authenticate with PostgreSQL.")
+    target_compile_options(authentication-interface INTERFACE -DAUTHENTICATE_POSTGRESQL)
+endif(AUTHENTICATE_PG)
+
 target_include_directories(authentication-interface
-  INTERFACE
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/manager>
+    INTERFACE
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/manager>
 )
 
 install_custom(authentication-interface ${export_name})

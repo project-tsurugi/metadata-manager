@@ -10,13 +10,13 @@ set_compile_options(${PROJECT_NAME})
 
 target_include_directories(
     ${PROJECT_NAME}
-    PRIVATE ${PG_INCLUDEDIR}
+    PRIVATE ${PG_INCLUDE_DIR}
     PRIVATE ${JWT-CPP_INCLUDE_DIR}
     PRIVATE ${PROJECT_SOURCE_DIR}/include/manager/metadata
     PRIVATE include
 )
 
-set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -L${PG_LIBDIR}")
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -L${PG_LIB_DIR}")
 
 target_link_libraries(${PROJECT_NAME}
   PRIVATE

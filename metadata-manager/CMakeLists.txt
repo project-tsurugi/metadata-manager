@@ -14,10 +14,18 @@
 
 add_library(metadata-interface INTERFACE)
 
+if(DATA_STORAGE_PG)
+    message(STATUS "  Metadata is stored in PostgreSQL.")
+    target_compile_options(metadata-interface INTERFACE -DSTORAGE_POSTGRESQL)
+elseif(DATA_STORAGE_JSON)
+    message(STATUS "  Metadata is stored in JSON-file.")
+    target_compile_options(metadata-interface INTERFACE -DSTORAGE_JSON)
+endif(DATA_STORAGE_PG)
+
 target_include_directories(metadata-interface
-  INTERFACE
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/manager>
+    INTERFACE
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/manager>
 )
 
 install_custom(metadata-interface ${export_name})

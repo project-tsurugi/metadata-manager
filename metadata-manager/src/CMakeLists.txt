@@ -27,7 +27,7 @@ add_library(${PROJECT_NAME}
 )
 
 target_include_directories(${PROJECT_NAME}
-    PRIVATE ${PG_INCLUDEDIR}
+    PRIVATE ${PG_INCLUDE_DIR}
     PRIVATE ${JWT-CPP_INCLUDE_DIR}
 )
 
@@ -38,7 +38,7 @@ set_target_properties(${PROJECT_NAME}
 )
 
 if (DATA_STORAGE_PG)
-    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -L${PG_LIBDIR}")
+    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -L${PG_LIB_DIR}")
     target_link_libraries(${PROJECT_NAME}
         PRIVATE pq
     )
