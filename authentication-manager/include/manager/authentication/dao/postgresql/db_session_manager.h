@@ -16,6 +16,10 @@
 #ifndef MANAGER_AUTHENTICATION_MANAGER_INCLUDE_MANAGER_AUTHENTICATION_DAO_POSTGRESQL_DB_SESSION_MANAGER_H_
 #define MANAGER_AUTHENTICATION_MANAGER_INCLUDE_MANAGER_AUTHENTICATION_DAO_POSTGRESQL_DB_SESSION_MANAGER_H_
 
+#include <optional>
+#include <string>
+#include <string_view>
+
 #include <boost/property_tree/ptree.hpp>
 
 #include "manager/authentication/error_code.h"
@@ -24,10 +28,12 @@ namespace manager::authentication::db::postgresql {
 
 class DBSessionManager {
  public:
-  static constexpr const char* const kConnectStringKey = "connection_strings";
-
   static manager::authentication::ErrorCode attempt_connection(
       const boost::property_tree::ptree& params);
+  static manager::authentication::ErrorCode attempt_connection(
+      std::string_view connection_string,
+      const std::optional<std::string> user_name,
+      const std::optional<std::string> password);
 };  // class DBSessionManager
 
 }  // namespace manager::authentication::db::postgresql

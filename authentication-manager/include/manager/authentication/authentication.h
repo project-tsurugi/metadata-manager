@@ -16,8 +16,11 @@
 #ifndef MANAGER_AUTHENTICATION_MANAGER_INCLUDE_MANAGER_AUTHENTICATION_AUTHENTICATION_H_
 #define MANAGER_AUTHENTICATION_MANAGER_INCLUDE_MANAGER_AUTHENTICATION_AUTHENTICATION_H_
 
-#include <boost/property_tree/ptree.hpp>
+#include <chrono>
+#include <string>
 #include <string_view>
+
+#include <boost/property_tree/ptree.hpp>
 
 #include "manager/authentication/error_code.h"
 
@@ -25,9 +28,22 @@ namespace manager::authentication {
 
 class Authentication {
  public:
-  static ErrorCode auth_user(const boost::property_tree::ptree& params);
-  static ErrorCode auth_user(std::string_view conninfo);
-};  // class Roles
+  static ErrorCode auth_user(
+      const boost::property_tree::ptree& connection_params);
+  static ErrorCode auth_user(std::string_view connection_string);
+
+  static ErrorCode auth_user(std::string_view user_name,
+                             std::string_view password, std::string* token);
+  static ErrorCode auth_user(std::string_view connection_string,
+                             std::string_view user_name,
+                             std::string_view password, std::string* token);
+
+  static ErrorCode refresh_token(std::string& token,
+                                 std::chrono::seconds extend_time);
+
+ private:
+  static std::string generate_token(std::string_view user_name);
+};  // class Authentication
 
 }  // namespace manager::authentication
 

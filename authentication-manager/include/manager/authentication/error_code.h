@@ -38,7 +38,17 @@ enum class ErrorCode {
   /**
    * @brief Unknown error.
    */
-  UNKNOWN
+  UNKNOWN,
+
+  /**
+   * @brief Invalid parameter input.
+   */
+  INVALID_PARAMETER,
+
+  /**
+   * @brief internal error.
+   */
+  INTERNAL_ERROR
 };  // enum ErrorCode
 
 }  // namespace manager::authentication

@@ -23,6 +23,7 @@ add_library(${PROJECT_NAME}
 target_include_directories(${PROJECT_NAME}
     PRIVATE ${PROJECT_SOURCE_DIR}/include/manager/authentication
     PRIVATE ${PG_INCLUDE_DIR}
+    PRIVATE ${JWT-CPP_INCLUDE_DIR}
 )
 
 set_target_properties(${PROJECT_NAME}

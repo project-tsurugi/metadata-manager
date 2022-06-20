@@ -16,6 +16,7 @@
 #include <gtest/gtest.h>
 
 #include <boost/format.hpp>
+#include <optional>
 #include <string>
 #include <string_view>
 
@@ -59,13 +60,11 @@ class DaoTestDbSessionManager : public ::testing::Test {
                                 pos->first % pos->second.data();
       conn_string = key_value.str();
     }
-    boost::property_tree::ptree local_params;
-    local_params.put(DBSessionManager::kConnectStringKey, conn_string);
-
     UTUtils::print("  test by connection string");
 
     // test connect by connection string.
-    result = DBSessionManager::attempt_connection(local_params);
+    result = DBSessionManager::attempt_connection(conn_string, std::nullopt,
+                                                  std::nullopt);
 
     EXPECT_EQ(expected, result);
   }
@@ -167,7 +166,8 @@ TEST_F(DaoTestDbSessionManager, connect_failures_dbname) {
                                   role_options.str());
 
   // test.
-  DaoTestDbSessionManager::test_connect(params, ErrorCode::AUTHENTICATION_FAILURE);
+  DaoTestDbSessionManager::test_connect(params,
+                                        ErrorCode::AUTHENTICATION_FAILURE);
 
   // remove dummy data for ROLE.
   RoleMetadataHelper::drop_role(params.get<std::string>("user"));
@@ -279,7 +279,7 @@ TEST_F(DaoTestDbSessionManager, connect_failures_password_not_set) {
 /**
  * @brief Test for patterns of connection failures on invalid password.
  */
-TEST_F(DaoTestDbSessionManager, connect_failures_password_) {
+TEST_F(DaoTestDbSessionManager, connect_failures_password_unset) {
   boost::property_tree::ptree params;
 
   // create test data for property tree.
