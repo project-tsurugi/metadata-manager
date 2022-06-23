@@ -43,6 +43,8 @@ bool AccessToken::is_valid() {
     return result;
   }
 
+  jwt::date now_time = std::chrono::system_clock::now();
+  jwt::date available_time;
   try {
     // Decode the access token.
     auto decoded_token = jwt::decode(access_token_);
@@ -58,9 +60,24 @@ bool AccessToken::is_valid() {
               Token::Leeway::kExpiration);
       // Verify the JWT token.
       verifier.verify(decoded_token);
+
+      // Extract the available date.
+      available_time =
+          decoded_token.get_payload_claim(Token::Payload::kExpirationAvailable)
+              .as_date();
+      result = true;
     }
   } catch (...) {
     result = false;
+  }
+
+  if (result) {
+    // Extract the available dates and allow for leeway.
+    available_time += std::chrono::seconds(
+        static_cast<std::int64_t>(Token::Leeway::kExpirationAvailable));
+
+    // Check if it is within the use expiration date.
+    result = (available_time >= now_time);
   }
 
   return result;
