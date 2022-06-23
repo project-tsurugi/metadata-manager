@@ -25,136 +25,125 @@
 #include "test/helper/role_metadata_helper.h"
 #include "test/utility/ut_utils.h"
 
-namespace {
-
-namespace role_1 {
-
-constexpr const char* const name = "tsurugi_dao_ut_role_user_1";
-constexpr const char* const password = "1234";
-
-}  // namespace role_1
-
-namespace role_2 {
-
-constexpr const char* const name = "tsurugi_dao_ut_role_user_2";
-constexpr const char* const password = "1234";
-
-}  // namespace role_2
-
-namespace role_3 {
-
-constexpr const char* const name = "tsurugi_dao_ut_role_user_3";
-constexpr const char* const password = "1234";
-
-}  // namespace role_3
-
-}  // namespace
-
 namespace manager::authentication::testing {
 
 using boost::property_tree::ptree;
 using manager::authentication::db::postgresql::DBSessionManager;
 
-/**
- * @brief DaoTestDbSessionManager
- */
-class DaoTestDbSessionManager
-    : public ::testing::TestWithParam<
-          std::vector<std::tuple<const char*, const char*, const char*,
-                                 const char*, const char*, ErrorCode>>> {
- public:
-  void SetUp() override {
-    // create dummy data for ROLE.
-    boost::format role_options =
-        boost::format("LOGIN PASSWORD '%s'") % role_1::password;
-    RoleMetadataHelper::create_role(role_1::name, role_options.str());
+namespace role {
 
-    // Roles for which login is not allowed.
-    role_options = boost::format("NOLOGIN PASSWORD '%s'") % role_2::password;
-    RoleMetadataHelper::create_role(role_2::name, role_options.str());
+namespace standard {
 
-    // Roles for which passwords have not been set.
-    RoleMetadataHelper::create_role(role_3::name, "LOGIN");
-  }
+constexpr const char* const name = "tsurugi_dao_ut_role_user_1";
+constexpr const char* const pswd = "1234";
 
-  void TearDown() override {
-    // remove dummy data for ROLE.
-    RoleMetadataHelper::drop_role(role_1::name);
-    RoleMetadataHelper::drop_role(role_2::name);
-    RoleMetadataHelper::drop_role(role_3::name);
-  }
-};
+}  // namespace standard
+
+namespace nologin {
+
+constexpr const char* const name = "tsurugi_dao_ut_role_nologin_user";
+constexpr const char* const pswd = "1234";
+
+}  // namespace nologin
+
+namespace nopswd {
+
+constexpr const char* const name = "tsurugi_dao_ut_role_nopswd_user";
+constexpr const char* const pswd = "1234";
+
+}  // namespace nopswd
+
+}  // namespace role
+
+namespace pattern {
+
+using TestPattern =
+    std::vector<std::tuple<std::string, std::string, std::string, std::string,
+                           std::string, ErrorCode>>;
 
 /**
  * @brief Test pattern that succeeds authentication.
  */
-std::vector<std::tuple<const char*, const char*, const char*, const char*,
-                       const char*, ErrorCode>>
-    test_pattern_success = {std::make_tuple("localhost", "5432", "tsurugi",
-                                            role_1::name, role_1::password,
-                                            ErrorCode::OK)};
+static const TestPattern auth_success = {
+    std::make_tuple("localhost", "5432", "tsurugi", role::standard::name,
+                    role::standard::pswd, ErrorCode::OK)};
 
 /**
  * @brief Test pattern that fails authentication.
  */
-std::vector<std::tuple<const char*, const char*, const char*, const char*,
-                       const char*, ErrorCode>>
-    test_pattern_auth_failed = {
-        std::make_tuple("localhost", "5432", "tsurugi",
-                        "dao_ut_unknown_user_name", role_1::password,
-                        ErrorCode::AUTHENTICATION_FAILURE),
-        std::make_tuple("localhost", "5432", "tsurugi", role_1::name,
-                        "dao_ut_invalid_password",
-                        ErrorCode::AUTHENTICATION_FAILURE),
-        std::make_tuple("localhost", "5432", "tsurugi", role_2::name,
-                        role_2::password, ErrorCode::AUTHENTICATION_FAILURE),
-        std::make_tuple("localhost", "5432", "tsurugi", role_3::name,
-                        role_3::password, ErrorCode::AUTHENTICATION_FAILURE),
-        std::make_tuple("localhost", "5432", "dao_ut_invalid_db_name",
-                        role_1::name, role_1::password,
-                        ErrorCode::AUTHENTICATION_FAILURE)};
+static const TestPattern auth_failed = {
+    // invalid user_name
+    std::make_tuple("localhost", "5432", "tsurugi", "dao_ut_unknown_user_name",
+                    role::standard::pswd, ErrorCode::AUTHENTICATION_FAILURE),
+    // invalid password
+    std::make_tuple("localhost", "5432", "tsurugi", role::standard::name,
+                    "dao_ut_invalid_password",
+                    ErrorCode::AUTHENTICATION_FAILURE),
+    // login is not allowed
+    std::make_tuple("localhost", "5432", "tsurugi", role::nologin::name,
+                    role::nologin::pswd, ErrorCode::AUTHENTICATION_FAILURE),
+    // password not registered
+    std::make_tuple("localhost", "5432", "tsurugi", role::nopswd::name,
+                    role::nopswd::pswd, ErrorCode::AUTHENTICATION_FAILURE),
+    // invalid db_name
+    std::make_tuple("localhost", "5432", "dao_ut_invalid_db_name",
+                    role::standard::name, role::standard::pswd,
+                    ErrorCode::AUTHENTICATION_FAILURE),
+};
 
 /**
  * @brief Test pattern that fails to connect to DB.
  */
-std::vector<std::tuple<const char*, const char*, const char*, const char*,
-                       const char*, ErrorCode>>
-    test_pattern_conn_failed = {
-        std::make_tuple("dao_ut_invalid_host", "5432", "tsurugi", role_1::name,
-                        role_1::password, ErrorCode::CONNECTION_FAILURE),
-        std::make_tuple("localhost", "9999", "tsurugi", role_1::name,
-                        role_1::password, ErrorCode::CONNECTION_FAILURE)};
+static const TestPattern conn_failed = {
+    // invalid host
+    std::make_tuple("dao_ut_invalid_host", "5432", "tsurugi",
+                    role::standard::name, role::standard::pswd,
+                    ErrorCode::CONNECTION_FAILURE),
+    // invalid port
+    std::make_tuple("localhost", "9999", "tsurugi", role::standard::name,
+                    role::standard::pswd, ErrorCode::CONNECTION_FAILURE),
+};
+
+}  // namespace pattern
 
 /**
- * @brief Test pattern for undefined parameters (null).
+ * @brief DaoTestDbSessionManager
  */
-std::vector<std::tuple<const char*, const char*, const char*, const char*,
-                       const char*, ErrorCode>>
-    test_pattern_param_error = {
-        std::make_tuple(nullptr, "5432", "tsurugi", role_1::name,
-                        role_1::password, ErrorCode::OK),
-        std::make_tuple("localhost", nullptr, "tsurugi", role_1::name,
-                        role_1::password, ErrorCode::OK),
-        std::make_tuple("localhost", "5432", nullptr, role_1::name,
-                        role_1::password, ErrorCode::AUTHENTICATION_FAILURE),
-        std::make_tuple("localhost", "5432", "tsurugi", nullptr,
-                        role_1::password, ErrorCode::AUTHENTICATION_FAILURE),
-        std::make_tuple("localhost", "5432", "tsurugi", role_1::name, nullptr,
-                        ErrorCode::AUTHENTICATION_FAILURE)};
+class DaoTestDbSessionManager
+    : public ::testing::TestWithParam<pattern::TestPattern> {
+ public:
+  void SetUp() override {
+    // create dummy data for ROLE.
+    boost::format role_options =
+        boost::format("LOGIN PASSWORD '%s'") % role::standard::pswd;
+    RoleMetadataHelper::create_role(role::standard::name, role_options.str());
 
+    // Roles for which login is not allowed.
+    role_options = boost::format("NOLOGIN PASSWORD '%s'") % role::nologin::pswd;
+    RoleMetadataHelper::create_role(role::nologin::name, role_options.str());
+
+    // Roles for which passwords have not been set.
+    RoleMetadataHelper::create_role(role::nopswd::name, "LOGIN");
+  }
+
+  void TearDown() override {
+    // remove dummy data for ROLE.
+    RoleMetadataHelper::drop_role(role::standard::name);
+    RoleMetadataHelper::drop_role(role::nologin::name);
+    RoleMetadataHelper::drop_role(role::nopswd::name);
+  }
+};
 INSTANTIATE_TEST_CASE_P(SucceedsAuthenticationTest, DaoTestDbSessionManager,
-                        ::testing::Values(test_pattern_success));
+                        ::testing::Values(pattern::auth_success));
 INSTANTIATE_TEST_CASE_P(FailsAuthenticationTest, DaoTestDbSessionManager,
-                        ::testing::Values(test_pattern_auth_failed));
+                        ::testing::Values(pattern::auth_failed));
 INSTANTIATE_TEST_CASE_P(FailsConnectionTest, DaoTestDbSessionManager,
-                        ::testing::Values(test_pattern_conn_failed));
-INSTANTIATE_TEST_CASE_P(UndefinedParameterTest, DaoTestDbSessionManager,
-                        ::testing::Values(test_pattern_param_error));
+                        ::testing::Values(pattern::conn_failed));
 
 /**
- * @brief Testing by pattern list.
+ * @brief Test of attempt_connection by property tree.
  */
-TEST_P(DaoTestDbSessionManager, attempt_connection_pattern) {
+TEST_P(DaoTestDbSessionManager, attempt_connection_ptree) {
   auto params = GetParam();
 
   for (auto param : params) {
@@ -168,11 +157,7 @@ TEST_P(DaoTestDbSessionManager, attempt_connection_pattern) {
     auto fmter_pattern =
         boost::format(
             "host=%1%, port=%2%, db_name=%3%, role=%4%, password=%5%") %
-        (host == nullptr ? "<null>" : host) %
-        (port == nullptr ? "<null>" : port) %
-        (db_name == nullptr ? "<null>" : db_name) %
-        (role_name == nullptr ? "<null>" : role_name) %
-        (password == nullptr ? "<null>" : password);
+        host % port % db_name % role_name % password;
     UTUtils::print(" Patterns of [", fmter_pattern.str(), "]");
 
     // test connect by property tree.
@@ -181,26 +166,40 @@ TEST_P(DaoTestDbSessionManager, attempt_connection_pattern) {
 
       // create test data for property tree.
       boost::property_tree::ptree params;
-      if (host != nullptr) {
-        params.put("host", host);
-      }
-      if (port != nullptr) {
-        params.put("port", port);
-      }
-      if (db_name != nullptr) {
-        params.put("dbname", db_name);
-      }
-      if (role_name != nullptr) {
-        params.put("user", role_name);
-      }
-      if (password != nullptr) {
-        params.put("password", password);
-      }
+      params.put("host", host);
+      params.put("port", port);
+      params.put("dbname", db_name);
+      params.put("user", role_name);
+      params.put("password", password);
       params.put("connect_timeout", "1");
 
+      // Calls the function under test.
       ErrorCode actual = DBSessionManager::attempt_connection(params);
+      // Verify test results.
       EXPECT_EQ(expected, actual);
     }
+  }
+}
+
+/**
+ * @brief Test of attempt_connection by connection strings (URI pattern).
+ */
+TEST_P(DaoTestDbSessionManager, attempt_connection_uri) {
+  auto params = GetParam();
+
+  for (auto param : params) {
+    auto host = std::get<0>(param);
+    auto port = std::get<1>(param);
+    auto db_name = std::get<2>(param);
+    auto role_name = std::get<3>(param);
+    auto password = std::get<4>(param);
+    auto expected = std::get<5>(param);
+
+    auto fmter_pattern =
+        boost::format(
+            "host=%1%, port=%2%, db_name=%3%, role=%4%, password=%5%") %
+        host % port % db_name % role_name % password;
+    UTUtils::print(" Patterns of [", fmter_pattern.str(), "]");
 
     // test connect by connection string (URI pattern).
     {
@@ -208,31 +207,57 @@ TEST_P(DaoTestDbSessionManager, attempt_connection_pattern) {
 
       // Create host information.
       std::string host_info = "";
-      if (host != nullptr) {
-        host_info += std::string(host);
-        if (port != nullptr) {
-          host_info += ":" + std::string(port);
+      if (!host.empty()) {
+        host_info += host;
+        if (!port.empty()) {
+          host_info += ":" + port;
         }
       }
       // Create authentication information.
       std::string auth_info = "";
-      if (role_name != nullptr) {
-        auth_info += std::string(role_name);
-        if (password != nullptr) {
-          auth_info += ":" + std::string(password);
+      if (!role_name.empty()) {
+        auth_info = role_name;
+        if (!password.empty()) {
+          auth_info += ":" + password;
         }
       }
 
       fmter_pattern =
           boost::format("postgresql://%1%%2%%3%%4%%5%?connect_timeout=1") %
           auth_info % (auth_info.empty() ? "" : "@") % host_info %
-          (db_name == nullptr ? "" : "/") % db_name;
+          (db_name.empty() ? "" : "/") % db_name;
 
       UTUtils::print("    ", fmter_pattern.str());
+
+      // Calls the function under test.
       ErrorCode actual = DBSessionManager::attempt_connection(
           fmter_pattern.str(), std::nullopt, std::nullopt);
+      // Verify test results.
       EXPECT_EQ(expected, actual);
     }
+  }
+}
+
+/**
+ * @brief Test of attempt_connection by connection strings and
+ *   user-name/password (URI pattern).
+ */
+TEST_P(DaoTestDbSessionManager, attempt_connection_uri_authinfo) {
+  auto params = GetParam();
+
+  for (auto param : params) {
+    auto host = std::get<0>(param);
+    auto port = std::get<1>(param);
+    auto db_name = std::get<2>(param);
+    auto role_name = std::get<3>(param);
+    auto password = std::get<4>(param);
+    auto expected = std::get<5>(param);
+
+    auto fmter_pattern =
+        boost::format(
+            "host=%1%, port=%2%, db_name=%3%, role=%4%, password=%5%") %
+        host % port % db_name % role_name % password;
+    UTUtils::print(" Patterns of [", fmter_pattern.str(), "]");
 
     // test connect by connection string and user-name/password (URI pattern).
     {
@@ -241,28 +266,52 @@ TEST_P(DaoTestDbSessionManager, attempt_connection_pattern) {
 
       // Create host information.
       std::string host_info = "";
-      if (host != nullptr) {
-        host_info += std::string(host);
-        if (port != nullptr) {
-          host_info += ":" + std::string(port);
+      if (!host.empty()) {
+        host_info += host;
+        if (!port.empty()) {
+          host_info += ":" + port;
         }
       }
 
       fmter_pattern =
           boost::format("postgresql://%1%%2%%3%?connect_timeout=1") %
-          host_info % (db_name == nullptr ? "" : "/") % db_name;
+          host_info % (db_name.empty() ? "" : "/") % db_name;
       std::optional<std::string> param_user =
-          (role_name != nullptr ? std::optional(role_name) : std::nullopt);
+          (!role_name.empty() ? std::optional(role_name) : std::nullopt);
       std::optional<std::string> param_pswd =
-          (password != nullptr ? std::optional(password) : std::nullopt);
+          (!password.empty() ? std::optional(password) : std::nullopt);
 
       UTUtils::print("    ", fmter_pattern.str(), ", ",
                      param_user.value_or("<nullopt>"), ", ",
                      param_pswd.value_or("<nullopt>"));
+      // Calls the function under test.
       ErrorCode actual = DBSessionManager::attempt_connection(
           fmter_pattern.str(), param_user, param_pswd);
+      // Verify test results.
       EXPECT_EQ(expected, actual);
     }
+  }
+}
+
+/**
+ * @brief Test of attempt_connection by connection strings (key/value pattern).
+ */
+TEST_P(DaoTestDbSessionManager, attempt_connection_key_value) {
+  auto params = GetParam();
+
+  for (auto param : params) {
+    auto host = std::get<0>(param);
+    auto port = std::get<1>(param);
+    auto db_name = std::get<2>(param);
+    auto role_name = std::get<3>(param);
+    auto password = std::get<4>(param);
+    auto expected = std::get<5>(param);
+
+    auto fmter_pattern =
+        boost::format(
+            "host=%1%, port=%2%, db_name=%3%, role=%4%, password=%5%") %
+        host % port % db_name % role_name % password;
+    UTUtils::print(" Patterns of [", fmter_pattern.str(), "]");
 
     // test connect by connection string (key/value pattern).
     {
@@ -270,17 +319,43 @@ TEST_P(DaoTestDbSessionManager, attempt_connection_pattern) {
 
       fmter_pattern =
           boost::format("%1% %2% %3% %4% %5% connect_timeout=1") %
-          (host != nullptr ? "host=" + std::string(host) : "") %
-          (port != nullptr ? "port=" + std::string(port) : "") %
-          (db_name != nullptr ? "dbname=" + std::string(db_name) : "") %
-          (role_name != nullptr ? "user=" + std::string(role_name) : "") %
-          (password != nullptr ? "password=" + std::string(password) : "");
+          (!host.empty() ? "host=" + std::string(host) : "") %
+          (!port.empty() ? "port=" + std::string(port) : "") %
+          (!db_name.empty() ? "dbname=" + std::string(db_name) : "") %
+          (!role_name.empty() ? "user=" + std::string(role_name) : "") %
+          (!password.empty() ? "password=" + std::string(password) : "");
 
       UTUtils::print("    ", fmter_pattern.str());
+
+      // Calls the function under test.
       ErrorCode actual = DBSessionManager::attempt_connection(
           fmter_pattern.str(), std::nullopt, std::nullopt);
+      // Verify test results.
       EXPECT_EQ(expected, actual);
     }
+  }
+}
+
+/**
+ * @brief Test of attempt_connection by connection strings and
+ *   user-name/password (key/value pattern).
+ */
+TEST_P(DaoTestDbSessionManager, attempt_connection_key_value_authinfo) {
+  auto params = GetParam();
+
+  for (auto param : params) {
+    auto host = std::get<0>(param);
+    auto port = std::get<1>(param);
+    auto db_name = std::get<2>(param);
+    auto role_name = std::get<3>(param);
+    auto password = std::get<4>(param);
+    auto expected = std::get<5>(param);
+
+    auto fmter_pattern =
+        boost::format(
+            "host=%1%, port=%2%, db_name=%3%, role=%4%, password=%5%") %
+        host % port % db_name % role_name % password;
+    UTUtils::print(" Patterns of [", fmter_pattern.str(), "]");
 
     // test connect by connection string and user-name/password
     // (key/value pattern).
@@ -289,19 +364,22 @@ TEST_P(DaoTestDbSessionManager, attempt_connection_pattern) {
           "  Test by connection string and user-name/password (key/value).");
       fmter_pattern =
           boost::format("%1% %2% %3% connect_timeout=1") %
-          (host != nullptr ? "host=" + std::string(host) : "") %
-          (port != nullptr ? "port=" + std::string(port) : "") %
-          (db_name != nullptr ? "dbname=" + std::string(db_name) : "");
+          (!host.empty() ? "host=" + std::string(host) : "") %
+          (!port.empty() ? "port=" + std::string(port) : "") %
+          (!db_name.empty() ? "dbname=" + std::string(db_name) : "");
       std::optional<std::string> param_user =
-          (role_name != nullptr ? std::optional(role_name) : std::nullopt);
+          (!role_name.empty() ? std::optional(role_name) : std::nullopt);
       std::optional<std::string> param_pswd =
-          (password != nullptr ? std::optional(password) : std::nullopt);
+          (!password.empty() ? std::optional(password) : std::nullopt);
 
       UTUtils::print("    ", fmter_pattern.str(), ", ",
                      param_user.value_or("<nullopt>"), ", ",
                      param_pswd.value_or("<nullopt>"));
+
+      // Calls the function under test.
       ErrorCode actual = DBSessionManager::attempt_connection(
           fmter_pattern.str(), param_user, param_pswd);
+      // Verify test results.
       EXPECT_EQ(expected, actual);
     }
   }
@@ -315,18 +393,24 @@ TEST_F(DaoTestDbSessionManager, attempt_connection_param_empty) {
 
   actual = DBSessionManager::attempt_connection("postgresql://", std::nullopt,
                                                 std::nullopt);
-  EXPECT_EQ(ErrorCode::AUTHENTICATION_FAILURE, actual);
+  EXPECT_EQ(ErrorCode::OK, actual);
 
+  // Calls the function under test.
   actual = DBSessionManager::attempt_connection(
       "postgresql://", std::optional(""), std::optional(""));
-  EXPECT_EQ(ErrorCode::AUTHENTICATION_FAILURE, actual);
+  // Verify test results.
+  EXPECT_EQ(ErrorCode::OK, actual);
 
+  // Calls the function under test.
   actual = DBSessionManager::attempt_connection("", std::nullopt, std::nullopt);
-  EXPECT_EQ(ErrorCode::AUTHENTICATION_FAILURE, actual);
+  // Verify test results.
+  EXPECT_EQ(ErrorCode::OK, actual);
 
+  // Calls the function under test.
   actual = DBSessionManager::attempt_connection("", std::optional(""),
                                                 std::optional(""));
-  EXPECT_EQ(ErrorCode::AUTHENTICATION_FAILURE, actual);
+  // Verify test results.
+  EXPECT_EQ(ErrorCode::OK, actual);
 }
 
 /**
@@ -340,15 +424,17 @@ TEST_F(DaoTestDbSessionManager, patterns_hostaddr) {
   params.put("hostaddr", "127.0.0.1");
   params.put("port", "5432");
   params.put("dbname", "tsurugi");
-  params.put("user", role_1::name);
-  params.put("password", role_1::password);
+  params.put("user", role::standard::name);
+  params.put("password", role::standard::pswd);
   params.put("connect_timeout", "1");
 
   // test connect by property tree.
   {
     UTUtils::print("  test by property tree");
 
+    // Calls the function under test.
     actual = DBSessionManager::attempt_connection(params);
+    // Verify test results.
     EXPECT_EQ(ErrorCode::OK, actual);
   }
 
@@ -363,9 +449,10 @@ TEST_F(DaoTestDbSessionManager, patterns_hostaddr) {
                                 pos->first % pos->second.data();
       conn_string = key_value.str();
     }
-    // test connect by connection string.
+    // Calls the function under test.
     actual = DBSessionManager::attempt_connection(conn_string, std::nullopt,
                                                   std::nullopt);
+    // Verify test results.
     EXPECT_EQ(ErrorCode::OK, actual);
   }
 }

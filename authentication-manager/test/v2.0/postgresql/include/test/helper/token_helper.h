@@ -13,23 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef MANAGER_AUTHENTICATION_MANAGER_TEST_V2_0_POSTGRESQL_INCLUDE_TEST_HELPER_ROLE_METADATA_HELPER_H_
-#define MANAGER_AUTHENTICATION_MANAGER_TEST_V2_0_POSTGRESQL_INCLUDE_TEST_HELPER_ROLE_METADATA_HELPER_H_
+#ifndef MANAGER_AUTHENTICATION_MANAGER_TEST_V2_0_POSTGRESQL_INCLUDE_TEST_HELPER_TOKEN_HELPER_H_
+#define MANAGER_AUTHENTICATION_MANAGER_TEST_V2_0_POSTGRESQL_INCLUDE_TEST_HELPER_TOKEN_HELPER_H_
 
+#include <string>
 #include <string_view>
 
 namespace manager::authentication::testing {
 
-class RoleMetadataHelper {
+class TokenHelper {
  public:
-  static std::int64_t create_role(std::string_view role_name,
-                                  std::string_view options);
-  static void drop_role(std::string_view role_name);
-
- private:
-  static void db_connection();
+  static std::string generate_token(std::string_view user_name,
+                                    std::int32_t expiration,
+                                    std::int32_t refresh,
+                                    std::int32_t available);
 };
 
 }  // namespace manager::authentication::testing
 
-#endif  // MANAGER_AUTHENTICATION_MANAGER_TEST_V2_0_POSTGRESQL_INCLUDE_TEST_HELPER_ROLE_METADATA_HELPER_H_
+#endif  // MANAGER_AUTHENTICATION_MANAGER_TEST_V2_0_POSTGRESQL_INCLUDE_TEST_HELPER_TOKEN_HELPER_H_
