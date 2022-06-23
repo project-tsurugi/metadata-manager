@@ -81,11 +81,10 @@ ErrorCode Authentication::auth_user(std::string_view user_name,
   error =
       db::AuthenticationProvider::auth_user(std::nullopt, user_name, password);
 
-  if (token != nullptr) {
+  if ((error == ErrorCode::OK) && (token != nullptr)) {
     // Generate and set an access token.
     *token = generate_token(user_name);
   }
-
   return error;
 }
 
@@ -113,7 +112,7 @@ ErrorCode Authentication::auth_user(std::string_view connection_string,
   error = db::AuthenticationProvider::auth_user(
       std::optional(connection_string.data()), user_name, password);
 
-  if (token != nullptr) {
+  if ((error == ErrorCode::OK) && (token != nullptr)) {
     // Generate and set an access token.
     *token = generate_token(user_name);
   }
@@ -232,6 +231,7 @@ ErrorCode Authentication::refresh_token(std::string& token_string,
   // Set of JWT token.
   token_string = std::string(signed_token.c_str());
 
+  error = ErrorCode::OK;
   return error;
 }
 
