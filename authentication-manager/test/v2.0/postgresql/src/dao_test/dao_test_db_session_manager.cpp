@@ -162,8 +162,6 @@ TEST_P(DaoTestDbSessionManager, attempt_connection_ptree) {
 
     // test connect by property tree.
     {
-      UTUtils::print("  Test by property tree.");
-
       // create test data for property tree.
       boost::property_tree::ptree params;
       params.put("host", host);
@@ -201,40 +199,35 @@ TEST_P(DaoTestDbSessionManager, attempt_connection_uri) {
         host % port % db_name % role_name % password;
     UTUtils::print(" Patterns of [", fmter_pattern.str(), "]");
 
-    // test connect by connection string (URI pattern).
-    {
-      UTUtils::print("  Test by connection string (URI).");
-
-      // Create host information.
-      std::string host_info = "";
-      if (!host.empty()) {
-        host_info += host;
-        if (!port.empty()) {
-          host_info += ":" + port;
-        }
+    // Create host information.
+    std::string host_info = "";
+    if (!host.empty()) {
+      host_info += host;
+      if (!port.empty()) {
+        host_info += ":" + port;
       }
-      // Create authentication information.
-      std::string auth_info = "";
-      if (!role_name.empty()) {
-        auth_info = role_name;
-        if (!password.empty()) {
-          auth_info += ":" + password;
-        }
-      }
-
-      fmter_pattern =
-          boost::format("postgresql://%1%%2%%3%%4%%5%?connect_timeout=1") %
-          auth_info % (auth_info.empty() ? "" : "@") % host_info %
-          (db_name.empty() ? "" : "/") % db_name;
-
-      UTUtils::print("    ", fmter_pattern.str());
-
-      // Calls the function under test.
-      ErrorCode actual = DBSessionManager::attempt_connection(
-          fmter_pattern.str(), std::nullopt, std::nullopt);
-      // Verify test results.
-      EXPECT_EQ(expected, actual);
     }
+    // Create authentication information.
+    std::string auth_info = "";
+    if (!role_name.empty()) {
+      auth_info = role_name;
+      if (!password.empty()) {
+        auth_info += ":" + password;
+      }
+    }
+
+    fmter_pattern =
+        boost::format("postgresql://%1%%2%%3%%4%%5%?connect_timeout=1") %
+        auth_info % (auth_info.empty() ? "" : "@") % host_info %
+        (db_name.empty() ? "" : "/") % db_name;
+
+    UTUtils::print("    ", fmter_pattern.str());
+
+    // Calls the function under test.
+    ErrorCode actual = DBSessionManager::attempt_connection(
+        fmter_pattern.str(), std::nullopt, std::nullopt);
+    // Verify test results.
+    EXPECT_EQ(expected, actual);
   }
 }
 
@@ -259,37 +252,31 @@ TEST_P(DaoTestDbSessionManager, attempt_connection_uri_authinfo) {
         host % port % db_name % role_name % password;
     UTUtils::print(" Patterns of [", fmter_pattern.str(), "]");
 
-    // test connect by connection string and user-name/password (URI pattern).
-    {
-      UTUtils::print(
-          "  Test by connection string and user-name/password (URI).");
-
-      // Create host information.
-      std::string host_info = "";
-      if (!host.empty()) {
-        host_info += host;
-        if (!port.empty()) {
-          host_info += ":" + port;
-        }
+    // Create host information.
+    std::string host_info = "";
+    if (!host.empty()) {
+      host_info += host;
+      if (!port.empty()) {
+        host_info += ":" + port;
       }
-
-      fmter_pattern =
-          boost::format("postgresql://%1%%2%%3%?connect_timeout=1") %
-          host_info % (db_name.empty() ? "" : "/") % db_name;
-      std::optional<std::string> param_user =
-          (!role_name.empty() ? std::optional(role_name) : std::nullopt);
-      std::optional<std::string> param_pswd =
-          (!password.empty() ? std::optional(password) : std::nullopt);
-
-      UTUtils::print("    ", fmter_pattern.str(), ", ",
-                     param_user.value_or("<nullopt>"), ", ",
-                     param_pswd.value_or("<nullopt>"));
-      // Calls the function under test.
-      ErrorCode actual = DBSessionManager::attempt_connection(
-          fmter_pattern.str(), param_user, param_pswd);
-      // Verify test results.
-      EXPECT_EQ(expected, actual);
     }
+
+    fmter_pattern =
+        boost::format("postgresql://%1%%2%%3%?connect_timeout=1") %
+        host_info % (db_name.empty() ? "" : "/") % db_name;
+    std::optional<std::string> param_user =
+        (!role_name.empty() ? std::optional(role_name) : std::nullopt);
+    std::optional<std::string> param_pswd =
+        (!password.empty() ? std::optional(password) : std::nullopt);
+
+    UTUtils::print("    ", fmter_pattern.str(), ", ",
+                    param_user.value_or("<nullopt>"), ", ",
+                    param_pswd.value_or("<nullopt>"));
+    // Calls the function under test.
+    ErrorCode actual = DBSessionManager::attempt_connection(
+        fmter_pattern.str(), param_user, param_pswd);
+    // Verify test results.
+    EXPECT_EQ(expected, actual);
   }
 }
 
@@ -313,26 +300,21 @@ TEST_P(DaoTestDbSessionManager, attempt_connection_key_value) {
         host % port % db_name % role_name % password;
     UTUtils::print(" Patterns of [", fmter_pattern.str(), "]");
 
-    // test connect by connection string (key/value pattern).
-    {
-      UTUtils::print("  Test by connection string (key/value).");
+    fmter_pattern =
+        boost::format("%1% %2% %3% %4% %5% connect_timeout=1") %
+        (!host.empty() ? "host=" + std::string(host) : "") %
+        (!port.empty() ? "port=" + std::string(port) : "") %
+        (!db_name.empty() ? "dbname=" + std::string(db_name) : "") %
+        (!role_name.empty() ? "user=" + std::string(role_name) : "") %
+        (!password.empty() ? "password=" + std::string(password) : "");
 
-      fmter_pattern =
-          boost::format("%1% %2% %3% %4% %5% connect_timeout=1") %
-          (!host.empty() ? "host=" + std::string(host) : "") %
-          (!port.empty() ? "port=" + std::string(port) : "") %
-          (!db_name.empty() ? "dbname=" + std::string(db_name) : "") %
-          (!role_name.empty() ? "user=" + std::string(role_name) : "") %
-          (!password.empty() ? "password=" + std::string(password) : "");
+    UTUtils::print("    ", fmter_pattern.str());
 
-      UTUtils::print("    ", fmter_pattern.str());
-
-      // Calls the function under test.
-      ErrorCode actual = DBSessionManager::attempt_connection(
-          fmter_pattern.str(), std::nullopt, std::nullopt);
-      // Verify test results.
-      EXPECT_EQ(expected, actual);
-    }
+    // Calls the function under test.
+    ErrorCode actual = DBSessionManager::attempt_connection(
+        fmter_pattern.str(), std::nullopt, std::nullopt);
+    // Verify test results.
+    EXPECT_EQ(expected, actual);
   }
 }
 
@@ -357,31 +339,25 @@ TEST_P(DaoTestDbSessionManager, attempt_connection_key_value_authinfo) {
         host % port % db_name % role_name % password;
     UTUtils::print(" Patterns of [", fmter_pattern.str(), "]");
 
-    // test connect by connection string and user-name/password
-    // (key/value pattern).
-    {
-      UTUtils::print(
-          "  Test by connection string and user-name/password (key/value).");
-      fmter_pattern =
-          boost::format("%1% %2% %3% connect_timeout=1") %
-          (!host.empty() ? "host=" + std::string(host) : "") %
-          (!port.empty() ? "port=" + std::string(port) : "") %
-          (!db_name.empty() ? "dbname=" + std::string(db_name) : "");
-      std::optional<std::string> param_user =
-          (!role_name.empty() ? std::optional(role_name) : std::nullopt);
-      std::optional<std::string> param_pswd =
-          (!password.empty() ? std::optional(password) : std::nullopt);
+    fmter_pattern =
+        boost::format("%1% %2% %3% connect_timeout=1") %
+        (!host.empty() ? "host=" + std::string(host) : "") %
+        (!port.empty() ? "port=" + std::string(port) : "") %
+        (!db_name.empty() ? "dbname=" + std::string(db_name) : "");
+    std::optional<std::string> param_user =
+        (!role_name.empty() ? std::optional(role_name) : std::nullopt);
+    std::optional<std::string> param_pswd =
+        (!password.empty() ? std::optional(password) : std::nullopt);
 
-      UTUtils::print("    ", fmter_pattern.str(), ", ",
-                     param_user.value_or("<nullopt>"), ", ",
-                     param_pswd.value_or("<nullopt>"));
+    UTUtils::print("    ", fmter_pattern.str(), ", ",
+                    param_user.value_or("<nullopt>"), ", ",
+                    param_pswd.value_or("<nullopt>"));
 
-      // Calls the function under test.
-      ErrorCode actual = DBSessionManager::attempt_connection(
-          fmter_pattern.str(), param_user, param_pswd);
-      // Verify test results.
-      EXPECT_EQ(expected, actual);
-    }
+    // Calls the function under test.
+    ErrorCode actual = DBSessionManager::attempt_connection(
+        fmter_pattern.str(), param_user, param_pswd);
+    // Verify test results.
+    EXPECT_EQ(expected, actual);
   }
 }
 
@@ -430,7 +406,7 @@ TEST_F(DaoTestDbSessionManager, patterns_hostaddr) {
 
   // test connect by property tree.
   {
-    UTUtils::print("  test by property tree");
+    UTUtils::print("  Test by property tree");
 
     // Calls the function under test.
     actual = DBSessionManager::attempt_connection(params);
@@ -440,7 +416,7 @@ TEST_F(DaoTestDbSessionManager, patterns_hostaddr) {
 
   // test connect by connection string.
   {
-    UTUtils::print("  test by connection string");
+    UTUtils::print("  Test by connection string");
 
     // create test data for connection string.
     std::string conn_string = "";
