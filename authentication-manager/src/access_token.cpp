@@ -28,7 +28,7 @@ namespace manager::authentication {
  * @brief Get an access token.
  * @return access token.
  */
-std::string AccessToken::show() { return access_token_; }
+std::string AccessToken::string() { return access_token_; }
 
 /**
  * @brief Check if the token is valid.

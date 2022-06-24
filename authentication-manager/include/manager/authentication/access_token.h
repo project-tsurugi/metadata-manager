@@ -31,7 +31,7 @@ class AccessToken {
   AccessToken(const AccessToken&) = delete;
   AccessToken& operator=(const AccessToken&) = delete;
 
-  std::string show();
+  std::string string();
 
   bool is_valid();
   bool is_available();

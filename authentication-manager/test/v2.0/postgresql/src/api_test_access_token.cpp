@@ -95,7 +95,7 @@ TEST_F(ApiTestAccessToken, access_token_base) {
   // Calls the function under test.
   AccessToken token(token_string);
   // Verify test results.
-  EXPECT_EQ(token.show(), token_string);
+  EXPECT_EQ(token.string(), token_string);
   EXPECT_EQ(Token::Header::kType, token.type());
   EXPECT_EQ(Config::get_jwt_issuer(), token.issuer());
   for (auto audience : token.audience()) {

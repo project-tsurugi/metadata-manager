@@ -25,7 +25,7 @@
       - [refreshTokenメソッド](#refreshtokenメソッド)
   - [トークン情報提供機能](#トークン情報提供機能)
     - [C++ I/F](#c-if-2)
-      - [showメソッド](#showメソッド)
+      - [stringメソッド](#stringメソッド)
       - [is_validメソッド](#is_validメソッド)
       - [is_availableメソッド](#is_availableメソッド)
       - [user_nameメソッド](#user_nameメソッド)
@@ -34,7 +34,7 @@
       - [refresh_expiration_timeメソッド](#refresh_expiration_timeメソッド)
       - [available_timeメソッド](#available_timeメソッド)
     - [Java I/F](#java-if-2)
-      - [showメソッド](#showメソッド-1)
+      - [stringメソッド](#stringメソッド-1)
       - [isValidメソッド](#isvalidメソッド)
       - [isAvailableメソッド](#isavailableメソッド)
       - [getUserNameメソッド](#getusernameメソッド)
@@ -526,7 +526,7 @@ public class Authentication {
 
 ### C++ I/F
 
-#### showメソッド
+#### stringメソッド
 
 **ライブラリ**　　：認証管理基盤ライブラリ(`libmanager-authentication.so`)  
 **ヘッダファイル**：`include/manager/authentication/access_token.h`  
@@ -537,7 +537,7 @@ public class Authentication {
 namespace manager::authentication {
   class AccessToken {
    public:
-    std::string show();
+    std::string string();
   }
 }
 ```
@@ -568,7 +568,7 @@ namespace manager::authentication {
   std::string token_string = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJhdXRoZW50aWNhdGlvbi1tYW5hZ2VyIiwiYXVkIjoibWV0YWRhdGEtbWFuYWdlciIsInN1YiI6IkF1dGhlbnRpY2F0aW9uVG9rZW4iLCJpYXQiOjE2NDkwNTA2MzEsImV4cCI6MTY0OTA1MDkzMSwidHN1cnVnaS9leHAvcmVmcmVzaCI6MTY0OTEzNzAzMSwidHN1cnVnaS9leHAvdXNlIjoxNjQ5NjU1NDMxLCJ0c3VydWdpL2F1dGgvbmFtZSI6InRzdXJ1Z2lfdXNlciJ9.YRtavvDPqJ3CaG1ZavXsB4eNi5vdvQkE5-1X2uMfOhk";
   AccessToken token(token_string);
  
-  std::cout << token.show() << std::endl;
+  std::cout << token.string() << std::endl;
   ```
 
   ```text
@@ -974,7 +974,7 @@ namespace manager::authentication {
 
 ### Java I/F
 
-#### showメソッド
+#### stringメソッド
 
 **ライブラリ**：認証管理基盤ライブラリ(`tsurugi-manager-authentication.jar`)  
 **パッケージ**：`com.github.project_tsurugi.manager.authentication`  
@@ -984,7 +984,7 @@ namespace manager::authentication {
 package com.github.project_tsurugi.manager.authentication;
 
 public class AccessToken {
-  public String show() {...}
+  public String string() {...}
 }
 ```
 
@@ -1010,7 +1010,7 @@ public class AccessToken {
   String tokenString = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJhdXRoZW50aWNhdGlvbi1tYW5hZ2VyIiwiYXVkIjoibWV0YWRhdGEtbWFuYWdlciIsInN1YiI6IkF1dGhlbnRpY2F0aW9uVG9rZW4iLCJpYXQiOjE2NDkwNTA2MzEsImV4cCI6MTY0OTA1MDkzMSwidHN1cnVnaS9leHAvcmVmcmVzaCI6MTY0OTEzNzAzMSwidHN1cnVnaS9leHAvdXNlIjoxNjQ5NjU1NDMxLCJ0c3VydWdpL2F1dGgvbmFtZSI6InRzdXJ1Z2lfdXNlciJ9.YRtavvDPqJ3CaG1ZavXsB4eNi5vdvQkE5-1X2uMfOhk";
   AccessToken accessToken = new AccessToken(tokenString);
 
-  System.out.println(accessToken.show());
+  System.out.println(accessToken.string());
   ```
 
   ```text
