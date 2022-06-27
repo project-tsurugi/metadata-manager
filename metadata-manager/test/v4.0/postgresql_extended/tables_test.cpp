@@ -20,7 +20,6 @@
 #include <string>
 #include <string_view>
 
-#include "manager/metadata/dao/common/config.h"
 #include "manager/metadata/dao/postgresql/common.h"
 #include "manager/metadata/tables.h"
 

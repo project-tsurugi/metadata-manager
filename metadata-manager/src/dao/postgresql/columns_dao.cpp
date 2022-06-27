@@ -25,9 +25,9 @@
 #include <utility>
 #include <vector>
 
-#include "manager/metadata/dao/common/message.h"
+#include "manager/metadata/common/message.h"
+#include "manager/metadata/common/utilitys.h"
 #include "manager/metadata/dao/common/statement_name.h"
-#include "manager/metadata/dao/common/utilitys.h"
 #include "manager/metadata/dao/postgresql/common.h"
 #include "manager/metadata/dao/postgresql/dbc_utils.h"
 

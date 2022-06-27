@@ -24,7 +24,7 @@
 #include <regex>
 #include <string>
 
-#include "manager/metadata/dao/common/message.h"
+#include "manager/metadata/common/message.h"
 #include "manager/metadata/dao/postgresql/common.h"
 
 // =============================================================================

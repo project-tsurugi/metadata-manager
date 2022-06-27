@@ -21,7 +21,7 @@
 #include <memory>
 #include <string>
 
-#include "manager/metadata/dao/common/config.h"
+#include "manager/metadata/common/config.h"
 #include "manager/metadata/dao/postgresql/dbc_utils.h"
 #include "manager/metadata/tables.h"
 #include "test/global_test_environment.h"

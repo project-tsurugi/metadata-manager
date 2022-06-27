@@ -19,7 +19,7 @@
 #include <boost/format.hpp>
 #include <boost/property_tree/ptree.hpp>
 
-#include "manager/metadata/dao/common/config.h"
+#include "manager/metadata/common/config.h"
 #include "manager/metadata/dao/json/object_id.h"
 #include "manager/metadata/error_code.h"
 #include "manager/metadata/metadata.h"
@@ -36,7 +36,6 @@ std::unique_ptr<manager::metadata::db::json::ObjectId> object_id = nullptr;
 namespace manager::metadata::db::json {
 
 using boost::property_tree::ptree;
-using manager::metadata::ErrorCode;
 
 /**
  * @brief Prepare to access the JSON file of table metadata.

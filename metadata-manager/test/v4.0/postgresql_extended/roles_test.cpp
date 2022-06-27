@@ -13,13 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#include <boost/foreach.hpp>
 #include <boost/format.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <iostream>
+#include <regex>
 #include <string>
 #include <string_view>
 
-#include "manager/metadata/dao/common/config.h"
+#include "manager/metadata/common/config.h"
 #include "manager/metadata/dao/postgresql/common.h"
 #include "manager/metadata/roles.h"
 #include "manager/metadata/tables.h"
@@ -154,6 +156,7 @@ std::string get_tree_string(const boost::property_tree::ptree& pt) {
 namespace helper {
 
 namespace db = manager::metadata::db;
+using manager::metadata::Config;
 
 /**
  * @brief Connect to the database.
@@ -161,8 +164,8 @@ namespace db = manager::metadata::db;
 void db_connection() {
   if (PQstatus(connection.get()) != CONNECTION_OK) {
     // db connection.
-    PGconn* pgconn = PQconnectdb(db::Config::get_connection_string().c_str());
-    manager::metadata::db::postgresql::ConnectionSPtr conn(
+    PGconn* pgconn = PQconnectdb(Config::get_connection_string().c_str());
+    db::postgresql::ConnectionSPtr conn(
         pgconn, [](PGconn* c) { ::PQfinish(c); });
     connection = conn;
   }
@@ -337,7 +340,7 @@ namespace test {
  * @biref Test for Roles class object.
  */
 void roles_test() {
-  ErrorCode error = ErrorCode::UNKNOWN;
+  ErrorCode result = ErrorCode::UNKNOWN;
 
   // create dummy data for ROLE.
   ObjectIdType role_id = helper::create_role(
@@ -345,8 +348,8 @@ void roles_test() {
       "NOINHERIT CREATEROLE CREATEDB REPLICATION CONNECTION LIMIT 10");
 
   auto roles = std::make_unique<Roles>(TEST_DB);
-  error = roles->init();
-  EXPECT_EQ(ErrorCode::OK, error);
+  result = roles->init();
+  EXPECT_EQ(ErrorCode::OK, result);
 
   ptree role_metadata;
   ptree expect_metadata;
@@ -365,8 +368,8 @@ void roles_test() {
   expect_metadata.put(Roles::ROLE_ROLVALIDUNTIL, "");       // empty
 
   // test getting by role id.
-  error = roles->get(role_id, role_metadata);
-  EXPECT_EQ(ErrorCode::OK, error);
+  result = roles->get(role_id, role_metadata);
+  EXPECT_EQ(ErrorCode::OK, result);
 
   std::cout << "-- get role metadata by role id --" << std::endl;
   std::cout << "  " << get_tree_string(role_metadata) << std::endl;
@@ -378,8 +381,8 @@ void roles_test() {
   role_metadata.clear();
 
   // test getting by role name.
-  error = roles->get(ROLE_NAME, role_metadata);
-  EXPECT_EQ(ErrorCode::OK, error);
+  result = roles->get(ROLE_NAME, role_metadata);
+  EXPECT_EQ(ErrorCode::OK, result);
 
   std::cout << "-- get role metadata by role name --" << std::endl;
   std::cout << "  " << get_tree_string(role_metadata) << std::endl;
@@ -395,26 +398,111 @@ void roles_test() {
  * @biref Retrieve and display the Roles metadata.
  * @param (role_name)  [in]  role name.
  */
-void get_metadata(std::string_view role_name) {
-  ErrorCode error = ErrorCode::UNKNOWN;
+void get_role_metadata(std::string_view role_name) {
+  ErrorCode result = ErrorCode::UNKNOWN;
 
   auto roles = std::make_unique<Roles>(TEST_DB);
-  error = roles->init();
-  if (error != ErrorCode::OK) {
+  result = roles->init();
+  if (result != ErrorCode::OK) {
     std::cout << "Failed to initialize the metadata management object."
               << std::endl
-              << "  error code: " << static_cast<int32_t>(error) << std::endl
+              << "  error code: " << static_cast<int32_t>(result) << std::endl
               << std::endl;
     return;
   }
 
   ptree role_metadata;
-  error = roles->get(role_name, role_metadata);
-  if (error == ErrorCode::OK) {
+  result = roles->get(role_name, role_metadata);
+  if (result == ErrorCode::OK) {
     std::cout << get_tree_string(role_metadata) << std::endl;
   } else {
-    std::cout << "Failed to get metadata." << std::endl
-              << "  error code: " << static_cast<int32_t>(error) << std::endl
+    std::cout << "Failed to get role metadata." << std::endl
+              << "  error code: " << static_cast<int32_t>(result) << std::endl
+              << std::endl;
+  }
+}
+
+/*
+ * @biref Retrieve and display the Tables metadata.
+ * @param (role_name)   [in]  role name.
+ * @param (table_name)  [in]  table name.
+ */
+void get_table_metadata(std::string_view role_name,
+                        std::string_view table_name) {
+  ErrorCode result = ErrorCode::UNKNOWN;
+
+  auto tables = std::make_unique<Tables>(TEST_DB);
+  result = tables->init();
+  if (result != ErrorCode::OK) {
+    std::cout << "ERR: Failed to initialize the metadata management object."
+              << std::endl
+              << "  error code: " << static_cast<int32_t>(result) << std::endl
+              << std::endl;
+    return;
+  }
+
+  ptree table_metadata;
+  result = tables->get(table_name, table_metadata);
+  if (result == ErrorCode::OK) {
+    auto acls = table_metadata.get_child_optional(Tables::ACL);
+    if (!acls) {
+      std::cout << "ERR: Failed to get table metadata." << std::endl
+                << "  There is no " << Tables::ACL << " in the metadata."
+                << std::endl
+                << std::endl;
+      return;
+    }
+
+    // Conversion of parameter value (\ -> \\).
+    std::string role_name_esc = std::regex_replace(
+        std::string(role_name), std::regex(R"(\\)"), R"(\\)");
+
+    std::string acl_value = "";
+    std::string permission = "";
+    BOOST_FOREACH (const ptree::value_type& node, acls.get()) {
+      std::string acl_data =
+          std::regex_replace(node.second.data(), std::regex(R"((^"|"$))"), "");
+
+      std::smatch results;
+      std::regex_match(
+          acl_data, results,
+          std::regex(R"((\\".+\\"|[^\\"]*)=([arwdDxt]+)/(\\".+\\"|.+))"));
+      if (results.empty()) {
+        std::cout << "ERR: ACL format is invalid. [" << acl_data << "]"
+                  << std::endl;
+        continue;
+      }
+      std::string acl_role_name = results[1].str();
+      std::string acl_permission = results[2].str();
+
+      // Conversion of record value (\\ -> \).
+      acl_role_name =
+          std::regex_replace(acl_role_name, std::regex(R"(\\\\)"), R"(\)");
+      // Conversion of record value (\" or \"\" -> ").
+      acl_role_name = std::regex_replace(acl_role_name,
+                                         std::regex(R"((\\"){1,2})"), R"(")");
+      // Conversion of record value (^" or "$ -> ).
+      acl_role_name =
+          std::regex_replace(acl_role_name, std::regex(R"((^"|"$))"), "");
+
+      if ((acl_role_name.empty()) ||
+          (std::regex_match(acl_role_name, std::regex(role_name_esc)))) {
+        acl_value = acl_data;
+        permission = acl_permission;
+        break;
+      }
+    }
+
+    std::cout << "  Role name: " << role_name_esc << std::endl;
+    std::cout << "  Table name: " << table_name << std::endl;
+    std::cout << "  Permission: " << permission;
+    if (!acl_value.empty()) {
+      std::cout << " (" << acl_value << ")";
+    }
+    std::cout << std::endl;
+  } else {
+    std::cout << "ERR: Failed to get table metadata." << std::endl
+              << "  error code: " << static_cast<int32_t>(result) << std::endl
               << std::endl;
   }
 }
@@ -428,28 +516,28 @@ void get_metadata(std::string_view role_name) {
  */
 void confirm_permission_in_acls(std::string_view role_name,
                                 const char* permission) {
-  ErrorCode error = ErrorCode::UNKNOWN;
+  ErrorCode result = ErrorCode::UNKNOWN;
 
   auto tables = std::make_unique<Tables>(TEST_DB);
-  error = tables->init();
-  if (error != ErrorCode::OK) {
+  result = tables->init();
+  if (result != ErrorCode::OK) {
     std::cout << "Failed to initialize the metadata management object."
               << std::endl
-              << "  error code: " << static_cast<int32_t>(error) << std::endl
+              << "  error code: " << static_cast<int32_t>(result) << std::endl
               << std::endl;
     return;
   }
 
   bool check_result;
-  error =
+  result =
       tables->confirm_permission_in_acls(role_name, permission, check_result);
-  if (error == ErrorCode::OK) {
+  if (result == ErrorCode::OK) {
     std::cout << "  Role name: " << role_name << std::endl;
     std::cout << "  Permission: " << permission << std::endl;
     std::cout << "  Result: " << std::boolalpha << check_result << std::endl;
   } else {
     std::cout << "Failed to confirm permission." << std::endl
-              << "  error code: " << static_cast<int32_t>(error) << std::endl
+              << "  error code: " << static_cast<int32_t>(result) << std::endl
               << std::endl;
   }
 }
@@ -461,9 +549,13 @@ void confirm_permission_in_acls(std::string_view role_name,
  */
 int main(int argc, char* argv[]) {
   if (argc == 2) {
-    test::get_metadata(argv[1]);
+    test::get_role_metadata(argv[1]);
   } else if (argc == 3) {
-    test::confirm_permission_in_acls(argv[1], argv[2]);
+    if (std::regex_match(argv[2], std::regex("[arwdDxt]+"))) {
+      test::confirm_permission_in_acls(argv[1], argv[2]);
+    } else {
+      test::get_table_metadata(argv[1], argv[2]);
+    }
   } else {
     std::cout << "*** RolesMetadta test start. ***" << std::endl << std::endl;
 

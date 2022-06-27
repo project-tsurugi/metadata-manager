@@ -23,7 +23,7 @@
 #include <string>
 #include <string_view>
 
-#include "manager/metadata/dao/common/message.h"
+#include "manager/metadata/common/message.h"
 #include "manager/metadata/dao/common/pg_type.h"
 #include "manager/metadata/dao/common/statement_name.h"
 #include "manager/metadata/dao/postgresql/common.h"
@@ -34,6 +34,7 @@
 namespace {
 
 using manager::metadata::db::postgresql::SCHEMA_NAME;
+using manager::metadata::db::postgresql::SCHEMA_NAME_PUBLIC;
 std::unordered_map<std::string, std::string> statement_names_select;
 
 namespace statement {
@@ -62,7 +63,7 @@ std::string select_table_privilege() {
                                 "SELECT '%1%.' || fgt.table_name AS table_name"
                                 " FROM (%2%) fgt"
                                 " WHERE fgt.table_name IN (%3%)") %
-                            SCHEMA_NAME % sub_query_foreign.str() %
+                            SCHEMA_NAME_PUBLIC % sub_query_foreign.str() %
                             sub_query_tables.str();
 
   // SQL statement

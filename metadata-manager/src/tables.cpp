@@ -18,7 +18,12 @@
 #include <boost/foreach.hpp>
 #include <memory>
 
+#include "jwt-cpp/jwt.h"
+#include "manager/metadata/common/config.h"
+#include "manager/metadata/common/jwt_claims.h"
+#include "manager/metadata/helper/table_metadata_helper.h"
 #include "manager/metadata/provider/datatypes_provider.h"
+#include "manager/metadata/provider/roles_provider.h"
 #include "manager/metadata/provider/tables_provider.h"
 
 // =============================================================================
@@ -32,7 +37,7 @@ std::unique_ptr<manager::metadata::db::TablesProvider> provider = nullptr;
 namespace manager::metadata {
 
 using boost::property_tree::ptree;
-using manager::metadata::ErrorCode;
+using helper::TableMetadataHelper;
 
 /**
  * @brief Constructor
@@ -299,6 +304,100 @@ ErrorCode Tables::remove(std::string_view object_name,
   // Set a value if object_id is not null.
   if ((error == ErrorCode::OK) && (object_id != nullptr)) {
     *object_id = retval_object_id;
+  }
+
+  return error;
+}
+
+/**
+ * @brief Gets a list of table access information for authenticated users.
+ * @param (token) [in]  authentication token. See also AutheticationManager.
+ * @param (acls)  [out] table access information.
+ * @retval ErrorCode::OK if success.
+ * @retval ErrorCode::INVALID_PARAMETER if an invalid token is specified.
+ * @retval ErrorCode::NAME_NOT_FOUND if the role name does not exist.
+ * @retval ErrorCode::DATABASE_ACCESS_FAILURE if there is an access error to the
+ * database.
+ * @retval otherwise an error code.
+ * @see AutheticationManager
+ */
+ErrorCode Tables::get_acls(std::string_view token,
+                           boost::property_tree::ptree& acls) const {
+  ErrorCode error = ErrorCode::UNKNOWN;
+
+  // Parameter value check.
+  if (token.empty()) {
+    error = ErrorCode::INVALID_PARAMETER;
+    return error;
+  }
+
+  // Decode tokens.
+  auto decoded_token = jwt::decode(std::string(token));
+  // Cryptographic algorithms.
+  auto algorithm = jwt::algorithm::hs256{Config::get_jwt_secret_key()};
+  // Setting up data for verification.
+  auto verifier = jwt::verify()
+                      .allow_algorithm(algorithm)
+                      .issued_at_leeway(Token::Leeway::kIssued)
+                      .expires_at_leeway(Token::Leeway::kExpiration);
+
+  try {
+    // Verify the token.
+    verifier.verify(decoded_token);
+  } catch (jwt::error::token_verification_exception ex) {
+    error = ErrorCode::INVALID_PARAMETER;
+    return error;
+  } catch (...) {
+    error = ErrorCode::INVALID_PARAMETER;
+    return error;
+  }
+
+  // Get the user name from the token.
+  auto claim_user_name =
+      decoded_token.get_payload_claim(Token::Payload::kAuthUserName);
+  std::string user_name = claim_user_name.as_string();
+
+  // Check for the presence of role name.
+  {
+    auto provider_roles = std::make_unique<db::RolesProvider>();
+
+    // Initialize the provider.
+    error = provider_roles->init();
+    if (error != ErrorCode::OK) {
+      return error;
+    }
+
+    ptree role_metadata;
+    // Get the role metadata through the provider.
+    error = provider_roles->get_role_metadata(Roles::ROLE_ROLNAME, user_name,
+                                              role_metadata);
+    if (error != ErrorCode::OK) {
+      return error;
+    }
+  }
+
+  // Get table metadata by table name.
+  std::vector<ptree> container;
+  // Get the table metadata through the provider.
+  error = provider->get_table_metadata(container);
+
+  if (error == ErrorCode::OK) {
+    // Generate processing results.
+    ptree table_acls;
+    for (const auto& table_metadata : container) {
+      auto acl_list = table_metadata.get_child_optional(Tables::ACL);
+      if (acl_list) {
+        auto table_acl =
+            TableMetadataHelper::get_table_acl(user_name, acl_list.get());
+        if (!table_acl.empty()) {
+          table_acls.put(table_metadata.get<std::string>(Tables::NAME, ""),
+                         table_acl);
+        }
+      }
+    }
+    // Setting authorization information.
+    acls.clear();
+    acls.add_child(Tables::TABLE_ACL_NODE, table_acls);
   }
 
   return error;

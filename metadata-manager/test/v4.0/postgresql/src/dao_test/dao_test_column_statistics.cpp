@@ -19,7 +19,7 @@
 #include <memory>
 #include <string>
 
-#include "manager/metadata/dao/common/message.h"
+#include "manager/metadata/common/message.h"
 #include "manager/metadata/dao/postgresql/db_session_manager.h"
 #include "manager/metadata/dao/statistics_dao.h"
 #include "test/global_test_environment.h"
@@ -155,10 +155,10 @@ ErrorCode DaoTestColumnStatistics::add_one_column_statistic(
     try {
       json_parser::write_json(ss, column_statistic, false);
     } catch (boost::property_tree::json_parser_error& e) {
-      std::cerr << db::Message::WRITE_JSON_FAILURE << e.what() << std::endl;
+      std::cerr << Message::WRITE_JSON_FAILURE << e.what() << std::endl;
       return ErrorCode::INTERNAL_ERROR;
     } catch (...) {
-      std::cerr << db::Message::WRITE_JSON_FAILURE << std::endl;
+      std::cerr << Message::WRITE_JSON_FAILURE << std::endl;
       return ErrorCode::INTERNAL_ERROR;
     }
 

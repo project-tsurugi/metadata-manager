@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_DAO_COMMON_UTILITYS_H_
-#define MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_DAO_COMMON_UTILITYS_H_
+#ifndef MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_COMMON_UTILITYS_H_
+#define MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_COMMON_UTILITYS_H_
 
 #include <boost/property_tree/ptree.hpp>
 #include <string>
@@ -22,7 +22,7 @@
 
 #include "manager/metadata/error_code.h"
 
-namespace manager::metadata::db {
+namespace manager::metadata {
 
 class Utilitys {
  public:
@@ -40,6 +40,6 @@ class Utilitys {
   [[nodiscard]] static T convert_to_numeric(std::string_view str);
 };  // class Utilitys
 
-}  // namespace manager::metadata::db
+}  // namespace manager::metadata
 
-#endif  // MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_DAO_COMMON_UTILITYS_H_
+#endif  // MANAGER_METADATA_MANAGER_INCLUDE_MANAGER_METADATA_COMMON_UTILITYS_H_

@@ -25,8 +25,6 @@
 namespace manager::metadata::db::json {
 
 using boost::property_tree::ptree;
-using manager::metadata::ErrorCode;
-using manager::metadata::db::PgType;
 
 /**
  * @brief Defines all prepared data types metadata.

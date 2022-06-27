@@ -34,6 +34,7 @@ using ConnectionSPtr = std::shared_ptr<PGconn>;
 // Unique smart pointer for DB result. Just an alias for user convenience.
 using ResultUPtr = std::unique_ptr<PGresult, std::function<void(PGresult*)>>;
 
+static constexpr const char* const SCHEMA_NAME_PUBLIC = "public";
 static constexpr const char* const SCHEMA_NAME = "tsurugi_catalog";
 
 class PgErrorCode {

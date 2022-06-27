@@ -32,8 +32,18 @@ class DataTypes : public Metadata {
   // GENERATION is defined in base class.
   // ID is defined in base class.
   // NAME is defined in base class.
+
+  /**
+   * @brief Field name constant indicating the data type of the metadata.
+   */
   static constexpr const char* const PG_DATA_TYPE = "pg_dataType";
+  /**
+   * @brief Field name constant indicating the data type name of the metadata.
+   */
   static constexpr const char* const PG_DATA_TYPE_NAME = "pg_dataTypeName";
+  /**
+   * @brief Field name constant indicating the qualified name of the metadata.
+   */
   static constexpr const char* const PG_DATA_TYPE_QUALIFIED_NAME =
       "pg_dataTypeQualifiedName";
 

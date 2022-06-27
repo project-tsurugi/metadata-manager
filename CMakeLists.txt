@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.10)
 
 project(manager
         VERSION 0.0.1
@@ -31,6 +31,7 @@ option(ENABLE_COVERAGE "enable coverage on debug build" OFF)
 
 option(DATA_STORAGE "Specifies the data-storage where the metadata is stored. [postgresql] or json." POSTGRESQL)
 option(BUILD_TARGET "Specifies the target for the build. [ALL] or METADATA or AUTH." ALL)
+option(AUTHENTICATE "Specifies the method used for authentication. [postgresql]." POSTGRESQL)
 
 find_package(Doxygen)
 find_package(Boost COMPONENTS system filesystem REQUIRED)
@@ -39,6 +40,7 @@ include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
 include(CompileOptions)
 include(InstallOptions)
+include(DatabaseOptions)
 
 if (BUILD_TESTS)
   enable_testing()
@@ -74,19 +76,6 @@ install(
     EXPORT_LINK_INTERFACE_LIBRARIES
 )
 
-function(GET_PG_CONFIG var)
-  set(_temp)
-
-  if(NOT ${var})
-    execute_process(
-      COMMAND ${PG_CONFIG} ${ARGN}
-      OUTPUT_VARIABLE _temp
-      OUTPUT_STRIP_TRAILING_WHITESPACE)
-  endif()
-
-  set(${var} ${_temp} PARENT_SCOPE)
-endfunction()
-
 string(TOUPPER ${BUILD_TARGET} VARNAME)
 if((VARNAME STREQUAL "ALL") OR (NOT BUILD_TARGET))
   set(BUILD_TARGET_META TRUE)
@@ -103,60 +92,56 @@ else()
 endif()
 unset(BUILD_TARGET CACHE)
 
-string(TOUPPER ${DATA_STORAGE} VARNAME)
-if((VARNAME STREQUAL "POSTGRESQL") OR (NOT DATA_STORAGE))
-  set(DATA_STORAGE_PG TRUE)
-elseif(VARNAME STREQUAL "JSON")
-  set(DATA_STORAGE_JSON TRUE)
-else()
+if(BUILD_TARGET_AUTH)
+  string(TOUPPER ${AUTHENTICATE} VARNAME)
+  if((VARNAME STREQUAL "POSTGRESQL") OR (NOT AUTHENTICATE))
+    set(AUTHENTICATE_PG TRUE)
+    set(USE_DB_POSTGRESQL TRUE)
+  else()
+    unset(AUTHENTICATE_PG CACHE)
+    message(FATAL_ERROR "Unsupported authentication method. [${VARNAME}]")
+  endif()
+  unset(AUTHENTICATE CACHE)
+endif(BUILD_TARGET_AUTH)
+
+if(BUILD_TARGET_META)
+  string(TOUPPER ${DATA_STORAGE} VARNAME)
+  if((VARNAME STREQUAL "POSTGRESQL") OR (NOT DATA_STORAGE))
+    set(DATA_STORAGE_PG TRUE)
+    set(USE_DB_POSTGRESQL TRUE)
+  elseif(VARNAME STREQUAL "JSON")
+    set(DATA_STORAGE_JSON TRUE)
+  else()
+    unset(DATA_STORAGE CACHE)
+    message(FATAL_ERROR "Unsupported data storage. [${VARNAME}]")
+  endif()
   unset(DATA_STORAGE CACHE)
-  message(FATAL_ERROR "Unsupported data storage. [${VARNAME}]")
-endif()
-unset(DATA_STORAGE CACHE)
+endif(BUILD_TARGET_META)
 
-if(DATA_STORAGE_PG OR BUILD_TARGET_AUTH)
-  FIND_PROGRAM(PG_CONFIG pg_config)
-
-  if(PG_CONFIG)
-    set(PG_CONFIG_FOUND TRUE)
-  endif(PG_CONFIG)
-
-  if(PG_CONFIG_FOUND)
-    MESSAGE(STATUS "Found pg_config for PostgreSQL: ${PG_CONFIG}")
-    get_pg_config(PG_INCLUDEDIR --includedir)
-    get_pg_config(PG_LIBDIR --libdir)
-  else(NOT DEFINED PKG_CONFIG_FOUND)
-    MESSAGE(FATAL_ERROR "pg_config not found in path")
-    MESSAGE(FATAL_ERROR "cannot build")
-  endif(PG_CONFIG_FOUND)
-endif(DATA_STORAGE_PG OR BUILD_TARGET_AUTH)
+if(USE_DB_POSTGRESQL)
+  set_postgresql()
+endif(USE_DB_POSTGRESQL)
 
 add_custom_target(format
-    COMMAND           git ls-files '*.cpp' '*.h' | xargs clang-format -i --style=file -verbose
+    COMMAND
+      git ls-files '*.cpp' '*.h' | xargs clang-format -i --style=file -verbose
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
+set(SUBMODULE_DIR ${CMAKE_SOURCE_DIR}/third_party)
+set(JWT-CPP_INCLUDE_DIR ${SUBMODULE_DIR}/jwt-cpp/include)
+
 add_subdirectory(message-broker)
-add_subdirectory(third_party/googletest)
+add_subdirectory(${SUBMODULE_DIR}/googletest)
 
 if(BUILD_TARGET_META)
-  add_subdirectory(metadata-manager)
   message(STATUS "The target of the build is metadata-manager.")
-
-  if(DATA_STORAGE_PG)
-    target_compile_options(metadata PRIVATE -DSTORAGE_POSTGRESQL)
-    message(STATUS "  Metadata is stored in PostgreSQL.")
-  elseif(DATA_STORAGE_JSON)
-    target_compile_options(metadata PRIVATE -DSTORAGE_JSON)
-    message(STATUS "  Metadata is stored in JSON-file.")
-  endif(DATA_STORAGE_PG)
+  add_subdirectory(metadata-manager)
 endif(BUILD_TARGET_META)
 
 if(BUILD_TARGET_AUTH)
-  add_subdirectory(authentication-manager)
   message(STATUS "The target of the build is authentication-manager.")
-
-  target_compile_options(authentication PRIVATE -DSTORAGE_POSTGRESQL)
+  add_subdirectory(authentication-manager)
 endif(BUILD_TARGET_AUTH)
 
 if(BUILD_DOCUMENTS)

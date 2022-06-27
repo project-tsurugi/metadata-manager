@@ -15,16 +15,16 @@
  */
 #include "manager/authentication/provider/authentication_provider.h"
 
-#include <boost/foreach.hpp>
+#include "manager/authentication/common/config.h"
 
-#if defined(STORAGE_POSTGRESQL)
+#if defined(AUTHENTICATE_POSTGRESQL)
 #include "manager/authentication/dao/postgresql/db_session_manager.h"
 #endif
 
 // =============================================================================
 namespace manager::authentication::db {
 
-#if defined(STORAGE_POSTGRESQL)
+#if defined(AUTHENTICATE_POSTGRESQL)
 namespace storage = postgresql;
 #endif
 
@@ -34,18 +34,18 @@ using storage::DBSessionManager;
 /**
  * @brief Authentication is performed based on the connection information of the
  *   specified database.
- * @param (params)  [in]  connection parameters.
+ * @param (connection_params)  [in]  connection parameters.
  * @retval ErrorCode::OK if success.
  * @retval ErrorCode::AUTHENTICATION_FAILURE If the authentication failed.
  * @retval ErrorCode::CONNECTION_FAILURE If the connection to the
  *   database failed.
  */
 ErrorCode AuthenticationProvider::auth_user(
-    const boost::property_tree::ptree& params) {
+    const boost::property_tree::ptree& connection_params) {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   // Attempt to connect via the Session Manager.
-  error = DBSessionManager::attempt_connection(params);
+  error = DBSessionManager::attempt_connection(connection_params);
 
   return error;
 }
@@ -53,22 +53,47 @@ ErrorCode AuthenticationProvider::auth_user(
 /**
  * @brief Authentication is performed based on the connection string of the
  *   specified database.
- * @param (conninfo)  [in]  connection string.
+ * @param (connection_string)  [in]  connection string.
  * @retval ErrorCode::OK if success.
  * @retval ErrorCode::AUTHENTICATION_FAILURE If the authentication failed.
  * @retval ErrorCode::CONNECTION_FAILURE If the connection to the
  *   database failed.
  */
-ErrorCode AuthenticationProvider::auth_user(std::string_view conninfo) {
+ErrorCode AuthenticationProvider::auth_user(
+    std::string_view connection_string) {
   ErrorCode error = ErrorCode::UNKNOWN;
 
-  boost::property_tree::ptree params;
+  // Attempt to connect via the Session Manager.
+  error = DBSessionManager::attempt_connection(connection_string, std::nullopt,
+                                               std::nullopt);
 
-  // Set the connection string.
-  params.put(DBSessionManager::kConnectStringKey, conninfo);
+  return error;
+}
+
+/**
+ * @brief Authentication is performed based on the specified user name and
+ *   password.
+ * @param (connection_string)  [in]  connection string.
+ * @param (user_name)          [in]  user name to authenticate.
+ * @param (password)           [in]  passward.
+ * @retval ErrorCode::OK if success.
+ * @retval ErrorCode::AUTHENTICATION_FAILURE If the authentication failed.
+ * @retval ErrorCode::CONNECTION_FAILURE If the connection to the
+ *   database failed.
+ */
+ErrorCode AuthenticationProvider::auth_user(
+    const std::optional<std::string> connection_string,
+    std::string_view user_name, std::string_view password) {
+  ErrorCode error = ErrorCode::UNKNOWN;
+
+  // Get the specified value or environment variable value.
+  std::string conninfo =
+      connection_string.value_or(Config::get_connection_string());
 
   // Attempt to connect via the Session Manager.
-  error = DBSessionManager::attempt_connection(params);
+  error = DBSessionManager::attempt_connection(conninfo,
+                                               std::optional(user_name.data()),
+                                               std::optional(password.data()));
 
   return error;
 }

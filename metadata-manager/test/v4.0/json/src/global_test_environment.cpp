@@ -17,7 +17,7 @@
 
 #include <boost/format.hpp>
 
-#include "manager/metadata/dao/common/config.h"
+#include "manager/metadata/common/config.h"
 #include "test/helper/table_metadata_helper.h"
 
 namespace manager::metadata::testing {
@@ -29,7 +29,7 @@ void GlobalTestEnvironment::SetUp() {
   // initialize json file.
   boost::format filename =
       boost::format("%s/%s.json") %
-      manager::metadata::db::Config::get_storage_dir_path() % "tables";
+      manager::metadata::Config::get_storage_dir_path() % "tables";
   std::remove(filename.str().c_str());
 }
 

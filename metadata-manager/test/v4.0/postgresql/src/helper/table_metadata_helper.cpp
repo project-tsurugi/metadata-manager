@@ -24,7 +24,7 @@
 #include <string>
 #include <vector>
 
-#include "manager/metadata/dao/common/config.h"
+#include "manager/metadata/common/config.h"
 #include "manager/metadata/dao/postgresql/tables_dao.h"
 #include "manager/metadata/datatypes.h"
 #include "test/global_test_environment.h"
@@ -43,7 +43,7 @@ using manager::metadata::db::postgresql::TablesDAO;
  * @return Current number of records.
  */
 std::int64_t TableMetadataHelper::get_record_count() {
-  PGconn* connection = PQconnectdb(db::Config::get_connection_string().c_str());
+  PGconn* connection = PQconnectdb(Config::get_connection_string().c_str());
 
   boost::format statement = boost::format("SELECT COUNT(*) FROM %s.%s") %
                             storage::SCHEMA_NAME % TablesDAO::kTableName;
@@ -365,6 +365,58 @@ void TableMetadataHelper::check_table_metadata_expected(
     ASSERT_TRUE(true);
   } else {
     ASSERT_TRUE(false);
+  }
+}
+
+/**
+ * @brief Verifies that the actual table metadata equals expected one.
+ * @param (expected)   [in]  expected table metadata.
+ * @param (actual)     [in]  actual table metadata.
+ * @return none.
+ */
+void TableMetadataHelper::check_table_acls_expected(
+    const std::map<std::string_view, std::string_view>& expected,
+    const boost::property_tree::ptree& actual) {
+  auto expected_check = expected;
+
+  auto o_acls_actual = actual.get_child_optional(Tables::TABLE_ACL_NODE);
+  if (o_acls_actual) {
+    std::vector<ptree> p_columns_expected;
+    std::vector<ptree> p_columns_actual;
+
+    BOOST_FOREACH (const ptree::value_type& node, o_acls_actual.value()) {
+      auto actual_table_name = node.first;
+      std::string actual_value = actual_table_name + "|" + node.second.data();
+
+      auto expected_item = expected.find(actual_table_name);
+      if (expected_item != expected.end()) {
+        std::string expected_value = std::string(expected_item->first) + "|" +
+                                     std::string(expected_item->second);
+        EXPECT_EQ(expected_value, actual_value);
+
+        expected_check.erase(actual_table_name);
+      }
+    }
+
+    for (auto& check : expected_check) {
+      auto table_name = check.first;
+      auto acl_value = check.second;
+
+      std::string actual_value = "";
+      std::string expected_value = "";
+      if (acl_value.empty()) {
+        // Normal due to no authority.
+        EXPECT_TRUE(true);
+      } else {
+        // Abnormal because the expected authorization cannot be obtained.
+        actual_value = "";
+        expected_value =
+            std::string(table_name) + "|" + std::string(acl_value);
+        EXPECT_EQ(expected_value, actual_value);
+      }
+    }
+  } else {
+    EXPECT_TRUE(false);
   }
 }
 

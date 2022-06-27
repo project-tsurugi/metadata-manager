@@ -11,13 +11,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -L${PG_LIBDIR}")
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -L${PG_LIB_DIR}")
 
 add_executable(roles_test roles_test.cpp)
 target_link_libraries(roles_test metadata pq)
 target_include_directories(
     roles_test
-    PRIVATE ${PG_INCLUDEDIR}
+    PRIVATE ${PG_INCLUDE_DIR}
     PRIVATE ${PROJECT_SOURCE_DIR}/include/manager/metadata
     PRIVATE include
 )
@@ -30,7 +30,7 @@ add_executable(tables_test tables_test.cpp)
 target_link_libraries(tables_test metadata pq)
 target_include_directories(
     tables_test
-    PRIVATE ${PG_INCLUDEDIR}
+    PRIVATE ${PG_INCLUDE_DIR}
     PRIVATE ${PROJECT_SOURCE_DIR}/include/manager/metadata
     PRIVATE include
 )

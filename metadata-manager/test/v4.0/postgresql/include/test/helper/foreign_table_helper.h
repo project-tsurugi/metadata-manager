@@ -29,6 +29,10 @@ class ForeignTableHelper {
                                    std::string_view privileges);
   static void drop_table(std::string_view table_name);
 
+  static void grant_table(std::string_view table_name,
+                                   std::string_view role_name,
+                                   std::string_view privileges);
+
   static ObjectIdType insert_foreign_table(std::string_view table_name);
   static void delete_foreign_table(ObjectIdType foreign_table_id);
 

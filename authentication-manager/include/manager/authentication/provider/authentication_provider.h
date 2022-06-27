@@ -16,6 +16,10 @@
 #ifndef MANAGER_AUTHENTICATION_MANAGER_INCLUDE_MANAGER_AUTHENTICATION_PROVIDER_AUTHENTICATION_PROVIDER_H_
 #define MANAGER_AUTHENTICATION_MANAGER_INCLUDE_MANAGER_AUTHENTICATION_PROVIDER_AUTHENTICATION_PROVIDER_H_
 
+#include <optional>
+#include <string>
+#include <string_view>
+
 #include <boost/property_tree/ptree.hpp>
 
 #include "manager/authentication/error_code.h"
@@ -27,7 +31,10 @@ class AuthenticationProvider {
   static manager::authentication::ErrorCode auth_user(
       const boost::property_tree::ptree& params);
   static manager::authentication::ErrorCode auth_user(
-      std::string_view conninfo);
+      std::string_view connection_string);
+  static manager::authentication::ErrorCode auth_user(
+      const std::optional<std::string> connection_string,
+      std::string_view user_name, std::string_view password);
 };  // class RolesProvider
 
 }  // namespace manager::authentication::db

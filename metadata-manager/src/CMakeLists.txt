@@ -27,8 +27,8 @@ add_library(${PROJECT_NAME}
 )
 
 target_include_directories(${PROJECT_NAME}
-    PRIVATE ${PROJECT_SOURCE_DIR}/include/manager/metadata
-    PRIVATE ${PG_INCLUDEDIR}
+    PRIVATE ${PG_INCLUDE_DIR}
+    PRIVATE ${JWT-CPP_INCLUDE_DIR}
 )
 
 set_target_properties(${PROJECT_NAME}
@@ -38,16 +38,18 @@ set_target_properties(${PROJECT_NAME}
 )
 
 if (DATA_STORAGE_PG)
-    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -L${PG_LIBDIR}")
+    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -L${PG_LIB_DIR}")
     target_link_libraries(${PROJECT_NAME}
         PRIVATE pq
     )
 endif (DATA_STORAGE_PG)
 
 target_link_libraries(${PROJECT_NAME}
-    PUBLIC ${PROJECT_NAME}-interface
-    ${Boost_FILESYSTEM_LIBRARY}
-    ${Boost_SYSTEM_LIBRARY}
+    PUBLIC
+        ${PROJECT_NAME}-interface
+        ${Boost_FILESYSTEM_LIBRARY}
+        ${Boost_SYSTEM_LIBRARY}
+    PRIVATE crypto
 )
 
 install_custom(${PROJECT_NAME} ${export_name})

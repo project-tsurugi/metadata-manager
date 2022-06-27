@@ -13,15 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "manager/metadata/dao/common/utilitys.h"
+#include "manager/metadata/common/utilitys.h"
 
 #include <boost/property_tree/json_parser.hpp>
 #include <iostream>
 
-#include "manager/metadata/dao/common/message.h"
+#include "manager/metadata/common/message.h"
 
 // =============================================================================
-namespace manager::metadata::db {
+namespace manager::metadata {
 
 namespace json_parser = boost::property_tree::json_parser;
 using boost::property_tree::json_parser_error;
@@ -152,4 +152,4 @@ std::int64_t Utilitys::convert_to_numeric<std::int64_t>(std::string_view str) {
   return std::stol(str.data());
 }
 
-}  // namespace manager::metadata::db
+}  // namespace manager::metadata

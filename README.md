@@ -18,7 +18,7 @@
 ```dockerfile
 FROM ubuntu:18.04
 
-RUN apt update -y && apt install -y git build-essential cmake ninja-build doxygen libboost-system-dev
+RUN apt update -y && apt install -y git build-essential cmake ninja-build doxygen libboost-system-dev libboost-filesystem-dev
 ```
 
 ## How to build
@@ -62,8 +62,9 @@ RUN apt update -y && apt install -y git build-essential cmake ninja-build doxyge
 available options:
 
 - `-DBUILD_DOCUMENTS=OFF` - never build documents by doxygen
-- `-DDATA_STORAGE=postgresql` - specifies the data-storage where the metadata is stored. "postgresql" or "json".
 - `-DBUILD_TARGET=ALL` - specifies the library to be built. "ALL" or "AUTH" or "METADATA".
+- `-DDATA_STORAGE=postgresql` - specifies the data-storage where the metadata is stored. "postgresql" or "json".
+- `-DAUTHENTICATE=postgresql` - specifies the database to be used for authentication. Currently only "postgresql".
 - for debugging only
   - `-DENABLE_SANITIZER=OFF` - disable sanitizers (requires `-DCMAKE_BUILD_TYPE=Debug`)
   - `-DENABLE_UB_SANITIZER=ON` - enable undefined behavior sanitizer (requires `-DENABLE_SANITIZER=ON`)
