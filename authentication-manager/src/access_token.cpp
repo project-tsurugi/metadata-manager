@@ -121,14 +121,20 @@ bool AccessToken::is_available() {
 
       // Extract the expiration date.
       exp_time = decoded_token.get_expires_at();
+
       // Extract the refresh expiration date.
       refresh_exp_time =
           decoded_token.get_payload_claim(Token::Payload::kExpirationRefresh)
               .as_date();
+
       // Extract the available date.
-      available_exp_time =
-          decoded_token.get_payload_claim(Token::Payload::kExpirationAvailable)
-              .as_date();
+      auto claimValue =
+          decoded_token.get_payload_claim(Token::Payload::kExpirationAvailable);
+      if (claimValue.as_int() != 0) {
+        available_exp_time = claimValue.as_date();
+      } else {
+        available_exp_time = now_time;
+      }
     }
   } catch (...) {
     // Illegal token.

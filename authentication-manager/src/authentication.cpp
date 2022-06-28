@@ -256,20 +256,27 @@ std::string Authentication::generate_token(std::string_view user_name) {
       now_time + std::chrono::seconds{Config::get_jwt_expiration_available()};
 
   // Setting up data for token.
-  auto jwt_builder =
-      jwt::create()
-          .set_type(Token::Header::kType)
-          .set_issuer(Config::get_jwt_issuer())
-          .set_audience(Config::get_jwt_audience())
-          .set_subject(Config::get_jwt_subject())
-          .set_issued_at(now_time)
-          .set_expires_at(exp_time)
-          .set_payload_claim(Token::Payload::kExpirationRefresh,
-                             jwt::claim(exp_ref_time))
-          .set_payload_claim(Token::Payload::kExpirationAvailable,
-                             jwt::claim(exp_use_time))
-          .set_payload_claim(Token::Payload::kAuthUserName,
-                             jwt::claim(std::string(user_name)));
+  auto jwt_builder = jwt::create()
+                         .set_type(Token::Header::kType)
+                         .set_issuer(Config::get_jwt_issuer())
+                         .set_audience(Config::get_jwt_audience())
+                         .set_subject(Config::get_jwt_subject())
+                         .set_issued_at(now_time)
+                         .set_expires_at(exp_time)
+                         .set_payload_claim(Token::Payload::kExpirationRefresh,
+                                            jwt::claim(exp_ref_time))
+                         .set_payload_claim(Token::Payload::kAuthUserName,
+                                            jwt::claim(std::string(user_name)));
+
+  // Setting up available date.
+  if (Config::get_jwt_expiration_available() != 0) {
+    jwt_builder.set_payload_claim(Token::Payload::kExpirationAvailable,
+                                  jwt::claim(exp_use_time));
+  } else {
+    jwt_builder.set_payload_claim(Token::Payload::kExpirationAvailable,
+                                  jwt::claim(0));
+  }
+
   // Sign the JWT token.
   auto signed_token = jwt_builder.sign(algorithm);
 
