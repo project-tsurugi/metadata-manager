@@ -51,34 +51,37 @@ bool AccessToken::is_valid() {
 
     // Validation of required claims.
     result = validate_required(decoded_token);
-    if (result) {
-      // Cryptographic algorithms.
-      auto algorithm = jwt::algorithm::hs256{Config::get_jwt_secret_key()};
-      // Setting up data for token.
-      auto verifier =
-          jwt::verify().allow_algorithm(algorithm).expires_at_leeway(
-              Token::Leeway::kExpiration);
-      // Verify the JWT token.
-      verifier.verify(decoded_token);
-
-      // Extract the available date.
-      available_time =
-          decoded_token.get_payload_claim(Token::Payload::kExpirationAvailable)
-              .as_date();
-      result = true;
+    if (!result) {
+      // Illegal token.
+      return result;
     }
+
+    // Cryptographic algorithms.
+    auto algorithm = jwt::algorithm::hs256{Config::get_jwt_secret_key()};
+    // Setting up data for token.
+    auto verifier = jwt::verify().allow_algorithm(algorithm).expires_at_leeway(
+        Token::Leeway::kExpiration);
+    // Verify the JWT token.
+    verifier.verify(decoded_token);
+
+    // Extract the available date.
+    available_time =
+        decoded_token.get_payload_claim(Token::Payload::kExpirationAvailable)
+            .as_date();
+    result = true;
   } catch (...) {
+    // Illegal token.
     result = false;
+
+    return result;
   }
 
-  if (result) {
-    // Extract the available dates and allow for leeway.
-    available_time += std::chrono::seconds(
-        static_cast<std::int64_t>(Token::Leeway::kExpirationAvailable));
+  // Extract the available dates and allow for leeway.
+  available_time += std::chrono::seconds(
+      static_cast<std::int64_t>(Token::Leeway::kExpirationAvailable));
 
-    // Check if it is within the use expiration date.
-    result = (available_time >= now_time);
-  }
+  // Check if it is within the use expiration date.
+  result = (available_time >= now_time);
 
   return result;
 }
@@ -107,58 +110,60 @@ bool AccessToken::is_available() {
 
     // Validation of required claims.
     result = validate_required(decoded_token);
-    if (result) {
-      // Cryptographic algorithms.
-      auto algorithm = jwt::algorithm::hs256{Config::get_jwt_secret_key()};
+    if (!result) {
+      // Illegal token.
+      return result;
+    }
 
-      // Setting up data for token.
-      auto verifier =
-          jwt::verify().allow_algorithm(algorithm).expires_at_leeway(
-              std::numeric_limits<int32_t>::max());
+    // Cryptographic algorithms.
+    auto algorithm = jwt::algorithm::hs256{Config::get_jwt_secret_key()};
 
-      // Verify the JWT token.
-      verifier.verify(decoded_token);
+    // Setting up data for token.
+    auto verifier = jwt::verify().allow_algorithm(algorithm).expires_at_leeway(
+        std::numeric_limits<int32_t>::max());
 
-      // Extract the expiration date.
-      exp_time = decoded_token.get_expires_at();
+    // Verify the JWT token.
+    verifier.verify(decoded_token);
 
-      // Extract the refresh expiration date.
-      refresh_exp_time =
-          decoded_token.get_payload_claim(Token::Payload::kExpirationRefresh)
-              .as_date();
+    // Extract the expiration date.
+    exp_time = decoded_token.get_expires_at();
 
-      // Extract the available date.
-      auto claimValue =
-          decoded_token.get_payload_claim(Token::Payload::kExpirationAvailable);
-      if (claimValue.as_int() != 0) {
-        available_exp_time = claimValue.as_date();
-      } else {
-        available_exp_time = now_time;
-      }
+    // Extract the refresh expiration date.
+    refresh_exp_time =
+        decoded_token.get_payload_claim(Token::Payload::kExpirationRefresh)
+            .as_date();
+
+    // Extract the available date.
+    auto claimValue =
+        decoded_token.get_payload_claim(Token::Payload::kExpirationAvailable);
+    if (claimValue.as_int() != 0) {
+      available_exp_time = claimValue.as_date();
+    } else {
+      available_exp_time = now_time;
     }
   } catch (...) {
     // Illegal token.
     result = false;
+
+    return result;
   }
 
-  if (result) {
-    // Extract the expiration date and add leeway.
-    exp_time += std::chrono::seconds(
-        static_cast<std::int64_t>(Token::Leeway::kExpiration));
-    // Extract the refresh expiration date and add leeway.
-    refresh_exp_time += std::chrono::seconds(
-        static_cast<std::int64_t>(Token::Leeway::kExpirationRefresh));
-    // Extract the available dates and allow for leeway.
-    available_exp_time += std::chrono::seconds(
-        static_cast<std::int64_t>(Token::Leeway::kExpirationAvailable));
+  // Extract the expiration date and add leeway.
+  exp_time += std::chrono::seconds(
+      static_cast<std::int64_t>(Token::Leeway::kExpiration));
+  // Extract the refresh expiration date and add leeway.
+  refresh_exp_time += std::chrono::seconds(
+      static_cast<std::int64_t>(Token::Leeway::kExpirationRefresh));
+  // Extract the available dates and allow for leeway.
+  available_exp_time += std::chrono::seconds(
+      static_cast<std::int64_t>(Token::Leeway::kExpirationAvailable));
 
-    // Check if it is within the use expiration date.
-    if (available_exp_time >= now_time) {
-      // Check if the expiration date or refresh period has expired.
-      result = (exp_time >= now_time) || (refresh_exp_time >= now_time);
-    } else {
-      result = false;
-    }
+  // Check if it is within the use expiration date.
+  if (available_exp_time >= now_time) {
+    // Check if the expiration date or refresh period has expired.
+    result = (exp_time >= now_time) || (refresh_exp_time >= now_time);
+  } else {
+    result = false;
   }
 
   return result;
