@@ -239,10 +239,7 @@ ErrorCode Authentication::refresh_token(std::string& token_string,
 /**
  * @brief Generate an access token.
  * @param (user_name)  [in]  user name.
- * @retval ErrorCode::OK if success.
- * @retval ErrorCode::AUTHENTICATION_FAILURE if the authentication failed.
- * @retval ErrorCode::CONNECTION_FAILURE if the connection to the
- *   database failed.
+ * @return generated access token.
  */
 std::string Authentication::generate_token(std::string_view user_name) {
   // Cryptographic algorithms.

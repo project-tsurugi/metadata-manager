@@ -65,7 +65,6 @@ class ApiTestAccessToken : public ::testing::Test {
     auto signed_token = jwt_builder.sign(algorithm);
     return signed_token.c_str();
   }
-
 };  // class ApiTestAccessToken
 
 /**
