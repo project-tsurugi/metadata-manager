@@ -26,22 +26,30 @@
   - [トークン情報提供機能](#トークン情報提供機能)
     - [C++ I/F](#c-if-2)
       - [stringメソッド](#stringメソッド)
-      - [is_validメソッド](#is_validメソッド)
-      - [is_availableメソッド](#is_availableメソッド)
+      - [typeメソッド](#typeメソッド)
+      - [issuerメソッド](#issuerメソッド)
+      - [audienceメソッド](#audienceメソッド)
+      - [subjectメソッド](#subjectメソッド)
       - [user_nameメソッド](#user_nameメソッド)
       - [issued_timeメソッド](#issued_timeメソッド)
       - [expiration_timeメソッド](#expiration_timeメソッド)
       - [refresh_expiration_timeメソッド](#refresh_expiration_timeメソッド)
       - [available_timeメソッド](#available_timeメソッド)
+      - [is_validメソッド](#is_validメソッド)
+      - [is_availableメソッド](#is_availableメソッド)
     - [Java I/F](#java-if-2)
       - [stringメソッド](#stringメソッド-1)
-      - [isValidメソッド](#isvalidメソッド)
-      - [isAvailableメソッド](#isavailableメソッド)
+      - [getTypeメソッド](#gettypeメソッド)
+      - [getIssuerメソッド](#getissuerメソッド)
+      - [getAudienceメソッド](#getaudienceメソッド)
+      - [getSubjectメソッド](#getsubjectメソッド)
       - [getUserNameメソッド](#getusernameメソッド)
       - [getIssuedTimeメソッド](#getissuedtimeメソッド)
       - [getExpirationTimeメソッド](#getexpirationtimeメソッド)
       - [getRefreshExpirationTimeメソッド](#getrefreshexpirationtimeメソッド)
       - [getAvailableTimeメソッド](#getavailabletimeメソッド)
+      - [isValidメソッド](#isvalidメソッド)
+      - [isAvailableメソッド](#isavailableメソッド)
   - [認可情報提供機能](#認可情報提供機能)
     - [C++ I/F](#c-if-3)
       - [get_aclsメソッド](#get_aclsメソッド)
@@ -271,9 +279,9 @@ package com.github.project_tsurugi.manager.authentication;
 
 public class Authentication {
   public static String authUser(final String userName, final String password)
-      throws AuthenticationException, DBAccessException { ... }
+      throws AuthenticationException, DbAccessException { ... }
   public static String authUser(final String connectionString, final String userName, final String password)
-      throws AuthenticationException, DBAccessException { ... }
+      throws AuthenticationException, DbAccessException { ... }
 }
 ```
 
@@ -283,7 +291,7 @@ public class Authentication {
   認証成功した場合はアクセストークンを発行する。
 
 - **引数**
-  - `connection_string`  
+  - `connectionString`  
     認証先データベースへの接続文字列。
   - `userName`  
     認証するユーザ名。
@@ -297,7 +305,7 @@ public class Authentication {
 - **例外**
   - `AuthenticationException`  
     指定された認証情報（ユーザ名もしくはパスワード）が無効である場合。
-  - `DBAccessException`  
+  - `DbAccessException`  
     データベースへの接続に失敗した場合。
   - `InternalException`  
     予期しない内部エラーが発生した場合。
@@ -307,7 +315,7 @@ public class Authentication {
   ```Java
   import com.github.project_tsurugi.manager.authentication.Authentication;
   import com.github.project_tsurugi.manager.exceptions.AuthenticationException;
-  import com.github.project_tsurugi.manager.exceptions.DBAccessException;
+  import com.github.project_tsurugi.manager.exceptions.DbAccessException;
   ```
 
   ```Java
@@ -323,7 +331,7 @@ public class Authentication {
   } catch (AuthenticationException e) {
     // 認証エラー
     System.out.println("認証エラー");
-  } catch (DBAccessException e) {
+  } catch (DbAccessException e) {
     // データベース接続エラー
     System.out.println("データベース接続エラー");
   }
@@ -343,7 +351,7 @@ public class Authentication {
   } catch (AuthenticationException e) {
     // 認証エラー
     System.out.println("認証エラー");
-  } catch (DBAccessException e) {
+  } catch (DbAccessException e) {
     // データベース接続エラー
     System.out.println("データベース接続エラー");
   }
@@ -575,7 +583,7 @@ namespace manager::authentication {
   eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJhdXRoZW50aWNhdGlvbi1tYW5hZ2VyIiwiYXVkIjoibWV0YWRhdGEtbWFuYWdlciIsInN1YiI6IkF1dGhlbnRpY2F0aW9uVG9rZW4iLCJpYXQiOjE2NDkwNTA2MzEsImV4cCI6MTY0OTA1MDkzMSwidHN1cnVnaS9leHAvcmVmcmVzaCI6MTY0OTEzNzAzMSwidHN1cnVnaS9leHAvdXNlIjoxNjQ5NjU1NDMxLCJ0c3VydWdpL2F1dGgvbmFtZSI6InRzdXJ1Z2lfdXNlciJ9.YRtavvDPqJ3CaG1ZavXsB4eNi5vdvQkE5-1X2uMfOhk
   ```
 
-#### is_validメソッド
+#### typeメソッド
 
 **ライブラリ**　　：認証管理基盤ライブラリ(`libmanager-authentication.so`)  
 **ヘッダファイル**：`include/manager/authentication/access_token.h`  
@@ -586,24 +594,20 @@ namespace manager::authentication {
 namespace manager::authentication {
   class AccessToken {
    public:
-    bool is_valid();
+    std::string type();
   }
 }
 ```
 
 - **概要**  
-  アクセストークンの有効性を検証する。  
-  検証内容は「[トークンの有効性検証](#トークンの有効性検証)」を参照。
+  トークンのタイプを返す。  
+  未初期化および不正なトークン（有効期限切れ等のデコード可能なトークンは除く）の場合は空文字を返す。
 
 - **引数**
   - なし
 
 - **戻り値**
-  - トークン状態
-    - `true`  
-      アクセストークンが有効である場合。
-    - `false`  
-      アクセストークンが無効である場合。
+  - トークンのタイプ
 
 - **例外**  
   なし
@@ -622,14 +626,21 @@ namespace manager::authentication {
   std::string token_string = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJhdXRoZW50aWNhdGlvbi1tYW5hZ2VyIiwiYXVkIjoibWV0YWRhdGEtbWFuYWdlciIsInN1YiI6IkF1dGhlbnRpY2F0aW9uVG9rZW4iLCJpYXQiOjE2NDkwNTA2MzEsImV4cCI6MTY0OTA1MDkzMSwidHN1cnVnaS9leHAvcmVmcmVzaCI6MTY0OTEzNzAzMSwidHN1cnVnaS9leHAvdXNlIjoxNjQ5NjU1NDMxLCJ0c3VydWdpL2F1dGgvbmFtZSI6InRzdXJ1Z2lfdXNlciJ9.YRtavvDPqJ3CaG1ZavXsB4eNi5vdvQkE5-1X2uMfOhk";
   AccessToken token(token_string);
 
-  std::cout << std::boolalpha << token.is_valid() << std::endl;
+  std::string type = token.type();
+  if (!type.empty()) {
+    // タイプの取得成功
+    std::cout << type << std::endl;
+  } else {
+    // タイプの取得エラー
+    std::cout << "不正なトークン（タイプ取得エラー）" << std::endl;
+  }
   ```
 
   ```text
-  true
+  JWT
   ```
 
-#### is_availableメソッド
+#### issuerメソッド
 
 **ライブラリ**　　：認証管理基盤ライブラリ(`libmanager-authentication.so`)  
 **ヘッダファイル**：`include/manager/authentication/access_token.h`  
@@ -640,24 +651,20 @@ namespace manager::authentication {
 namespace manager::authentication {
   class AccessToken {
    public:
-    bool is_available();
+    std::string issuer();
   }
 }
 ```
 
 - **概要**  
-  アクセストークンが使用可能か否かを検証する。  
-  検証内容は「[トークンの使用可否検証](#トークンの使用可否検証)」を参照。
+  トークンの発行者を返す。  
+  未初期化および不正なトークン（有効期限切れ等のデコード可能なトークンは除く）の場合は空文字を返す。
 
 - **引数**
   - なし
 
 - **戻り値**
-  - トークン状態
-    - `true`  
-      アクセストークンが使用可能である場合。
-    - `false`  
-      アクセストークンが使用不可である場合。
+  - トークンの発行者
 
 - **例外**  
   なし
@@ -676,11 +683,134 @@ namespace manager::authentication {
   std::string token_string = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJhdXRoZW50aWNhdGlvbi1tYW5hZ2VyIiwiYXVkIjoibWV0YWRhdGEtbWFuYWdlciIsInN1YiI6IkF1dGhlbnRpY2F0aW9uVG9rZW4iLCJpYXQiOjE2NDkwNTA2MzEsImV4cCI6MTY0OTA1MDkzMSwidHN1cnVnaS9leHAvcmVmcmVzaCI6MTY0OTEzNzAzMSwidHN1cnVnaS9leHAvdXNlIjoxNjQ5NjU1NDMxLCJ0c3VydWdpL2F1dGgvbmFtZSI6InRzdXJ1Z2lfdXNlciJ9.YRtavvDPqJ3CaG1ZavXsB4eNi5vdvQkE5-1X2uMfOhk";
   AccessToken token(token_string);
 
-  std::cout << std::boolalpha << token.is_available() << std::endl;
+  std::string issuer = token.issuer();
+  if (!issuer.empty()) {
+    // 発行者の取得成功
+    std::cout << issuer << std::endl;
+  } else {
+    // 発行者の取得エラー
+    std::cout << "不正なトークン（発行者取得エラー）" << std::endl;
+  }
   ```
 
   ```text
-  true
+  authentication-manager
+  ```
+
+#### audienceメソッド
+
+**ライブラリ**　　：認証管理基盤ライブラリ(`libmanager-authentication.so`)  
+**ヘッダファイル**：`include/manager/authentication/access_token.h`  
+**名前空間**　　　：`manager::authentication`  
+**クラス**　　　　：`AccessToken`  
+
+```cpp
+namespace manager::authentication {
+  class AccessToken {
+   public:
+    std::set<std::string> audience();
+  }
+}
+```
+
+- **概要**  
+  トークンの受信者を返す。  
+  未初期化および不正なトークン（有効期限切れ等のデコード可能なトークンは除く）の場合は空文字を返す。
+
+- **引数**
+  - なし
+
+- **戻り値**
+  - トークンの受信者
+
+- **例外**  
+  なし
+
+- **使用例**
+
+  ```cpp
+  #include <iostream>
+
+  #include "manager/authentication/access_token.h"
+
+  using manager::authentication::AccessToken;
+  ```
+
+  ```cpp
+  std::string token_string = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJhdXRoZW50aWNhdGlvbi1tYW5hZ2VyIiwiYXVkIjoibWV0YWRhdGEtbWFuYWdlciIsInN1YiI6IkF1dGhlbnRpY2F0aW9uVG9rZW4iLCJpYXQiOjE2NDkwNTA2MzEsImV4cCI6MTY0OTA1MDkzMSwidHN1cnVnaS9leHAvcmVmcmVzaCI6MTY0OTEzNzAzMSwidHN1cnVnaS9leHAvdXNlIjoxNjQ5NjU1NDMxLCJ0c3VydWdpL2F1dGgvbmFtZSI6InRzdXJ1Z2lfdXNlciJ9.YRtavvDPqJ3CaG1ZavXsB4eNi5vdvQkE5-1X2uMfOhk";
+  AccessToken token(token_string);
+
+  std::set<std::string> audiences = token.audience();
+  if (!audiences.empty()) {
+    // 受信者の取得成功
+    for (auto audience : audiences) {
+      std::cout << audience << std::endl;
+    }
+  } else {
+    // 受信者の取得エラー
+    std::cout << "不正なトークン（受信者取得エラー）" << std::endl;
+  }
+  ```
+
+  ```text
+  metadata-manager
+  ```
+
+#### subjectメソッド
+
+**ライブラリ**　　：認証管理基盤ライブラリ(`libmanager-authentication.so`)  
+**ヘッダファイル**：`include/manager/authentication/access_token.h`  
+**名前空間**　　　：`manager::authentication`  
+**クラス**　　　　：`AccessToken`  
+
+```cpp
+namespace manager::authentication {
+  class AccessToken {
+   public:
+    std::string subject();
+  }
+}
+```
+
+- **概要**  
+  トークンの主題（使用目的など）を返す。  
+  未初期化および不正なトークン（有効期限切れ等のデコード可能なトークンは除く）の場合は空文字を返す。
+
+- **引数**
+  - なし
+
+- **戻り値**
+  - トークンの主題
+
+- **例外**  
+  なし
+
+- **使用例**
+
+  ```cpp
+  #include <iostream>
+
+  #include "manager/authentication/access_token.h"
+
+  using manager::authentication::AccessToken;
+  ```
+
+  ```cpp
+  std::string token_string = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJhdXRoZW50aWNhdGlvbi1tYW5hZ2VyIiwiYXVkIjoibWV0YWRhdGEtbWFuYWdlciIsInN1YiI6IkF1dGhlbnRpY2F0aW9uVG9rZW4iLCJpYXQiOjE2NDkwNTA2MzEsImV4cCI6MTY0OTA1MDkzMSwidHN1cnVnaS9leHAvcmVmcmVzaCI6MTY0OTEzNzAzMSwidHN1cnVnaS9leHAvdXNlIjoxNjQ5NjU1NDMxLCJ0c3VydWdpL2F1dGgvbmFtZSI6InRzdXJ1Z2lfdXNlciJ9.YRtavvDPqJ3CaG1ZavXsB4eNi5vdvQkE5-1X2uMfOhk";
+  AccessToken token(token_string);
+
+  std::string subject = token.subject();
+  if (!subject.empty()) {
+    // 主題の取得成功
+    std::cout << subject << std::endl;
+  } else {
+    // 主題の取得エラー
+    std::cout << "不正なトークン（主題取得エラー）" << std::endl;
+  }
+  ```
+
+  ```text
+  AuthenticationToken
   ```
 
 #### user_nameメソッド
@@ -972,6 +1102,114 @@ namespace manager::authentication {
   2022/04/11 14:37:11
   ```
 
+#### is_validメソッド
+
+**ライブラリ**　　：認証管理基盤ライブラリ(`libmanager-authentication.so`)  
+**ヘッダファイル**：`include/manager/authentication/access_token.h`  
+**名前空間**　　　：`manager::authentication`  
+**クラス**　　　　：`AccessToken`  
+
+```cpp
+namespace manager::authentication {
+  class AccessToken {
+   public:
+    bool is_valid();
+  }
+}
+```
+
+- **概要**  
+  アクセストークンの有効性を検証する。  
+  検証内容は「[トークンの有効性検証](#トークンの有効性検証)」を参照。
+
+- **引数**
+  - なし
+
+- **戻り値**
+  - トークン状態
+    - `true`  
+      アクセストークンが有効である場合。
+    - `false`  
+      アクセストークンが無効である場合。
+
+- **例外**  
+  なし
+
+- **使用例**
+
+  ```cpp
+  #include <iostream>
+
+  #include "manager/authentication/access_token.h"
+
+  using manager::authentication::AccessToken;
+  ```
+
+  ```cpp
+  std::string token_string = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJhdXRoZW50aWNhdGlvbi1tYW5hZ2VyIiwiYXVkIjoibWV0YWRhdGEtbWFuYWdlciIsInN1YiI6IkF1dGhlbnRpY2F0aW9uVG9rZW4iLCJpYXQiOjE2NDkwNTA2MzEsImV4cCI6MTY0OTA1MDkzMSwidHN1cnVnaS9leHAvcmVmcmVzaCI6MTY0OTEzNzAzMSwidHN1cnVnaS9leHAvdXNlIjoxNjQ5NjU1NDMxLCJ0c3VydWdpL2F1dGgvbmFtZSI6InRzdXJ1Z2lfdXNlciJ9.YRtavvDPqJ3CaG1ZavXsB4eNi5vdvQkE5-1X2uMfOhk";
+  AccessToken token(token_string);
+
+  std::cout << std::boolalpha << token.is_valid() << std::endl;
+  ```
+
+  ```text
+  true
+  ```
+
+#### is_availableメソッド
+
+**ライブラリ**　　：認証管理基盤ライブラリ(`libmanager-authentication.so`)  
+**ヘッダファイル**：`include/manager/authentication/access_token.h`  
+**名前空間**　　　：`manager::authentication`  
+**クラス**　　　　：`AccessToken`  
+
+```cpp
+namespace manager::authentication {
+  class AccessToken {
+   public:
+    bool is_available();
+  }
+}
+```
+
+- **概要**  
+  アクセストークンが使用可能か否かを検証する。  
+  検証内容は「[トークンの使用可否検証](#トークンの使用可否検証)」を参照。
+
+- **引数**
+  - なし
+
+- **戻り値**
+  - トークン状態
+    - `true`  
+      アクセストークンが使用可能である場合。
+    - `false`  
+      アクセストークンが使用不可である場合。
+
+- **例外**  
+  なし
+
+- **使用例**
+
+  ```cpp
+  #include <iostream>
+
+  #include "manager/authentication/access_token.h"
+
+  using manager::authentication::AccessToken;
+  ```
+
+  ```cpp
+  std::string token_string = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJhdXRoZW50aWNhdGlvbi1tYW5hZ2VyIiwiYXVkIjoibWV0YWRhdGEtbWFuYWdlciIsInN1YiI6IkF1dGhlbnRpY2F0aW9uVG9rZW4iLCJpYXQiOjE2NDkwNTA2MzEsImV4cCI6MTY0OTA1MDkzMSwidHN1cnVnaS9leHAvcmVmcmVzaCI6MTY0OTEzNzAzMSwidHN1cnVnaS9leHAvdXNlIjoxNjQ5NjU1NDMxLCJ0c3VydWdpL2F1dGgvbmFtZSI6InRzdXJ1Z2lfdXNlciJ9.YRtavvDPqJ3CaG1ZavXsB4eNi5vdvQkE5-1X2uMfOhk";
+  AccessToken token(token_string);
+
+  std::cout << std::boolalpha << token.is_available() << std::endl;
+  ```
+
+  ```text
+  true
+  ```
+
 ### Java I/F
 
 #### stringメソッド
@@ -1017,7 +1255,7 @@ public class AccessToken {
   eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJhdXRoZW50aWNhdGlvbi1tYW5hZ2VyIiwiYXVkIjoibWV0YWRhdGEtbWFuYWdlciIsInN1YiI6IkF1dGhlbnRpY2F0aW9uVG9rZW4iLCJpYXQiOjE2NDkwNTA2MzEsImV4cCI6MTY0OTA1MDkzMSwidHN1cnVnaS9leHAvcmVmcmVzaCI6MTY0OTEzNzAzMSwidHN1cnVnaS9leHAvdXNlIjoxNjQ5NjU1NDMxLCJ0c3VydWdpL2F1dGgvbmFtZSI6InRzdXJ1Z2lfdXNlciJ9.YRtavvDPqJ3CaG1ZavXsB4eNi5vdvQkE5-1X2uMfOhk
   ```
 
-#### isValidメソッド
+#### getTypeメソッド
 
 **ライブラリ**：認証管理基盤ライブラリ(`tsurugi-manager-authentication.jar`)  
 **パッケージ**：`com.github.project_tsurugi.manager.authentication`  
@@ -1027,23 +1265,19 @@ public class AccessToken {
 package com.github.project_tsurugi.manager.authentication;
 
 public class AccessToken {
-  public boolean isValid() {...}
+  public String getType() {...}
 }
 ```
 
 - **概要**  
-  アクセストークンの有効性を検証する。  
-  検証内容は「[トークンの有効性検証](#トークンの有効性検証)」を参照。
+  トークンのタイプを返す。  
+  未初期化および不正なトークン（有効期限切れ等のデコード可能なトークンは除く）の場合は`null`を返す。
 
 - **引数**
   - なし
 
 - **戻り値**
-  - トークン状態
-    - `true`  
-      アクセストークンが有効である場合。  
-    - `false`  
-      アクセストークンが無効である場合。
+  - トークンのタイプ or `null`
 
 - **例外**  
   なし
@@ -1058,14 +1292,21 @@ public class AccessToken {
   String tokenString = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJhdXRoZW50aWNhdGlvbi1tYW5hZ2VyIiwiYXVkIjoibWV0YWRhdGEtbWFuYWdlciIsInN1YiI6IkF1dGhlbnRpY2F0aW9uVG9rZW4iLCJpYXQiOjE2NDkwNTA2MzEsImV4cCI6MTY0OTA1MDkzMSwidHN1cnVnaS9leHAvcmVmcmVzaCI6MTY0OTEzNzAzMSwidHN1cnVnaS9leHAvdXNlIjoxNjQ5NjU1NDMxLCJ0c3VydWdpL2F1dGgvbmFtZSI6InRzdXJ1Z2lfdXNlciJ9.YRtavvDPqJ3CaG1ZavXsB4eNi5vdvQkE5-1X2uMfOhk";
   AccessToken accessToken = new AccessToken(tokenString);
 
-  System.out.println(accessToken.isValid());
+  String type = accessToken.getType();
+  if (!type) {
+    // タイプの取得成功
+    System.out.println(type);
+  } else {
+    // タイプの取得エラー
+    System.out.println("不正なトークン（タイプ取得エラー）");
+  }
   ```
 
   ```text
-  true
+  JWT
   ```
 
-#### isAvailableメソッド
+#### getIssuerメソッド
 
 **ライブラリ**：認証管理基盤ライブラリ(`tsurugi-manager-authentication.jar`)  
 **パッケージ**：`com.github.project_tsurugi.manager.authentication`  
@@ -1075,23 +1316,19 @@ public class AccessToken {
 package com.github.project_tsurugi.manager.authentication;
 
 public class AccessToken {
-  public boolean isAvailable() {...}
+  public String getIssuer() {...}
 }
 ```
 
 - **概要**  
-  アクセストークンが使用可能か否かを検証する。  
-  検証内容は「[トークンの使用可否検証](#トークンの使用可否検証)」を参照。
+  トークンの発行者を返す。  
+  未初期化および不正なトークン（有効期限切れ等のデコード可能なトークンは除く）の場合は`null`を返す。
 
 - **引数**
   - なし
 
 - **戻り値**
-  - トークン状態
-    - `true`  
-      アクセストークンが使用可能である場合。
-    - `false`  
-      アクセストークンが使用不可である場合。
+  - トークンの発行者 or `null`
 
 - **例外**  
   なし
@@ -1106,11 +1343,122 @@ public class AccessToken {
   String tokenString = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJhdXRoZW50aWNhdGlvbi1tYW5hZ2VyIiwiYXVkIjoibWV0YWRhdGEtbWFuYWdlciIsInN1YiI6IkF1dGhlbnRpY2F0aW9uVG9rZW4iLCJpYXQiOjE2NDkwNTA2MzEsImV4cCI6MTY0OTA1MDkzMSwidHN1cnVnaS9leHAvcmVmcmVzaCI6MTY0OTEzNzAzMSwidHN1cnVnaS9leHAvdXNlIjoxNjQ5NjU1NDMxLCJ0c3VydWdpL2F1dGgvbmFtZSI6InRzdXJ1Z2lfdXNlciJ9.YRtavvDPqJ3CaG1ZavXsB4eNi5vdvQkE5-1X2uMfOhk";
   AccessToken accessToken = new AccessToken(tokenString);
 
-  System.out.println(accessToken.isAvailable());
+  String issuer = accessToken.getIssuer();
+  if (!issuer) {
+    // 発行者の取得成功
+    System.out.println(issuer);
+  } else {
+    // 発行者の取得エラー
+    System.out.println("不正なトークン（発行者取得エラー）");
+  }
   ```
 
   ```text
-  true
+  authentication-manager
+  ```
+
+#### getAudienceメソッド
+
+**ライブラリ**：認証管理基盤ライブラリ(`tsurugi-manager-authentication.jar`)  
+**パッケージ**：`com.github.project_tsurugi.manager.authentication`  
+**クラス**　　：`AccessToken`
+
+```java
+package com.github.project_tsurugi.manager.authentication;
+
+public class AccessToken {
+  public List<String> getAudience() {...}
+}
+```
+
+- **概要**  
+  トークンの受信者を返す。  
+  未初期化および不正なトークン（有効期限切れ等のデコード可能なトークンは除く）の場合は空のリストを返す。
+
+- **引数**
+  - なし
+
+- **戻り値**
+  - トークンの受信者 or 空のリスト
+
+- **例外**  
+  なし
+
+- **使用例**
+
+  ```Java
+  import com.github.project_tsurugi.manager.authentication.AccessToken;
+  ```
+
+  ```Java
+  String tokenString = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJhdXRoZW50aWNhdGlvbi1tYW5hZ2VyIiwiYXVkIjoibWV0YWRhdGEtbWFuYWdlciIsInN1YiI6IkF1dGhlbnRpY2F0aW9uVG9rZW4iLCJpYXQiOjE2NDkwNTA2MzEsImV4cCI6MTY0OTA1MDkzMSwidHN1cnVnaS9leHAvcmVmcmVzaCI6MTY0OTEzNzAzMSwidHN1cnVnaS9leHAvdXNlIjoxNjQ5NjU1NDMxLCJ0c3VydWdpL2F1dGgvbmFtZSI6InRzdXJ1Z2lfdXNlciJ9.YRtavvDPqJ3CaG1ZavXsB4eNi5vdvQkE5-1X2uMfOhk";
+  AccessToken accessToken = new AccessToken(tokenString);
+
+  List<String> audiences = accessToken.getAudience();
+  if (!audiences.isEmpty()) {
+    // 受信者の取得成功
+    audiences.forEach((value) -> {
+      System.out.println(value);
+    });
+  } else {
+    // 受信者の取得エラー
+    System.out.println("不正なトークン（受信者取得エラー）");
+  }
+  ```
+
+  ```text
+  metadata-manager
+  ```
+
+#### getSubjectメソッド
+
+**ライブラリ**：認証管理基盤ライブラリ(`tsurugi-manager-authentication.jar`)  
+**パッケージ**：`com.github.project_tsurugi.manager.authentication`  
+**クラス**　　：`AccessToken`
+
+```java
+package com.github.project_tsurugi.manager.authentication;
+
+public class AccessToken {
+  public String getSubject() {...}
+}
+```
+
+- **概要**  
+  トークンの主題（使用目的など）を返す。  
+  未初期化および不正なトークン（有効期限切れ等のデコード可能なトークンは除く）の場合は`null`を返す。
+
+- **引数**
+  - なし
+
+- **戻り値**
+  - トークンの主題 or `null`
+
+- **例外**  
+  なし
+
+- **使用例**
+
+  ```Java
+  import com.github.project_tsurugi.manager.authentication.AccessToken;
+  ```
+
+  ```Java
+  String tokenString = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJhdXRoZW50aWNhdGlvbi1tYW5hZ2VyIiwiYXVkIjoibWV0YWRhdGEtbWFuYWdlciIsInN1YiI6IkF1dGhlbnRpY2F0aW9uVG9rZW4iLCJpYXQiOjE2NDkwNTA2MzEsImV4cCI6MTY0OTA1MDkzMSwidHN1cnVnaS9leHAvcmVmcmVzaCI6MTY0OTEzNzAzMSwidHN1cnVnaS9leHAvdXNlIjoxNjQ5NjU1NDMxLCJ0c3VydWdpL2F1dGgvbmFtZSI6InRzdXJ1Z2lfdXNlciJ9.YRtavvDPqJ3CaG1ZavXsB4eNi5vdvQkE5-1X2uMfOhk";
+  AccessToken accessToken = new AccessToken(tokenString);
+
+  String subject = accessToken.getSubject();
+  if (!subject) {
+    // 主題の取得成功
+    System.out.println(subject);
+  } else {
+    // 主題の取得エラー
+    System.out.println("不正なトークン（主題取得エラー）");
+  }
+  ```
+
+  ```text
+  AuthenticationToken
   ```
 
 #### getUserNameメソッド
@@ -1397,6 +1745,102 @@ public class AccessToken {
   ```
 
 ---
+
+#### isValidメソッド
+
+**ライブラリ**：認証管理基盤ライブラリ(`tsurugi-manager-authentication.jar`)  
+**パッケージ**：`com.github.project_tsurugi.manager.authentication`  
+**クラス**　　：`AccessToken`
+
+```java
+package com.github.project_tsurugi.manager.authentication;
+
+public class AccessToken {
+  public boolean isValid() {...}
+}
+```
+
+- **概要**  
+  アクセストークンの有効性を検証する。  
+  検証内容は「[トークンの有効性検証](#トークンの有効性検証)」を参照。
+
+- **引数**
+  - なし
+
+- **戻り値**
+  - トークン状態
+    - `true`  
+      アクセストークンが有効である場合。  
+    - `false`  
+      アクセストークンが無効である場合。
+
+- **例外**  
+  なし
+
+- **使用例**
+
+  ```Java
+  import com.github.project_tsurugi.manager.authentication.AccessToken;
+  ```
+
+  ```Java
+  String tokenString = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJhdXRoZW50aWNhdGlvbi1tYW5hZ2VyIiwiYXVkIjoibWV0YWRhdGEtbWFuYWdlciIsInN1YiI6IkF1dGhlbnRpY2F0aW9uVG9rZW4iLCJpYXQiOjE2NDkwNTA2MzEsImV4cCI6MTY0OTA1MDkzMSwidHN1cnVnaS9leHAvcmVmcmVzaCI6MTY0OTEzNzAzMSwidHN1cnVnaS9leHAvdXNlIjoxNjQ5NjU1NDMxLCJ0c3VydWdpL2F1dGgvbmFtZSI6InRzdXJ1Z2lfdXNlciJ9.YRtavvDPqJ3CaG1ZavXsB4eNi5vdvQkE5-1X2uMfOhk";
+  AccessToken accessToken = new AccessToken(tokenString);
+
+  System.out.println(accessToken.isValid());
+  ```
+
+  ```text
+  true
+  ```
+
+#### isAvailableメソッド
+
+**ライブラリ**：認証管理基盤ライブラリ(`tsurugi-manager-authentication.jar`)  
+**パッケージ**：`com.github.project_tsurugi.manager.authentication`  
+**クラス**　　：`AccessToken`
+
+```java
+package com.github.project_tsurugi.manager.authentication;
+
+public class AccessToken {
+  public boolean isAvailable() {...}
+}
+```
+
+- **概要**  
+  アクセストークンが使用可能か否かを検証する。  
+  検証内容は「[トークンの使用可否検証](#トークンの使用可否検証)」を参照。
+
+- **引数**
+  - なし
+
+- **戻り値**
+  - トークン状態
+    - `true`  
+      アクセストークンが使用可能である場合。
+    - `false`  
+      アクセストークンが使用不可である場合。
+
+- **例外**  
+  なし
+
+- **使用例**
+
+  ```Java
+  import com.github.project_tsurugi.manager.authentication.AccessToken;
+  ```
+
+  ```Java
+  String tokenString = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJhdXRoZW50aWNhdGlvbi1tYW5hZ2VyIiwiYXVkIjoibWV0YWRhdGEtbWFuYWdlciIsInN1YiI6IkF1dGhlbnRpY2F0aW9uVG9rZW4iLCJpYXQiOjE2NDkwNTA2MzEsImV4cCI6MTY0OTA1MDkzMSwidHN1cnVnaS9leHAvcmVmcmVzaCI6MTY0OTEzNzAzMSwidHN1cnVnaS9leHAvdXNlIjoxNjQ5NjU1NDMxLCJ0c3VydWdpL2F1dGgvbmFtZSI6InRzdXJ1Z2lfdXNlciJ9.YRtavvDPqJ3CaG1ZavXsB4eNi5vdvQkE5-1X2uMfOhk";
+  AccessToken accessToken = new AccessToken(tokenString);
+
+  System.out.println(accessToken.isAvailable());
+  ```
+
+  ```text
+  true
+  ```
 
 ## 認可情報提供機能
 
