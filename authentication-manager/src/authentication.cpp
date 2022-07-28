@@ -63,10 +63,9 @@ ErrorCode Authentication::auth_user(std::string_view connection_string) {
  * @brief Authentication is performed based on the specified user name and
  *   password. If token is specified (not nullptr),
  *   the generated access token is set.
- * @param (user_name)  [in]  user name to authenticate.
- * @param (password)   [in]  passward.
- * @param (token)      [out] generated access token.
- *   nullptr is available.
+ * @param (user_name)    [in]  user name to authenticate.
+ * @param (password)     [in]  passward.
+ * @param (token_string) [out] generated access token. nullptr is available.
  * @retval ErrorCode::OK if success.
  * @retval ErrorCode::AUTHENTICATION_FAILURE if the authentication failed.
  * @retval ErrorCode::CONNECTION_FAILURE if the connection to the
@@ -74,16 +73,16 @@ ErrorCode Authentication::auth_user(std::string_view connection_string) {
  */
 ErrorCode Authentication::auth_user(std::string_view user_name,
                                     std::string_view password,
-                                    std::string* token) {
+                                    std::string* token_string) {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   // Authentication.
   error =
       db::AuthenticationProvider::auth_user(std::nullopt, user_name, password);
 
-  if ((error == ErrorCode::OK) && (token != nullptr)) {
+  if ((error == ErrorCode::OK) && (token_string != nullptr)) {
     // Generate and set an access token.
-    *token = generate_token(user_name);
+    *token_string = generate_token(user_name);
   }
   return error;
 }
@@ -92,11 +91,10 @@ ErrorCode Authentication::auth_user(std::string_view user_name,
  * @brief Authentication is performed based on the specified user name and
  *   password. If token is specified (not nullptr),
  *   the generated access token is set.
- * @param (connection_string)  [in]  connection string.
- * @param (user_name)          [in]  user name to authenticate.
- * @param (password)           [in]  passward.
- * @param (token)              [out] generated access token.
- *   nullptr is available.
+ * @param (connection_string) [in]  connection string.
+ * @param (user_name)         [in]  user name to authenticate.
+ * @param (password)          [in]  passward.
+ * @param (token_string)      [out] generated access token. nullptr is available.
  * @retval ErrorCode::OK if success.
  * @retval ErrorCode::AUTHENTICATION_FAILURE if the authentication failed.
  * @retval ErrorCode::CONNECTION_FAILURE if the connection to the
@@ -105,16 +103,16 @@ ErrorCode Authentication::auth_user(std::string_view user_name,
 ErrorCode Authentication::auth_user(std::string_view connection_string,
                                     std::string_view user_name,
                                     std::string_view password,
-                                    std::string* token) {
+                                    std::string* token_string) {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   // Authentication.
   error = db::AuthenticationProvider::auth_user(
       std::optional(connection_string.data()), user_name, password);
 
-  if ((error == ErrorCode::OK) && (token != nullptr)) {
+  if ((error == ErrorCode::OK) && (token_string != nullptr)) {
     // Generate and set an access token.
-    *token = generate_token(user_name);
+    *token_string = generate_token(user_name);
   }
 
   return error;
@@ -135,9 +133,11 @@ ErrorCode Authentication::refresh_token(std::string& token_string,
                                         std::chrono::seconds extend_time) {
   ErrorCode error = ErrorCode::UNKNOWN;
 
+  // Parses tokens.
+  AccessToken access_token(token_string);
+
   // Check if the token is available.
-  AccessToken token(token_string);
-  if (!token.is_available()) {
+  if (!access_token.is_available()) {
     error = ErrorCode::INVALID_PARAMETER;
     return error;
   }
@@ -148,7 +148,8 @@ ErrorCode Authentication::refresh_token(std::string& token_string,
   // the condition is different from is_available().
   {
     auto refresh_exp_time = std::chrono::system_clock::from_time_t(
-        token.refresh_expiration_time() + Token::Leeway::kExpirationRefresh);
+        access_token.refresh_expiration_time() +
+        Token::Leeway::kExpirationRefresh);
     if (now_time > refresh_exp_time) {
       // Time limit is over.
       error = ErrorCode::INVALID_PARAMETER;
@@ -160,38 +161,38 @@ ErrorCode Authentication::refresh_token(std::string& token_string,
   auto jwt_builder = jwt::create();
 
   // Copy the type header parameter of the current token.
-  jwt_builder.set_type(token.type());
+  jwt_builder.set_type(access_token.type());
 
   // Copy the issuer payload claim of the current token.
-  if (!token.issuer().empty()) {
-    jwt_builder.set_issuer(token.issuer());
+  if (!access_token.issuer().empty()) {
+    jwt_builder.set_issuer(access_token.issuer());
   }
 
   // Copy the audience payload claim of the current token.
-  if (!token.audience().empty()) {
-    for (auto audience : token.audience()) {
+  if (!access_token.audience().empty()) {
+    for (auto audience : access_token.audience()) {
       jwt_builder.set_audience(audience.c_str());
     }
   }
 
   // Copy the subject payload claim of the current token.
-  if (!token.subject().empty()) {
-    jwt_builder.set_subject(token.subject());
+  if (!access_token.subject().empty()) {
+    jwt_builder.set_subject(access_token.subject());
   }
 
   // Copy the issue date/time payload claim of the current token.
   jwt_builder.set_issued_at(
-      std::chrono::system_clock::from_time_t(token.issued_time()));
+      std::chrono::system_clock::from_time_t(access_token.issued_time()));
 
   // Copy the available date/time payload claim of the current token.
   std::chrono::time_point available_time =
-      std::chrono::system_clock::from_time_t(token.available_time());
+      std::chrono::system_clock::from_time_t(access_token.available_time());
   jwt_builder.set_payload_claim(Token::Payload::kExpirationAvailable,
                                 jwt::claim(available_time));
 
   // Copy the user name payload claim of the current token.
   jwt_builder.set_payload_claim(Token::Payload::kAuthUserName,
-                                jwt::claim(token.user_name()));
+                                jwt::claim(access_token.user_name()));
 
   // Extension of expiration date.
   {
@@ -199,7 +200,7 @@ ErrorCode Authentication::refresh_token(std::string& token_string,
 
     // Check the extended expiration limit.
     std::chrono::time_point expansion_time_limit =
-        std::chrono::system_clock::from_time_t(token.available_time());
+        std::chrono::system_clock::from_time_t(access_token.available_time());
     if (expires_time > expansion_time_limit) {
       // If the limit is exceeded, revise to the longest expiration date.
       expires_time = expansion_time_limit;
@@ -214,7 +215,7 @@ ErrorCode Authentication::refresh_token(std::string& token_string,
 
     // Check the extended expiration limit.
     std::chrono::time_point expansion_time_limit =
-        std::chrono::system_clock::from_time_t(token.available_time());
+        std::chrono::system_clock::from_time_t(access_token.available_time());
     if (expires_time > expansion_time_limit) {
       // If the limit is exceeded, revise to the longest expiration date.
       expires_time = expansion_time_limit;
@@ -238,10 +239,7 @@ ErrorCode Authentication::refresh_token(std::string& token_string,
 /**
  * @brief Generate an access token.
  * @param (user_name)  [in]  user name.
- * @retval ErrorCode::OK if success.
- * @retval ErrorCode::AUTHENTICATION_FAILURE if the authentication failed.
- * @retval ErrorCode::CONNECTION_FAILURE if the connection to the
- *   database failed.
+ * @return generated access token.
  */
 std::string Authentication::generate_token(std::string_view user_name) {
   // Cryptographic algorithms.
@@ -256,20 +254,27 @@ std::string Authentication::generate_token(std::string_view user_name) {
       now_time + std::chrono::seconds{Config::get_jwt_expiration_available()};
 
   // Setting up data for token.
-  auto jwt_builder =
-      jwt::create()
-          .set_type(Token::Header::kType)
-          .set_issuer(Config::get_jwt_issuer())
-          .set_audience(Config::get_jwt_audience())
-          .set_subject(Config::get_jwt_subject())
-          .set_issued_at(now_time)
-          .set_expires_at(exp_time)
-          .set_payload_claim(Token::Payload::kExpirationRefresh,
-                             jwt::claim(exp_ref_time))
-          .set_payload_claim(Token::Payload::kExpirationAvailable,
-                             jwt::claim(exp_use_time))
-          .set_payload_claim(Token::Payload::kAuthUserName,
-                             jwt::claim(std::string(user_name)));
+  auto jwt_builder = jwt::create()
+                         .set_type(Token::Header::kType)
+                         .set_issuer(Config::get_jwt_issuer())
+                         .set_audience(Config::get_jwt_audience())
+                         .set_subject(Config::get_jwt_subject())
+                         .set_issued_at(now_time)
+                         .set_expires_at(exp_time)
+                         .set_payload_claim(Token::Payload::kExpirationRefresh,
+                                            jwt::claim(exp_ref_time))
+                         .set_payload_claim(Token::Payload::kAuthUserName,
+                                            jwt::claim(std::string(user_name)));
+
+  // Setting up available date.
+  if (Config::get_jwt_expiration_available() != 0) {
+    jwt_builder.set_payload_claim(Token::Payload::kExpirationAvailable,
+                                  jwt::claim(exp_use_time));
+  } else {
+    jwt_builder.set_payload_claim(Token::Payload::kExpirationAvailable,
+                                  jwt::claim(0));
+  }
+
   // Sign the JWT token.
   auto signed_token = jwt_builder.sign(algorithm);
 
