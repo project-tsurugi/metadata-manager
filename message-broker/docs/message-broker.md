@@ -1,6 +1,6 @@
 # Message Broker ドキュメント
 
-2022.08.xx NEC
+2022.08.05 NEC
 
 ## 目的
 
@@ -107,30 +107,42 @@ status.h
 
 メソッド一覧
 
-- Message(MessageId id, uint64_t param1, uint64_t param2)
+- Meesage
+
+  ```cpp
+  Message(MessageId id, uint64_t param1, uint64_t param2)
+  ```
   
   Messageクラスコンストラクタ。  
   MessageIdはmessage.hに記述される。param1, param2の意味は各派生クラスに記述される。
 
   - 引数
-    - id ：メッセージID
-    - param1 ：1stパラメータ
-    - param2 ：2ndパラメータ
+    - `id` ：メッセージID
+    - `param1` ：1stパラメータ
+    - `param2` ：2ndパラメータ
 
   - 戻り値
     - なし
 
-- void set_receiver(Receiver* receiver)
+- set_receiver
+
+  ```c++
+  void set_receiver(Receiver* receiver)
+  ```
 
   メッセージ送信先を設定する。複数指定可能。
 
   - 引数
-    - receiver ：Receiver派生クラスのオブジェクト
+    - `receiver` ：Receiver派生クラスのオブジェクト
 
   - 戻り値
     - なし
 
-- vector<Receiver*> get_receivers()
+- get_receivers
+
+  ```c++
+  vector<Receiver*> get_receivers()
+  ```
 
   宛先情報を取得する。
 
@@ -140,7 +152,11 @@ status.h
   - 戻り値
     - Receiver派生クラスのコンテナ
 
-- MessageId id()
+- id
+
+  ```c++
+  MessageId id()
+  ```
 
   アクセサ。メッセージIDを返す。
 
@@ -150,7 +166,11 @@ status.h
   - 戻り値
     - メッセージID
   
-- std::string string()
+- string
+
+  ```c++
+  std::string string()
+  ```
 
   メッセージIDを文字列で返す。  
   例）"CREATE_TABLE"
@@ -159,9 +179,13 @@ status.h
     - なし
 
   - 戻り値
-    - メッセージID文字列
+    - メッセージ文字列
 
-- uint64_t param1()
+- param1
+
+  ```c++
+  uint64_t param1()
+  ```
 
   アクセサ。メッセージの1stパラメータを返す。
 
@@ -171,7 +195,11 @@ status.h
   - 戻り値
     - 1stパラメータ値
 
-- uint64_t param2()
+- param2
+
+  ```c++
+  uint64_t param2()
+  ````
 
   アクセサ。メッセージの2ndパラメータを返す。
 
