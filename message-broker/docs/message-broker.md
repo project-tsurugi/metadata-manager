@@ -34,27 +34,40 @@ Message Brokerは受け取ったMessageオブジェクトを各受信者のRecei
 classDiagram
 
 class Message {
-  +Message(MessageId, int, int)
+  <<abstract>>
+  +Message(MessageId)
   +set_receiver(Receiver) void
   +get_receivers() vector~Receiver~
   +id() MessageId
   +string()* string
-  +param1() int
-  +param2() int
 }
 
-class CreateTableMessage~Message~ {
-  +CreateTableMessage()
+class MetadataMessage~Message~ {
+  <<abstract>>
+  +MetadataMessage(MessageId, int)
+  +object_id() int
+}
+
+class BeginDDLMessage~Message~ {
+  +BeginDDLMessage(int)
+  +string() string
+  +execution_mode() int
+}
+
+class EndDDLMessage~Message~ {
+  +EndDDLMessage()
   +string() string
 }
 
-class DropTableMessage~Message~ {
-  +DropTableMessage()
+class CreateTableMessage~MetadataMessage~ {
+  +CreateTableMessage(int)
   +string() string
 }
 
-Message <|-- CreateTableMessage
-Message <|-- DropTableMessage
+Message <|-- MetadataMessage
+MetadataMessage <|-- CreateTableMessage
+Message <|-- BeginDDLMessage
+Message <|-- EndDDLMessage
 ```
 
 ```mermaid
@@ -65,6 +78,7 @@ class MessageBroker {
 }
 
 class Receiver {
+  <<abstract>>
   +receiver_message(Message)* Status
 }
 
@@ -110,16 +124,14 @@ status.h
 - Meesage
 
   ```cpp
-  Message(MessageId id, uint64_t param1, uint64_t param2)
+  Message(MessageId id)
   ```
   
   Messageクラスコンストラクタ。  
-  MessageIdはmessage.hに記述される。param1, param2の意味は各派生クラスに記述される。
+  MessageIdはmessage.hに記述される。
 
   - 引数
     - `id` ：メッセージID
-    - `param1` ：1stパラメータ
-    - `param2` ：2ndパラメータ
 
   - 戻り値
     - なし
@@ -169,7 +181,7 @@ status.h
 - string
 
   ```c++
-  std::string string()
+  std::string string() = 0
   ```
 
   メッセージIDを文字列で返す。  
@@ -181,32 +193,34 @@ status.h
   - 戻り値
     - メッセージ文字列
 
-- param1
+### MetadataMessage
+
+メソッド一覧
+
+- MetadataMessage
 
   ```c++
-  uint64_t param1()
+  MetadataMessage(ObjectIdType object_id)
   ```
 
-  アクセサ。メッセージの1stパラメータを返す。
-
   - 引数
-    - なし
+    - `object_id`：オブジェクトID
 
   - 戻り値
-    - 1stパラメータ値
+    - なし
 
-- param2
+- object_id
 
   ```c++
-  uint64_t param2()
-  ````
+  ObjectIdType object_id()
+  ```
 
-  アクセサ。メッセージの2ndパラメータを返す。
+  メッセージの対象となるメタデータのオブジェクトIDを返す。
 
   - 引数
     - なし
 
   - 戻り値
-    - 2ndパラメータ値
+    - オブジェクトID
 
 以上
