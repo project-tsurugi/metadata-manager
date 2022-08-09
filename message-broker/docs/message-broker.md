@@ -1,6 +1,6 @@
 # Message Broker ドキュメント
 
-2022.08.05 NEC
+2022.08.09 NEC
 
 ## 目的
 
@@ -21,12 +21,12 @@ sequenceDiagram
 
 ## 概要
 
-送信者はMessage派生クラス（CreateTableMessageなど）から生成したMessageオブジェクトに以下の情報を設定する。param1, param2はメッセージの内容によってパラメータの意味合いが異なる（オブジェクトIDや実行モードなど）。送信者はsend_messageメソッドでMessageBrokerにMessageオブジェクトの送信を依頼する。
+送信者はMessage派生クラス（CreateTableクラスなど）に以下の情報を設定する。メッセージパラメータ（param1, param2）はメッセージの種類によって意味合いが異なる。送信者はMessageBrokerにMessageオブジェクトの送信を依頼する。
 
-- 宛先（DerivedReceivers） ※Receiver派生クラス
-- メッセージ内容（MessageId, param1, param2）
+- 宛先情報 ※Receiver派生クラス（Dest1など）
+- メッセージパラメータ（param1, param2）
 
-Message Brokerは受け取ったMessageオブジェクトを各受信者のReceiver派生クラス（Dest1など）に届ける。受信者は受け取ったMessageの内容によって必要な処理を行い処理結果をMessageBrokerに返す。
+Message Brokerは受け取ったMessageオブジェクトの種類ごとにオーバーライドされたメソッド（receive_create_tableなど）を呼び出す。
 
 （クラス図）
 
@@ -34,165 +34,96 @@ Message Brokerは受け取ったMessageオブジェクトを各受信者のRecei
 classDiagram
 
 class Message {
-  +Message(MessageId, int, int)
+  +Message(int, int)
   +set_receiver(Receiver) void
   +receivers() vector~Receiver~
-  +id() MessageId
   +param1() int
   +param2() int
+  -execute()* int
 }
-```
 
-```mermaid
-classDiagram
+class BeginDDL ~Message~ {
+  -execute() int
+}
+
+class EndDDL ~Message~ {
+  -execute() int
+}
+
+class CreateTable ~Message~ {
+  -execute() int
+}
+
+Message <|-- BeginDDL
+Message <|-- EndDDL
+Message <|-- CreateTable
 
 class MessageBroker {
   +send_message(Message) Status
 }
 
 class Receiver {
-  +receive_message(Message)* Status
-}
-
-class Status {
-  +Status()
-  +error_code() ErrorCode
-  +sub_error_code() int
+  +Receiver()
+  +receive_begin_DDL(int)* Status
+  +receive_end_DDL(void)* Status
+  +receive_create_table(int)* Status
 }
 
 class Dest1~Receiver~ {
   +Dest1()
-  +receive_message(Message) Status 
-}
-
-class Dest2~Receiver~ {
-  +Dest2()
-  +receive_message(Message) Status 
+  +receive_begin_DDL(int) Status
+  +receive_end_DDL(void) Status
+  +receive_create_table(int) Status
 }
 
 Receiver <|-- Dest1
-Receiver <|-- Dest2
-Status -- MessageBroker
-Status -- Receiver
+Receiver <--* BeginDDL
+Receiver <--* EndDDL
+Receiver <--* CreateTable
+MessageBroker -- Message
 
 ```
 
 ## ヘッダファイル
 
 ```c++
-metadata-manager/message_broker/include/message/
+frontend/message_broker/include/message/
 message.h
 receiver.h
 message_broker.h
 status.h
 ```
 
-## クラス詳細
+## 受信者の実装
 
-### Messageクラス
+受信者は、Receiverクラスに記載されている仮想関数のうち処理対象とする仮想関数について派生クラス上でオーバーライドし、必要な処理を記述する。
 
-メソッド一覧
+Receiver.h
 
-- Meesage
+```c++
+class Receiver {
+public:
+  virtual bool receive_begin_ddl(uint64_t mode) = 0;
+  virtual bool receive_end_ddl() = 0;
+  virtual bool receive_create_table(uint64_t oid) { return true; }
+  virtual bool receive_alter_table(uint64_t oid) { return true; }
+  virtual bool receive_drop_table(uint64_t oid) { return true; }
+}
 
-  ```cpp
-  Message(MessageId id, uint64_t param1, uint64_t param2)
-  ```
-  
-  Messageクラスコンストラクタ。  
-  MessageIdはmessage.hに記述される。param1, param2の意味は各派生クラスに記述される。
+```
 
-  - 引数
-    - `id` ：メッセージID
-    - `param1` ：1stパラメータ
-    - `param2` ：2ndパラメータ
+DerivedReceiver.h
 
-  - 戻り値
-    - なし
+```c++
+class DerivedReceiver : public Receiver {
+public:
+  bool receive_begin_ddl(uint64_t mode) { ... }
+  bool receive_end_ddl(uint64_t oid) { ... }
+  bool receive_drop_table(uint64_t oid) { ... }
+}
 
-- set_receiver
+```
 
-  ```c++
-  void set_receiver(Receiver* receiver)
-  ```
-
-  メッセージ送信先を設定する。複数指定可能。
-
-  - 引数
-    - `receiver` ：Receiver派生クラスのオブジェクト
-
-  - 戻り値
-    - なし
-
-- get_receivers
-
-  ```c++
-  vector<Receiver*> receivers()
-  ```
-
-  宛先情報を取得する。
-
-  - 引数
-    - なし
-
-  - 戻り値
-    - Receiver派生クラスのコンテナ
-
-- id
-
-  ```c++
-  MessageId id()
-  ```
-
-  アクセサ。メッセージIDを返す。
-
-  - 引数
-    - なし
-
-  - 戻り値
-    - メッセージID
-  
-- string
-
-  ```c++
-  std::string string()
-  ```
-
-  メッセージIDを文字列で返す。  
-  例）"CREATE_TABLE"
-
-  - 引数
-    - なし
-
-  - 戻り値
-    - メッセージ文字列
-
-- param1
-
-  ```c++
-  uint64_t param1()
-  ```
-
-  アクセサ。メッセージの1stパラメータを返す。
-
-  - 引数
-    - なし
-
-  - 戻り値
-    - 1stパラメータ値
-
-- param2
-
-  ```c++
-  uint64_t param2()
-  ````
-
-  アクセサ。メッセージの2ndパラメータを返す。
-
-  - 引数
-    - なし
-
-  - 戻り値
-    - 2ndパラメータ値
+※一部仕様を簡略化して記述
 
 以上
