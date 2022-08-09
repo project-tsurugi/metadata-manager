@@ -34,40 +34,13 @@ Message Brokerは受け取ったMessageオブジェクトを各受信者のRecei
 classDiagram
 
 class Message {
-  <<abstract>>
-  +Message(MessageId)
+  +Message(MessageId, int, int)
   +set_receiver(Receiver) void
-  +get_receivers() vector~Receiver~
+  +receivers() vector~Receiver~
   +id() MessageId
-  +string()* string
+  +param1() int
+  +param2() int
 }
-
-class MetadataMessage~Message~ {
-  <<abstract>>
-  +MetadataMessage(MessageId, int)
-  +object_id() int
-}
-
-class BeginDDLMessage~Message~ {
-  +BeginDDLMessage(int)
-  +string() string
-  +execution_mode() int
-}
-
-class EndDDLMessage~Message~ {
-  +EndDDLMessage()
-  +string() string
-}
-
-class CreateTableMessage~MetadataMessage~ {
-  +CreateTableMessage(int)
-  +string() string
-}
-
-Message <|-- MetadataMessage
-MetadataMessage <|-- CreateTableMessage
-Message <|-- BeginDDLMessage
-Message <|-- EndDDLMessage
 ```
 
 ```mermaid
@@ -78,8 +51,7 @@ class MessageBroker {
 }
 
 class Receiver {
-  <<abstract>>
-  +receiver_message(Message)* Status
+  +receive_message(Message)* Status
 }
 
 class Status {
@@ -90,12 +62,12 @@ class Status {
 
 class Dest1~Receiver~ {
   +Dest1()
-  +receiver_message(Message) Status 
+  +receive_message(Message) Status 
 }
 
 class Dest2~Receiver~ {
   +Dest2()
-  +receiver_message(Message) Status 
+  +receive_message(Message) Status 
 }
 
 Receiver <|-- Dest1
@@ -124,14 +96,16 @@ status.h
 - Meesage
 
   ```cpp
-  Message(MessageId id)
+  Message(MessageId id, uint64_t param1, uint64_t param2)
   ```
   
   Messageクラスコンストラクタ。  
-  MessageIdはmessage.hに記述される。
+  MessageIdはmessage.hに記述される。param1, param2の意味は各派生クラスに記述される。
 
   - 引数
     - `id` ：メッセージID
+    - `param1` ：1stパラメータ
+    - `param2` ：2ndパラメータ
 
   - 戻り値
     - なし
@@ -153,7 +127,7 @@ status.h
 - get_receivers
 
   ```c++
-  vector<Receiver*> get_receivers()
+  vector<Receiver*> receivers()
   ```
 
   宛先情報を取得する。
@@ -181,7 +155,7 @@ status.h
 - string
 
   ```c++
-  std::string string() = 0
+  std::string string()
   ```
 
   メッセージIDを文字列で返す。  
@@ -193,34 +167,32 @@ status.h
   - 戻り値
     - メッセージ文字列
 
-### MetadataMessage
-
-メソッド一覧
-
-- MetadataMessage
+- param1
 
   ```c++
-  MetadataMessage(ObjectIdType object_id)
+  uint64_t param1()
   ```
 
-  - 引数
-    - `object_id`：オブジェクトID
-
-  - 戻り値
-    - なし
-
-- object_id
-
-  ```c++
-  ObjectIdType object_id()
-  ```
-
-  メッセージの対象となるメタデータのオブジェクトIDを返す。
+  アクセサ。メッセージの1stパラメータを返す。
 
   - 引数
     - なし
 
   - 戻り値
-    - オブジェクトID
+    - 1stパラメータ値
+
+- param2
+
+  ```c++
+  uint64_t param2()
+  ````
+
+  アクセサ。メッセージの2ndパラメータを返す。
+
+  - 引数
+    - なし
+
+  - 戻り値
+    - 2ndパラメータ値
 
 以上
