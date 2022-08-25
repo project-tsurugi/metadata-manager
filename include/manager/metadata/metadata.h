@@ -21,7 +21,6 @@
 #include <vector>
 
 #include <boost/property_tree/ptree.hpp>
-
 #include "manager/metadata/error_code.h"
 
 namespace manager::metadata {
@@ -29,6 +28,8 @@ namespace manager::metadata {
 using FormatVersionType = std::int32_t;
 using GenerationType = std::int64_t;
 using ObjectIdType = std::int64_t;
+
+constexpr ObjectIdType INVALID_OBJECT_ID = -1;
 
 class Metadata {
  public:
