@@ -98,7 +98,6 @@ set(JWT-CPP_INCLUDE_DIR ${SUBMODULE_DIR}/jwt-cpp/include)
 message(STATUS "The target of the build is metadata-manager.")
 add_library(metadata-interface INTERFACE)
 
-add_subdirectory(message-broker)
 add_subdirectory(${SUBMODULE_DIR}/googletest)
 
 if(DATA_STORAGE_PG)
