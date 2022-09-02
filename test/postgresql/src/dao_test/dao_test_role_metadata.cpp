@@ -19,7 +19,7 @@
 #include <string>
 #include <string_view>
 
-#include "manager/metadata/dao/postgresql/db_session_manager.h"
+#include "manager/metadata/dao/postgresql/db_session_manager_pg.h"
 #include "manager/metadata/dao/roles_dao.h"
 #include "test/global_test_environment.h"
 #include "test/helper/role_metadata_helper.h"

@@ -13,16 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef MANAGER_METADATA_DAO_POSTGRESQL_TABLES_DAO_H_
-#define MANAGER_METADATA_DAO_POSTGRESQL_TABLES_DAO_H_
+#ifndef MANAGER_METADATA_DAO_POSTGRESQL_TABLES_DAO_PG_PG_H_
+#define MANAGER_METADATA_DAO_POSTGRESQL_TABLES_DAO_PG_H_
 
 #include <string>
 #include <vector>
 
 #include <boost/property_tree/ptree.hpp>
 
-#include "manager/metadata/dao/postgresql/db_session_manager.h"
-#include "manager/metadata/dao/postgresql/dbc_utils.h"
+#include "manager/metadata/dao/postgresql/db_session_manager_pg.h"
+#include "manager/metadata/dao/postgresql/dbc_utils_pg.h"
 #include "manager/metadata/dao/tables_dao.h"
 #include "manager/metadata/error_code.h"
 
@@ -100,4 +100,4 @@ class TablesDAO : public manager::metadata::db::TablesDAO {
 
 }  // namespace manager::metadata::db::postgresql
 
-#endif  // MANAGER_METADATA_DAO_POSTGRESQL_TABLES_DAO_H_
+#endif  // MANAGER_METADATA_DAO_POSTGRESQL_TABLES_DAO_PG_H_

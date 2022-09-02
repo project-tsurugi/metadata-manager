@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef MANAGER_METADATA_DAO_JSON_OBJECT_ID_H_
-#define MANAGER_METADATA_DAO_JSON_OBJECT_ID_H_
+#ifndef MANAGER_METADATA_DAO_JSON_OBJECT_ID_JSON_H_
+#define MANAGER_METADATA_DAO_JSON_OBJECT_ID_JSON_H_
 
 #include <string>
 #include <string_view>
@@ -39,4 +39,4 @@ class ObjectId {
 
 }  // namespace manager::metadata::db::json
 
-#endif  // MANAGER_METADATA_DAO_JSON_OBJECT_ID_H_
+#endif  // MANAGER_METADATA_DAO_JSON_OBJECT_ID_JSON_H_

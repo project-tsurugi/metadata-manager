@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "manager/metadata/dao/json/db_session_manager.h"
+#include "manager/metadata/dao/json/db_session_manager_json.h"
 
 #include <fstream>
 #include <iostream>
@@ -21,9 +21,9 @@
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
 
-#include "manager/metadata/dao/json/columns_dao.h"
-#include "manager/metadata/dao/json/datatypes_dao.h"
-#include "manager/metadata/dao/json/tables_dao.h"
+#include "manager/metadata/dao/json/columns_dao_json.h"
+#include "manager/metadata/dao/json/datatypes_dao_json.h"
+#include "manager/metadata/dao/json/tables_dao_json.h"
 
 // =============================================================================
 namespace manager::metadata::db::json {

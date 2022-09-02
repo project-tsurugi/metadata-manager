@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef MANAGER_METADATA_DAO_POSTGRESQL_COMMON_H_
-#define MANAGER_METADATA_DAO_POSTGRESQL_COMMON_H_
+#ifndef MANAGER_METADATA_DAO_POSTGRESQL_COMMON_PG_H_
+#define MANAGER_METADATA_DAO_POSTGRESQL_COMMON_PG_H_
 
 #include <libpq-fe.h>
 
@@ -110,4 +110,4 @@ class PgCatalog {
 
 }  // namespace manager::metadata::db::postgresql
 
-#endif  // MANAGER_METADATA_DAO_POSTGRESQL_COMMON_H_
+#endif  // MANAGER_METADATA_DAO_POSTGRESQL_COMMON_PG_H_

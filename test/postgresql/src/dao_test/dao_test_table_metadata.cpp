@@ -19,7 +19,7 @@
 #include <boost/property_tree/ptree.hpp>
 
 #include "manager/metadata/dao/columns_dao.h"
-#include "manager/metadata/dao/postgresql/db_session_manager.h"
+#include "manager/metadata/dao/postgresql/db_session_manager_pg.h"
 #include "manager/metadata/dao/tables_dao.h"
 #include "test/global_test_environment.h"
 #include "test/helper/table_metadata_helper.h"

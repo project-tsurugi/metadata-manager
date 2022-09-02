@@ -22,9 +22,9 @@
 #include <memory>
 
 #if defined(STORAGE_POSTGRESQL)
-#include "manager/metadata/dao/postgresql/db_session_manager.h"
+#include "manager/metadata/dao/postgresql/db_session_manager_pg.h"
 #elif defined(STORAGE_JSON)
-#include "manager/metadata/dao/json/db_session_manager.h"
+#include "manager/metadata/dao/json/db_session_manager_json.h"
 #endif
 
 // =============================================================================
