@@ -13,8 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TEST_JSON_INCLUDE_TEST_UTILITY_UT_TABLE_METADATA_H_
-#define TEST_JSON_INCLUDE_TEST_UTILITY_UT_TABLE_METADATA_H_
+#pragma once
 
 #include <string>
 #include <vector>
@@ -22,6 +21,7 @@
 #include <boost/property_tree/ptree.hpp>
 
 #include "test/utility/ut_column_metadata.h"
+#include "manager/metadata/tables.h"
 
 namespace manager::metadata::testing {
 
@@ -34,18 +34,19 @@ class UTTableMetadata {
   std::string namespace_name;
   std::vector<int64_t> primary_keys;
   float tuples = NOT_INITIALIZED;
+
   boost::property_tree::ptree tables;
   std::vector<UTColumnMetadata> columns;
+  manager::metadata::Table table;
 
   UTTableMetadata() = delete;
   explicit UTTableMetadata(std::string name) : name(name) {}
 
   void generate_ptree();
+  void generate_table();
 
  private:
   static constexpr int64_t NOT_INITIALIZED = -1;
 };
 
 }  // namespace manager::metadata::testing
-
-#endif  // TEST_JSON_INCLUDE_TEST_UTILITY_UT_TABLE_METADATA_H_
