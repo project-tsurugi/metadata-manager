@@ -29,9 +29,7 @@
 
 // =============================================================================
 namespace {
-
-std::unique_ptr<manager::metadata::db::TablesProvider> provider = nullptr;
-
+  std::unique_ptr<manager::metadata::db::TablesProvider> provider = nullptr;
 }  // namespace
 
 // =============================================================================
@@ -463,7 +461,11 @@ ErrorCode Tables::confirm_permission_in_acls(std::string_view object_name,
   return error;
 }
 
-// add
+/**
+ * 
+ *  structure interfaces.
+ * 
+ */
 ptree transform_to_ptree(const Table& table)
 {
   ptree ptree_table;
@@ -519,6 +521,28 @@ ptree transform_to_ptree(const Table& table)
   return ptree_table;
 }
 
+/**
+ * @brief Add table metadata to table metadata table.
+ * @param object    [in]  table metadata to add.
+ * @return ErrorCode::OK if success, otherwise an error code.
+ */
+ErrorCode Tables::add(const manager::metadata::Table& table) const
+{
+  ptree table_tree = transform_to_ptree(table);
+  ErrorCode error = this->add(table_tree);
+  if (error != ErrorCode::OK) {
+    return error;
+  }
+
+  return ErrorCode::OK;
+}
+
+/**
+ * @brief Add table metadata to table metadata table.
+ * @param object    [in]  table metadata to add.
+ * @param object_id [out] ID of the added table metadata.
+ * @return ErrorCode::OK if success, otherwise an error code.
+ */
 ErrorCode Tables::add(const manager::metadata::Table& table,
                       ObjectIdType* object_id) const
 {
@@ -529,7 +553,7 @@ ErrorCode Tables::add(const manager::metadata::Table& table,
   }
 
   return ErrorCode::OK;
-}                
+}
 
 Table transform_from_ptree(const ptree& ptree_table)
 {
@@ -584,10 +608,10 @@ Table transform_from_ptree(const ptree& ptree_table)
     name              ? column.name = name.get()            : column.name = "";
     varying           ? column.varying = varying.get()      : column.varying = 0;
     nullable          ? column.nullable = nullable.get()    : column.nullable = 0;
-    direction         ? column.direction = direction.get()   : column.direction = 0;
-    ordinal_position  ? column.ordinal_position = ordinal_position.get()  : column.ordinal_position = 0;
-    data_type_id      ? column.data_type_id = data_type_id.get()          : column.data_type_id = 0;
-    default_expr      ? column.default_expr = default_expr.get()          : column.default_expr = "";
+    direction         ? column.direction = direction.get()  : column.direction = 0;
+    ordinal_position  ? column.ordinal_position = ordinal_position.get() : column.ordinal_position = 0;
+    data_type_id      ? column.data_type_id = data_type_id.get()  : column.data_type_id = 0;
+    default_expr      ? column.default_expr = default_expr.get()  : column.default_expr = "";
 #if 0
     BOOST_FOREACH (auto& node, ptree_column.get_child(Tables::Column::DATA_LENGTH)) {
       const ptree& value = node.second;
@@ -603,6 +627,14 @@ Table transform_from_ptree(const ptree& ptree_table)
   return table;
 }
 
+/**
+ * @brief Get table metadata.
+ * @param object_id [in]  table id.
+ * @param table     [out] table metadata with the specified ID.
+ * @retval ErrorCode::OK if success,
+ * @retval ErrorCode::ID_NOT_FOUND if the table id does not exist.
+ * @retval otherwise an error code.
+ */
 ErrorCode Tables::get(const ObjectIdType object_id,
                       manager::metadata::Table& table) const
 {
@@ -617,13 +649,21 @@ ErrorCode Tables::get(const ObjectIdType object_id,
   return ErrorCode::OK;
 }
 
-ErrorCode Tables::get(std::string_view object_name,
+/**
+ * @brief Get table metadata object based on table name.
+ * @param table_name  [in]  table name. (Value of "name" key.)
+ * @param table       [out] table metadata object with the specified name.
+ * @retval ErrorCode::OK if success,
+ * @retval ErrorCode::NAME_NOT_FOUND if the table name does not exist.
+ * @retval otherwise an error code.
+ */
+ErrorCode Tables::get(std::string_view table_name,
                       manager::metadata::Table& table) const
 {
 
   ptree table_tree;
 
-  ErrorCode error = this->get(object_name, table_tree);
+  ErrorCode error = this->get(table_name, table_tree);
   if (error != ErrorCode::OK) {
     return error;
   }
@@ -631,7 +671,6 @@ ErrorCode Tables::get(std::string_view object_name,
 
   return ErrorCode::OK;
 }
-
 
 /* =============================================================================
  * Private method area
