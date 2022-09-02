@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "manager/metadata/dao/json/object_id.h"
+#include "manager/metadata/dao/json/object_id_json.h"
 
 #include <fstream>
 #include <iostream>

@@ -13,15 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef MANAGER_METADATA_DAO_JSON_COLUMNS_DAO_H_
-#define MANAGER_METADATA_DAO_JSON_COLUMNS_DAO_H_
+#ifndef MANAGER_METADATA_DAO_JSON_COLUMNS_DAO_JSON_H_
+#define MANAGER_METADATA_DAO_JSON_COLUMNS_DAO_JSON_H_
 
 #include <string_view>
 
 #include <boost/property_tree/ptree.hpp>
 
 #include "manager/metadata/dao/columns_dao.h"
-#include "manager/metadata/dao/json/db_session_manager.h"
+#include "manager/metadata/dao/json/db_session_manager_json.h"
 #include "manager/metadata/error_code.h"
 
 namespace manager::metadata::db::json {
@@ -61,4 +61,4 @@ class ColumnsDAO : public manager::metadata::db::ColumnsDAO {
 
 }  // namespace manager::metadata::db::json
 
-#endif  // MANAGER_METADATA_DAO_JSON_COLUMNS_DAO_H_
+#endif  // MANAGER_METADATA_DAO_JSON_COLUMNS_DAO_JSON_H_

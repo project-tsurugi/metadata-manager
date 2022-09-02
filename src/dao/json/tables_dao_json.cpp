@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "manager/metadata/dao/json/tables_dao.h"
+#include "manager/metadata/dao/json/tables_dao_json.h"
 
 #include <boost/foreach.hpp>
 #include <boost/format.hpp>
 #include <boost/property_tree/ptree.hpp>
 
 #include "manager/metadata/common/config.h"
-#include "manager/metadata/dao/json/object_id.h"
+#include "manager/metadata/dao/json/object_id_json.h"
 #include "manager/metadata/error_code.h"
 #include "manager/metadata/metadata.h"
 #include "manager/metadata/tables.h"

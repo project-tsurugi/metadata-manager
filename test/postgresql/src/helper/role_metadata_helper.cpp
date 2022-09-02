@@ -23,7 +23,7 @@
 #include <boost/format.hpp>
 
 #include "manager/metadata/common/config.h"
-#include "manager/metadata/dao/postgresql/dbc_utils.h"
+#include "manager/metadata/dao/postgresql/dbc_utils_pg.h"
 #include "manager/metadata/roles.h"
 
 namespace {

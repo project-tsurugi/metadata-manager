@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "manager/metadata/dao/json/datatypes_dao.h"
+#include "manager/metadata/dao/json/datatypes_dao_json.h"
 
 #include <boost/foreach.hpp>
 #include <boost/property_tree/ptree.hpp>

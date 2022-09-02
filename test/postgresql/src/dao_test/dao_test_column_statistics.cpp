@@ -21,7 +21,7 @@
 #include <boost/property_tree/json_parser.hpp>
 
 #include "manager/metadata/common/message.h"
-#include "manager/metadata/dao/postgresql/db_session_manager.h"
+#include "manager/metadata/dao/postgresql/db_session_manager_pg.h"
 #include "manager/metadata/dao/statistics_dao.h"
 #include "test/global_test_environment.h"
 #include "test/helper/column_statistics_helper.h"

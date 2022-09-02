@@ -22,8 +22,8 @@
 #include <vector>
 
 #include "manager/metadata/common/config.h"
-#include "manager/metadata/dao/postgresql/common.h"
-#include "manager/metadata/dao/postgresql/dbc_utils.h"
+#include "manager/metadata/dao/postgresql/common_pg.h"
+#include "manager/metadata/dao/postgresql/dbc_utils_pg.h"
 #include "manager/metadata/error_code.h"
 #include "manager/metadata/metadata.h"
 #include "test/utility/ut_utils.h"

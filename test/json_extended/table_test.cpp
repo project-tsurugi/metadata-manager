@@ -24,7 +24,7 @@
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
 
-#include "manager/metadata/dao/json/object_id.h"
+#include "manager/metadata/dao/json/object_id_json.h"
 #include "manager/metadata/datatypes.h"
 #include "manager/metadata/error_code.h"
 #include "manager/metadata/metadata.h"

@@ -20,17 +20,17 @@
 #include "manager/metadata/dao/db_session_manager.h"
 
 #if defined(STORAGE_POSTGRESQL)
-#include "manager/metadata/dao/postgresql/columns_dao.h"
-#include "manager/metadata/dao/postgresql/datatypes_dao.h"
-#include "manager/metadata/dao/postgresql/privileges_dao.h"
-#include "manager/metadata/dao/postgresql/roles_dao.h"
-#include "manager/metadata/dao/postgresql/statistics_dao.h"
-#include "manager/metadata/dao/postgresql/tables_dao.h"
+#include "manager/metadata/dao/postgresql/columns_dao_pg.h"
+#include "manager/metadata/dao/postgresql/datatypes_dao_pg.h"
+#include "manager/metadata/dao/postgresql/privileges_dao_pg.h"
+#include "manager/metadata/dao/postgresql/roles_dao_pg.h"
+#include "manager/metadata/dao/postgresql/statistics_dao_pg.h"
+#include "manager/metadata/dao/postgresql/tables_dao_pg.h"
 #elif defined(STORAGE_JSON)
-#include "manager/metadata/dao/json/columns_dao.h"
-#include "manager/metadata/dao/json/datatypes_dao.h"
-#include "manager/metadata/dao/json/privileges_dao.h"
-#include "manager/metadata/dao/json/tables_dao.h"
+#include "manager/metadata/dao/json/columns_dao_json.h"
+#include "manager/metadata/dao/json/datatypes_dao_json.h"
+#include "manager/metadata/dao/json/privileges_dao_json.h"
+#include "manager/metadata/dao/json/tables_dao_json.h"
 #endif
 
 // =============================================================================
