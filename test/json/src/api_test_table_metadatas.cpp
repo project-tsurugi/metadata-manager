@@ -20,6 +20,7 @@
 
 #include <boost/property_tree/ptree.hpp>
 
+#include "manager/metadata/metadata.h"
 #include "manager/metadata/tables.h"
 #include "test/global_test_environment.h"
 #include "test/helper/table_metadata_helper.h"
@@ -46,7 +47,7 @@ TEST_F(ApiTestTableMetadata, add_get_table_metadata_by_table_name3) {
   new_table.name = new_table_name;
 
   // add table metadata.
-  ObjectIdType ret_table_id = -1;
+  ObjectIdType ret_table_id = INVALID_OBJECT_ID;
   TableMetadataHelper::add_table(new_table, &ret_table_id);
   new_table.id = ret_table_id;
 
@@ -84,7 +85,7 @@ TEST_F(ApiTestTableMetadata, add_get_table_metadata_by_table_name2) {
   new_table.put(Tables::NAME, new_table_name);
 
   // add table metadata.
-  ObjectIdType ret_table_id = -1;
+  ObjectIdType ret_table_id = INVALID_OBJECT_ID;
   TableMetadataHelper::add_table(new_table, &ret_table_id);
   new_table.put(Tables::ID, ret_table_id);
 

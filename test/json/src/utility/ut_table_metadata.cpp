@@ -135,7 +135,7 @@ void UTTableMetadata::generate_table()
   table.name = name;
   table.primary_keys.emplace_back(1);
   table.primary_keys.emplace_back(2);
-  table.tuples = 0;
+  table.tuples = tuples;
 
   for (UTColumnMetadata column_meta : columns) {
     Column column;
