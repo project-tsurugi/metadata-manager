@@ -463,6 +463,176 @@ ErrorCode Tables::confirm_permission_in_acls(std::string_view object_name,
   return error;
 }
 
+// add
+ptree transform_to_ptree(const Table& table)
+{
+  ptree ptree_table;
+
+  // table metadata
+  ptree_table.put<int64_t>(Tables::FORMAT_VERSION, table.format_version);
+  ptree_table.put<int64_t>(Tables::GENERATION, table.generation);
+  ptree_table.put<int64_t>(Tables::ID, table.id);
+  ptree_table.put(Tables::NAMESPACE, table.namespace_name);
+  ptree_table.put(Tables::NAME, table.name);
+//  ptree_table.put<int64_t>(Tables::OWNER_ROLE_ID, table.owner_role_id);
+//  ptree_table.put(Tables::ACL, table.acl);
+  ptree_table.put<int64_t>(Tables::TUPLES, table.tuples);
+
+  ptree child;
+  
+  // primary key
+  ptree keys;
+  for (const int64_t& ordinal_position : table.primary_keys) {
+    keys.put("", ordinal_position);
+    child.push_back(std::make_pair("", keys));
+  }
+  ptree_table.add_child(Tables::PRIMARY_KEY_NODE, child);
+  
+  // columns metadata
+  ptree ptree_columns;
+  for (const Column& column : table.columns) {
+    ptree ptree_column;
+    ptree_column.put<int64_t>(Tables::Column::ID, column.id);
+    ptree_column.put<int64_t>(Tables::Column::TABLE_ID, column.table_id);
+    ptree_column.put(Tables::Column::NAME, column.name);
+    ptree_column.put<int64_t>(Tables::Column::ORDINAL_POSITION, column.ordinal_position);
+    ptree_column.put<int64_t>(Tables::Column::DATA_TYPE_ID, column.data_type_id);  
+    ptree_column.put<bool>(Tables::Column::VARYING, column.varying);  
+    ptree_column.put<bool>(Tables::Column::NULLABLE, column.nullable);  
+    ptree_column.put(Tables::Column::DEFAULT, column.default_expr);  
+    ptree_column.put<int64_t>(Tables::Column::DIRECTION, column.direction);  
+
+#if 0
+    ptree data_length;
+    for (const int64_t& param : column.data_length) {
+      data_length.put("", param);
+    }
+    ptree_column.push_back(std::make_pair(Tables::Column::DATA_LENGTH, data_length));
+#else
+    ptree_column.put<int64_t>(Tables::Column::DATA_LENGTH, column.data_length);  
+#endif
+    ptree_columns.push_back(std::make_pair("", ptree_column));
+  }
+
+  ptree_table.add_child(Tables::COLUMNS_NODE, ptree_columns);
+
+  return ptree_table;
+}
+
+ErrorCode Tables::add(const manager::metadata::Table& table,
+                      ObjectIdType* object_id) const
+{
+  ptree table_tree = transform_to_ptree(table);
+  ErrorCode error = this->add(table_tree, object_id);
+  if (error != ErrorCode::OK) {
+    return error;
+  }
+
+  return ErrorCode::OK;
+}                
+
+Table transform_from_ptree(const ptree& ptree_table)
+{
+  Table table;
+
+  // table metadata
+  auto format_version   = ptree_table.get_optional<int64_t>(Tables::FORMAT_VERSION);
+  auto generation       = ptree_table.get_optional<int64_t>(Tables::GENERATION);
+  auto id               = ptree_table.get_optional<int64_t>(Tables::ID);
+  auto namespace_name   = ptree_table.get_optional<std::string>(Tables::NAMESPACE);
+  auto name             = ptree_table.get_optional<std::string>(Tables::NAME);
+//  auto owner_role_id    = ptree_table.get_optional<int64_t>(Tables::OWNER_ROLE_ID);
+//  auto acl              = ptree_table.get_optional<std::string>(Tables::ACL);
+  auto tuples           = ptree_table.get_optional<int64_t>(Tables::TUPLES);
+
+  table.format_version = format_version.get();
+  table.generation = generation.get();
+  table.id = id.get();
+  table.namespace_name = namespace_name.get();
+  table.name = name.get();
+//  table.owner_role_id = owner_role_id.get();
+//  table.acl = acl.get();
+  table.tuples = tuples.get();
+
+  // primary keys
+  BOOST_FOREACH (const ptree::value_type& node, ptree_table.get_child(Tables::PRIMARY_KEY_NODE)) {
+    const ptree& value = node.second;
+    auto ordinal_position = value.get_optional<int64_t>("");
+    table.primary_keys.emplace_back(ordinal_position.get());
+  }
+
+  // columns metadata
+  BOOST_FOREACH (const ptree::value_type& node, ptree_table.get_child(Tables::COLUMNS_NODE)) {
+    const ptree& ptree_column = node.second;
+    auto format_version = ptree_column.get_optional<int64_t>(Tables::Column::FORMAT_VERSION);
+    auto generation     = ptree_column.get_optional<int64_t>(Tables::Column::GENERATION);
+    auto id             = ptree_column.get_optional<int64_t>(Tables::Column::ID);
+    auto table_id       = ptree_column.get_optional<int64_t>(Tables::Column::TABLE_ID);
+    auto name           = ptree_column.get_optional<std::string>(Tables::Column::NAME);
+    auto ordinal_position = ptree_column.get_optional<int64_t>(Tables::Column::ORDINAL_POSITION);
+    auto data_type_id   = ptree_column.get_optional<int64_t>(Tables::Column::DATA_TYPE_ID);
+    auto data_length    = ptree_column.get_optional<int64_t>(Tables::Column::DATA_LENGTH);
+    auto varying        = ptree_column.get_optional<bool>(Tables::Column::VARYING);
+    auto nullable       = ptree_column.get_optional<bool>(Tables::Column::NULLABLE);
+    auto default_expr   = ptree_column.get_optional<std::string>(Tables::Column::DEFAULT);
+    auto direction      = ptree_column.get_optional<int64_t>(Tables::Column::DIRECTION);
+
+    Column column;
+
+    id                ? column.id = id.get()                : column.id = 0;
+    table_id          ? column.table_id = table_id.get()    : table_id = 0;
+    name              ? column.name = name.get()            : column.name = "";
+    varying           ? column.varying = varying.get()      : column.varying = 0;
+    nullable          ? column.nullable = nullable.get()    : column.nullable = 0;
+    direction         ? column.direction = direction.get()   : column.direction = 0;
+    ordinal_position  ? column.ordinal_position = ordinal_position.get()  : column.ordinal_position = 0;
+    data_type_id      ? column.data_type_id = data_type_id.get()          : column.data_type_id = 0;
+    default_expr      ? column.default_expr = default_expr.get()          : column.default_expr = "";
+#if 0
+    BOOST_FOREACH (auto& node, ptree_column.get_child(Tables::Column::DATA_LENGTH)) {
+      const ptree& value = node.second;
+      auto ordinal_position = value.get_optional<int64_t>("");
+      column.data_length.emplace_back(ordinal_position.get());
+    }
+#else
+    data_length       ? column.data_length = data_length.get()            : column.data_length = 0;
+#endif
+    table.columns.emplace_back(column);
+  }
+
+  return table;
+}
+
+ErrorCode Tables::get(const ObjectIdType object_id,
+                      manager::metadata::Table& table) const
+{
+  ptree table_tree;
+
+  ErrorCode error = this->get(object_id, table_tree);
+  if (error != ErrorCode::OK) {
+    return error;
+  }
+  table = transform_from_ptree(table_tree);
+
+  return ErrorCode::OK;
+}
+
+ErrorCode Tables::get(std::string_view object_name,
+                      manager::metadata::Table& table) const
+{
+
+  ptree table_tree;
+
+  ErrorCode error = this->get(object_name, table_tree);
+  if (error != ErrorCode::OK) {
+    return error;
+  }
+  table = transform_from_ptree(table_tree);
+
+  return ErrorCode::OK;
+}
+
+
 /* =============================================================================
  * Private method area
  */
@@ -476,7 +646,7 @@ ErrorCode Tables::param_check_metadata_add(
     const boost::property_tree::ptree& object) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
-  boost::optional<std::string> table_name =
+  auto  table_name =
       object.get_optional<std::string>(Tables::NAME);
   if (!table_name || table_name.get().empty()) {
     error = ErrorCode::INVALID_PARAMETER;
@@ -492,7 +662,7 @@ ErrorCode Tables::param_check_metadata_add(
     auto& column = node.second;
 
     // name
-    boost::optional<std::string> column_name =
+    auto  column_name =
         column.get_optional<std::string>(Tables::Column::NAME);
     if (!column_name || (column_name.get().empty())) {
       error = ErrorCode::INVALID_PARAMETER;
@@ -533,7 +703,7 @@ ErrorCode Tables::param_check_metadata_add(
     }
 
     // nullable
-    boost::optional<std::string> nullable =
+    auto  nullable =
         column.get_optional<std::string>(Tables::Column::NULLABLE);
     if (!nullable || (nullable.get().empty())) {
       error = ErrorCode::INVALID_PARAMETER;
@@ -554,10 +724,10 @@ ErrorCode Tables::param_check_statistic_update(
   ErrorCode error = ErrorCode::UNKNOWN;
 
   // id
-  boost::optional<std::string> optional_id =
+  auto  optional_id =
       object.get_optional<std::string>(Tables::ID);
   // name
-  boost::optional<std::string> optional_name =
+  auto  optional_name =
       object.get_optional<std::string>(Tables::NAME);
   // tuples
   boost::optional<float> optional_tuples =

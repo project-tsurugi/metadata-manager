@@ -36,6 +36,82 @@ class ApiTestTableMetadata : public ::testing::Test {};
  * @brief happy test for adding one new table metadata
  *  and getting it by table name.
  */
+TEST_F(ApiTestTableMetadata, add_get_table_metadata_by_table_name3) {
+  // prepare test data for adding table metadata.
+  UTTableMetadata testdata_table_metadata =
+      *(global->testdata_table_metadata.get());
+  manager::metadata::Table& new_table = testdata_table_metadata.table;
+  std::string new_table_name =
+      new_table.name + "_ApiTestTableMetadata1_1";
+  new_table.name = new_table_name;
+
+  // add table metadata.
+  ObjectIdType ret_table_id = -1;
+  TableMetadataHelper::add_table(new_table, &ret_table_id);
+  new_table.id = ret_table_id;
+
+  // get table metadata by table name.
+  auto tables = std::make_unique<Tables>(GlobalTestEnvironment::TEST_DB);
+  ErrorCode error = tables->init();
+  EXPECT_EQ(ErrorCode::OK, error);
+
+  // get table metadata by table name.
+  ptree table_metadata_inserted;
+  error = tables->get(new_table_name, table_metadata_inserted);
+  EXPECT_EQ(ErrorCode::OK, error);
+
+  UTUtils::print("-- get table metadata --");
+  UTUtils::print(UTUtils::get_tree_string(table_metadata_inserted));
+
+  // verifies that the returned table metadata is expected one.
+  TableMetadataHelper::check_table_metadata_expected(new_table, 
+                                                    table_metadata_inserted);
+  // cleanup
+  tables->remove(new_table_name.c_str(), nullptr);
+}
+
+/**
+ * @brief happy test for adding one new table metadata
+ *  and getting it by table name.
+ */
+TEST_F(ApiTestTableMetadata, add_get_table_metadata_by_table_name2) {
+  // prepare test data for adding table metadata.
+  UTTableMetadata testdata_table_metadata =
+      *(global->testdata_table_metadata.get());
+  ptree new_table = testdata_table_metadata.tables;
+  std::string new_table_name =
+      new_table.get<std::string>(Tables::NAME) + "_ApiTestTableMetadata1_1";
+  new_table.put(Tables::NAME, new_table_name);
+
+  // add table metadata.
+  ObjectIdType ret_table_id = -1;
+  TableMetadataHelper::add_table(new_table, &ret_table_id);
+  new_table.put(Tables::ID, ret_table_id);
+
+  // get table metadata by table name.
+  auto tables = std::make_unique<Tables>(GlobalTestEnvironment::TEST_DB);
+  ErrorCode error = tables->init();
+  EXPECT_EQ(ErrorCode::OK, error);
+
+  // get table metadata by table name.
+  metadata::Table table_metadata_inserted;
+  error = tables->get(new_table_name, table_metadata_inserted);
+  EXPECT_EQ(ErrorCode::OK, error);
+
+  UTUtils::print("-- get table metadata --");
+//  UTUtils::print(UTUtils::get_tree_string(table_metadata_inserted));
+
+  // verifies that the returned table metadata is expected one.
+  TableMetadataHelper::check_table_metadata_expected(new_table,
+                                                     table_metadata_inserted);
+  // cleanup
+  tables->remove(new_table_name.c_str(), nullptr);
+}
+
+/**
+ * @brief happy test for adding one new table metadata
+ *  and getting it by table name.
+ */
 TEST_F(ApiTestTableMetadata, add_get_table_metadata_by_table_name) {
   // prepare test data for adding table metadata.
   UTTableMetadata testdata_table_metadata =
@@ -66,7 +142,6 @@ TEST_F(ApiTestTableMetadata, add_get_table_metadata_by_table_name) {
   // verifies that the returned table metadata is expected one.
   TableMetadataHelper::check_table_metadata_expected(new_table,
                                                      table_metadata_inserted);
-
   // cleanup
   tables->remove(new_table_name.c_str(), nullptr);
 }
