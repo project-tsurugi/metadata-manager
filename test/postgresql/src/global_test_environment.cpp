@@ -20,7 +20,7 @@
 #include <limits>
 
 #include "manager/metadata/common/config.h"
-#include "manager/metadata/dao/postgresql/dbc_utils.h"
+#include "manager/metadata/dao/postgresql/dbc_utils_pg.h"
 #include "test/helper/column_statistics_helper.h"
 #include "test/helper/table_metadata_helper.h"
 

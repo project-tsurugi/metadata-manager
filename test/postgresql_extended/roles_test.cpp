@@ -23,7 +23,7 @@
 #include <boost/property_tree/ptree.hpp>
 
 #include "manager/metadata/common/config.h"
-#include "manager/metadata/dao/postgresql/common.h"
+#include "manager/metadata/dao/postgresql/common_pg.h"
 #include "manager/metadata/roles.h"
 #include "manager/metadata/tables.h"
 

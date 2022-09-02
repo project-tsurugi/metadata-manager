@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "manager/metadata/dao/postgresql/dbc_utils.h"
+#include "manager/metadata/dao/postgresql/dbc_utils_pg.h"
 
 #include <libpq-fe.h>
 
@@ -25,7 +25,7 @@
 #include <string>
 
 #include "manager/metadata/common/message.h"
-#include "manager/metadata/dao/postgresql/common.h"
+#include "manager/metadata/dao/postgresql/common_pg.h"
 
 // =============================================================================
 namespace manager::metadata::db::postgresql {

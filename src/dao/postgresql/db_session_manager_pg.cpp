@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "manager/metadata/dao/postgresql/db_session_manager.h"
+#include "manager/metadata/dao/postgresql/db_session_manager_pg.h"
 
 #include <libpq-fe.h>
 
@@ -21,11 +21,11 @@
 
 #include "manager/metadata/common/config.h"
 #include "manager/metadata/common/message.h"
-#include "manager/metadata/dao/postgresql/columns_dao.h"
-#include "manager/metadata/dao/postgresql/datatypes_dao.h"
-#include "manager/metadata/dao/postgresql/dbc_utils.h"
-#include "manager/metadata/dao/postgresql/statistics_dao.h"
-#include "manager/metadata/dao/postgresql/tables_dao.h"
+#include "manager/metadata/dao/postgresql/columns_dao_pg.h"
+#include "manager/metadata/dao/postgresql/datatypes_dao_pg.h"
+#include "manager/metadata/dao/postgresql/dbc_utils_pg.h"
+#include "manager/metadata/dao/postgresql/statistics_dao_pg.h"
+#include "manager/metadata/dao/postgresql/tables_dao_pg.h"
 
 // =============================================================================
 namespace manager::metadata::db::postgresql {
