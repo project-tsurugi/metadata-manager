@@ -84,7 +84,7 @@ ErrorCode TablesDAO::insert_table_metadata(
   error = get_metadata_object(Tables::NAME, optional_name.get(),
                               table_name_searched);
   if (error == ErrorCode::OK) {
-    error = ErrorCode::TABLE_NAME_ALREADY_EXISTS;
+    error = ErrorCode::ALREADY_EXISTS;
     return error;
   }
 

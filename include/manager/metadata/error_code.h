@@ -61,11 +61,6 @@ enum class ErrorCode {
   UNKNOWN,
 
   /**
-   *  @brief table name already exists.
-   */
-  TABLE_NAME_ALREADY_EXISTS,
-
-  /**
    * @brief Invalid parameter input.
    */
   INVALID_PARAMETER,
