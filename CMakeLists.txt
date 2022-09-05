@@ -95,11 +95,11 @@ add_custom_target(format
 set(SUBMODULE_DIR ${CMAKE_SOURCE_DIR}/third_party)
 set(JWT-CPP_INCLUDE_DIR ${SUBMODULE_DIR}/jwt-cpp/include)
 
-message(STATUS "The target of the build is metadata-manager.")
 add_library(metadata-interface INTERFACE)
 
 add_subdirectory(${SUBMODULE_DIR}/googletest)
 
+message(STATUS "The target of the build is metadata-manager.")
 if(DATA_STORAGE_PG)
   message(STATUS "  Metadata is stored in PostgreSQL.")
   target_compile_options(metadata-interface INTERFACE -DSTORAGE_POSTGRESQL)
