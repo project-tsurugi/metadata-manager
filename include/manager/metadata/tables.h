@@ -27,18 +27,17 @@
 namespace manager::metadata {
 
 struct Column {
-	Column() {}
   /**
    * @brief represents sort direction of elements.
    */
-  enum class Direction : int64_t {
+  enum class Direction {
     /**
-     * @brief unsupported order. ex) SORTBY_USING
+     * @brief unsupported order. e.g.) SORTBY_USING
      */
     UNSUPPORTED = 99,
 
     /**
-     * @brief default order.
+     * @brief direction is none, so this column is not index.
      */
     NONE = -1,
 
@@ -56,12 +55,9 @@ struct Column {
      * @brief descendant order.
      */
     DESCENDANT,
-
   };
 
-  /**
-   * 
-   */
+	Column() {}
   int64_t       id;
   int64_t       table_id;
   std::string   name;
