@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 #include "test/utility/ut_table_metadata.h"
+#include "manager/metadata/tables.h"
 
 #include <utility>
-
-#include "manager/metadata/tables.h"
 
 namespace manager::metadata::testing {
 
@@ -120,6 +119,36 @@ void UTTableMetadata::generate_ptree() {
   }
 
   tables.add_child(Tables::COLUMNS_NODE, ptree_columns);
+}
+
+/**
+ * @brief Generate table metadata
+ * from UTTableMetadata fields.
+ * @return none.
+ */
+void UTTableMetadata::generate_table() 
+{
+  table.format_version = 1;
+  table.generation = 1;
+  table.id = id;
+  table.namespace_name = namespace_name;
+  table.name = name;
+  table.primary_keys.emplace_back(1);
+  table.primary_keys.emplace_back(2);
+  table.tuples = tuples;
+
+  for (UTColumnMetadata column_meta : columns) {
+    Column column;
+    column.id = column_meta.id;
+    column.name = column_meta.name;
+    column.ordinal_position = column_meta.ordinal_position;
+    column.data_type_id = column_meta.data_type_id;
+    column.nullable = column_meta.nullable;
+    column.varying = column_meta.varying;
+    column.default_expr = column_meta.default_expr;
+    column.direction = column_meta.direction;
+    table.columns.emplace_back(column);
+  }
 }
 
 }  // namespace manager::metadata::testing

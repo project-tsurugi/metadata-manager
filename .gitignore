@@ -1,0 +1,6 @@
+# VS Code
+/.vscode
+metadata-manager.code-workspace
+
+# Cmake
+/build

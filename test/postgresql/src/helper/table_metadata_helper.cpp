@@ -26,7 +26,7 @@
 #include <boost/format.hpp>
 
 #include "manager/metadata/common/config.h"
-#include "manager/metadata/dao/postgresql/tables_dao.h"
+#include "manager/metadata/dao/postgresql/tables_dao_pg.h"
 #include "manager/metadata/datatypes.h"
 #include "test/global_test_environment.h"
 #include "test/utility/ut_table_metadata.h"

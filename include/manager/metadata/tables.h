@@ -26,6 +26,64 @@
 
 namespace manager::metadata {
 
+struct Column {
+  /**
+   * @brief represents sort direction of elements.
+   */
+  enum class Direction {
+    /**
+     * @brief unsupported order. e.g.) SORTBY_USING
+     */
+    UNSUPPORTED = 99,
+
+    /**
+     * @brief direction is none, so this column is not index.
+     */
+    NONE = -1,
+
+    /**
+     * @brief default order.
+     */
+    DEFAULT = 0,
+
+    /**
+     * @brief ascendant order.
+     */
+    ASCENDANT,
+
+    /**
+     * @brief descendant order.
+     */
+    DESCENDANT,
+  };
+
+	Column() {}
+  int64_t       id;
+  int64_t       table_id;
+  std::string   name;
+  int64_t       ordinal_position;
+  int64_t       data_type_id;
+  int64_t       data_length;
+  bool          varying;
+  bool          nullable;
+  std::string   default_expr;
+  int64_t       direction;
+};
+
+struct Table {
+	Table() {}
+  int64_t       format_version;
+  int64_t       generation;
+  int64_t      	id;
+  std::string   namespace_name;
+  std::string   name;
+  int64_t       owner_role_id;
+  std::string   acl;
+  int64_t       tuples;
+  std::vector<int64_t>  primary_keys;
+  std::vector<Column>	  columns;
+};
+
 class Tables : public Metadata {
  public:
   // table metadata-object.
@@ -176,6 +234,15 @@ class Tables : public Metadata {
   ErrorCode confirm_permission_in_acls(std::string_view object_name,
                                        const char* permission,
                                        bool& check_result) const;
+
+  ErrorCode add(const manager::metadata::Table& table) const;
+  ErrorCode add(const manager::metadata::Table& table,
+                ObjectIdType* object_id) const;
+  
+  ErrorCode get(const ObjectIdType object_id,
+                manager::metadata::Table& table) const;
+  ErrorCode get(std::string_view table_name,
+                manager::metadata::Table& table) const;
 
  private:
   manager::metadata::ErrorCode param_check_metadata_add(

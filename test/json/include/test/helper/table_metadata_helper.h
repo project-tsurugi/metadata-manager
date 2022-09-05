@@ -22,6 +22,7 @@
 #include <boost/property_tree/ptree.hpp>
 
 #include "manager/metadata/metadata.h"
+#include "manager/metadata/tables.h"
 #include "test/utility/ut_table_metadata.h"
 
 namespace manager::metadata::testing {
@@ -41,6 +42,18 @@ class TableMetadataHelper {
   static void check_table_metadata_expected(
       const boost::property_tree::ptree& expected,
       const boost::property_tree::ptree& actual);
+
+  // add
+  static void add_table(
+      const manager::metadata::Table& new_table, ObjectIdType* table_id);
+
+  static void check_table_metadata_expected(
+      const manager::metadata::Table& expected,
+      const boost::property_tree::ptree& actual);
+
+  static void check_table_metadata_expected(
+      const boost::property_tree::ptree& expected,
+      const manager::metadata::Table& actual);
 
  private:
   static void check_metadata_expected(

@@ -22,7 +22,7 @@
 #include <tuple>
 
 #include "manager/metadata/dao/generic_dao.h"
-#include "manager/metadata/dao/postgresql/db_session_manager.h"
+#include "manager/metadata/dao/postgresql/db_session_manager_pg.h"
 #include "manager/metadata/dao/tables_dao.h"
 #include "manager/metadata/error_code.h"
 #include "manager/metadata/tables.h"
