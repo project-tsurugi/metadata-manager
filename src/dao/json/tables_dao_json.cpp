@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 tsurugi project.
+ * Copyright 2021-2022 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -112,6 +112,16 @@ ErrorCode TablesDAO::insert_table_metadata(
     column.put(Tables::Column::ID, object_id->generate("column"));
     // table ID
     column.put(Tables::Column::TABLE_ID, table_id);
+  }
+
+  // constraint metadata
+  BOOST_FOREACH (ptree::value_type& node,
+                 tmp_table.get_child(Tables::CONSTRAINTS_NODE)) {
+    ptree& constraint = node.second;
+    // constraint ID
+    constraint.put(Tables::Constraint::ID, object_id->generate("constraint"));
+    // table ID
+    constraint.put(Tables::Constraint::TABLE_ID, table_id);
   }
 
   // Getting a metadata object.

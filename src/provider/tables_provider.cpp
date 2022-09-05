@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 tsurugi project.
+ * Copyright 2021-2022 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,6 +51,16 @@ ErrorCode TablesProvider::init() {
     }
     // Set ColumnsDAO instance.
     columns_dao_ = std::static_pointer_cast<ColumnsDAO>(gdao);
+  }
+
+  if (constraints_dao_ == nullptr) {
+    // Get an instance of the ConstraintsDAO class.
+    error = session_manager_->get_dao(GenericDAO::TableName::CONSTRAINTS, gdao);
+    if (error != ErrorCode::OK) {
+      return error;
+    }
+    // Set ConstraintsDAO instance.
+    constraints_dao_ = std::static_pointer_cast<ConstraintsDAO>(gdao);
   }
 
   if (privileges_dao_ == nullptr) {
@@ -116,6 +126,21 @@ ErrorCode TablesProvider::add_table_metadata(
     }
   }
 
+  // Add constraint metadata object to constraint metadata table.
+  BOOST_FOREACH (const ptree::value_type& node,
+                 object.get_child(Tables::CONSTRAINTS_NODE)) {
+    ptree constraint = node.second;
+    error = constraints_dao_->insert_one_constraint_metadata(table_id, constraint);
+    if (error != ErrorCode::OK) {
+      // Roll back the transaction.
+      ErrorCode rollback_result = session_manager_->rollback();
+      if (rollback_result != ErrorCode::OK) {
+        error = rollback_result;
+      }
+      return error;
+    }
+  }
+
   // Commit the transaction.
   error = session_manager_->commit();
 
@@ -157,7 +182,7 @@ ErrorCode TablesProvider::get_table_metadata(
     return error;
   }
 
-  // Set the search key for column metadata.
+  // Set the search key for column metadata and constraint metadata.
   std::string table_id;
   if (key == Tables::ID) {
     table_id = value;
@@ -170,6 +195,9 @@ ErrorCode TablesProvider::get_table_metadata(
 
   // Get column metadata.
   error = get_column_metadata(table_id, object);
+
+  // Get constraint metadata.
+  error = get_constraint_metadata(table_id, object);
 
   return error;
 }
@@ -211,6 +239,23 @@ ErrorCode TablesProvider::get_table_metadata(
       break;
     }
   }
+
+  // Get constraint metadata.
+  BOOST_FOREACH (auto& table_object, container) {
+    std::string table_id = "";
+    auto o_table_id = table_object.get_optional<std::string>(Tables::ID);
+    if (!o_table_id) {
+      error = ErrorCode::INTERNAL_ERROR;
+      break;
+    }
+
+    // Get constraint metadata.
+    error = get_constraint_metadata(o_table_id.value(), table_object);
+    if (error != ErrorCode::OK) {
+      break;
+    }
+  }
+
   return error;
 }
 
@@ -350,6 +395,17 @@ ErrorCode TablesProvider::remove_table_metadata(std::string_view key,
     return error;
   }
 
+  error = constraints_dao_->delete_constraint_metadata(Tables::Constraint::TABLE_ID,
+                                               std::to_string(table_id));
+  if (error != ErrorCode::OK) {
+    // Roll back the transaction.
+    ErrorCode rollback_result = session_manager_->rollback();
+    if (rollback_result != ErrorCode::OK) {
+      return rollback_result;
+    }
+    return error;
+  }
+
   error = columns_dao_->delete_column_metadata(Tables::Column::TABLE_ID,
                                                std::to_string(table_id));
   if (error == ErrorCode::OK) {
@@ -424,6 +480,34 @@ ErrorCode TablesProvider::get_column_metadata(
                                                table_id, columns);
   if ((error == ErrorCode::OK) || (error == ErrorCode::INVALID_PARAMETER)) {
     table_object.add_child(Tables::COLUMNS_NODE, columns);
+    error = ErrorCode::OK;
+  }
+
+  return error;
+}
+
+/**
+ * @brief Get constraint metadata-object based on the given table id.
+ * @param (table_id)      [in]  table id.
+ * @param (table_object)  [out] table metadata-object
+ *   with the specified table id.
+ * @return ErrorCode::OK if success, otherwise an error code.
+ */
+ErrorCode TablesProvider::get_constraint_metadata(
+    std::string_view table_id,
+    boost::property_tree::ptree& table_object) const {
+  ErrorCode error = ErrorCode::UNKNOWN;
+
+  if (table_id.empty()) {
+    error = ErrorCode::INTERNAL_ERROR;
+    return error;
+  }
+
+  ptree constraints;
+  error = constraints_dao_->select_constraint_metadata(Tables::Constraint::TABLE_ID,
+                                               table_id, constraints);
+  if ((error == ErrorCode::OK) || (error == ErrorCode::INVALID_PARAMETER)) {
+    table_object.add_child(Tables::CONSTRAINTS_NODE, constraints);
     error = ErrorCode::OK;
   }
 

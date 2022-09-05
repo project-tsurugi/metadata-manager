@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 tsurugi project.
+ * Copyright 2020-2022 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -70,6 +70,10 @@ class Tables : public Metadata {
    */
   static constexpr const char* const COLUMNS_NODE = "columns";
   /**
+   * @brief Field name constant indicating the constraints node of the metadata.
+   */
+  static constexpr const char* const CONSTRAINTS_NODE = "constraints";
+  /**
    * @brief Field name constant indicating the primary keys of the metadata.
    */
   static constexpr const char* const PRIMARY_KEY_NODE = "primaryKey";
@@ -136,6 +140,10 @@ class Tables : public Metadata {
      * @brief Field name constant indicating the direction of the metadata.
      */
     static constexpr const char* const DIRECTION = "direction";
+    /**
+     * @brief Field name constant indicating the constraints node of the metadata.
+     */
+    static constexpr const char* const CONSTRAINTS_NODE = "constraints";
 
     /**
      * @brief represents sort direction of elements.
@@ -156,6 +164,54 @@ class Tables : public Metadata {
        */
       DESCENDANT,
     };
+  };
+
+  // constraint metadata-object.
+  struct Constraint {
+    /**
+     * @brief Field name constant indicating the format version of the metadata.
+     */
+    static constexpr const char* const FORMAT_VERSION = "formatVersion";
+    /**
+     * @brief Field name constant indicating the generation of the metadata.
+     */
+    static constexpr const char* const GENERATION = "generation";
+    /**
+     * @brief Field name constant indicating the object id of the metadata.
+     */
+    static constexpr const char* const ID = "id";
+    /**
+     * @brief Field name constant indicating the table id of the metadata.
+     */
+    static constexpr const char* const TABLE_ID = "tableId";
+    /**
+     * @brief Field name constant indicating the column position of the metadata.
+     */
+    static constexpr const char* const COLUMN_POSITION = "columnPosition";
+    /**
+     * @brief Field name constant indicating the constraint TYPE of the metadata.
+     */
+    static constexpr const char* const TYPE = "type";
+    /**
+     * @brief Field name constant indicating the constraint name of the metadata.
+     */
+    static constexpr const char* const NAME = "name";
+    /**
+     * @brief Field name constant indicating the constraints with expressions (CHECK and DEFAULT) of the metadata.
+     */
+    static constexpr const char* const EXPRESSION = "expression";
+    /**
+     * @brief Field name constant indicating the unique constraints (UNIQUE and PRIMARY KEY) of the metadata.
+     */
+    static constexpr const char* const KEYS = "keys";
+    /**
+     * @brief Field name constant indicating the nonkey column(s) of the metadata.
+     */
+    static constexpr const char* const INCLUDING = "including";
+    /**
+     * @brief Field name constant indicating the secondary index of the metadata.
+     */
+    static constexpr const char* const SECONDARY_INDEX = "secondaryIndex";
   };
 
   /**

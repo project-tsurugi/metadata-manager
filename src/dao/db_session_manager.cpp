@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 tsurugi project.
+ * Copyright 2020-2022 tsurugi project.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@
 #include "manager/metadata/dao/postgresql/tables_dao_pg.h"
 #elif defined(STORAGE_JSON)
 #include "manager/metadata/dao/json/columns_dao_json.h"
+#include "manager/metadata/dao/json/constraints_dao_json.h"
 #include "manager/metadata/dao/json/datatypes_dao_json.h"
 #include "manager/metadata/dao/json/privileges_dao_json.h"
 #include "manager/metadata/dao/json/tables_dao_json.h"
@@ -91,6 +92,11 @@ manager::metadata::ErrorCode DBSessionManager::create_dao(
     case GenericDAO::TableName::COLUMNS: {
       auto cdao =
           std::make_shared<storage::ColumnsDAO>(storage_session_manager);
+      gdao = cdao;
+      break;
+    }
+    case GenericDAO::TableName::CONSTRAINTS: {
+      auto cdao = std::make_shared<storage::ConstraintsDAO>(storage_session_manager);
       gdao = cdao;
       break;
     }

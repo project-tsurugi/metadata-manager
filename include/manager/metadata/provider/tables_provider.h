@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 tsurugi project.
+ * Copyright 2021-2022 tsurugi project.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@
 #include <boost/property_tree/ptree.hpp>
 
 #include "manager/metadata/dao/columns_dao.h"
+#include "manager/metadata/dao/constraints_dao.h"
 #include "manager/metadata/dao/privileges_dao.h"
 #include "manager/metadata/dao/tables_dao.h"
 #include "manager/metadata/error_code.h"
@@ -62,11 +63,17 @@ class TablesProvider : public ProviderBase {
  private:
   std::shared_ptr<TablesDAO> tables_dao_ = nullptr;
   std::shared_ptr<ColumnsDAO> columns_dao_ = nullptr;
+  std::shared_ptr<ConstraintsDAO> constraints_dao_ = nullptr;
   std::shared_ptr<PrivilegesDAO> privileges_dao_ = nullptr;
 
   manager::metadata::ErrorCode get_all_column_metadata(
       boost::property_tree::ptree& tables) const;
   manager::metadata::ErrorCode get_column_metadata(
+      std::string_view table_id,
+      boost::property_tree::ptree& tables) const;
+  manager::metadata::ErrorCode get_all_constraint_metadata(
+      boost::property_tree::ptree& tables) const;
+  manager::metadata::ErrorCode get_constraint_metadata(
       std::string_view table_id,
       boost::property_tree::ptree& tables) const;
 };  // class TablesProvider
