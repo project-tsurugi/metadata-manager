@@ -39,4 +39,43 @@ namespace manager::metadata {
   return ErrorCode::OK;
 }
 
+  /**
+   *  @brief  Check if the object with the specified object ID exists.
+   *  @param  object_id   [in]  ID of metadata.
+   *  @return true if success.
+   */
+  bool Metadata::exists(const ObjectIdType object_id) const
+  {
+    bool result = false;
+
+    boost::property_tree::ptree object;
+    ErrorCode error = this->get(object_id, object);
+    if (error != ErrorCode::OK) {
+      return result;
+    }
+    result = true;
+
+    return result;
+  }
+
+  /**
+   *  @brief  Check if the object with the specified name exists.
+   *  @param  name   [in]  name of metadata.
+   *  @return true if success.
+   */
+  bool Metadata::exists(std::string_view object_name) const
+  {
+    bool result = false;
+
+    boost::property_tree::ptree object;
+    ErrorCode error = this->get(object_name, object);
+    if (error != ErrorCode::OK) {
+      return result;
+    }
+    result = true;
+
+    return result;
+  }
+
+
 }  // namespace manager::metadata
