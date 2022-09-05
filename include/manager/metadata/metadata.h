@@ -101,11 +101,18 @@ class Metadata {
                         const GenerationType generation = kLatestVersion);
 
   /**
-   *  @brief  Check if the data with the specified object ID exists.
+   *  @brief  Check if the object with the specified object ID exists.
    *  @param  object_id   [in]  ID of metadata.
    *  @return true if success.
    */
-  virtual bool exists(const ObjectIdType object_id) const = 0;
+  virtual bool exists(const ObjectIdType object_id) const;
+
+  /**
+   *  @brief  Check if the object with the specified name exists.
+   *  @param  name   [in]  name of metadata.
+   *  @return true if success.
+   */
+  virtual bool exists(std::string_view object_name) const;
 
   /**
    *  @brief  Add metadata-object to metadata-table.

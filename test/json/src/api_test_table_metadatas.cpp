@@ -56,6 +56,14 @@ TEST_F(ApiTestTableMetadata, add_get_table_metadata_by_table_name3) {
   ErrorCode error = tables->init();
   EXPECT_EQ(ErrorCode::OK, error);
 
+  // check if the specified object exists.
+  bool exists = tables->exists( new_table.id);
+  EXPECT_EQ(exists, true);
+
+  // check if the specified object exists.
+  exists = tables->exists(new_table_name);
+  EXPECT_EQ(exists, true);
+
   // get table metadata by table name.
   ptree table_metadata_inserted;
   error = tables->get(new_table_name, table_metadata_inserted);
@@ -131,6 +139,14 @@ TEST_F(ApiTestTableMetadata, add_get_table_metadata_by_table_name) {
   auto tables = std::make_unique<Tables>(GlobalTestEnvironment::TEST_DB);
   ErrorCode error = tables->init();
   EXPECT_EQ(ErrorCode::OK, error);
+
+  // check if the specified object exists.
+  bool exists = tables->exists(ret_table_id);
+  EXPECT_EQ(exists, true);
+
+  // check if the specified object exists.
+  exists = tables->exists(new_table_name);
+  EXPECT_EQ(exists, true);
 
   // get table metadata by table name.
   ptree table_metadata_inserted;
