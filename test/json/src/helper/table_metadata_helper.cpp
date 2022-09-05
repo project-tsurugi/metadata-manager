@@ -526,7 +526,7 @@ void TableMetadataHelper::check_table_metadata_expected(
 
   // tuples
   auto o_tuples_expected = expected.get_optional<float>(Tables::TUPLES);
-  auto o_tuples_actual = expected.get_optional<float>(Tables::TUPLES);
+  auto o_tuples_actual = actual.get_optional<float>(Tables::TUPLES);
   if (o_tuples_expected && o_tuples_actual) {
     EXPECT_EQ(o_tuples_expected.value(), o_tuples_actual.value());
   } else if (!o_tuples_expected && !o_tuples_actual) {
