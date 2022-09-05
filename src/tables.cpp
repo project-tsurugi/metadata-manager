@@ -466,6 +466,12 @@ ErrorCode Tables::confirm_permission_in_acls(std::string_view object_name,
  *  structure interfaces.
  * 
  */
+
+/**
+ * @brief   Transform table metadata from structure to property tree.
+ * 
+ * 
+ */
 ptree transform_to_ptree(const Table& table)
 {
   ptree ptree_table;
@@ -502,7 +508,7 @@ ptree transform_to_ptree(const Table& table)
     ptree_column.put<bool>(Tables::Column::VARYING, column.varying);  
     ptree_column.put<bool>(Tables::Column::NULLABLE, column.nullable);  
     ptree_column.put(Tables::Column::DEFAULT, column.default_expr);  
-    ptree_column.put<Column::Direction>(Tables::Column::DIRECTION, column.direction);  
+    ptree_column.put<int64_t>(Tables::Column::DIRECTION, static_cast<int64_t>(column.direction));  
 
 #if 0
     ptree data_length;
@@ -555,6 +561,11 @@ ErrorCode Tables::add(const manager::metadata::Table& table,
   return ErrorCode::OK;
 }
 
+/**
+ * @brief   Transform table metadata from property tree to structure.
+ * 
+ * 
+ */
 Table transform_from_ptree(const ptree& ptree_table)
 {
   Table table;
@@ -599,7 +610,7 @@ Table transform_from_ptree(const ptree& ptree_table)
     auto varying        = ptree_column.get_optional<bool>(Tables::Column::VARYING);
     auto nullable       = ptree_column.get_optional<bool>(Tables::Column::NULLABLE);
     auto default_expr   = ptree_column.get_optional<std::string>(Tables::Column::DEFAULT);
-    auto direction      = ptree_column.get_optional<Column::Direction>(Tables::Column::DIRECTION);
+    auto direction      = ptree_column.get_optional<int64_t>(Tables::Column::DIRECTION);
 
     Column column;
 
@@ -608,7 +619,8 @@ Table transform_from_ptree(const ptree& ptree_table)
     name              ? column.name = name.get()            : column.name = "";
     varying           ? column.varying = varying.get()      : column.varying = 0;
     nullable          ? column.nullable = nullable.get()    : column.nullable = 0;
-    direction         ? column.direction = direction.get()  : column.direction = Column::Direction::NONE;
+    direction         ? column.direction = static_cast<int64_t>(direction.get()) 
+                      : column.direction = static_cast<int64_t>(Column::Direction::NONE);
     ordinal_position  ? column.ordinal_position = ordinal_position.get() : column.ordinal_position = 0;
     data_type_id      ? column.data_type_id = data_type_id.get()  : column.data_type_id = 0;
     default_expr      ? column.default_expr = default_expr.get()  : column.default_expr = "";

@@ -71,7 +71,7 @@ struct Column {
   bool          varying;
   bool          nullable;
   std::string   default_expr;
-  Direction     direction;
+  int64_t       direction;
 };
 
 struct Table {
