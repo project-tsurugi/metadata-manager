@@ -238,7 +238,7 @@ TEST_F(ApiTestTableMetadata, get_two_table_metadata_by_table_name) {
   // add second table metadata.
   error = tables->add(new_table, &ret_table_id[1]);
 
-  EXPECT_EQ(ErrorCode::TABLE_NAME_ALREADY_EXISTS, error);
+  EXPECT_EQ(ErrorCode::ALREADY_EXISTS, error);
   EXPECT_EQ(ret_table_id[1], -1);
 
   UTUtils::print("-- add table metadata --");
