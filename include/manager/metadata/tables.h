@@ -27,36 +27,6 @@
 namespace manager::metadata {
 
 struct Column {
-  /**
-   * @brief represents sort direction of elements.
-   */
-  enum class Direction {
-    /**
-     * @brief unsupported order. e.g.) SORTBY_USING
-     */
-    UNSUPPORTED = 99,
-
-    /**
-     * @brief direction is none, so this column is not index.
-     */
-    NONE = -1,
-
-    /**
-     * @brief default order.
-     */
-    DEFAULT = 0,
-
-    /**
-     * @brief ascendant order.
-     */
-    ASCENDANT,
-
-    /**
-     * @brief descendant order.
-     */
-    DESCENDANT,
-  };
-
 	Column() {}
   int64_t       id;
   int64_t       table_id;
@@ -67,7 +37,6 @@ struct Column {
   bool          varying;
   bool          nullable;
   std::string   default_expr;
-  int64_t       direction;
 };
 
 struct Table {
