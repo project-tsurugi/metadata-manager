@@ -67,15 +67,11 @@ void TableMetadataHelper::generate_table_metadata(
   UTColumnMetadata column1{
       col_names[0], ordinal_positions[0],
       static_cast<ObjectIdType>(DataTypes::DataTypesId::FLOAT32), !is_null};
-  column1.direction =
-      static_cast<ObjectIdType>(Tables::Column::Direction::ASCENDANT);
 
   // second column metadata
   UTColumnMetadata column2{
       col_names[1], ordinal_positions[1],
       static_cast<ObjectIdType>(DataTypes::DataTypesId::VARCHAR), !is_null};
-  column2.direction =
-      static_cast<ObjectIdType>(Tables::Column::Direction::DEFAULT);
   ptree data_length;
   data_length.put("", 8);
   column2.p_data_lengths.push_back(std::make_pair("", data_length));
@@ -342,12 +338,6 @@ void TableMetadataHelper::check_table_metadata_expected(
       if (default_expr) {
         EXPECT_EQ(column_expected->default_expr, default_expr.get());
       }
-
-      // direction
-      auto direction = column_actual.get_optional<int64_t>(Tables::Column::DIRECTION);
-      if (direction) {
-        EXPECT_EQ(column_expected->direction, direction.get());
-      }
     }
   } else if (columns_expected.size() == 0 && !o_columns_actual) {
     ASSERT_TRUE(true);
@@ -465,11 +455,6 @@ void TableMetadataHelper::check_table_metadata_expected(
       auto default_expr = column_expected.get_optional<std::string>(Tables::Column::DEFAULT);
       if (default_expr) {
         EXPECT_EQ(default_expr.get(), column_actual->default_expr);
-      }
-      // direction
-      auto direction = column_expected.get_optional<int64_t>(Tables::Column::DIRECTION);
-      if (direction) {
-        EXPECT_EQ(direction.get(), column_actual->direction);
       }
       column_actual++;
     }
@@ -590,9 +575,6 @@ void TableMetadataHelper::check_table_metadata_expected(
       // default
       check_column_metadata_expected<std::string>(
           column_expected, column_actual, Tables::Column::DEFAULT);
-      // direction
-      check_column_metadata_expected<ObjectIdType>(
-          column_expected, column_actual, Tables::Column::DIRECTION);
     }
   } else if (!o_columns_expected && !o_columns_actual) {
     ASSERT_TRUE(true);

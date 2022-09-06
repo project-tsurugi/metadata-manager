@@ -108,13 +108,6 @@ void UTTableMetadata::generate_ptree() {
       ptree_column.put(Tables::Column::DEFAULT, column.default_expr);
     }
 
-    // add column direction to ptree
-    // if UTTableMetadata direction is initialized
-    if (column.direction >=
-        static_cast<int>(Tables::Column::Direction::DEFAULT)) {
-      ptree_column.put(Tables::Column::DIRECTION, column.direction);
-    }
-
     ptree_columns.push_back(std::make_pair("", ptree_column));
   }
 
@@ -146,7 +139,6 @@ void UTTableMetadata::generate_table()
     column.nullable = column_meta.nullable;
     column.varying = column_meta.varying;
     column.default_expr = column_meta.default_expr;
-    column.direction = column_meta.direction;
     table.columns.emplace_back(column);
   }
 }
