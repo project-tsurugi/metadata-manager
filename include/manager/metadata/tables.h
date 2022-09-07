@@ -26,6 +26,18 @@
 
 namespace manager::metadata {
 
+struct Constraint {
+	Constraint() {}
+  int64_t       id;
+  int64_t       table_id;
+  int64_t       column_position;
+  int64_t       type;
+  std::string   name;
+  std::string   expression;
+  std::vector<int64_t>    keys;
+  std::vector<int64_t>    including;
+};
+
 struct Column {
 	Column() {}
   int64_t       id;
@@ -37,6 +49,7 @@ struct Column {
   bool          varying;
   bool          nullable;
   std::string   default_expr;
+  std::vector<Constraint> constraints;
 };
 
 struct Table {
@@ -51,6 +64,7 @@ struct Table {
   int64_t       tuples;
   std::vector<int64_t>  primary_keys;
   std::vector<Column>	  columns;
+  std::vector<Constraint> constraints;
 };
 
 class Tables : public Metadata {

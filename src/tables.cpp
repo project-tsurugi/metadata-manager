@@ -644,10 +644,39 @@ ptree transform_to_ptree(const Table& table)
 #else
     ptree_column.put<int64_t>(Tables::Column::DATA_LENGTH, column.data_length);  
 #endif
+
+    // column constraints metadata
+    ptree ptree_column_constraints;
+    for (const Constraint& constraint : column.constraints) {
+      ptree ptree_constraint;
+      ptree_constraint.put<int64_t>(Tables::Constraint::ID, constraint.id);
+      ptree_constraint.put<int64_t>(Tables::Constraint::TABLE_ID, constraint.table_id);
+      ptree_constraint.put<int64_t>(Tables::Constraint::COLUMN_POSITION, constraint.column_position);
+      ptree_constraint.put<int64_t>(Tables::Constraint::TYPE, constraint.type);
+      ptree_constraint.put(Tables::Constraint::NAME, constraint.name);
+      ptree_constraint.put(Tables::Constraint::EXPRESSION, constraint.expression);
+      ptree_column_constraints.push_back(std::make_pair("", ptree_constraint));
+    }
+    ptree_column.add_child(Tables::Column::CONSTRAINTS_NODE, ptree_column_constraints);  
+
     ptree_columns.push_back(std::make_pair("", ptree_column));
   }
 
   ptree_table.add_child(Tables::COLUMNS_NODE, ptree_columns);
+
+  // table constraints metadata
+  ptree ptree_constraints;
+  for (const Constraint& constraint : table.constraints) {
+    ptree ptree_constraint;
+    ptree_constraint.put<int64_t>(Tables::Constraint::ID, constraint.id);
+    ptree_constraint.put<int64_t>(Tables::Constraint::TABLE_ID, constraint.table_id);
+    ptree_constraint.put<int64_t>(Tables::Constraint::COLUMN_POSITION, constraint.column_position);
+    ptree_constraint.put<int64_t>(Tables::Constraint::TYPE, constraint.type);
+    ptree_constraint.put(Tables::Constraint::NAME, constraint.name);
+    ptree_constraint.put(Tables::Constraint::EXPRESSION, constraint.expression);
+    ptree_constraints.push_back(std::make_pair("", ptree_constraint));
+  }
+  ptree_table.add_child(Tables::CONSTRAINTS_NODE, ptree_constraints);
 
   return ptree_table;
 }
@@ -721,6 +750,30 @@ Table transform_from_ptree(const ptree& ptree_table)
     table.primary_keys.emplace_back(ordinal_position.get());
   }
 
+  // table constraints metadata
+  BOOST_FOREACH (const ptree::value_type& node, ptree_table.get_child(Tables::CONSTRAINTS_NODE)) {
+    const ptree& ptree_column = node.second;
+    auto format_version = ptree_column.get_optional<int64_t>(Tables::Constraint::FORMAT_VERSION);
+    auto generation     = ptree_column.get_optional<int64_t>(Tables::Constraint::GENERATION);
+    auto id             = ptree_column.get_optional<int64_t>(Tables::Constraint::ID);
+    auto table_id       = ptree_column.get_optional<int64_t>(Tables::Constraint::TABLE_ID);
+    auto column_position = ptree_column.get_optional<int64_t>(Tables::Constraint::COLUMN_POSITION);
+    auto type           = ptree_column.get_optional<int64_t>(Tables::Constraint::TYPE);
+    auto name           = ptree_column.get_optional<std::string>(Tables::Constraint::NAME);
+    auto expression     = ptree_column.get_optional<std::string>(Tables::Constraint::EXPRESSION);
+
+    Constraint constraint;
+
+    id                ? constraint.id = id.get()                            : constraint.id = 0;
+    table_id          ? constraint.table_id = table_id.get()                : table_id = 0;
+    column_position   ? constraint.column_position = column_position.get()  : constraint.column_position = 0;
+    type              ? constraint.type = type.get()                        : constraint.type = 0;
+    name              ? constraint.name = name.get()                        : constraint.name = "";
+    expression        ? constraint.expression = expression.get()            : constraint.expression = "";
+
+    table.constraints.emplace_back(constraint);
+  }
+
   // columns metadata
   BOOST_FOREACH (const ptree::value_type& node, ptree_table.get_child(Tables::COLUMNS_NODE)) {
     const ptree& ptree_column = node.second;
@@ -756,6 +809,31 @@ Table transform_from_ptree(const ptree& ptree_table)
 #else
     data_length       ? column.data_length = data_length.get()            : column.data_length = 0;
 #endif
+
+      // column constraints metadata
+      BOOST_FOREACH (const ptree::value_type& node_constraint, ptree_column.get_child(Tables::CONSTRAINTS_NODE)) {
+        const ptree& ptree_column = node_constraint.second;
+        auto format_version = ptree_column.get_optional<int64_t>(Tables::Constraint::FORMAT_VERSION);
+        auto generation     = ptree_column.get_optional<int64_t>(Tables::Constraint::GENERATION);
+        auto id             = ptree_column.get_optional<int64_t>(Tables::Constraint::ID);
+        auto table_id       = ptree_column.get_optional<int64_t>(Tables::Constraint::TABLE_ID);
+        auto column_position = ptree_column.get_optional<int64_t>(Tables::Constraint::COLUMN_POSITION);
+        auto type           = ptree_column.get_optional<int64_t>(Tables::Constraint::TYPE);
+        auto name           = ptree_column.get_optional<std::string>(Tables::Constraint::NAME);
+        auto expression     = ptree_column.get_optional<std::string>(Tables::Constraint::EXPRESSION);
+
+        Constraint constraint;
+
+        id                ? constraint.id = id.get()                            : constraint.id = 0;
+        table_id          ? constraint.table_id = table_id.get()                : table_id = 0;
+        column_position   ? constraint.column_position = column_position.get()  : constraint.column_position = 0;
+        type              ? constraint.type = type.get()                        : constraint.type = 0;
+        name              ? constraint.name = name.get()                        : constraint.name = "";
+        expression        ? constraint.expression = expression.get()            : constraint.expression = "";
+
+        column.constraints.emplace_back(constraint);
+      }
+
     table.columns.emplace_back(column);
   }
 
