@@ -44,8 +44,8 @@ if(BUILD_TESTS)
   enable_testing()
 endif()
 
-set(package_name "manager")
-set(export_name "manager")
+set(package_name "metadata-manager")
+set(export_name "metadata-manager")
 
 configure_file(
   ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Config.cmake.in
