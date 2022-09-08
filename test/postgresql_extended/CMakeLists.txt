@@ -15,25 +15,23 @@
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -L${PG_LIB_DIR}")
 
 add_executable(roles_test roles_test.cpp)
-target_link_libraries(roles_test metadata pq)
+target_link_libraries(roles_test api pq)
 target_include_directories(roles_test
   PRIVATE ${PG_INCLUDE_DIR}
-  PRIVATE ${PROJECT_SOURCE_DIR}/include/manager/metadata
-  PRIVATE include
+  PRIVATE ${PROJECT_SOURCE_DIR}/include
 )
 set_target_properties(roles_test
   PROPERTIES
-  RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/output"
+  RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}"
 )
 
 add_executable(tables_test tables_test.cpp)
-target_link_libraries(tables_test metadata pq)
+target_link_libraries(tables_test api pq)
 target_include_directories(tables_test
   PRIVATE ${PG_INCLUDE_DIR}
-  PRIVATE ${PROJECT_SOURCE_DIR}/include/manager/metadata
-  PRIVATE include
+  PRIVATE ${PROJECT_SOURCE_DIR}/include
 )
 set_target_properties(tables_test
   PROPERTIES
-  RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/output"
+  RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}"
 )

@@ -14,7 +14,7 @@
 
 cmake_minimum_required(VERSION 3.10)
 
-project(manager
+project(metadata-manager
   VERSION 0.0.1
   LANGUAGES CXX
 )
@@ -40,7 +40,7 @@ include(CompileOptions)
 include(InstallOptions)
 include(DatabaseOptions)
 
-if(BUILD_TESTS)
+if (BUILD_TESTS)
   enable_testing()
 endif()
 
@@ -76,7 +76,7 @@ install(
 
 string(TOUPPER ${DATA_STORAGE} VARNAME)
 
-if((VARNAME STREQUAL "POSTGRESQL") OR(NOT DATA_STORAGE))
+if ((VARNAME STREQUAL "POSTGRESQL") OR (NOT DATA_STORAGE))
   set(DATA_STORAGE_PG TRUE)
 elseif(VARNAME STREQUAL "JSON")
   set(DATA_STORAGE_JSON TRUE)
@@ -84,8 +84,6 @@ else()
   unset(DATA_STORAGE CACHE)
   message(FATAL_ERROR "Unsupported data storage. [${VARNAME}]")
 endif()
-
-unset(DATA_STORAGE CACHE)
 
 add_custom_target(format
   COMMAND git ls-files '*.cpp' '*.h' | xargs clang-format -i --style=file -verbose
@@ -95,27 +93,27 @@ add_custom_target(format
 set(SUBMODULE_DIR ${CMAKE_SOURCE_DIR}/third_party)
 set(JWT-CPP_INCLUDE_DIR ${SUBMODULE_DIR}/jwt-cpp/include)
 
-add_library(metadata-interface INTERFACE)
+add_library(interface INTERFACE)
 
 add_subdirectory(${SUBMODULE_DIR}/googletest)
 
 message(STATUS "The target of the build is metadata-manager.")
-if(DATA_STORAGE_PG)
+if (DATA_STORAGE_PG)
   message(STATUS "  Metadata is stored in PostgreSQL.")
-  target_compile_options(metadata-interface INTERFACE -DSTORAGE_POSTGRESQL)
+  target_compile_options(interface INTERFACE -DSTORAGE_POSTGRESQL)
   set_postgresql()
-elseif(DATA_STORAGE_JSON)
+elseif (DATA_STORAGE_JSON)
   message(STATUS "  Metadata is stored in JSON-file.")
-  target_compile_options(metadata-interface INTERFACE -DSTORAGE_JSON)
-endif(DATA_STORAGE_PG)
+  target_compile_options(interface INTERFACE -DSTORAGE_JSON)
+endif()
 
-target_include_directories(metadata-interface
+target_include_directories(interface
   INTERFACE
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/manager>
 )
 
-install_custom(metadata-interface ${export_name})
+install_custom(interface ${export_name})
 
 add_subdirectory(src)
 add_subdirectory(test)
