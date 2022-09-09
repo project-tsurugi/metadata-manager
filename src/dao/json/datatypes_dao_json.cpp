@@ -18,8 +18,10 @@
 #include <boost/foreach.hpp>
 #include <boost/property_tree/ptree.hpp>
 
+#include "manager/metadata/common/message.h"
 #include "manager/metadata/dao/common/pg_type.h"
 #include "manager/metadata/error_code.h"
+#include "manager/metadata/helper/logging_helper.h"
 
 // =============================================================================
 namespace manager::metadata::db::json {
@@ -152,6 +154,8 @@ ErrorCode DataTypesDAO::select_one_data_type_metadata(
     boost::optional<std::string> value =
         temp_obj.get_optional<std::string>(object_key.data());
     if (!value) {
+      LOG_ERROR << Message::PARAMETER_FAILED << "\"" << object_key.data()
+                << "\" => undefined value";
       error = ErrorCode::INVALID_PARAMETER;
       break;
     }
