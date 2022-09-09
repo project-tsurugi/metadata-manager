@@ -20,8 +20,10 @@
 #include <boost/property_tree/ptree.hpp>
 
 #include "manager/metadata/common/config.h"
+#include "manager/metadata/common/message.h"
 #include "manager/metadata/dao/json/object_id_json.h"
 #include "manager/metadata/error_code.h"
+#include "manager/metadata/helper/logging_helper.h"
 #include "manager/metadata/metadata.h"
 #include "manager/metadata/tables.h"
 
@@ -84,6 +86,7 @@ ErrorCode TablesDAO::insert_table_metadata(
   error = get_metadata_object(Tables::NAME, optional_name.get(),
                               table_name_searched);
   if (error == ErrorCode::OK) {
+    LOG_WARNING << Message::ALREADY_EXISTS << optional_name.get();
     error = ErrorCode::ALREADY_EXISTS;
     return error;
   }
