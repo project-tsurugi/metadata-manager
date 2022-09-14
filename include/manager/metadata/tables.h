@@ -23,44 +23,31 @@
 
 #include "manager/metadata/error_code.h"
 #include "manager/metadata/metadata.h"
+#include "manager/metadata/columns.h"
+#include "manager/metadata/indexes.h"
+#include "manager/metadata/constraints.h"
 
 namespace manager::metadata {
-
-struct Column {
-	Column() {}
-  int64_t       id;
-  int64_t       table_id;
-  std::string   name;
-  int64_t       ordinal_position;
-  int64_t       data_type_id;
-  int64_t       data_length;
-  bool          varying;
-  bool          nullable;
-  std::string   default_expr;
+/**
+ * @brief Table metadata object.
+ */
+struct Table : public Object {
+  Table() {}
+  std::string             namespace_name;
+  int64_t                 owner_id;
+  std::string             acl;
+  int64_t                 tuples;
+  std::vector<int64_t>    primary_keys;
+  std::vector<Column>	    columns;
+  std::vector<Index>      indexes;
+  std::vector<Constraint> constraints;
 };
 
-struct Table {
-	Table() {}
-  int64_t       format_version;
-  int64_t       generation;
-  int64_t      	id;
-  std::string   namespace_name;
-  std::string   name;
-  int64_t       owner_role_id;
-  std::string   acl;
-  int64_t       tuples;
-  std::vector<int64_t>  primary_keys;
-  std::vector<Column>	  columns;
-};
-
+/**
+ * @brief Container of table metadata objects.
+ */
 class Tables : public Metadata {
  public:
-  // table metadata-object.
-  // FORMAT_VERSION is defined in base class.
-  // GENERATION is defined in base class.
-  // ID is defined in base class.
-  // NAME is defined in base class.
-
   /**
    * @brief Field name constant indicating the namespace of the metadata.
    */
@@ -175,29 +162,29 @@ class Tables : public Metadata {
 
   ErrorCode add(const boost::property_tree::ptree& object) const override;
   ErrorCode add(const boost::property_tree::ptree& object,
-                ObjectIdType* object_id) const override;
+                ObjectId* object_id) const override;
 
-  ErrorCode get(const ObjectIdType object_id,
+  ErrorCode get(const ObjectId object_id,
                 boost::property_tree::ptree& object) const override;
   ErrorCode get(std::string_view object_name,
                 boost::property_tree::ptree& object) const override;
   ErrorCode get_all(
       std::vector<boost::property_tree::ptree>& container) const override;
 
-  ErrorCode get_statistic(const ObjectIdType table_id,
+  ErrorCode get_statistic(const ObjectId table_id,
                           boost::property_tree::ptree& object) const;
   ErrorCode get_statistic(std::string_view table_name,
                           boost::property_tree::ptree& object) const;
   ErrorCode set_statistic(boost::property_tree::ptree& object) const;
 
-  ErrorCode remove(const ObjectIdType object_id) const override;
+  ErrorCode remove(const ObjectId object_id) const override;
   ErrorCode remove(std::string_view object_name,
-                   ObjectIdType* object_id) const override;
+                   ObjectId* object_id) const override;
 
   ErrorCode get_acls(std::string_view token,
                      boost::property_tree::ptree& acls) const;
 
-  ErrorCode confirm_permission_in_acls(const ObjectIdType object_id,
+  ErrorCode confirm_permission_in_acls(const ObjectId object_id,
                                        const char* permission,
                                        bool& check_result) const;
   ErrorCode confirm_permission_in_acls(std::string_view object_name,
@@ -206,9 +193,9 @@ class Tables : public Metadata {
 
   ErrorCode add(const manager::metadata::Table& table) const;
   ErrorCode add(const manager::metadata::Table& table,
-                ObjectIdType* object_id) const;
+                ObjectId* object_id) const;
   
-  ErrorCode get(const ObjectIdType object_id,
+  ErrorCode get(const ObjectId object_id,
                 manager::metadata::Table& table) const;
   ErrorCode get(std::string_view table_name,
                 manager::metadata::Table& table) const;

@@ -27,10 +27,26 @@ namespace manager::metadata {
 
 using FormatVersionType = std::int32_t;
 using GenerationType = std::int64_t;
-using ObjectIdType = std::int64_t;
+using ObjectId = std::int64_t;
+using ObjectIdType = ObjectId;
 
-constexpr ObjectIdType INVALID_OBJECT_ID = -1;
+static constexpr ObjectId INVALID_OBJECT_ID = -1;
+static constexpr int64_t INVALID_VALUE = -1;
 
+/**
+ * @brief
+ */
+struct Object {
+  Object() {}
+  int64_t format_version;
+  int64_t generation;
+  int64_t id;
+  std::string name;
+};
+
+/**
+ * @brief
+ */
 class Metadata {
  public:
   /**
@@ -105,7 +121,7 @@ class Metadata {
    *  @param  object_id   [in]  ID of metadata.
    *  @return true if success.
    */
-  virtual bool exists(const ObjectIdType object_id) const;
+  virtual bool exists(const ObjectId object_id) const;
 
   /**
    *  @brief  Check if the object with the specified name exists.
@@ -128,7 +144,7 @@ class Metadata {
    *  @return ErrorCode::OK if success, otherwise an error code.
    */
   virtual ErrorCode add(const boost::property_tree::ptree& object,
-                        ObjectIdType* object_id) const = 0;
+                        ObjectId* object_id) const = 0;
 
   /**
    *  @brief  Get metadata-object.
@@ -136,7 +152,7 @@ class Metadata {
    *  @param  (object)    [out] metadata-object with the specified ID.
    *  @return ErrorCode::OK if success, otherwise an error code.
    */
-  virtual ErrorCode get(const ObjectIdType object_id,
+  virtual ErrorCode get(const ObjectId object_id,
                         boost::property_tree::ptree& object) const = 0;
 
   /**
@@ -162,7 +178,7 @@ class Metadata {
    *  @param  [in] metadata-object ID.
    *  @return ErrorCode::OK if success, otherwise an error code.
    */
-  virtual ErrorCode remove(const ObjectIdType object_id) const = 0;
+  virtual ErrorCode remove(const ObjectId object_id) const = 0;
 
   /**
    *  @brief  Remove metadata-object from metadata-table.
@@ -172,7 +188,7 @@ class Metadata {
    *  @return ErrorCode::OK if success, otherwise an error code.
    */
   virtual ErrorCode remove(std::string_view object_name,
-                           ObjectIdType* object_id) const = 0;
+                           ObjectId* object_id) const = 0;
 
   Metadata(const Metadata&) = delete;
   Metadata& operator=(const Metadata&) = delete;
