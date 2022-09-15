@@ -127,15 +127,19 @@ void UTTableMetadata::generate_table()
   table.namespace_name = namespace_name;
   table.name = name;
   table.primary_keys.emplace_back(1);
-  table.primary_keys.emplace_back(2);
+  table.primary_keys.emplace_back(3);
   table.tuples = tuples;
 
-  for (UTColumnMetadata column_meta : columns) {
+  for (const auto& column_meta : columns) {
     Column column;
     column.id = column_meta.id;
     column.name = column_meta.name;
     column.ordinal_position = column_meta.ordinal_position;
     column.data_type_id = column_meta.data_type_id;
+    column.data_length = column_meta.data_length;
+    for (const auto& length : column_meta.data_lengths) {
+      column.data_lengths.emplace_back(length);
+    }
     column.nullable = column_meta.nullable;
     column.varying = column_meta.varying;
     column.default_expr = column_meta.default_expr;
