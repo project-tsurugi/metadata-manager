@@ -19,13 +19,12 @@
 #include "metadata.h"
 
 namespace manager::metadata {
-static constexpr int64_t ORDINAL_POSITION_BASE_INDEX = 1;
-
 /**
  * @brief Column metadata object.
  */
 struct Column : public Object {
 	Column() {}
+  static constexpr int64_t ORDINAL_POSITION_BASE_INDEX = 1;
   int64_t               table_id;
   int64_t               ordinal_position;
   int64_t               data_type_id;
