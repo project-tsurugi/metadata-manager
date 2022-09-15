@@ -32,7 +32,11 @@ namespace manager::metadata {
  * @brief Table metadata object.
  */
 struct Table : public Object {
-  Table() {}
+  Table()
+      : namespace_name(""), 
+        owner_id(INVALID_OBJECT_ID), 
+        acl(""), 
+        tuples(INVALID_VALUE) {}
   std::string             namespace_name;
   int64_t                 owner_id;
   std::string             acl;
@@ -107,6 +111,7 @@ class Tables : public Metadata {
      * @brief Field name constant indicating the data length of the metadata.
      */
     static constexpr const char* const DATA_LENGTH = "dataLength";
+    static constexpr const char* const DATA_LENGTHS = "dataLengths";
     /**
      * @brief Field name constant indicating the varying of the metadata.
      */

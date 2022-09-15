@@ -95,7 +95,8 @@ ErrorCode Tables::add(const boost::property_tree::ptree& object) const {
  * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode Tables::add(const boost::property_tree::ptree& object,
-                      ObjectIdType* object_id) const {
+                      ObjectIdType* object_id) const 
+{
   ErrorCode error = ErrorCode::UNKNOWN;
 
   // Log of API function start.
@@ -614,7 +615,7 @@ ptree transform_to_ptree(const Table& table)
 
   ptree child;
   
-  // primary key
+  // primary keys
   ptree keys;
   for (const int64_t& ordinal_position : table.primary_keys) {
     keys.put("", ordinal_position);
@@ -629,20 +630,24 @@ ptree transform_to_ptree(const Table& table)
     ptree_column.put<int64_t>(Tables::Column::ID, column.id);
     ptree_column.put<int64_t>(Tables::Column::TABLE_ID, column.table_id);
     ptree_column.put(Tables::Column::NAME, column.name);
-    ptree_column.put<int64_t>(Tables::Column::ORDINAL_POSITION, column.ordinal_position);
-    ptree_column.put<int64_t>(Tables::Column::DATA_TYPE_ID, column.data_type_id);  
-    ptree_column.put<bool>(Tables::Column::VARYING, column.varying);  
-    ptree_column.put<bool>(Tables::Column::NULLABLE, column.nullable);  
-    ptree_column.put(Tables::Column::DEFAULT, column.default_expr);  
-
-    ptree data_length;
-    for (const int64_t& param : column.data_length) {
-      data_length.put("", param);
+    ptree_column.put<int64_t>
+        (Tables::Column::ORDINAL_POSITION, column.ordinal_position);
+    ptree_column.put<int64_t>(Tables::Column::DATA_TYPE_ID, 
+        column.data_type_id);
+    ptree_column.put<bool>(Tables::Column::VARYING, column.varying);
+    ptree_column.put<bool>(Tables::Column::NULLABLE, column.nullable);
+    ptree_column.put(Tables::Column::DEFAULT, column.default_expr);
+    ptree_column.put<int64_t>(Tables::Column::DATA_LENGTH, column.data_length);
+#if 0
+    ptree data_lengths;
+    for (const int64_t& param : column.data_lengths) {
+      data_lengths.put("", param);
     }
-    ptree_column.push_back(std::make_pair(Tables::Column::DATA_LENGTH, data_length));
+    ptree_column.push_back(
+        std::make_pair(Tables::Column::DATA_LENGTHS, data_lengths));
+#endif
     ptree_columns.push_back(std::make_pair("", ptree_column));
   }
-
   ptree_table.add_child(Tables::COLUMNS_NODE, ptree_columns);
 
   return ptree_table;
@@ -655,8 +660,8 @@ ptree transform_to_ptree(const Table& table)
  */
 ErrorCode Tables::add(const manager::metadata::Table& table) const
 {
-  ptree table_tree = transform_to_ptree(table);
-  ErrorCode error = this->add(table_tree);
+  ObjectId object_id;
+  ErrorCode error = this->add(table, &object_id);
   if (error != ErrorCode::OK) {
     return error;
   }
@@ -735,19 +740,22 @@ Table transform_from_ptree(const ptree& ptree_table)
 
     Column column;
 
-    id                ? column.id = id.get()                      : column.id = INVALID_VALUE;
-    table_id          ? column.table_id = table_id.get()          : table_id = INVALID_VALUE;
-    name              ? column.name = name.get()                  : column.name = "";
-    varying           ? column.varying = varying.get()            : column.varying = INVALID_VALUE;
-    nullable          ? column.nullable = nullable.get()          : column.nullable = INVALID_VALUE;
+    id                ? column.id           = id.get()            : column.id           = INVALID_VALUE;
+    table_id          ? column.table_id     = table_id.get()      : table_id            = INVALID_VALUE;
+    name              ? column.name         = name.get()          : column.name         = "";
+    varying           ? column.varying      = varying.get()       : column.varying      = INVALID_VALUE;
+    nullable          ? column.nullable     = nullable.get()      : column.nullable     = INVALID_VALUE;
     ordinal_position  ? column.ordinal_position = ordinal_position.get() : column.ordinal_position = INVALID_VALUE;
     data_type_id      ? column.data_type_id = data_type_id.get()  : column.data_type_id = INVALID_VALUE;
     default_expr      ? column.default_expr = default_expr.get()  : column.default_expr = "";
-    BOOST_FOREACH (auto& node, ptree_column.get_child(Tables::Column::DATA_LENGTH)) {
+    data_length       ? column.data_length  = data_length.get()   : column.data_length  = INVALID_VALUE;
+#if 0
+    BOOST_FOREACH (auto& node, ptree_column.get_child(Tables::Column::DATA_LENGTHS)) {
       const ptree& value = node.second;
       auto length = value.get_optional<int64_t>("");
-      column.data_length.emplace_back(ordinal_position.get());
+      column.data_lengths.emplace_back(ordinal_position.get());
     }
+#endif
     table.columns.emplace_back(column);
   }
 
