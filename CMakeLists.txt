@@ -95,21 +95,21 @@ add_custom_target(format
 set(SUBMODULE_DIR ${CMAKE_SOURCE_DIR}/third_party)
 set(JWT-CPP_INCLUDE_DIR ${SUBMODULE_DIR}/jwt-cpp/include)
 
-add_library(metadata-interface INTERFACE)
+add_library(interface INTERFACE)
 
 add_subdirectory(${SUBMODULE_DIR}/googletest)
 
 message(STATUS "The target of the build is metadata-manager.")
 if(DATA_STORAGE_PG)
   message(STATUS "  Metadata is stored in PostgreSQL.")
-  target_compile_options(metadata-interface INTERFACE -DSTORAGE_POSTGRESQL)
+  target_compile_options(interface INTERFACE -DSTORAGE_POSTGRESQL)
   set_postgresql()
 elseif(DATA_STORAGE_JSON)
   message(STATUS "  Metadata is stored in JSON-file.")
-  target_compile_options(metadata-interface INTERFACE -DSTORAGE_JSON)
+  target_compile_options(interface INTERFACE -DSTORAGE_JSON)
 endif(DATA_STORAGE_PG)
 
-target_include_directories(metadata-interface
+target_include_directories(interface
   INTERFACE
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/manager>
