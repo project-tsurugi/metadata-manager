@@ -23,24 +23,38 @@ namespace manager::metadata {
  * @brief Index metadata object.
  */
 struct Index : public Object {
-  Index() {}
+  Index()
+      : namespace_name(""),
+        owner_id(INVALID_OBJECT_ID),
+        access_method(INVALID_VALUE),
+        acl(""),
+        number_of_key_indexes(INVALID_VALUE),
+        is_unique(false),
+        is_primary(false) 
+      {}
   enum class AccessMethod : int64_t {
     TSURGI_DEFAULT_METHOD = 0,  // temporary name.
   };
   enum class Direction : int64_t {
+    //  LSB 0th bit : 0 = ASC,        1 = DESC
+    //  LSB 1st bit : 0 = NULLS_LAST, 1 = NULLS_FIRST
     ASC_NULLS_LAST    = 0b00,   // 0, default value.
     ASC_NULLS_FIRST   = 0b01,   // 1
     DESC_NULLS_LAST   = 0b10,   // 2
     DESC_NULLS_FIRST  = 0b11,   // 3
+    DEFAULT           = ASC_NULLS_LAST,
   };
-  std::string   namespace_name;
-  int64_t       owner_id;
-  int64_t       access_method;
-  std::string   acl;
-  int64_t       number_of_indexs;
-  int64_t       number_of_key_indexs;  // exclude non-key (included) indexs.
-  bool          is_unique;
-  bool          is_primary;
+
+  std::string           namespace_name;
+  int64_t               owner_id;
+  int64_t               access_method;
+  std::string           acl;
+  int64_t               number_of_key_indexes;  // exclude non-key (included) indexs.
+  bool                  is_unique;
+  bool                  is_primary;
+  std::vector<int64_t>  keys;
+  std::vector<int64_t>  keys_id;
+  std::vector<int64_t>  options;
 };
 
 /**

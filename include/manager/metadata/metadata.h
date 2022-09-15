@@ -37,7 +37,11 @@ static constexpr int64_t INVALID_VALUE = -1;
  * @brief
  */
 struct Object {
-  Object() {}
+  Object()
+      : format_version(1), 
+        generation(1), 
+        id(INVALID_VALUE), 
+        name("") {}
   int64_t format_version;
   int64_t generation;
   int64_t id;

@@ -24,7 +24,9 @@ namespace manager::metadata {
  * @brief Constraint metadata object.
  */
 struct Constraint : public Object {
-  Constraint() {}
+  Constraint() {
+    namespace_name = "";
+  }
   std::string           namespace_name;
   int64_t               type;
   int64_t               table_id;
