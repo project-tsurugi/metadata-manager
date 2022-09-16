@@ -12,10 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-if(DATA_STORAGE_JSON)
+if (DATA_STORAGE_JSON)
   add_subdirectory(json)
   add_subdirectory(json_extended)
-else(DATA_STORAGE_JSON)
+else()
   add_subdirectory(postgresql)
   add_subdirectory(postgresql_extended)
-endif(DATA_STORAGE_JSON)
+endif()

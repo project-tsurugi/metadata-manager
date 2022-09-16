@@ -18,6 +18,8 @@
 #endif
 
 #include "manager/metadata/dao/db_session_manager.h"
+#include "manager/metadata/common/message.h"
+#include "manager/metadata/helper/logging_helper.h"
 
 #if defined(STORAGE_POSTGRESQL)
 #include "manager/metadata/dao/postgresql/columns_dao_pg.h"
@@ -62,6 +64,7 @@ manager::metadata::ErrorCode DBSessionManager::create_dao(
   storage::DBSessionManager* storage_session_manager =
       (storage::DBSessionManager*)session_manager;
 
+  gdao = nullptr;
   switch (table_name) {
     case GenericDAO::TableName::TABLES: {
       auto tdao = std::make_shared<storage::TablesDAO>(storage_session_manager);
@@ -114,6 +117,8 @@ manager::metadata::ErrorCode DBSessionManager::create_dao(
   }
 
   if (gdao == nullptr) {
+    LOG_ERROR << Message::GENERATE_FAILED_DAO
+              << static_cast<std::int32_t>(table_name);
     error = ErrorCode::INTERNAL_ERROR;
     return error;
   }

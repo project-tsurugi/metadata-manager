@@ -12,32 +12,30 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-project(metadata_test)
-
 file(GLOB_RECURSE SOURCES "src/*.cpp")
 
-add_executable(${PROJECT_NAME}
+add_executable(metadata_test
   ${SOURCES}
 )
 
-set_compile_options(${PROJECT_NAME})
+set_compile_options(metadata_test)
 
 target_include_directories(
-  ${PROJECT_NAME}
-  PRIVATE ${PG_INCLUDE_DIR}
-  PRIVATE ${JWT-CPP_INCLUDE_DIR}
-  PRIVATE ${PROJECT_SOURCE_DIR}/include/manager/metadata
-  PRIVATE include
+  metadata_test
+    PRIVATE ${PG_INCLUDE_DIR}
+    PRIVATE ${JWT-CPP_INCLUDE_DIR}
+    PRIVATE ${PROJECT_SOURCE_DIR}/include
+    PRIVATE include
 )
 
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -L${PG_LIB_DIR}")
 
-target_link_libraries(${PROJECT_NAME}
+target_link_libraries(metadata_test
   PRIVATE
     gtest_main
-    metadata
+    api
     crypto
     pq
 )
 
-add_test(NAME test COMMAND ${PROJECT_NAME} "${CMAKE_CURRENT_SOURCE_DIR}/src/schema/tables.json")
+add_test(NAME test COMMAND metadata_test "${CMAKE_CURRENT_SOURCE_DIR}/src/schema/tables.json")
