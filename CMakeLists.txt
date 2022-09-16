@@ -115,7 +115,7 @@ target_include_directories(interface
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/manager>
 )
 
-install_custom(metadata-interface ${export_name})
+install_custom(interface ${export_name})
 
 add_subdirectory(src)
 add_subdirectory(test)
