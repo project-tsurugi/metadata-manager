@@ -17,10 +17,6 @@
 
 #include <memory>
 
-#include <boost/format.hpp>
-
-#include "manager/metadata/common/message.h"
-#include "manager/metadata/helper/logging_helper.h"
 #include "manager/metadata/provider/statistics_provider.h"
 
 // =============================================================================
@@ -52,14 +48,8 @@ Statistics::Statistics(std::string_view database, std::string_view component)
 ErrorCode Statistics::init() const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
-  // Log of API function start.
-  log::function_start("Statistics::init()");
-
   // Initialize the provider.
   error = provider->init();
-
-  // Log of API function finish.
-  log::function_finish("Statistics::init()", error);
 
   return error;
 }
@@ -73,7 +63,7 @@ ErrorCode Statistics::add(const boost::property_tree::ptree& object) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   // Adds the column statistics through the class method.
-  error = this->add(object, nullptr);
+  error = add(object, nullptr);
 
   return error;
 }
@@ -88,25 +78,20 @@ ErrorCode Statistics::add(const boost::property_tree::ptree& object,
                           ObjectIdType* object_id) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
-  // Log of API function start.
-  log::function_start("Statistics::add()");
-
   // Parameter value check.
   error = param_check_statistics_add(object);
+  if (error != ErrorCode::OK) {
+    return error;
+  }
 
   // Adds the column statistics through the provider.
   ObjectIdType retval_object_id = 0;
-  if (error == ErrorCode::OK) {
-    error = provider->add_column_statistic(object, retval_object_id);
-  }
+  error = provider->add_column_statistic(object, retval_object_id);
 
   // Set a value if object_id is not null.
   if ((error == ErrorCode::OK) && (object_id != nullptr)) {
     *object_id = retval_object_id;
   }
-
-  // Log of API function finish.
-  log::function_finish("Statistics::add()", error);
 
   return error;
 }
@@ -123,27 +108,15 @@ ErrorCode Statistics::get(const ObjectIdType object_id,
                           boost::property_tree::ptree& object) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
-  // Log of API function start.
-  log::function_start("Statistics::get(StatisticId)");
-
   // Parameter value check.
-  if (object_id > 0) {
-    error = ErrorCode::OK;
-  } else {
-    LOG_WARNING
-        << "An out-of-range value (0 or less) was specified for StatisticId.: "
-        << object_id;
+  if (object_id <= 0) {
     error = ErrorCode::ID_NOT_FOUND;
+    return error;
   }
 
   // Get the column statistics through the provider.
-  if (error == ErrorCode::OK) {
-    error = provider->get_column_statistic(Statistics::ID,
-                                           std::to_string(object_id), object);
-  }
-
-  // Log of API function finish.
-  log::function_finish("Statistics::get(StatisticId)", error);
+  error = provider->get_column_statistic(Statistics::ID,
+                                         std::to_string(object_id), object);
 
   return error;
 }
@@ -161,25 +134,14 @@ ErrorCode Statistics::get(std::string_view object_name,
                           boost::property_tree::ptree& object) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
-  // Log of API function start.
-  log::function_start("Statistics::get(StatisticName)");
-
   // Parameter value check.
-  if (!object_name.empty()) {
-    error = ErrorCode::OK;
-  } else {
-    LOG_WARNING << "An empty value was specified for StatisticName.";
+  if (object_name.empty()) {
     error = ErrorCode::NAME_NOT_FOUND;
+    return error;
   }
 
   // Get the column statistics through the provider.
-  if (error == ErrorCode::OK) {
-    error =
-        provider->get_column_statistic(Statistics::NAME, object_name, object);
-  }
-
-  // Log of API function finish.
-  log::function_finish("Statistics::get(StatisticName)", error);
+  error = provider->get_column_statistic(Statistics::NAME, object_name, object);
 
   return error;
 }
@@ -198,27 +160,15 @@ ErrorCode Statistics::get_by_column_id(
     const ObjectIdType column_id, boost::property_tree::ptree& object) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
-  // Log of API function start.
-  log::function_start("Statistics::get_by_column_id()");
-
   // Parameter value check.
-  if (column_id > 0) {
-    error = ErrorCode::OK;
-  } else {
-    LOG_WARNING
-        << "An out-of-range value (0 or less) was specified for ColumnId.: "
-        << column_id;
+  if (column_id <= 0) {
     error = ErrorCode::ID_NOT_FOUND;
+    return error;
   }
 
   // Get the column statistics through the provider.
-  if (error == ErrorCode::OK) {
-    error = provider->get_column_statistic(Statistics::COLUMN_ID,
-                                           std::to_string(column_id), object);
-  }
-
-  // Log of API function finish.
-  log::function_finish("Statistics::get_by_column_id()", error);
+  error = provider->get_column_statistic(Statistics::COLUMN_ID,
+                                         std::to_string(column_id), object);
 
   return error;
 }
@@ -240,29 +190,16 @@ ErrorCode Statistics::get_by_column_number(
     boost::property_tree::ptree& object) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
-  // Log of API function start.
-  log::function_start("Statistics::get_by_column_number()");
-
   // Parameter value check.
-  if ((table_id > 0) && (ordinal_position > 0)) {
-    error = ErrorCode::OK;
-  } else {
-    LOG_WARNING << "An out-of-range value (0 or less) was specified for "
-                   "TableId or OrdinalPosition.: "
-                << "TableId: " << table_id
-                << ", OrdinalPosition: " << ordinal_position;
+  if ((table_id <= 0) || (ordinal_position <= 0)) {
     error = ErrorCode::ID_NOT_FOUND;
+    return error;
   }
 
   // Get the column statistic through the provider.
-  if (error == ErrorCode::OK) {
-    error = provider->get_column_statistic(
-        table_id, Statistics::ORDINAL_POSITION,
-        std::to_string(ordinal_position), object);
-  }
-
-  // Log of API function finish.
-  log::function_finish("Statistics::get_by_column_number()", error);
+  error =
+      provider->get_column_statistic(table_id, Statistics::ORDINAL_POSITION,
+                                     std::to_string(ordinal_position), object);
 
   return error;
 }
@@ -284,30 +221,19 @@ ErrorCode Statistics::get_by_column_name(
     boost::property_tree::ptree& object) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
-  // Log of API function start.
-  log::function_start("Statistics::get_by_column_name()");
-
   // Parameter value check.
-  if ((table_id > 0) && (!column_name.empty())) {
-    error = ErrorCode::OK;
-  } else if (table_id <= 0) {
-    LOG_WARNING
-        << "An out-of-range value (0 or less) was specified for TableId.: "
-        << table_id;
+  if (table_id <= 0) {
     error = ErrorCode::ID_NOT_FOUND;
-  } else {
-    LOG_WARNING << "An empty value was specified for ColumnName.";
+    return error;
+  }
+  if (column_name.empty()) {
     error = ErrorCode::NAME_NOT_FOUND;
+    return error;
   }
 
   // Get the column statistic through the provider.
-  if (error == ErrorCode::OK) {
-    error = provider->get_column_statistic(table_id, Statistics::COLUMN_NAME,
-                                           column_name, object);
-  }
-
-  // Log of API function finish.
-  log::function_finish("Statistics::get_by_column_name()", error);
+  error = provider->get_column_statistic(table_id, Statistics::COLUMN_NAME,
+                                         column_name, object);
 
   return error;
 }
@@ -322,14 +248,8 @@ ErrorCode Statistics::get_all(
     std::vector<boost::property_tree::ptree>& container) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
-  // Log of API function start.
-  log::function_start("Statistics::get_all()");
-
   // Get the column statistic through the provider.
   error = provider->get_column_statistics(container);
-
-  // Log of API function finish.
-  log::function_finish("Statistics::get_all()", error);
 
   return error;
 }
@@ -350,26 +270,14 @@ ErrorCode Statistics::get_all(
     std::vector<boost::property_tree::ptree>& container) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
-  // Log of API function start.
-  log::function_start("Statistics::get_all(TableId)");
-
   // Parameter value check.
-  if (table_id > 0) {
-    error = ErrorCode::OK;
-  } else {
-    LOG_WARNING
-        << "An out-of-range value (0 or less) was specified for TableId.: "
-        << table_id;
+  if (table_id <= 0) {
     error = ErrorCode::ID_NOT_FOUND;
+    return error;
   }
 
   // Get the column statistic through the provider.
-  if (error == ErrorCode::OK) {
-    error = provider->get_column_statistics(table_id, container);
-  }
-
-  // Log of API function finish.
-  log::function_finish("Statistics::get_all(ObjectId)", error);
+  error = provider->get_column_statistics(table_id, container);
 
   return error;
 }
@@ -384,28 +292,16 @@ ErrorCode Statistics::get_all(
 ErrorCode Statistics::remove(const ObjectIdType object_id) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
-  // Log of API function start.
-  log::function_start("Statistics::remove(StatisticId)");
-
   // Parameter value check.
-  if (object_id > 0) {
-    error = ErrorCode::OK;
-  } else {
-    LOG_WARNING
-        << "An out-of-range value (0 or less) was specified for StatisticId.: "
-        << object_id;
+  if (object_id <= 0) {
     error = ErrorCode::ID_NOT_FOUND;
+    return error;
   }
 
+  ObjectIdType retval_object_id = 0;
   // Remove the all column statistics through the provider.
-  if (error == ErrorCode::OK) {
-    ObjectIdType retval_object_id = 0;
-    error = provider->remove_column_statistic(
-        Statistics::ID, std::to_string(object_id), retval_object_id);
-  }
-
-  // Log of API function finish.
-  log::function_finish("Statistics::remove(StatisticId)", error);
+  error = provider->remove_column_statistic(
+      Statistics::ID, std::to_string(object_id), retval_object_id);
 
   return error;
 }
@@ -421,32 +317,23 @@ ErrorCode Statistics::remove(const ObjectIdType object_id) const {
 ErrorCode Statistics::remove(std::string_view object_name,
                              ObjectIdType* object_id) const {
   ErrorCode error = ErrorCode::UNKNOWN;
-
-  // Log of API function start.
-  log::function_start("Statistics::remove(StatisticName)");
+  std::string_view s_object_name = std::string_view(object_name);
 
   // Parameter value check.
-  if (!object_name.empty()) {
-    error = ErrorCode::OK;
-  } else {
-    LOG_WARNING << "An empty value was specified for StatisticName.";
+  if (s_object_name.empty()) {
     error = ErrorCode::NAME_NOT_FOUND;
+    return error;
   }
 
   ObjectIdType retval_object_id = 0;
   // Remove the table metadata through the provider.
-  if (error == ErrorCode::OK) {
-    error = provider->remove_column_statistic(Statistics::NAME, object_name,
-                                              retval_object_id);
-  }
+  error = provider->remove_column_statistic(Statistics::NAME, s_object_name,
+                                            retval_object_id);
 
   // Set a value if object_id is not null.
   if ((error == ErrorCode::OK) && (object_id != nullptr)) {
     *object_id = retval_object_id;
   }
-
-  // Log of API function finish.
-  log::function_finish("Statistics::remove(StatisticName)", error);
 
   return error;
 }
@@ -462,26 +349,14 @@ ErrorCode Statistics::remove(std::string_view object_name,
 ErrorCode Statistics::remove_by_table_id(const ObjectIdType table_id) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
-  // Log of API function start.
-  log::function_start("Statistics::remove_by_table_id()");
-
   // Parameter value check.
-  if (table_id > 0) {
-    error = ErrorCode::OK;
-  } else {
-    LOG_WARNING
-        << "An out-of-range value (0 or less) was specified for TableId.: "
-        << table_id;
+  if (table_id <= 0) {
     error = ErrorCode::ID_NOT_FOUND;
+    return error;
   }
 
   // Remove the all column statistics through the provider.
-  if (error == ErrorCode::OK) {
-    error = provider->remove_column_statistics(table_id);
-  }
-
-  // Log of API function finish.
-  log::function_finish("Statistics::remove_by_table_id()", error);
+  error = provider->remove_column_statistics(table_id);
 
   return error;
 }
@@ -497,28 +372,16 @@ ErrorCode Statistics::remove_by_table_id(const ObjectIdType table_id) const {
 ErrorCode Statistics::remove_by_column_id(const ObjectIdType column_id) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
-  // Log of API function start.
-  log::function_start("Statistics::remove_by_column_id()");
-
   // Parameter value check.
-  if (column_id > 0) {
-    error = ErrorCode::OK;
-  } else {
-    LOG_WARNING
-        << "An out-of-range value (0 or less) was specified for ColumnId.: "
-        << column_id;
+  if (column_id <= 0) {
     error = ErrorCode::ID_NOT_FOUND;
+    return error;
   }
 
+  ObjectIdType retval_object_id = 0;
   // Remove the all column statistics through the provider.
-  if (error == ErrorCode::OK) {
-    ObjectIdType retval_object_id = 0;
-    error = provider->remove_column_statistic(
-        Statistics::COLUMN_ID, std::to_string(column_id), retval_object_id);
-  }
-
-  // Log of API function finish.
-  log::function_finish("Statistics::remove_by_column_id()", error);
+  error = provider->remove_column_statistic(
+      Statistics::COLUMN_ID, std::to_string(column_id), retval_object_id);
 
   return error;
 }
@@ -537,30 +400,17 @@ ErrorCode Statistics::remove_by_column_number(
     const ObjectIdType table_id, const int64_t ordinal_position) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
-  // Log of API function start.
-  log::function_start("Statistics::remove_by_column_number()");
-
   // Parameter value check.
-  if ((table_id > 0) && (ordinal_position > 0)) {
-    error = ErrorCode::OK;
-  } else {
-    LOG_WARNING << "An out-of-range value (0 or less) was specified for "
-                   "TableId or OrdinalPosition.: "
-                << "TableId: " << table_id
-                << ", OrdinalPosition: " << ordinal_position;
+  if ((table_id <= 0) || (ordinal_position <= 0)) {
     error = ErrorCode::ID_NOT_FOUND;
+    return error;
   }
 
+  ObjectIdType retval_object_id = 0;
   // Remove the column statistic through the provider.
-  if (error == ErrorCode::OK) {
-    ObjectIdType retval_object_id = 0;
-    error = provider->remove_column_statistic(
-        table_id, Statistics::ORDINAL_POSITION,
-        std::to_string(ordinal_position), retval_object_id);
-  }
-
-  // Log of API function finish.
-  log::function_finish("Statistics::remove_by_column_number()", error);
+  error = provider->remove_column_statistic(
+      table_id, Statistics::ORDINAL_POSITION, std::to_string(ordinal_position),
+      retval_object_id);
 
   return error;
 }
@@ -579,31 +429,20 @@ ErrorCode Statistics::remove_by_column_name(
     const ObjectIdType table_id, std::string_view column_name) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
-  // Log of API function start.
-  log::function_start("Statistics::remove_by_column_name()");
-
   // Parameter value check.
-  if ((table_id > 0) && (!column_name.empty())) {
-    error = ErrorCode::OK;
-  } else if (table_id <= 0) {
-    LOG_WARNING
-        << "An out-of-range value (0 or less) was specified for TableId.: "
-        << table_id;
+  if (table_id <= 0) {
     error = ErrorCode::ID_NOT_FOUND;
-  } else {
-    LOG_WARNING << "An empty value was specified for ColumnName.";
+    return error;
+  }
+  if (column_name.empty()) {
     error = ErrorCode::NAME_NOT_FOUND;
+    return error;
   }
 
+  ObjectIdType retval_object_id = 0;
   // Remove the column statistic through the provider.
-  if (error == ErrorCode::OK) {
-    ObjectIdType retval_object_id = 0;
-    error = provider->remove_column_statistic(table_id, Statistics::COLUMN_NAME,
-                                              column_name, retval_object_id);
-  }
-
-  // Log of API function finish.
-  log::function_finish("Statistics::remove_by_column_name()", error);
+  error = provider->remove_column_statistic(table_id, Statistics::COLUMN_NAME,
+                                            column_name, retval_object_id);
 
   return error;
 }
@@ -620,8 +459,6 @@ ErrorCode Statistics::remove_by_column_name(
 ErrorCode Statistics::param_check_statistics_add(
     const boost::property_tree::ptree& object) const {
   ErrorCode error = ErrorCode::UNKNOWN;
-  constexpr const char* const kLogFormat =
-      R"("%s" and "%s" => undefined or empty)";
 
   // Check the specified parameters.
   // column_id
@@ -659,18 +496,10 @@ ErrorCode Statistics::param_check_statistics_add(
       error = ErrorCode::OK;
     } else {
       // ordinal_position and column_name is not specified.
-      LOG_ERROR << Message::PARAMETER_FAILED
-                << (boost::format(kLogFormat) % Statistics::ORDINAL_POSITION %
-                    Statistics::COLUMN_NAME)
-                       .str();
       error = ErrorCode::INVALID_PARAMETER;
     }
   } else {
     // column_id and table_id is not specified.
-    LOG_ERROR << Message::PARAMETER_FAILED
-              << (boost::format(kLogFormat) % Statistics::COLUMN_ID %
-                  Statistics::TABLE_ID)
-                     .str();
     error = ErrorCode::INVALID_PARAMETER;
   }
 

@@ -30,7 +30,6 @@
 #include "manager/metadata/dao/postgresql/common_pg.h"
 #include "manager/metadata/dao/postgresql/dbc_utils_pg.h"
 #include "manager/metadata/dao/postgresql/tables_dao_pg.h"
-#include "manager/metadata/helper/logging_helper.h"
 
 // =============================================================================
 namespace {
@@ -233,8 +232,6 @@ ErrorCode PrivilegesDAO::confirm_tables_permission(
       if (!std::regex_match(match_string, matcher,
                             std::regex(regex_valid_privileges.c_str()))) {
         PQclear(res);
-        LOG_ERROR << Message::INCORRECT_DATA
-                  << "The privilege format is incorrect.: " << permission;
         error = ErrorCode::INVALID_PARAMETER;
         return error;
       }

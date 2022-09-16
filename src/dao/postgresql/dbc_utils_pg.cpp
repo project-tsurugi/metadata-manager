@@ -26,7 +26,6 @@
 
 #include "manager/metadata/common/message.h"
 #include "manager/metadata/dao/postgresql/common_pg.h"
-#include "manager/metadata/helper/logging_helper.h"
 
 // =============================================================================
 namespace manager::metadata::db::postgresql {
@@ -128,7 +127,7 @@ template <typename T>
     return_value = result;
     return ErrorCode::OK;
   }
-  LOG_ERROR << Message::CONVERT_STRING_TO_FLOAT_FAILURE;
+  std::cerr << Message::CONVERT_STRING_TO_FLOAT_FAILURE << std::endl;
   return ErrorCode::INTERNAL_ERROR;
 }
 
@@ -201,7 +200,7 @@ template <typename T>
     return_value = result;
     return ErrorCode::OK;
   }
-  LOG_ERROR << Message::CONVERT_STRING_TO_INT_FAILURE;
+  std::cerr << Message::CONVERT_STRING_TO_INT_FAILURE << std::endl;
   return ErrorCode::INTERNAL_ERROR;
 }
 /**
@@ -270,7 +269,8 @@ ErrorCode DbcUtils::prepare(const ConnectionSPtr& connection,
                             std::string_view statement,
                             std::vector<Oid>* param_types) {
   if (!DbcUtils::is_open(connection)) {
-    LOG_ERROR << Message::PREPARE_FAILURE << Message::NOT_INITIALIZED;
+    std::cerr << Message::PREPARE_FAILURE << Message::NOT_INITIALIZED
+              << std::endl;
     return ErrorCode::NOT_INITIALIZED;
   }
 
@@ -285,7 +285,8 @@ ErrorCode DbcUtils::prepare(const ConnectionSPtr& connection,
       PQprepare(connection.get(), statement_name.data(), statement.data(),
                 types_size, types_oids));
   if (PQresultStatus(res.get()) != PGRES_COMMAND_OK) {
-    LOG_ERROR << Message::PREPARE_FAILURE << PQresultErrorMessage(res.get());
+    std::cerr << Message::PREPARE_FAILURE << PQresultErrorMessage(res.get())
+              << std::endl;
     return ErrorCode::DATABASE_ACCESS_FAILURE;
   }
 
@@ -326,8 +327,8 @@ ErrorCode DbcUtils::exec_prepared(const ConnectionSPtr& connection,
   ErrorCode error = ErrorCode::INVALID_PARAMETER;
 
   if (!DbcUtils::is_open(connection)) {
-    LOG_ERROR << Message::PREPARED_STATEMENT_EXECUTION_FAILURE
-              << Message::NOT_INITIALIZED;
+    std::cerr << Message::PREPARED_STATEMENT_EXECUTION_FAILURE
+              << Message::NOT_INITIALIZED << std::endl;
     return ErrorCode::NOT_INITIALIZED;
   }
 
@@ -339,8 +340,8 @@ ErrorCode DbcUtils::exec_prepared(const ConnectionSPtr& connection,
       (PQresultStatus(res) == PGRES_TUPLES_OK)) {
     error = ErrorCode::OK;
   } else {
-    LOG_ERROR << Message::PREPARED_STATEMENT_EXECUTION_FAILURE
-              << PQresultErrorMessage(res);
+    std::cerr << Message::PREPARED_STATEMENT_EXECUTION_FAILURE
+              << PQresultErrorMessage(res) << std::endl;
 
     std::string error_code(PQresultErrorField(res, PG_DIAG_SQLSTATE));
     if (error_code == PgErrorCode::kUniqueViolation) {
@@ -370,14 +371,13 @@ ErrorCode DbcUtils::find_statement_name(
       statement_name = statement_names_map.at(key_value.data());
       error = ErrorCode::OK;
     } else {
-      LOG_ERROR << Message::PARAMETER_FAILED << "Statement names map is empty.";
       error = ErrorCode::INVALID_PARAMETER;
     }
   } catch (std::out_of_range& e) {
-    LOG_ERROR << Message::METADATA_KEY_NOT_FOUND << e.what();
+    std::cerr << Message::METADATA_KEY_NOT_FOUND << e.what() << std::endl;
     error = ErrorCode::INVALID_PARAMETER;
   } catch (...) {
-    LOG_ERROR << Message::METADATA_KEY_NOT_FOUND;
+    std::cerr << Message::METADATA_KEY_NOT_FOUND << std::endl;
     error = ErrorCode::INVALID_PARAMETER;
   }
 
