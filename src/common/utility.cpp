@@ -20,7 +20,6 @@
 #include <boost/property_tree/json_parser.hpp>
 
 #include "manager/metadata/common/message.h"
-#include "manager/metadata/helper/logging_helper.h"
 
 // =============================================================================
 namespace manager::metadata {
@@ -32,17 +31,17 @@ using boost::property_tree::json_parser_error;
  * @brief Explicit Template Instantiation for str_to_numeric(float type).
  */
 template ErrorCode Utility::str_to_numeric(std::string_view str,
-                                           float& return_value);
+                                            float& return_value);
 /**
  * @brief Explicit Template Instantiation for str_to_numeric(int32_t type).
  */
 template ErrorCode Utility::str_to_numeric(std::string_view str,
-                                           std::int32_t& return_value);
+                                            std::int32_t& return_value);
 /**
  * @brief Explicit Template Instantiation for str_to_numeric(int64_t type).
  */
 template ErrorCode Utility::str_to_numeric(std::string_view str,
-                                           std::int64_t& return_value);
+                                            std::int64_t& return_value);
 
 /**
  * @brief Converts a string to a numeric.
@@ -52,7 +51,7 @@ template ErrorCode Utility::str_to_numeric(std::string_view str,
  */
 template <typename T>
 [[nodiscard]] ErrorCode Utility::str_to_numeric(std::string_view str,
-                                                T& return_value) {
+                                                 T& return_value) {
   try {
     return_value = convert_to_numeric<T>(str);
   } catch (...) {
@@ -78,11 +77,11 @@ template <typename T>
     try {
       json_parser::read_json(ss, ptree);
     } catch (json_parser_error& e) {
-      LOG_ERROR << Message::READ_JSON_FAILURE << e.what();
+      std::cerr << Message::READ_JSON_FAILURE << e.what() << std::endl;
       error = ErrorCode::INTERNAL_ERROR;
       return error;
     } catch (...) {
-      LOG_ERROR << Message::READ_JSON_FAILURE;
+      std::cerr << Message::READ_JSON_FAILURE << std::endl;
       error = ErrorCode::INTERNAL_ERROR;
       return error;
     }
@@ -106,11 +105,11 @@ template <typename T>
     try {
       json_parser::write_json(ss, ptree, false);
     } catch (json_parser_error& e) {
-      LOG_ERROR << Message::WRITE_JSON_FAILURE << e.what();
+      std::cerr << Message::WRITE_JSON_FAILURE << e.what() << std::endl;
       error = ErrorCode::INVALID_PARAMETER;
       return error;
     } catch (...) {
-      LOG_ERROR << Message::WRITE_JSON_FAILURE;
+      std::cerr << Message::WRITE_JSON_FAILURE << std::endl;
       error = ErrorCode::INVALID_PARAMETER;
       return error;
     }

@@ -78,8 +78,7 @@ See [How to build](#how-to-build) for how to specify.
 
    available options:
      - `-DBUILD_DOCUMENTS=OFF` - never build documents by doxygen
-     - `-DDATA_STORAGE=postgresql` - specifies the data storage where the metadata is stored: `postgresql`, `json`
-     - `-DLOG_LEVEL=error` - specifies the default log output level (minimum) for metadata-manager: `none`, `err[or]`, `warn[ing]`, `info`, `debug`
+     - `-DDATA_STORAGE=postgresql` - specifies the data storage where the metadata is stored. "postgresql" or "json".
      - for debugging only
        - `-DENABLE_SANITIZER=OFF` - disable sanitizers (requires `-DCMAKE_BUILD_TYPE=Debug`)
        - `-DENABLE_UB_SANITIZER=ON` - enable undefined behavior sanitizer (requires `-DENABLE_SANITIZER=ON`)

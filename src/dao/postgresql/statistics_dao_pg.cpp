@@ -31,7 +31,6 @@
 #include "manager/metadata/dao/postgresql/columns_dao_pg.h"
 #include "manager/metadata/dao/postgresql/common_pg.h"
 #include "manager/metadata/dao/postgresql/dbc_utils_pg.h"
-#include "manager/metadata/helper/logging_helper.h"
 #include "manager/metadata/statistics.h"
 
 // =============================================================================
@@ -493,11 +492,11 @@ ErrorCode StatisticsDAO::upsert_column_statistic(
     try {
       json_parser::write_json(ss, column_statistic, false);
     } catch (json_parser_error& e) {
-      LOG_ERROR << Message::WRITE_JSON_FAILURE << e.what();
+      std::cerr << Message::WRITE_JSON_FAILURE << e.what() << std::endl;
       error = ErrorCode::INVALID_PARAMETER;
       return error;
     } catch (...) {
-      LOG_ERROR << Message::WRITE_JSON_FAILURE;
+      std::cerr << Message::WRITE_JSON_FAILURE << std::endl;
       error = ErrorCode::INVALID_PARAMETER;
       return error;
     }
@@ -576,11 +575,11 @@ ErrorCode StatisticsDAO::upsert_column_statistic(
     try {
       json_parser::write_json(ss, column_statistic, false);
     } catch (json_parser_error& e) {
-      LOG_ERROR << Message::WRITE_JSON_FAILURE << e.what();
+      std::cerr << Message::WRITE_JSON_FAILURE << e.what() << std::endl;
       error = ErrorCode::INVALID_PARAMETER;
       return error;
     } catch (...) {
-      LOG_ERROR << Message::WRITE_JSON_FAILURE;
+      std::cerr << Message::WRITE_JSON_FAILURE << std::endl;
       error = ErrorCode::INVALID_PARAMETER;
       return error;
     }
@@ -1060,11 +1059,11 @@ ErrorCode StatisticsDAO::convert_pgresult_to_ptree(
     try {
       json_parser::read_json(ss, column_statistic);
     } catch (json_parser_error& e) {
-      LOG_ERROR << Message::READ_JSON_FAILURE << e.what();
+      std::cerr << Message::READ_JSON_FAILURE << e.what() << std::endl;
       error = ErrorCode::INTERNAL_ERROR;
       return error;
     } catch (...) {
-      LOG_ERROR << Message::READ_JSON_FAILURE;
+      std::cerr << Message::READ_JSON_FAILURE << std::endl;
       error = ErrorCode::INTERNAL_ERROR;
       return error;
     }

@@ -26,7 +26,6 @@
 #include "manager/metadata/dao/postgresql/dbc_utils_pg.h"
 #include "manager/metadata/dao/postgresql/statistics_dao_pg.h"
 #include "manager/metadata/dao/postgresql/tables_dao_pg.h"
-#include "manager/metadata/helper/logging_helper.h"
 
 // =============================================================================
 namespace manager::metadata::db::postgresql {
@@ -75,7 +74,8 @@ ErrorCode DBSessionManager::start_transaction() {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   if (!DbcUtils::is_open(connection_)) {
-    LOG_ERROR << Message::START_TRANSACTION_FAILURE << Message::NOT_INITIALIZED;
+    std::cerr << Message::START_TRANSACTION_FAILURE << Message::NOT_INITIALIZED
+              << std::endl;
     error = ErrorCode::NOT_INITIALIZED;
     return error;
   }
@@ -85,8 +85,8 @@ ErrorCode DBSessionManager::start_transaction() {
   if (PQresultStatus(res.get()) == PGRES_COMMAND_OK) {
     error = ErrorCode::OK;
   } else {
-    LOG_ERROR << Message::START_TRANSACTION_FAILURE
-              << PQerrorMessage(connection_.get());
+    std::cerr << Message::START_TRANSACTION_FAILURE
+              << PQerrorMessage(connection_.get()) << std::endl;
     error = ErrorCode::DATABASE_ACCESS_FAILURE;
   }
 
@@ -103,7 +103,8 @@ ErrorCode DBSessionManager::commit() {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   if (!DbcUtils::is_open(connection_)) {
-    LOG_ERROR << Message::COMMIT_FAILURE << Message::NOT_INITIALIZED;
+    std::cerr << Message::COMMIT_FAILURE << Message::NOT_INITIALIZED
+              << std::endl;
     error = ErrorCode::NOT_INITIALIZED;
     return error;
   }
@@ -113,7 +114,8 @@ ErrorCode DBSessionManager::commit() {
   if (PQresultStatus(res.get()) == PGRES_COMMAND_OK) {
     error = ErrorCode::OK;
   } else {
-    LOG_ERROR << Message::COMMIT_FAILURE << PQerrorMessage(connection_.get());
+    std::cerr << Message::COMMIT_FAILURE << PQerrorMessage(connection_.get())
+              << std::endl;
     error = ErrorCode::DATABASE_ACCESS_FAILURE;
   }
 
@@ -130,7 +132,8 @@ ErrorCode DBSessionManager::rollback() {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   if (!DbcUtils::is_open(connection_)) {
-    LOG_ERROR << Message::ROLLBACK_FAILURE << Message::NOT_INITIALIZED;
+    std::cerr << Message::ROLLBACK_FAILURE << Message::NOT_INITIALIZED
+              << std::endl;
     error = ErrorCode::NOT_INITIALIZED;
     return error;
   }
@@ -139,7 +142,8 @@ ErrorCode DBSessionManager::rollback() {
   if (PQresultStatus(res.get()) == PGRES_COMMAND_OK) {
     error = ErrorCode::OK;
   } else {
-    LOG_ERROR << Message::ROLLBACK_FAILURE << PQerrorMessage(connection_.get());
+    std::cerr << Message::ROLLBACK_FAILURE << PQerrorMessage(connection_.get())
+              << std::endl;
     error = ErrorCode::DATABASE_ACCESS_FAILURE;
   }
 
@@ -165,8 +169,8 @@ ErrorCode DBSessionManager::connect() {
   if (DbcUtils::is_open(connection_)) {
     error = ErrorCode::OK;
   } else {
-    LOG_ERROR << Message::CONNECT_FAILURE << "\n  "
-              << PQerrorMessage(connection_.get());
+    std::cerr << Message::CONNECT_FAILURE << std::endl;
+    std::cerr << "  " << PQerrorMessage(connection_.get()) << std::endl;
     error = ErrorCode::DATABASE_ACCESS_FAILURE;
   }
 
@@ -183,8 +187,8 @@ ErrorCode DBSessionManager::set_always_secure_search_path() const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   if (!DbcUtils::is_open(connection_)) {
-    LOG_ERROR << Message::SET_ALWAYS_SECURE_SEARCH_PATH
-              << Message::NOT_INITIALIZED;
+    std::cerr << Message::SET_ALWAYS_SECURE_SEARCH_PATH
+              << Message::NOT_INITIALIZED << std::endl;
     error = ErrorCode::NOT_INITIALIZED;
     return error;
   }
@@ -196,8 +200,8 @@ ErrorCode DBSessionManager::set_always_secure_search_path() const {
   if (PQresultStatus(res.get()) == PGRES_TUPLES_OK) {
     error = ErrorCode::OK;
   } else {
-    LOG_ERROR << Message::SET_ALWAYS_SECURE_SEARCH_PATH
-              << PQerrorMessage(connection_.get());
+    std::cerr << Message::SET_ALWAYS_SECURE_SEARCH_PATH
+              << PQerrorMessage(connection_.get()) << std::endl;
     error = ErrorCode::DATABASE_ACCESS_FAILURE;
   }
 

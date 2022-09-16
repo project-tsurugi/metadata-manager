@@ -29,6 +29,8 @@ option(ENABLE_SANITIZER "enable sanitizer on debug build" ON)
 option(ENABLE_UB_SANITIZER "enable undefined behavior sanitizer on debug build" OFF)
 option(ENABLE_COVERAGE "enable coverage on debug build" OFF)
 
+option(DATA_STORAGE "Specifies the data-storage where the metadata is stored. [postgresql] or json." POSTGRESQL)
+
 find_package(Doxygen)
 find_package(Boost COMPONENTS system filesystem REQUIRED)
 
@@ -72,6 +74,17 @@ install(
   EXPORT_LINK_INTERFACE_LIBRARIES
 )
 
+string(TOUPPER ${DATA_STORAGE} VARNAME)
+
+if ((VARNAME STREQUAL "POSTGRESQL") OR (NOT DATA_STORAGE))
+  set(DATA_STORAGE_PG TRUE)
+elseif(VARNAME STREQUAL "JSON")
+  set(DATA_STORAGE_JSON TRUE)
+else()
+  unset(DATA_STORAGE CACHE)
+  message(FATAL_ERROR "Unsupported data storage. [${VARNAME}]")
+endif()
+
 add_custom_target(format
   COMMAND git ls-files '*.cpp' '*.h' | xargs clang-format -i --style=file -verbose
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
@@ -85,46 +98,13 @@ add_library(interface INTERFACE)
 add_subdirectory(${SUBMODULE_DIR}/googletest)
 
 message(STATUS "The target of the build is metadata-manager.")
-
-if(LOG_LEVEL)
-  string(TOUPPER ${LOG_LEVEL} VARNAME)
-else()
-  set(VARNAME "ERROR")
-endif()
-if(VARNAME MATCHES "^(0|NONE)$")
-  set(LOG_LEVEL_NUM 0)
-elseif(VARNAME MATCHES "^(1|ERR|ERROR)$")
-  set(LOG_LEVEL_NUM 1)
-elseif(VARNAME MATCHES "^(2|WARN|WARNING)$")
-  set(LOG_LEVEL_NUM 2)
-elseif(VARNAME MATCHES "^(3|INFO)$")
-  set(LOG_LEVEL_NUM 3)
-elseif(VARNAME MATCHES "^(4|DEBUG)$")
-  set(LOG_LEVEL_NUM 4)
-else()
-  message(FATAL_ERROR "A value out of range is specified: LOG_LEVEL=[${LOG_LEVEL}]")
-  unset(LOG_LEVEL CACHE)
-endif()
-message(STATUS "  Default log output level for metadata-manager is ${VARNAME}.")
-target_compile_options(interface INTERFACE -DLOG_LEVEL=${LOG_LEVEL_NUM})
-
-if(DATA_STORAGE MATCHES "^.+$")
-  string(TOUPPER ${DATA_STORAGE} VARNAME)
-else()
-  set(VARNAME "POSTGRESQL")
-endif()
-if(VARNAME STREQUAL "POSTGRESQL")
+if (DATA_STORAGE_PG)
   message(STATUS "  Metadata is stored in PostgreSQL.")
-  set(DATA_STORAGE_PG TRUE)
-  set_postgresql()
   target_compile_options(interface INTERFACE -DSTORAGE_POSTGRESQL)
-elseif(VARNAME STREQUAL "JSON")
+  set_postgresql()
+elseif (DATA_STORAGE_JSON)
   message(STATUS "  Metadata is stored in JSON-file.")
-  set(DATA_STORAGE_JSON TRUE)
   target_compile_options(interface INTERFACE -DSTORAGE_JSON)
-else()
-  message(FATAL_ERROR "Unsupported data storage: DATA_STORAGE=[${DATA_STORAGE}]")
-  unset(DATA_STORAGE CACHE)
 endif()
 
 target_include_directories(interface

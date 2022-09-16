@@ -17,7 +17,6 @@
 
 #include <memory>
 
-#include "manager/metadata/helper/logging_helper.h"
 #include "manager/metadata/provider/roles_provider.h"
 
 // =============================================================================
@@ -47,14 +46,8 @@ Roles::Roles(std::string_view database, std::string_view component)
  * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode Roles::init() const {
-  // Log of API function start.
-  log::function_start("Roles::init()");
-
   // Initialize the provider.
   ErrorCode error = provider->init();
-
-  // Log of API function finish.
-  log::function_finish("Roles::init()", error);
 
   return error;
 }
@@ -71,27 +64,14 @@ ErrorCode Roles::get(const ObjectIdType object_id,
                      boost::property_tree::ptree& object) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
-  // Log of API function start.
-  log::function_start("Roles::get(RoleId)");
-
-  // Parameter value check.
-  if (object_id > 0) {
-    error = ErrorCode::OK;
-  } else {
-    LOG_WARNING
-        << "An out-of-range value (0 or less) was specified for RoleId.: "
-        << object_id;
+  if (object_id <= 0) {
     error = ErrorCode::ID_NOT_FOUND;
+    return error;
   }
 
   // Get the role metadata through the provider.
-  if (error == ErrorCode::OK) {
-    std::string s_object_id = std::to_string(object_id);
-    error = provider->get_role_metadata(Roles::ROLE_OID, s_object_id, object);
-  }
-
-  // Log of API function finish.
-  log::function_finish("Roles::get(RoleId)", error);
+  std::string s_object_id = std::to_string(object_id);
+  error = provider->get_role_metadata(Roles::ROLE_OID, s_object_id, object);
 
   return error;
 }
@@ -108,25 +88,13 @@ ErrorCode Roles::get(std::string_view object_name,
                      boost::property_tree::ptree& object) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
-  // Log of API function start.
-  log::function_start("Roles::get(RoleName)");
-
-  // Parameter value check.
-  if (!object_name.empty()) {
-    error = ErrorCode::OK;
-  } else {
-    LOG_WARNING << "An empty value was specified for RoleName.";
+  if (object_name.empty()) {
     error = ErrorCode::NAME_NOT_FOUND;
+    return error;
   }
 
   // Get the role metadata through the provider.
-  if (error == ErrorCode::OK) {
-    error =
-        provider->get_role_metadata(Roles::ROLE_ROLNAME, object_name, object);
-  }
-
-  // Log of API function finish.
-  log::function_finish("Roles::get(RoleName)", error);
+  error = provider->get_role_metadata(Roles::ROLE_ROLNAME, object_name, object);
 
   return error;
 }
