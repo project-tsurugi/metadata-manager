@@ -17,8 +17,6 @@
 
 #include <memory>
 
-#include "manager/metadata/common/message.h"
-#include "manager/metadata/helper/logging_helper.h"
 #include "manager/metadata/provider/datatypes_provider.h"
 
 // =============================================================================
@@ -48,14 +46,8 @@ DataTypes::DataTypes(std::string_view database, std::string_view component)
  * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode DataTypes::init() const {
-  // Log of API function start.
-  log::function_start("DataTypes::init()");
-
   // Initialize the provider.
   ErrorCode error = provider->init();
-
-  // Log of API function finish.
-  log::function_finish("DataTypes::init()", error);
 
   return error;
 }
@@ -74,27 +66,14 @@ ErrorCode DataTypes::get(const ObjectIdType object_id,
                          boost::property_tree::ptree& object) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
-  // Log of API function start.
-  log::function_start("DataTypes::get(DataTypeId)");
-
   // Parameter value check.
-  if (object_id > 0) {
-    error = ErrorCode::OK;
-  } else {
-    LOG_WARNING
-        << "An out-of-range value (0 or less) was specified for DataTypeId.: "
-        << object_id;
+  if (object_id <= 0) {
     error = ErrorCode::ID_NOT_FOUND;
+    return error;
   }
 
   // Get the data type metadata through the class method.
-  if (error == ErrorCode::OK) {
-    error = provider->get_datatype_metadata(DataTypes::ID,
-                                            std::to_string(object_id), object);
-  }
-
-  // Log of API function finish.
-  log::function_finish("DataTypes::get(DataTypeId)", error);
+  error = get(DataTypes::ID, std::to_string(object_id), object);
 
   return error;
 }
@@ -113,25 +92,14 @@ ErrorCode DataTypes::get(std::string_view object_name,
                          boost::property_tree::ptree& object) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
-  // Log of API function start.
-  log::function_start("DataTypes::get(DataTypeName)");
-
   // Parameter value check.
-  if (!object_name.empty()) {
-    error = ErrorCode::OK;
-  } else {
-    LOG_WARNING << "An empty value was specified for DataTypeName.";
+  if (object_name.empty()) {
     error = ErrorCode::NAME_NOT_FOUND;
+    return error;
   }
 
   // Get the data type metadata through the class method.
-  if (error == ErrorCode::OK) {
-    error =
-        provider->get_datatype_metadata(DataTypes::NAME, object_name, object);
-  }
-
-  // Log of API function finish.
-  log::function_finish("DataTypes::get(DataTypeName)", error);
+  error = get(DataTypes::NAME, object_name, object);
 
   return error;
 }
@@ -153,39 +121,26 @@ ErrorCode DataTypes::get(std::string_view object_key,
                          std::string_view object_value,
                          boost::property_tree::ptree& object) const {
   ErrorCode error = ErrorCode::UNKNOWN;
-
-  // Log of API function start.
-  log::function_start("DataTypes::get(Key/Value)");
-
   std::string_view s_object_key = std::string_view(object_key);
 
   // Parameter value check.
-  if ((!s_object_key.empty()) && (!object_value.empty())) {
-    error = ErrorCode::OK;
-  } else if (s_object_key.empty()) {
-    LOG_ERROR << Message::PARAMETER_FAILED << "Object key is empty.";
+  if (s_object_key.empty()) {
     error = ErrorCode::INVALID_PARAMETER;
-  } else {
+    return error;
+  } else if (object_value.empty()) {
     // Convert the error code.
     if (object_key == DataTypes::ID) {
-      LOG_ERROR << Message::PARAMETER_FAILED << "DataType id is empty.";
       error = ErrorCode::ID_NOT_FOUND;
     } else if (object_key == DataTypes::NAME) {
-      LOG_ERROR << Message::PARAMETER_FAILED << "DataType name is empty.";
       error = ErrorCode::NAME_NOT_FOUND;
     } else {
-      LOG_ERROR << Message::PARAMETER_FAILED << "Object value is empty.";
       error = ErrorCode::NOT_FOUND;
     }
+    return error;
   }
 
   // Get the data type metadata through the provider.
-  if (error == ErrorCode::OK) {
-    error = provider->get_datatype_metadata(s_object_key, object_value, object);
-  }
-
-  // Log of API function finish.
-  log::function_finish("DataTypes::get(Key/Value)", error);
+  error = provider->get_datatype_metadata(s_object_key, object_value, object);
 
   return error;
 }

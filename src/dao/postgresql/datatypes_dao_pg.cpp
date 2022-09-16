@@ -26,6 +26,7 @@
 
 #include <boost/format.hpp>
 
+#include "manager/metadata/common/message.h"
 #include "manager/metadata/dao/common/statement_name.h"
 #include "manager/metadata/dao/postgresql/common_pg.h"
 #include "manager/metadata/dao/postgresql/dbc_utils_pg.h"

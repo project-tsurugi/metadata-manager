@@ -18,13 +18,10 @@
 #include <memory>
 
 #include <boost/foreach.hpp>
-#include <boost/format.hpp>
 
 #include "jwt-cpp/jwt.h"
 #include "manager/metadata/common/config.h"
 #include "manager/metadata/common/jwt_claims.h"
-#include "manager/metadata/common/message.h"
-#include "manager/metadata/helper/logging_helper.h"
 #include "manager/metadata/helper/table_metadata_helper.h"
 #include "manager/metadata/provider/datatypes_provider.h"
 #include "manager/metadata/provider/roles_provider.h"
@@ -32,9 +29,7 @@
 
 // =============================================================================
 namespace {
-
-std::unique_ptr<manager::metadata::db::TablesProvider> provider = nullptr;
-
+  std::unique_ptr<manager::metadata::db::TablesProvider> provider = nullptr;
 }  // namespace
 
 // =============================================================================
@@ -62,14 +57,8 @@ Tables::Tables(std::string_view database, std::string_view component)
 ErrorCode Tables::init() const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
-  // Log of API function start.
-  log::function_start("Tables::init()");
-
   // Initialize the provider.
   error = provider->init();
-
-  // Log of API function finish.
-  log::function_finish("Tables::init()", error);
 
   return error;
 }
@@ -83,7 +72,7 @@ ErrorCode Tables::add(const boost::property_tree::ptree& object) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   // Adds the table metadata through the class method.
-  error = this->add(object, nullptr);
+  error = add(object, nullptr);
 
   return error;
 }
@@ -99,25 +88,20 @@ ErrorCode Tables::add(const boost::property_tree::ptree& object,
 {
   ErrorCode error = ErrorCode::UNKNOWN;
 
-  // Log of API function start.
-  log::function_start("Tables::add()");
-
   // Parameter value check.
   error = param_check_metadata_add(object);
-
-  // Adds the table metadata through the provider.
-  ObjectIdType retval_object_id = 0;
-  if (error == ErrorCode::OK) {
-    error = provider->add_table_metadata(object, retval_object_id);
+  if (error != ErrorCode::OK) {
+    return error;
   }
+
+  ObjectIdType retval_object_id = 0;
+  // Adds the table metadata through the provider.
+  error = provider->add_table_metadata(object, retval_object_id);
 
   // Set a value if object_id is not null.
   if ((error == ErrorCode::OK) && (object_id != nullptr)) {
     *object_id = retval_object_id;
   }
-
-  // Log of API function finish.
-  log::function_finish("Tables::add()", error);
 
   return error;
 }
@@ -134,27 +118,15 @@ ErrorCode Tables::get(const ObjectIdType object_id,
                       boost::property_tree::ptree& object) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
-  // Log of API function start.
-  log::function_start("Tables::get(TableId)");
-
   // Parameter value check.
-  if (object_id > 0) {
-    error = ErrorCode::OK;
-  } else {
-    LOG_WARNING
-        << "An out-of-range value (0 or less) was specified for TableId.: "
-        << object_id;
+  if (object_id <= 0) {
     error = ErrorCode::ID_NOT_FOUND;
+    return error;
   }
 
   // Get the table metadata through the provider.
-  if (error == ErrorCode::OK) {
-    std::string s_object_id = std::to_string(object_id);
-    error = provider->get_table_metadata(Tables::ID, s_object_id, object);
-  }
-
-  // Log of API function finish.
-  log::function_finish("Tables::get(TableId)", error);
+  std::string s_object_id = std::to_string(object_id);
+  error = provider->get_table_metadata(Tables::ID, s_object_id, object);
 
   return error;
 }
@@ -171,24 +143,14 @@ ErrorCode Tables::get(std::string_view object_name,
                       boost::property_tree::ptree& object) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
-  // Log of API function start.
-  log::function_start("Tables::get(TableName)");
-
   // Parameter value check.
-  if (!object_name.empty()) {
-    error = ErrorCode::OK;
-  } else {
-    LOG_WARNING << "An empty value was specified for TableName.";
+  if (object_name.empty()) {
     error = ErrorCode::NAME_NOT_FOUND;
+    return error;
   }
 
   // Get the table metadata through the provider.
-  if (error == ErrorCode::OK) {
-    error = provider->get_table_metadata(Tables::NAME, object_name, object);
-  }
-
-  // Log of API function finish.
-  log::function_finish("Tables::get(TableName)", error);
+  error = provider->get_table_metadata(Tables::NAME, object_name, object);
 
   return error;
 }
@@ -203,14 +165,8 @@ ErrorCode Tables::get_all(
     std::vector<boost::property_tree::ptree>& container) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
-  // Log of API function start.
-  log::function_start("Tables::get_all()");
-
   // Get the table metadata through the provider.
   error = provider->get_table_metadata(container);
-
-  // Log of API function finish.
-  log::function_finish("Tables::get_all()", error);
 
   return error;
 }
@@ -229,27 +185,15 @@ ErrorCode Tables::get_statistic(const ObjectIdType table_id,
                                 boost::property_tree::ptree& object) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
-  // Log of API function start.
-  log::function_start("Tables::get_statistic(TableId)");
-
   // Parameter value check.
-  if (table_id > 0) {
-    error = ErrorCode::OK;
-  } else {
-    LOG_WARNING
-        << "An out-of-range value (0 or less) was specified for TableId.: "
-        << table_id;
+  if (table_id <= 0) {
     error = ErrorCode::ID_NOT_FOUND;
+    return error;
   }
 
   // Get the table statistic through the provider.
-  if (error == ErrorCode::OK) {
-    error = provider->get_table_statistic(Tables::ID, std::to_string(table_id),
-                                          object);
-  }
-
-  // Log of API function finish.
-  log::function_finish("Tables::get_statistic(TableId)", error);
+  error = provider->get_table_statistic(Tables::ID, std::to_string(table_id),
+                                        object);
 
   return error;
 }
@@ -268,24 +212,14 @@ ErrorCode Tables::get_statistic(std::string_view table_name,
                                 boost::property_tree::ptree& object) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
-  // Log of API function start.
-  log::function_start("Tables::get_statistic(TableName)");
-
   // Parameter value check.
-  if (!table_name.empty()) {
-    error = ErrorCode::OK;
-  } else {
-    LOG_WARNING << "An empty value was specified for TableName.";
+  if (table_name.empty()) {
     error = ErrorCode::NAME_NOT_FOUND;
+    return error;
   }
 
   // Get the table statistic through the provider.
-  if (error == ErrorCode::OK) {
-    error = provider->get_table_statistic(Tables::NAME, table_name, object);
-  }
-
-  // Log of API function finish.
-  log::function_finish("Tables::get_statistic(TableName)", error);
+  error = provider->get_table_statistic(Tables::NAME, table_name, object);
 
   return error;
 }
@@ -301,20 +235,15 @@ ErrorCode Tables::get_statistic(std::string_view table_name,
 ErrorCode Tables::set_statistic(boost::property_tree::ptree& object) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
-  // Log of API function start.
-  log::function_start("Tables::set_statistic()");
-
   // Parameter value check.
   error = param_check_statistic_update(object);
-
-  // Adds or updates the table statistic through the provider.
-  if (error == ErrorCode::OK) {
-    ObjectIdType retval_object_id = 0;
-    error = provider->set_table_statistic(object, retval_object_id);
+  if (error != ErrorCode::OK) {
+    return error;
   }
 
-  // Log of API function finish.
-  log::function_finish("Tables::set_statistic()", error);
+  ObjectIdType retval_object_id = 0;
+  // Adds or updates the table statistic through the provider.
+  error = provider->set_table_statistic(object, retval_object_id);
 
   return error;
 }
@@ -332,28 +261,16 @@ ErrorCode Tables::set_statistic(boost::property_tree::ptree& object) const {
 ErrorCode Tables::remove(const ObjectIdType object_id) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
-  // Log of API function start.
-  log::function_start("Tables::remove(TableId)");
-
   // Parameter value check.
-  if (object_id > 0) {
-    error = ErrorCode::OK;
-  } else {
-    LOG_WARNING
-        << "An out-of-range value (0 or less) was specified for TableId.: "
-        << object_id;
+  if (object_id <= 0) {
     error = ErrorCode::ID_NOT_FOUND;
+    return error;
   }
 
+  ObjectIdType retval_object_id = 0;
   // Remove the table metadata through the provider.
-  if (error == ErrorCode::OK) {
-    ObjectIdType retval_object_id = 0;
-    error = provider->remove_table_metadata(Tables::ID, std::to_string(object_id),
-                                            retval_object_id);
-  }
-
-  // Log of API function finish.
-  log::function_finish("Tables::remove(TableId)", error);
+  error = provider->remove_table_metadata(Tables::ID, std::to_string(object_id),
+                                          retval_object_id);
 
   return error;
 }
@@ -373,15 +290,10 @@ ErrorCode Tables::remove(std::string_view object_name,
                          ObjectIdType* object_id) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
-  // Log of API function start.
-  log::function_start("Tables::remove(TableName)");
-
   // Parameter value check.
-  if (!object_name.empty()) {
-    error = ErrorCode::OK;
-  } else {
-    LOG_WARNING << "An empty value was specified for TableName.";
+  if (object_name.empty()) {
     error = ErrorCode::NAME_NOT_FOUND;
+    return error;
   }
 
   ObjectIdType retval_object_id = 0;
@@ -393,9 +305,6 @@ ErrorCode Tables::remove(std::string_view object_name,
   if ((error == ErrorCode::OK) && (object_id != nullptr)) {
     *object_id = retval_object_id;
   }
-
-  // Log of API function finish.
-  log::function_finish("Tables::remove(TableName)", error);
 
   return error;
 }
@@ -416,19 +325,9 @@ ErrorCode Tables::get_acls(std::string_view token,
                            boost::property_tree::ptree& acls) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
-  // Log of API function start.
-  log::function_start("Tables::get_acls()");
-
   // Parameter value check.
-  if (!token.empty()) {
-    error = ErrorCode::OK;
-  } else {
-    LOG_ERROR << Message::PARAMETER_FAILED << "Access token is empty.";
+  if (token.empty()) {
     error = ErrorCode::INVALID_PARAMETER;
-
-    // Log of API function finish.
-    log::function_finish("Tables::get_acls()", error);
-
     return error;
   }
 
@@ -446,44 +345,44 @@ ErrorCode Tables::get_acls(std::string_view token,
     // Verify the token.
     verifier.verify(decoded_token);
   } catch (jwt::error::token_verification_exception ex) {
-    LOG_ERROR << Message::INVALID_TOKEN << ex.what();
     error = ErrorCode::INVALID_PARAMETER;
+    return error;
   } catch (...) {
-    LOG_ERROR << Message::INVALID_TOKEN;
     error = ErrorCode::INVALID_PARAMETER;
+    return error;
   }
 
   // Get the user name from the token.
-  std::string user_name;
-  if (error == ErrorCode::OK) {
-    auto claim_user_name =
-        decoded_token.get_payload_claim(Token::Payload::kAuthUserName);
-    user_name = claim_user_name.as_string();
-  }
+  auto claim_user_name =
+      decoded_token.get_payload_claim(Token::Payload::kAuthUserName);
+  std::string user_name = claim_user_name.as_string();
 
   // Check for the presence of role name.
-  if (error == ErrorCode::OK) {
+  {
     auto provider_roles = std::make_unique<db::RolesProvider>();
+
     // Initialize the provider.
     error = provider_roles->init();
+    if (error != ErrorCode::OK) {
+      return error;
+    }
 
-    if (error == ErrorCode::OK) {
-      ptree role_metadata;
-      // Get the role metadata through the provider.
-      error = provider_roles->get_role_metadata(Roles::ROLE_ROLNAME, user_name,
-                                                role_metadata);
+    ptree role_metadata;
+    // Get the role metadata through the provider.
+    error = provider_roles->get_role_metadata(Roles::ROLE_ROLNAME, user_name,
+                                              role_metadata);
+    if (error != ErrorCode::OK) {
+      return error;
     }
   }
 
   // Get table metadata by table name.
   std::vector<ptree> container;
-  if (error == ErrorCode::OK) {
-    // Get the table metadata through the provider.
-    error = provider->get_table_metadata(container);
-  }
+  // Get the table metadata through the provider.
+  error = provider->get_table_metadata(container);
 
-  // Generate processing results.
   if (error == ErrorCode::OK) {
+    // Generate processing results.
     ptree table_acls;
     for (const auto& table_metadata : container) {
       auto acl_list = table_metadata.get_child_optional(Tables::ACL);
@@ -492,7 +391,7 @@ ErrorCode Tables::get_acls(std::string_view token,
             TableMetadataHelper::get_table_acl(user_name, acl_list.get());
         if (!table_acl.empty()) {
           table_acls.put(table_metadata.get<std::string>(Tables::NAME, ""),
-                        table_acl);
+                         table_acl);
         }
       }
     }
@@ -500,9 +399,6 @@ ErrorCode Tables::get_acls(std::string_view token,
     acls.clear();
     acls.add_child(Tables::TABLE_ACL_NODE, table_acls);
   }
-
-  // Log of API function finish.
-  log::function_finish("Tables::get_acls()", error);
 
   return error;
 }
@@ -523,28 +419,16 @@ ErrorCode Tables::confirm_permission_in_acls(const ObjectIdType object_id,
                                              bool& check_result) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
-  // Log of API function start.
-  log::function_start("Tables::confirm_permission_in_acls(RoleId)");
-
   // Parameter value check.
-  if (object_id > 0) {
-    error = ErrorCode::OK;
-  } else {
-    LOG_WARNING
-        << "An out-of-range value (0 or less) was specified for RoleId.: "
-        << object_id;
+  if (object_id <= 0) {
     error = ErrorCode::ID_NOT_FOUND;
+    return error;
   }
 
   // Get the table metadata through the provider.
-  if (error == ErrorCode::OK) {
-    std::string s_object_id = std::to_string(object_id);
-    error = provider->confirm_permission(Metadata::ID, s_object_id, permission,
-                                        check_result);
-  }
-
-  // Log of API function finish.
-  log::function_finish("Tables::confirm_permission_in_acls(RoleId)", error);
+  std::string s_object_id = std::to_string(object_id);
+  error = provider->confirm_permission(Metadata::ID, s_object_id, permission,
+                                       check_result);
 
   return error;
 }
@@ -565,25 +449,15 @@ ErrorCode Tables::confirm_permission_in_acls(std::string_view object_name,
                                              bool& check_result) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
-  // Log of API function start.
-  log::function_start("Tables::confirm_permission_in_acls(RoleName)");
-
   // Parameter value check.
-  if (!object_name.empty()) {
-    error = ErrorCode::OK;
-  } else {
-    LOG_WARNING << "An empty value was specified for RoleName.";
+  if (object_name.empty()) {
     error = ErrorCode::NAME_NOT_FOUND;
+    return error;
   }
 
   // Get the table metadata through the provider.
-  if (error == ErrorCode::OK) {
-    error = provider->confirm_permission(Metadata::NAME, object_name, permission,
-                                        check_result);
-  }
-
-  // Log of API function finish.
-  log::function_finish("Tables::confirm_permission_in_acls(RoleName)", error);
+  error = provider->confirm_permission(Metadata::NAME, object_name, permission,
+                                       check_result);
 
   return error;
 }
@@ -819,13 +693,10 @@ ErrorCode Tables::get(std::string_view table_name,
 ErrorCode Tables::param_check_metadata_add(
     const boost::property_tree::ptree& object) const {
   ErrorCode error = ErrorCode::UNKNOWN;
-  constexpr const char* const kLogFormat = R"("%s" => undefined or empty)";
 
-  auto table_name = object.get_optional<std::string>(Tables::NAME);
+  auto  table_name =
+      object.get_optional<std::string>(Tables::NAME);
   if (!table_name || table_name.get().empty()) {
-    LOG_ERROR << Message::PARAMETER_FAILED
-              << (boost::format(kLogFormat) % Tables::NAME).str();
-
     error = ErrorCode::INVALID_PARAMETER;
     return error;
   }
@@ -839,12 +710,9 @@ ErrorCode Tables::param_check_metadata_add(
     auto& column = node.second;
 
     // name
-    auto column_name = column.get_optional<std::string>(Tables::Column::NAME);
+    auto  column_name =
+        column.get_optional<std::string>(Tables::Column::NAME);
     if (!column_name || (column_name.get().empty())) {
-      std::string column_name = "Column." + std::string(Tables::Column::NAME);
-      LOG_ERROR << Message::PARAMETER_FAILED
-                << (boost::format(kLogFormat) % column_name).str();
-
       error = ErrorCode::INVALID_PARAMETER;
       break;
     }
@@ -853,11 +721,6 @@ ErrorCode Tables::param_check_metadata_add(
     boost::optional<std::int64_t> ordinal_position =
         column.get_optional<std::int64_t>(Tables::Column::ORDINAL_POSITION);
     if (!ordinal_position || (ordinal_position.get() <= 0)) {
-      std::string column_name =
-          "Column." + std::string(Tables::Column::ORDINAL_POSITION);
-      LOG_ERROR << Message::PARAMETER_FAILED
-                << (boost::format(kLogFormat) % column_name).str();
-
       error = ErrorCode::INVALID_PARAMETER;
       break;
     }
@@ -866,11 +729,6 @@ ErrorCode Tables::param_check_metadata_add(
     boost::optional<ObjectIdType> datatype_id =
         column.get_optional<ObjectIdType>(Tables::Column::DATA_TYPE_ID);
     if (!datatype_id || (datatype_id.get() < 0)) {
-      std::string column_name =
-          "Column." + std::string(Tables::Column::DATA_TYPE_ID);
-      LOG_ERROR << Message::PARAMETER_FAILED
-                << (boost::format(kLogFormat) % column_name).str();
-
       error = ErrorCode::INVALID_PARAMETER;
       break;
     }
@@ -889,21 +747,13 @@ ErrorCode Tables::param_check_metadata_add(
       if (error == ErrorCode::ID_NOT_FOUND) {
         error = ErrorCode::INVALID_PARAMETER;
       }
-      LOG_ERROR << Message::PARAMETER_FAILED
-                << "DataTypes: " << std::to_string(datatype_id.get())
-                << " => not found.";
-
       break;
     }
 
     // nullable
-    auto nullable = column.get_optional<std::string>(Tables::Column::NULLABLE);
+    auto  nullable =
+        column.get_optional<std::string>(Tables::Column::NULLABLE);
     if (!nullable || (nullable.get().empty())) {
-      std::string column_name =
-          "Column." + std::string(Tables::Column::NULLABLE);
-      LOG_ERROR << Message::PARAMETER_FAILED
-                << (boost::format(kLogFormat) % column_name).str();
-
       error = ErrorCode::INVALID_PARAMETER;
       break;
     }
@@ -920,12 +770,13 @@ ErrorCode Tables::param_check_metadata_add(
 ErrorCode Tables::param_check_statistic_update(
     const boost::property_tree::ptree& object) const {
   ErrorCode error = ErrorCode::UNKNOWN;
-  constexpr const char* const kLogFormat = "%s => undefined or empty";
 
   // id
-  auto optional_id = object.get_optional<std::string>(Tables::ID);
+  auto  optional_id =
+      object.get_optional<std::string>(Tables::ID);
   // name
-  auto optional_name = object.get_optional<std::string>(Tables::NAME);
+  auto  optional_name =
+      object.get_optional<std::string>(Tables::NAME);
   // tuples
   boost::optional<float> optional_tuples =
       object.get_optional<float>(Tables::TUPLES);
@@ -934,17 +785,6 @@ ErrorCode Tables::param_check_statistic_update(
   if ((optional_id || optional_name) && (optional_tuples)) {
     error = ErrorCode::OK;
   } else {
-    if (optional_id || optional_name) {
-      LOG_ERROR << Message::PARAMETER_FAILED
-                << (boost::format(R"("%s" or "%s" => undefined or empty)") %
-                    Tables::ID % Tables::NAME)
-                       .str();
-    } else {
-      LOG_ERROR << Message::PARAMETER_FAILED
-                << (boost::format(R"("%s" => undefined or empty)") %
-                    Tables::TUPLES)
-                       .str();
-    }
     error = ErrorCode::INVALID_PARAMETER;
   }
 

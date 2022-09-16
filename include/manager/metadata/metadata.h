@@ -70,7 +70,14 @@ class Metadata {
    */
   static constexpr const char* const NAME = "name";
 
-  Metadata(std::string_view database, std::string_view component);
+  /**
+   *  @brief  Constructor
+   *  @param  (database)  [in]  database name.
+   *  @param  (component) [in]  your component name.
+   *  @return none.
+   */
+  Metadata(std::string_view database, std::string_view component)
+      : database_(database), component_(component) {}
 
   virtual ~Metadata() {}
 

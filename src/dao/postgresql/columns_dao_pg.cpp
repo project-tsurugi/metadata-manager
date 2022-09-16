@@ -31,7 +31,6 @@
 #include "manager/metadata/dao/common/statement_name.h"
 #include "manager/metadata/dao/postgresql/common_pg.h"
 #include "manager/metadata/dao/postgresql/dbc_utils_pg.h"
-#include "manager/metadata/helper/logging_helper.h"
 
 // =============================================================================
 namespace {
@@ -228,9 +227,6 @@ ErrorCode ColumnsDAO::insert_one_column_metadata(
   boost::optional<std::string> name =
       column.get_optional<std::string>(Tables::Column::NAME);
   if (!name) {
-    std::string column_name = "Column." + std::string(Tables::Column::NAME);
-    LOG_ERROR << Message::PARAMETER_FAILED << "\"" << column_name << "\""
-              << " => undefined or empty";
     error = ErrorCode::INVALID_PARAMETER;
     return error;
   }
@@ -279,9 +275,6 @@ ErrorCode ColumnsDAO::insert_one_column_metadata(
   boost::optional<std::string> nullable =
       column.get_optional<std::string>(Tables::Column::NULLABLE);
   if (!nullable) {
-    std::string column_name = "Column." + std::string(Tables::Column::NULLABLE);
-    LOG_ERROR << Message::PARAMETER_FAILED << "\"" << column_name << "\""
-              << " => undefined or empty";
     error = ErrorCode::INVALID_PARAMETER;
     return error;
   }
@@ -311,7 +304,6 @@ ErrorCode ColumnsDAO::insert_one_column_metadata(
     if (error_get != ErrorCode::OK) {
       error = error_get;
     } else if (number_of_rows_affected != 1) {
-      LOG_ERROR << Message::RECORD_INSERT_FAILURE;
       error = ErrorCode::INVALID_PARAMETER;
     }
   }
