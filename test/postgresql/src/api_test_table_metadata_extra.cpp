@@ -132,9 +132,10 @@ TEST_F(ApiTestTableMetadataExtra, add_get_remove_table_metadata_by_table_name) {
 }
 
 /**
- * @brief Add, get, remove valid table metadata based on table id.
+ * @brief Add, get, update, remove valid table metadata based on table id.
  */
-TEST_F(ApiTestTableMetadataExtra, add_get_remove_table_metadata_by_table_id) {
+TEST_F(ApiTestTableMetadataExtra,
+       add_get_update_remove_table_metadata_by_table_id) {
   // variable "table_metadata" is test data set.
   for (auto table_metadata_expected : table_metadata) {
     // add valid table metadata.
@@ -150,13 +151,34 @@ TEST_F(ApiTestTableMetadataExtra, add_get_remove_table_metadata_by_table_id) {
     error = tables->get(ret_table_id, table_metadata_inserted);
     EXPECT_EQ(ErrorCode::OK, error);
 
-    UTUtils::print("-- get valid table metadata --");
+    UTUtils::print("-- get valid table metadata after add --");
     UTUtils::print(UTUtils::get_tree_string(table_metadata_inserted));
 
     // verifies that the returned table metadata is expected one.
     table_metadata_expected.put(Tables::ID, ret_table_id);
     TableMetadataHelper::check_table_metadata_expected(table_metadata_expected,
                                                        table_metadata_inserted);
+
+    // update valid table metadata.
+    table_metadata_expected = table_metadata_inserted;
+    std::string table_name =
+        table_metadata_inserted.get_optional<std::string>(Tables::NAME)
+            .value() +
+        "-update";
+    table_metadata_expected.put(Tables::NAME, table_name);
+    error = tables->update(ret_table_id, table_metadata_expected);
+
+    // get valid table metadata by table id.
+    ptree table_metadata_updated;
+    error = tables->get(ret_table_id, table_metadata_updated);
+    EXPECT_EQ(ErrorCode::OK, error);
+
+    UTUtils::print("-- get valid table metadata after update --");
+    UTUtils::print(UTUtils::get_tree_string(table_metadata_updated));
+
+    // verifies that the returned table metadata is expected one.
+    TableMetadataHelper::check_table_metadata_expected(table_metadata_expected,
+                                                       table_metadata_updated);
 
     // remove valid table metadata by table id.
     error = tables->remove(ret_table_id);
