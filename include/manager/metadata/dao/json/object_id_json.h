@@ -19,6 +19,8 @@
 #include <string>
 #include <string_view>
 
+#include <boost/property_tree/ptree.hpp>
+
 #include "manager/metadata/error_code.h"
 #include "manager/metadata/metadata.h"
 
@@ -31,10 +33,14 @@ class ObjectId {
   manager::metadata::ErrorCode init();
   ObjectIdType current(std::string_view table_name);
   ObjectIdType generate(std::string_view table_name);
+  ObjectIdType update(std::string_view table_name, ObjectIdType new_oid);
 
  private:
   static constexpr const char* const OID_NAME = "oid";
   std::string oid_file_name_;
+
+  ErrorCode read(boost::property_tree::ptree& oid_data) const;
+  ErrorCode write(const boost::property_tree::ptree& oid_data) const;
 };
 
 }  // namespace manager::metadata::db::json

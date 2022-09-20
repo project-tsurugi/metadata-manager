@@ -3,4 +3,4 @@
 metadata-manager.code-workspace
 
 # Cmake
-/build
+/build*

@@ -85,6 +85,11 @@ class Statistics : public Metadata {
   ErrorCode get_all(const ObjectIdType table_id,
                     std::vector<boost::property_tree::ptree>& container) const;
 
+  ErrorCode update([[maybe_unused]] const ObjectIdType object_id,
+                   [[maybe_unused]] const boost::property_tree::ptree& object) const override {
+    return ErrorCode::UNKNOWN;
+  }
+
   ErrorCode remove(const ObjectIdType object_id) const override;
   ErrorCode remove(std::string_view object_name,
                    ObjectIdType* object_id) const override;
