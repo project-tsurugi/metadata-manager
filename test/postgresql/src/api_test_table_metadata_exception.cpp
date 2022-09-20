@@ -186,6 +186,44 @@ TEST_P(TableMetadataHelperByTableNameException,
 }
 
 /**
+ * @brief Update invalid table metadata.
+ */
+TEST_F(ApiTestAddTableMetadataException, update_table_metadata) {
+  auto tables = std::make_unique<Tables>(GlobalTestEnvironment::TEST_DB);
+
+  ErrorCode error = tables->init();
+  EXPECT_EQ(ErrorCode::OK, error);
+
+  for (auto invalid_table : invalid_table_metadata) {
+    UTUtils::print("-- update invalid table metadata --");
+    UTUtils::print(UTUtils::get_tree_string(invalid_table));
+
+    ObjectIdType dummy_table_id = 1;
+    error = tables->update(dummy_table_id, invalid_table);
+    EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);
+  }
+}
+
+/**
+ * @brief Exception path test for update table metadata
+ * based on non-existing table id.
+ */
+TEST_P(TableMetadataHelperByTableIdException,
+       update_table_metadata_by_non_existing_table_id) {
+  // prepare test data for adding table metadata.
+  UTTableMetadata testdata_table_metadata =
+      *(global->testdata_table_metadata.get());
+
+  auto tables = std::make_unique<Tables>(GlobalTestEnvironment::TEST_DB);
+
+  ErrorCode error = tables->init();
+  EXPECT_EQ(ErrorCode::OK, error);
+
+  error = tables->update(GetParam(), testdata_table_metadata.tables);
+  EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
+}
+
+/**
  * @brief Exception path test for removing table metadata
  * based on non-existing table id.
  */

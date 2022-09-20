@@ -417,6 +417,15 @@ ErrorCode tables_test() {
   column.put(Tables::Column::DATA_TYPE_ID, 6);
   column.put(Tables::Column::NULLABLE, "true");
   columns.push_back(std::make_pair("", column));
+
+  column.put(Tables::Column::NAME, "col-2");
+  column.put(Tables::Column::ORDINAL_POSITION, 2);
+  column.put(Tables::Column::NULLABLE, "false");
+  column.put(Tables::Column::DATA_TYPE_ID, 14);
+  column.put(Tables::Column::VARYING, "true");
+  column.put(Tables::Column::DATA_LENGTH, 100);
+  column.put(Tables::Column::DEFAULT, "default-text");
+  columns.push_back(std::make_pair("", column));
   new_table.add_child(Tables::COLUMNS_NODE, columns);
 
   // add table metadata.
@@ -453,8 +462,73 @@ ErrorCode tables_test() {
   // verifies that the returned table metadata is expected one.
   helper::check_table_metadata_expected(new_table, table_metadata);
 
+  std::cout << std::endl << std::string(30, '-') << std::endl;
+  std::cout << "-- update table metadata --" << std::endl;
+  ptree update_table;
+  update_table.put(Tables::ID, ret_table_id);
+  update_table.put(Tables::NAME, table_name + "-update");
+  update_table.put(Tables::NAMESPACE, "namespace-update");
+  update_table.put(Tables::TUPLES, 3.1);
+
+  auto columns_node = table_metadata.get_child(Tables::COLUMNS_NODE);
+  auto it = columns_node.begin();
+
+  ptree update_columns;
+  ptree update_column;
+
+  // 1 item skip.
+  // 2 item update.
+  update_column = (++it)->second;
+  update_column.put(
+      Tables::Column::ID,
+      it->second.get_optional<ObjectIdType>(Tables::Column::ID).value());
+  update_column.put(Tables::Column::NAME,
+                    it->second.get_optional<std::string>(Tables::Column::NAME)
+                            .value_or("unknown-1") +
+                        "-update");
+  update_column.put(Tables::Column::ORDINAL_POSITION, 1);
+  update_column.put(Tables::Column::DATA_TYPE_ID, 6);
+  update_column.erase(Tables::Column::DATA_LENGTH);
+  update_column.put<bool>(Tables::Column::VARYING, false);
+  update_column.put<bool>(Tables::Column::NULLABLE, true);
+  update_column.put(Tables::Column::DEFAULT, -1);
+  update_column.put(Tables::Column::DIRECTION,
+                    static_cast<int>(Tables::Column::Direction::ASCENDANT));
+  update_columns.push_back(std::make_pair("", update_column));
+
+  // 3 item add.
+  update_column.clear();
+  update_column.put(Tables::Column::NAME, "new-col-3");
+  update_column.put(Tables::Column::ORDINAL_POSITION, 2);
+  update_column.put(Tables::Column::DATA_TYPE_ID, 14);
+  update_column.put<bool>(Tables::Column::VARYING, false);
+  update_column.put<bool>(Tables::Column::NULLABLE, true);
+  update_column.put(Tables::Column::DATA_LENGTH, 200);
+  update_column.put(Tables::Column::DEFAULT, "default-text-2");
+  update_columns.push_back(std::make_pair("", update_column));
+
+  update_table.add_child(Tables::COLUMNS_NODE, update_columns);
+
+  // update table metadata.
+  result = tables->update(ret_table_id, update_table);
+  EXPECT_EQ(ErrorCode::OK, result);
+
+  // get table metadata by table id.
+  table_metadata.clear();
+  result = tables->get(ret_table_id, table_metadata);
+  EXPECT_EQ(ErrorCode::OK, result);
+
+  std::cout << "-- get table metadata by table id --" << std::endl;
+  std::cout << "  " << get_tree_string(table_metadata) << std::endl;
+
+  // verifies that the returned table metadata is expected one.
+  helper::check_table_metadata_expected(update_table, table_metadata);
+
+  std::cout << std::endl << std::string(30, '-') << std::endl;
+
   // remove table metadata.
-  helper::remove_table(table_name);
+  auto remove_table_name = table_metadata.get<std::string>(Tables::NAME);
+  helper::remove_table(remove_table_name);
 
   result = ErrorCode::OK;
 
