@@ -70,19 +70,22 @@ class TablesDAO : public manager::metadata::db::TablesDAO {
   manager::metadata::ErrorCode prepare() const override;
 
   manager::metadata::ErrorCode insert_table_metadata(
-      const boost::property_tree::ptree& table,
+      const boost::property_tree::ptree& table_metadata,
       ObjectIdType& table_id) const override;
 
   manager::metadata::ErrorCode select_table_metadata(
       std::string_view object_key, std::string_view object_value,
-      boost::property_tree::ptree& object) const override;
+      boost::property_tree::ptree& table_metadata) const override;
   manager::metadata::ErrorCode select_table_metadata(
-      std::vector<boost::property_tree::ptree>& container) const override;
+      std::vector<boost::property_tree::ptree>& table_container) const override;
+
+  manager::metadata::ErrorCode update_table_metadata(
+      const ObjectIdType table_id,
+      const boost::property_tree::ptree& table_metadata) const override;
 
   manager::metadata::ErrorCode update_reltuples(
       const float reltuples, std::string_view object_key,
-      std::string_view object_value,
-      ObjectIdType& table_id) const override;
+      std::string_view object_value, ObjectIdType& table_id) const override;
 
   manager::metadata::ErrorCode delete_table_metadata(
       std::string_view object_key, std::string_view object_value,
@@ -95,7 +98,7 @@ class TablesDAO : public manager::metadata::db::TablesDAO {
       const PGresult* res, const int ordinal_position,
       boost::property_tree::ptree& table) const;
   std::vector<std::string> split(const std::string& source,
-                                        const char& delimiter) const;
+                                 const char& delimiter) const;
 };  // class TablesDAO
 
 }  // namespace manager::metadata::db::postgresql

@@ -123,6 +123,25 @@ std::string select_equal_to(std::string_view column_name) {
 }
 
 /**
+ * @brief Returns an UPDATE statement for table metadata.
+ * @param none.
+ * @return an UPDATE statement to insert table metadata.
+ */
+std::string update_table_metadata() {
+  // SQL statement
+  boost::format query =
+      boost::format(
+          "UPDATE %1%.%2%"
+          " SET %3% = $1, %4% = $2, %5% = $3, %6% = $4"
+          " WHERE %7% = $5") %
+      SCHEMA_NAME % TablesDAO::kTableName % TablesDAO::ColumnName::kName %
+      TablesDAO::ColumnName::kNamespace % TablesDAO::ColumnName::kPrimaryKey %
+      TablesDAO::ColumnName::kTuples % TablesDAO::ColumnName::kId;
+
+  return query.str();
+}
+
+/**
  * @brief Returns an UPDATE statement for the number of rows
  *   based on table name.
  * @param (column_name)  [in]  column name of metadata-table.
@@ -239,6 +258,14 @@ ErrorCode TablesDAO::prepare() const {
     return error;
   }
 
+  // Set the UPDATE statement.
+  error = DbcUtils::prepare(connection_,
+                            StatementName::TABLES_DAO_UPDATE_TABLE_METADATA,
+                            statement::update_table_metadata());
+  if (error != ErrorCode::OK) {
+    return error;
+  }
+
   // Set conditional SQL statement.
   for (auto column : column_names) {
     // Set SELECT statement.
@@ -272,12 +299,13 @@ ErrorCode TablesDAO::prepare() const {
 /**
  * @brief Executes INSERT statement to insert the given one table metadata
  *   into the table metadata table.
- * @param (table)     [in]  one table metadata to add.
- * @param (table_id)  [out] table id.
+ * @param (table_metadata) [in]  one table metadata to add.
+ * @param (table_id)       [out] table id.
  * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode TablesDAO::insert_table_metadata(
-    const boost::property_tree::ptree& table, ObjectIdType& table_id) const {
+    const boost::property_tree::ptree& table_metadata,
+    ObjectIdType& table_id) const {
   ErrorCode error = ErrorCode::UNKNOWN;
   std::vector<char const*> param_values;
 
@@ -290,19 +318,18 @@ ErrorCode TablesDAO::insert_table_metadata(
   param_values.emplace_back(s_generation.c_str());
 
   // name
-  boost::optional<std::string> name =
-      table.get_optional<std::string>(Tables::NAME);
+  auto name = table_metadata.get_optional<std::string>(Tables::NAME);
   param_values.emplace_back((name ? name.value().c_str() : nullptr));
 
   // namespace
-  boost::optional<std::string> namespace_name =
-      table.get_optional<std::string>(Tables::NAMESPACE);
+  auto namespace_name =
+      table_metadata.get_optional<std::string>(Tables::NAMESPACE);
   param_values.emplace_back(
       (namespace_name ? namespace_name.value().c_str() : ""));
 
   // primary_keys
-  boost::optional<const ptree&> o_primary_keys =
-      table.get_child_optional(Tables::PRIMARY_KEY_NODE);
+  auto o_primary_keys =
+      table_metadata.get_child_optional(Tables::PRIMARY_KEY_NODE);
 
   std::string s_primary_keys;
   if (o_primary_keys) {
@@ -316,8 +343,7 @@ ErrorCode TablesDAO::insert_table_metadata(
       (!s_primary_keys.empty() ? s_primary_keys.c_str() : nullptr));
 
   // tuples
-  boost::optional<std::string> reltuples =
-      table.get_optional<std::string>(Tables::TUPLES);
+  auto reltuples = table_metadata.get_optional<std::string>(Tables::TUPLES);
   param_values.emplace_back((reltuples ? reltuples.value().c_str() : nullptr));
 
   PGresult* res = nullptr;
@@ -343,9 +369,9 @@ ErrorCode TablesDAO::insert_table_metadata(
  * @brief Executes a SELECT statement to get table metadata rows
  *   from the table metadata table,
  *   where the given key equals the given value.
- * @param (object_key)    [in]  key. column name of a table metadata table.
- * @param (object_value)  [in]  value to be filtered.
- * @param (object)        [out] table metadata to get,
+ * @param (object_key)      [in]  key. column name of a table metadata table.
+ * @param (object_value)    [in]  value to be filtered.
+ * @param (table_metadata)  [out] table metadata to get,
  *   where the given key equals the given value.
  * @retval ErrorCode::OK if success.
  * @retval ErrorCode::ID_NOT_FOUND if the table id does not exist.
@@ -354,7 +380,7 @@ ErrorCode TablesDAO::insert_table_metadata(
  */
 ErrorCode TablesDAO::select_table_metadata(
     std::string_view object_key, std::string_view object_value,
-    boost::property_tree::ptree& object) const {
+    boost::property_tree::ptree& table_metadata) const {
   ErrorCode error = ErrorCode::UNKNOWN;
   std::vector<const char*> param_values;
 
@@ -376,7 +402,7 @@ ErrorCode TablesDAO::select_table_metadata(
     int nrows = PQntuples(res);
     if (nrows == 1) {
       int ordinal_position = 0;
-      error = convert_pgresult_to_ptree(res, ordinal_position, object);
+      error = convert_pgresult_to_ptree(res, ordinal_position, table_metadata);
     } else if (nrows == 0) {
       // Convert the error code.
       if (object_key == Tables::ID) {
@@ -434,6 +460,73 @@ ErrorCode TablesDAO::select_table_metadata(
 }
 
 /**
+ * @brief Executes an UPDATE statement to update the table metadata table with
+ *   the specified table metadata.
+ * @param (table_id)       [in]  table id.
+ * @param (table_metadata) [in]  table metadata object to be updated.
+ * @return ErrorCode::OK if success, otherwise an error code.
+ */
+ErrorCode TablesDAO::update_table_metadata(
+    const ObjectIdType table_id,
+    const boost::property_tree::ptree& table_metadata) const {
+  ErrorCode error = ErrorCode::UNKNOWN;
+  std::vector<char const*> param_values;
+
+  // name
+  boost::optional<std::string> name =
+      table_metadata.get_optional<std::string>(Tables::NAME);
+  param_values.emplace_back((name ? name.value().c_str() : nullptr));
+
+  // namespace
+  boost::optional<std::string> namespace_name =
+      table_metadata.get_optional<std::string>(Tables::NAMESPACE);
+  param_values.emplace_back(
+      (namespace_name ? namespace_name.value().c_str() : ""));
+
+  // primary_keys
+  boost::optional<const ptree&> o_primary_keys =
+      table_metadata.get_child_optional(Tables::PRIMARY_KEY_NODE);
+  std::string s_primary_keys;
+  if (o_primary_keys) {
+    // Converts a property_tree to a JSON string.
+    error = Utility::ptree_to_json(o_primary_keys.value(), s_primary_keys);
+    if (error != ErrorCode::OK) {
+      return error;
+    }
+  }
+  param_values.emplace_back(
+      (!s_primary_keys.empty() ? s_primary_keys.c_str() : nullptr));
+
+  // tuples
+  boost::optional<std::string> reltuples =
+      table_metadata.get_optional<std::string>(Tables::TUPLES);
+  param_values.emplace_back((reltuples ? reltuples.value().c_str() : nullptr));
+
+  // key value (table-id)
+  std::string key_value = std::to_string(table_id);
+  param_values.emplace_back(key_value.c_str());
+
+  // Execute SQL.
+  PGresult* res = nullptr;
+  error = DbcUtils::exec_prepared(
+      connection_, StatementName::TABLES_DAO_UPDATE_TABLE_METADATA,
+      param_values, res);
+  if (error == ErrorCode::OK) {
+    uint64_t number_of_rows_affected = 0;
+    ErrorCode error_get =
+        DbcUtils::get_number_of_rows_affected(res, number_of_rows_affected);
+    if (error_get != ErrorCode::OK) {
+      error = error_get;
+    } else if (number_of_rows_affected == 0) {
+      error = ErrorCode::ID_NOT_FOUND;
+    }
+  }
+
+  PQclear(res);
+  return error;
+}
+
+/**
  * @brief Executes UPDATE statement to update the given number of rows
  *   into the table metadata table based on the given table id.
  * @param (reltuples)     [in]  the number of rows to update.
@@ -452,9 +545,10 @@ ErrorCode TablesDAO::update_reltuples(float reltuples,
   ErrorCode error = ErrorCode::UNKNOWN;
   std::vector<char const*> param_values;
 
+  // tuples
   std::string s_reltuples = std::to_string(reltuples);
-
   param_values.emplace_back(s_reltuples.c_str());
+  // key value (table-id)
   param_values.emplace_back(object_value.data());
 
   // Get the name of the SQL statement to be executed.
@@ -561,39 +655,43 @@ ErrorCode TablesDAO::delete_table_metadata(std::string_view object_key,
  *   converted from the given PGresult type value.
  * @param (res)               [in]  the result of a query.
  * @param (ordinal_position)  [in]  column ordinal position of PGresult.
- * @param (table)             [out] one table metadata.
+ * @param (table_metadata)    [out] one table metadata.
  * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode TablesDAO::convert_pgresult_to_ptree(
     const PGresult* res, const int ordinal_position,
-    boost::property_tree::ptree& table) const {
+    boost::property_tree::ptree& table_metadata) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   // Initialization.
-  table.clear();
+  table_metadata.clear();
 
   // Set the value of the format_version column to ptree.
-  table.put(Tables::FORMAT_VERSION,
-            PQgetvalue(res, ordinal_position,
-                       static_cast<int>(OrdinalPosition::kFormatVersion)));
+  table_metadata.put(
+      Tables::FORMAT_VERSION,
+      PQgetvalue(res, ordinal_position,
+                 static_cast<int>(OrdinalPosition::kFormatVersion)));
 
   // Set the value of the generation column to ptree.
-  table.put(Tables::GENERATION,
-            PQgetvalue(res, ordinal_position,
-                       static_cast<int>(OrdinalPosition::kGeneration)));
+  table_metadata.put(
+      Tables::GENERATION,
+      PQgetvalue(res, ordinal_position,
+                 static_cast<int>(OrdinalPosition::kGeneration)));
 
   // Set the value of the id column to ptree.
-  table.put(Tables::ID, PQgetvalue(res, ordinal_position,
-                                   static_cast<int>(OrdinalPosition::kId)));
+  table_metadata.put(Tables::ID,
+                     PQgetvalue(res, ordinal_position,
+                                static_cast<int>(OrdinalPosition::kId)));
 
   // Set the value of the name column to ptree.
-  table.put(Tables::NAME, PQgetvalue(res, ordinal_position,
-                                     static_cast<int>(OrdinalPosition::kName)));
+  table_metadata.put(Tables::NAME,
+                     PQgetvalue(res, ordinal_position,
+                                static_cast<int>(OrdinalPosition::kName)));
 
   // Set the value of the namespace column to ptree.
-  table.put(Tables::NAMESPACE,
-            PQgetvalue(res, ordinal_position,
-                       static_cast<int>(OrdinalPosition::kNamespace)));
+  table_metadata.put(Tables::NAMESPACE,
+                     PQgetvalue(res, ordinal_position,
+                                static_cast<int>(OrdinalPosition::kNamespace)));
 
   // Set the value of the primary_keys column to ptree.
   ptree primary_keys;
@@ -608,17 +706,18 @@ ErrorCode TablesDAO::convert_pgresult_to_ptree(
   // NOTICE:
   //   If it is not set, MUST add an empty ptree.
   //   ogawayama-server read key Tables::PRIMARY_KEY_NODE.
-  table.add_child(Tables::PRIMARY_KEY_NODE, primary_keys);
+  table_metadata.add_child(Tables::PRIMARY_KEY_NODE, primary_keys);
 
   // Set the value of the tuples column to ptree.
   std::string tuples = PQgetvalue(res, ordinal_position,
                                   static_cast<int>(OrdinalPosition::kTuples));
-  table.put(Tables::TUPLES, (tuples.empty() ? "0" : tuples.c_str()));
+  table_metadata.put(Tables::TUPLES, (tuples.empty() ? "0" : tuples.c_str()));
 
   // Set the value of the owner_role_id column to ptree.
-  table.put(Tables::OWNER_ROLE_ID,
-            PQgetvalue(res, ordinal_position,
-                       static_cast<int>(OrdinalPosition::kOwnerRoleId)));
+  table_metadata.put(
+      Tables::OWNER_ROLE_ID,
+      PQgetvalue(res, ordinal_position,
+                 static_cast<int>(OrdinalPosition::kOwnerRoleId)));
 
   // Set the value of the acl column to ptree.
   std::string acl_db_array = PQgetvalue(
@@ -636,7 +735,7 @@ ErrorCode TablesDAO::convert_pgresult_to_ptree(
   // NOTICE:
   //   If it is not set, MUST add an empty ptree.
   //   ogawayama-server read key Tables::ACL.
-  table.add_child(Tables::ACL, ptree_acls);
+  table_metadata.add_child(Tables::ACL, ptree_acls);
 
   error = ErrorCode::OK;
   return error;
