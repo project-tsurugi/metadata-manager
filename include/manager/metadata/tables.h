@@ -190,6 +190,9 @@ class Tables : public Metadata {
                           boost::property_tree::ptree& object) const;
   ErrorCode set_statistic(boost::property_tree::ptree& object) const;
 
+  ErrorCode update(const ObjectIdType object_id,
+                   const boost::property_tree::ptree& object) const override;
+
   ErrorCode remove(const ObjectIdType object_id) const override;
   ErrorCode remove(std::string_view object_name,
                    ObjectIdType* object_id) const override;
@@ -207,7 +210,7 @@ class Tables : public Metadata {
   ErrorCode add(const manager::metadata::Table& table) const;
   ErrorCode add(const manager::metadata::Table& table,
                 ObjectIdType* object_id) const;
-  
+
   ErrorCode get(const ObjectIdType object_id,
                 manager::metadata::Table& table) const;
   ErrorCode get(std::string_view table_name,

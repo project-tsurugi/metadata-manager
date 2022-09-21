@@ -18,6 +18,7 @@
 #include <boost/foreach.hpp>
 
 #include "manager/metadata/datatypes.h"
+#include "manager/metadata/helper/logging_helper.h"
 #include "manager/metadata/tables.h"
 
 // =============================================================================
@@ -89,35 +90,38 @@ ErrorCode TablesProvider::add_table_metadata(
     return error;
   }
 
-  // Add table metadata object to table metadata table.
+  // Add metadata object to table metadata table.
   error = tables_dao_->insert_table_metadata(object, table_id);
-  if (error != ErrorCode::OK) {
+
+  // Add column metadata object to column metadata table.
+  if (error == ErrorCode::OK) {
+    BOOST_FOREACH (const ptree::value_type& node,
+                   object.get_child(Tables::COLUMNS_NODE)) {
+      // Copy to the temporary area.
+      ptree column = node.second;
+
+      // Erase  the columns ID.
+      column.erase(Tables::Column::ID);
+
+      // Add metadata object to columns metadata table.
+      error = columns_dao_->insert_column_metadata(table_id, column);
+      if (error != ErrorCode::OK) {
+        // When an error occurs, the process is aborted.
+        break;
+      }
+    }
+  }
+
+  if (error == ErrorCode::OK) {
+    // Commit the transaction.
+    error = session_manager_->commit();
+  } else {
     // Roll back the transaction.
     ErrorCode rollback_result = session_manager_->rollback();
     if (rollback_result != ErrorCode::OK) {
-      return rollback_result;
-    }
-
-    return error;
-  }
-
-  // Add column metadata object to column metadata table.
-  BOOST_FOREACH (const ptree::value_type& node,
-                 object.get_child(Tables::COLUMNS_NODE)) {
-    ptree column = node.second;
-    error = columns_dao_->insert_one_column_metadata(table_id, column);
-    if (error != ErrorCode::OK) {
-      // Roll back the transaction.
-      ErrorCode rollback_result = session_manager_->rollback();
-      if (rollback_result != ErrorCode::OK) {
-        error = rollback_result;
-      }
-      return error;
+      error = rollback_result;
     }
   }
-
-  // Commit the transaction.
-  error = session_manager_->commit();
 
   return error;
 }
@@ -245,6 +249,70 @@ ErrorCode TablesProvider::get_table_statistic(
 
 /**
  * @brief Updates the table metadata table with the specified table statistics.
+ * @param (table_id)  [in]  Table ID of the table metadata to be updated.
+ * @param (object)    [in]  Table metadata object.
+ * @retval ErrorCode::OK if success,
+ * @retval ErrorCode::ID_NOT_FOUND if the table id does not exist.
+ * @retval otherwise an error code.
+ */
+ErrorCode TablesProvider::update_table_metadata(
+    const ObjectIdType table_id, const boost::property_tree::ptree& object) {
+  ErrorCode error = ErrorCode::UNKNOWN;
+
+  // Initialization
+  error = init();
+  if (error != ErrorCode::OK) {
+    return error;
+  }
+
+  // Start the transaction.
+  error = session_manager_->start_transaction();
+  if (error != ErrorCode::OK) {
+    return error;
+  }
+
+  // Update table metadata table.
+  if (error == ErrorCode::OK) {
+    error = tables_dao_->update_table_metadata(table_id, object);
+  }
+
+  // Remove a metadata object from the column metadata table.
+  if (error == ErrorCode::OK) {
+    error = columns_dao_->delete_column_metadata(Tables::Column::TABLE_ID,
+                                                 std::to_string(table_id));
+  }
+
+  // Add metadata object to column metadata table.
+  if (error == ErrorCode::OK) {
+    BOOST_FOREACH (const ptree::value_type& node,
+                   object.get_child(Tables::COLUMNS_NODE)) {
+      ptree column = node.second;
+
+      // Add metadata object to columns metadata table.
+      error = columns_dao_->insert_column_metadata(table_id, column);
+      if (error != ErrorCode::OK) {
+        // When an error occurs, the process is aborted.
+        break;
+      }
+    }
+  }
+
+  if (error == ErrorCode::OK) {
+    // Commit the transaction.
+    error = session_manager_->commit();
+  } else {
+    // Roll back the transaction.
+    ErrorCode rollback_result = session_manager_->rollback();
+    if (rollback_result != ErrorCode::OK) {
+      error = rollback_result;
+    }
+  }
+
+  return error;
+}
+
+/**
+ * @brief Updates the table metadata table with the specified table statistics.
  * @param (object)    [in]  Table statistic object.
  * @param (table_id)  [out] ID of the added table metadata.
  * @retval ErrorCode::OK if success,
@@ -350,6 +418,7 @@ ErrorCode TablesProvider::remove_table_metadata(std::string_view key,
     return error;
   }
 
+  // Remove a metadata object from the column metadata table.
   error = columns_dao_->delete_column_metadata(Tables::Column::TABLE_ID,
                                                std::to_string(table_id));
   if (error == ErrorCode::OK) {
@@ -423,7 +492,9 @@ ErrorCode TablesProvider::get_column_metadata(
   error = columns_dao_->select_column_metadata(Tables::Column::TABLE_ID,
                                                table_id, columns);
   if ((error == ErrorCode::OK) || (error == ErrorCode::INVALID_PARAMETER)) {
-    table_object.add_child(Tables::COLUMNS_NODE, columns);
+    if (table_object.find(Tables::COLUMNS_NODE) == table_object.not_found()) {
+      table_object.add_child(Tables::COLUMNS_NODE, columns);
+    }
     error = ErrorCode::OK;
   }
 

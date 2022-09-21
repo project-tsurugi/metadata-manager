@@ -36,14 +36,18 @@ class TablesDAO : public manager::metadata::db::TablesDAO {
   manager::metadata::ErrorCode prepare() const override;
 
   manager::metadata::ErrorCode insert_table_metadata(
-      const boost::property_tree::ptree& table,
+      const boost::property_tree::ptree& table_metadata,
       ObjectIdType& table_id) const override;
 
   manager::metadata::ErrorCode select_table_metadata(
       std::string_view object_key, std::string_view object_value,
-      boost::property_tree::ptree& object) const override;
+      boost::property_tree::ptree& table_metadata) const override;
   manager::metadata::ErrorCode select_table_metadata(
-      std::vector<boost::property_tree::ptree>& container) const override;
+      std::vector<boost::property_tree::ptree>& table_container) const override;
+
+  manager::metadata::ErrorCode update_table_metadata(
+      const ObjectIdType table_id,
+      const boost::property_tree::ptree& table_metadata) const override;
 
   manager::metadata::ErrorCode update_reltuples(
       [[maybe_unused]] const float reltuples,
@@ -60,13 +64,22 @@ class TablesDAO : public manager::metadata::db::TablesDAO {
  private:
   // root node.
   static constexpr const char* const TABLES_NODE = "tables";
-  // table name.
-  static constexpr const char* const TABLE_NAME = "tables";
+  // Name of the table metadata management file.
+  static constexpr const char* const TABLES_METADATA_NAME = "tables";
+  // Object ID key name for table ID.
+  static constexpr const char* const OID_KEY_NAME_TABLE = "tables";
+  // Object ID key name for column ID.
+  static constexpr const char* const OID_KEY_NAME_COLUMN = "column";
+
   DBSessionManager* session_manager_;
 
   manager::metadata::ErrorCode get_metadata_object(
+      const boost::property_tree::ptree& container,
       std::string_view object_key, std::string_view object_value,
-      boost::property_tree::ptree& object) const;
+      boost::property_tree::ptree& table_metadata) const;
+  manager::metadata::ErrorCode delete_metadata_object(
+      boost::property_tree::ptree& container, std::string_view object_key,
+      std::string_view object_value, ObjectIdType* table_id) const;
 };  // class TablesDAO
 
 }  // namespace manager::metadata::db::json

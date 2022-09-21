@@ -74,13 +74,13 @@ class ColumnsDAO : public manager::metadata::db::ColumnsDAO {
 
   manager::metadata::ErrorCode prepare() const override;
 
-  manager::metadata::ErrorCode insert_one_column_metadata(
+  manager::metadata::ErrorCode insert_column_metadata(
       const ObjectIdType table_id,
-      const boost::property_tree::ptree& column) const override;
+      const boost::property_tree::ptree& columns_metadata) const override;
 
   manager::metadata::ErrorCode select_column_metadata(
       std::string_view object_key, std::string_view object_value,
-      boost::property_tree::ptree& object) const override;
+      boost::property_tree::ptree& columns_metadata) const override;
 
   manager::metadata::ErrorCode delete_column_metadata(
       std::string_view object_key,
@@ -91,7 +91,7 @@ class ColumnsDAO : public manager::metadata::db::ColumnsDAO {
 
   manager::metadata::ErrorCode convert_pgresult_to_ptree(
       const PGresult* res, const int ordinal_position,
-      boost::property_tree::ptree& column) const;
+      boost::property_tree::ptree& columns_metadata) const;
 };  // class ColumnsDAO
 
 }  // namespace manager::metadata::db::postgresql

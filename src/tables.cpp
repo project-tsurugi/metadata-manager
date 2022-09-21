@@ -319,6 +319,32 @@ ErrorCode Tables::set_statistic(boost::property_tree::ptree& object) const {
 }
 
 /**
+ * @brief Update the metadata-table (table metadata table, column metadata
+ *   table) based on the table ID with metadata objects.
+ * @param (object_id) [in]  ID of the metadata-table to update.
+ * @param (object)    [in]  metadata-object to update.
+ * @return ErrorCode::OK if success, otherwise an error code.
+ */
+ErrorCode Tables::update(const ObjectIdType object_id,
+                   const boost::property_tree::ptree& object) const {
+  ErrorCode error = ErrorCode::UNKNOWN;
+
+  // Parameter value check.
+  if (object_id > 0) {
+    error = param_check_metadata_add(object);
+  } else {
+    error = ErrorCode::ID_NOT_FOUND;
+  }
+
+  // Update the table metadata through the provider.
+  if (error == ErrorCode::OK) {
+    error = provider->update_table_metadata(object_id, object);
+  }
+
+  return error;
+}
+
+/**
  * @brief Remove all metadata-object based on the given table id
  *   (table metadata, column metadata and column statistics)
  *   from metadata-table (the table metadata table,
@@ -347,8 +373,8 @@ ErrorCode Tables::remove(const ObjectIdType object_id) const {
   // Remove the table metadata through the provider.
   if (error == ErrorCode::OK) {
     ObjectIdType retval_object_id = 0;
-    error = provider->remove_table_metadata(Tables::ID, std::to_string(object_id),
-                                            retval_object_id);
+    error = provider->remove_table_metadata(
+        Tables::ID, std::to_string(object_id), retval_object_id);
   }
 
   // Log of API function finish.
@@ -577,8 +603,8 @@ ErrorCode Tables::confirm_permission_in_acls(std::string_view object_name,
 
   // Get the table metadata through the provider.
   if (error == ErrorCode::OK) {
-    error = provider->confirm_permission(Metadata::NAME, object_name, permission,
-                                        check_result);
+    error = provider->confirm_permission(Metadata::NAME, object_name,
+                                         permission, check_result);
   }
 
   // Log of API function finish.
