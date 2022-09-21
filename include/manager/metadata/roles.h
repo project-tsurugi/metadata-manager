@@ -108,6 +108,11 @@ class Roles : public Metadata {
     return ErrorCode::UNKNOWN;
   }
 
+  ErrorCode update([[maybe_unused]] const ObjectIdType object_id,
+                   [[maybe_unused]] const boost::property_tree::ptree& object) const override {
+    return ErrorCode::UNKNOWN;
+  }
+
   ErrorCode remove(
       [[maybe_unused]] const ObjectIdType object_id) const override {
     return ErrorCode::UNKNOWN;

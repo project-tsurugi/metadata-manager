@@ -15,7 +15,41 @@
  */
 #include "manager/metadata/metadata.h"
 
+#include "manager/metadata/log/default_logger.h"
+#include "manager/metadata/log/log_controller.h"
+
+#ifndef LOG_LEVEL
+#define LOG_LEVEL 1
+#endif
+
 namespace manager::metadata {
+
+/**
+ *  @brief Constructor
+ *  @param (database)  [in]  database name.
+ *  @param (component) [in]  your component name.
+ *  @return none.
+ */
+Metadata::Metadata(std::string_view database, std::string_view component)
+    : database_(database), component_(component) {
+  if (!log::LogController::get_logger()) {
+    // Register a default logger.
+    log::LogController::set_logger(std::make_shared<log::DefaultLogger>());
+#if LOG_LEVEL == 4
+    log::LogController::set_filter(log::logging::Severity::DEBUG);
+#elif LOG_LEVEL == 3
+    log::LogController::set_filter(log::logging::Severity::INFO);
+#elif LOG_LEVEL == 2
+    log::LogController::set_filter(log::logging::Severity::WARNING);
+#elif LOG_LEVEL == 1
+    log::LogController::set_filter(log::logging::Severity::ERROR);
+#elif LOG_LEVEL == 0
+    log::LogController::set_filter(log::logging::Severity::NONE);
+#else
+    log::LogController::set_filter(log::logging::Severity::ERROR);
+#endif
+  }
+}
 
 /**
  * @brief Read latest table-metadata from metadata-table.
@@ -71,6 +105,5 @@ namespace manager::metadata {
 
     return result;
   }
-
 
 }  // namespace manager::metadata

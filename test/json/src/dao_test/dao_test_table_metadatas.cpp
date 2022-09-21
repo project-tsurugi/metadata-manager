@@ -89,16 +89,22 @@ class DaoTestTableMetadata : public ::testing::Test {
     BOOST_FOREACH (const ptree::value_type& node,
                    new_table.get_child(Tables::COLUMNS_NODE)) {
       ptree column = node.second;
-      error = cdao->insert_one_column_metadata(table_id_returned, column);
+      error = cdao->insert_column_metadata(table_id_returned, column);
       EXPECT_EQ(ErrorCode::OK, error);
     }
 
-    error = db_session_manager.commit();
-    EXPECT_EQ(ErrorCode::OK, error);
+    if (error == ErrorCode::OK) {
+      error = db_session_manager.commit();
+      EXPECT_EQ(ErrorCode::OK, error);
+    } else {
+      ErrorCode rollback_error = db_session_manager.rollback();
+      EXPECT_EQ(ErrorCode::OK, rollback_error);
+    }
 
     *object_id = table_id_returned;
 
-    UTUtils::print("new table id:", *object_id);
+    UTUtils::print(std::string(30, '-'));
+    UTUtils::print("New table id: ", *object_id);
     UTUtils::print(UTUtils::get_tree_string(new_table));
   }
 
@@ -214,7 +220,9 @@ class DaoTestTableMetadata : public ::testing::Test {
         error = cdao->select_column_metadata(Tables::Column::TABLE_ID,
                                              o_table_id.get(), columns);
         EXPECT_EQ(ErrorCode::OK, error);
-        object.add_child(Tables::COLUMNS_NODE, columns);
+        if (object.find(Tables::COLUMNS_NODE) == object.not_found()) {
+          object.add_child(Tables::COLUMNS_NODE, columns);
+        }
         break;
       } else {
         boost::optional<std::string> o_table_id =
@@ -226,9 +234,58 @@ class DaoTestTableMetadata : public ::testing::Test {
         error = cdao->select_column_metadata(Tables::Column::TABLE_ID,
                                              o_table_id.get(), columns);
         EXPECT_EQ(ErrorCode::OK, error);
-        object.add_child(Tables::COLUMNS_NODE, columns);
+        if (object.find(Tables::COLUMNS_NODE) == object.not_found()) {
+          object.add_child(Tables::COLUMNS_NODE, columns);
+        }
       }
     }
+  }
+
+  /**
+   * @brief Update table metadata.
+   * @param (object_id) [in]  table id.
+   * @param (object)    [in]  table metadata.
+   * @return ErrorCode::OK if success, otherwise an error code.
+   */
+  static void update_table_metadata(ObjectIdType object_id,
+                                    boost::property_tree::ptree& object) {
+    std::shared_ptr<GenericDAO> t_gdao = nullptr;
+
+    storage::DBSessionManager db_session_manager;
+
+    ErrorCode error =
+        db_session_manager.get_dao(GenericDAO::TableName::TABLES, t_gdao);
+    EXPECT_EQ(ErrorCode::OK, error);
+
+    std::shared_ptr<TablesDAO> tdao;
+    tdao = std::static_pointer_cast<TablesDAO>(t_gdao);
+
+    std::shared_ptr<GenericDAO> c_gdao = nullptr;
+    error = db_session_manager.get_dao(GenericDAO::TableName::COLUMNS, c_gdao);
+    EXPECT_EQ(ErrorCode::OK, error);
+
+    std::shared_ptr<ColumnsDAO> cdao;
+    cdao = std::static_pointer_cast<ColumnsDAO>(c_gdao);
+
+    error = tdao->update_table_metadata(object_id, object);
+    if (error == ErrorCode::OK) {
+      EXPECT_EQ(ErrorCode::OK, error);
+    } else {
+      EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
+      return;
+    }
+
+    if (error == ErrorCode::OK) {
+      error = db_session_manager.commit();
+      EXPECT_EQ(ErrorCode::OK, error);
+    } else {
+      ErrorCode rollback_error = db_session_manager.rollback();
+      EXPECT_EQ(ErrorCode::OK, rollback_error);
+    }
+
+    UTUtils::print(std::string(30, '-'));
+    UTUtils::print("Update table id: ", object_id);
+    UTUtils::print(UTUtils::get_tree_string(object));
   }
 
   /**
@@ -323,8 +380,9 @@ TEST_F(DaoTestTableMetadata, add_get_table_metadata_by_table_name) {
   UTTableMetadata testdata_table_metadata =
       *(global->testdata_table_metadata.get());
   ptree new_table = testdata_table_metadata.tables;
-  std::string new_table_name =
-      new_table.get<std::string>(Tables::NAME) + "_DaoTestTableMetadata1";
+  std::string new_table_name = new_table.get<std::string>(Tables::NAME) +
+                               "_DaoTestTableMetadata" +
+                               std::to_string(__LINE__);
   new_table.put(Tables::NAME, new_table_name);
 
   // add table metadata.
@@ -339,7 +397,7 @@ TEST_F(DaoTestTableMetadata, add_get_table_metadata_by_table_name) {
 
   // verifies that the returned table metadata is expected one.
   TableMetadataHelper::check_table_metadata_expected(new_table,
-                                                      table_metadata_inserted);
+                                                     table_metadata_inserted);
 
   // cleanup
   remove_table_metadata(new_table_name.c_str(), nullptr);
@@ -354,8 +412,9 @@ TEST_F(DaoTestTableMetadata, add_get_table_metadata_by_table_id) {
   UTTableMetadata testdata_table_metadata =
       *(global->testdata_table_metadata.get());
   ptree new_table = testdata_table_metadata.tables;
-  std::string new_table_name =
-      new_table.get<std::string>(Tables::NAME) + "_DaoTestTableMetadata2";
+  std::string new_table_name = new_table.get<std::string>(Tables::NAME) +
+                               "_DaoTestTableMetadata" +
+                               std::to_string(__LINE__);
   new_table.put(Tables::NAME, new_table_name);
 
   // add table metadata.
@@ -373,10 +432,129 @@ TEST_F(DaoTestTableMetadata, add_get_table_metadata_by_table_id) {
 
   // verifies that the returned table metadata is expected one.
   TableMetadataHelper::check_table_metadata_expected(new_table,
-                                                      table_metadata_inserted);
+                                                     table_metadata_inserted);
 
   // cleanup
   remove_table_metadata(new_table_name.c_str(), nullptr);
+}
+
+/**
+ * @brief happy test adding three table metadata and updating the second case of
+ * metadata.
+ */
+TEST_F(DaoTestTableMetadata, add_update_table_metadata) {
+  // prepare test data for adding table metadata.
+  UTTableMetadata testdata_table_metadata =
+      *(global->testdata_table_metadata.get());
+
+  // #1 add table metadata.
+  ptree table_metadata_1;
+  ObjectIdType ret_table_id_1 = -1;
+  {
+    std::string new_table_name =
+        testdata_table_metadata.tables.get<std::string>(Tables::NAME) +
+        "_DaoTestTableMetadata" + std::to_string(__LINE__);
+    // add table metadata.
+    DaoTestTableMetadata::add_table(new_table_name, &ret_table_id_1);
+    // get table metadata.
+    DaoTestTableMetadata::get_table_metadata(ret_table_id_1, table_metadata_1);
+  }
+
+  // #2 add table metadata.
+  ptree table_metadata_2;
+  ObjectIdType ret_table_id_2 = -1;
+  {
+    std::string new_table_name =
+        testdata_table_metadata.tables.get<std::string>(Tables::NAME) +
+        "_DaoTestTableMetadata" + std::to_string(__LINE__);
+    // add table metadata.
+    DaoTestTableMetadata::add_table(new_table_name, &ret_table_id_2);
+    // get table metadata.
+    DaoTestTableMetadata::get_table_metadata(ret_table_id_2, table_metadata_2);
+  }
+
+  // #3 add table metadata.
+  ptree table_metadata_3;
+  ObjectIdType ret_table_id_3 = -1;
+  {
+    std::string new_table_name =
+        testdata_table_metadata.tables.get<std::string>(Tables::NAME) +
+        "_DaoTestTableMetadata" + std::to_string(__LINE__);
+    // add table metadata.
+    DaoTestTableMetadata::add_table(new_table_name, &ret_table_id_3);
+    // get table metadata.
+    DaoTestTableMetadata::get_table_metadata(ret_table_id_3, table_metadata_3);
+  }
+
+  // update table metadata.
+  ptree expected_table_metadata = table_metadata_2;
+  {
+    expected_table_metadata.put(
+        Tables::NAME,
+        table_metadata_2.get<std::string>(Tables::NAME) + "-update");
+    expected_table_metadata.put(
+        Tables::NAMESPACE,
+        table_metadata_2.get<std::string>(Tables::NAMESPACE) + "-update");
+
+    // column metadata
+    BOOST_FOREACH (ptree::value_type& node,
+                   expected_table_metadata.get_child(Tables::COLUMNS_NODE)) {
+      ptree& column = node.second;
+      // update column.
+      column.put(Tables::Column::NAME,
+                 column.get<std::string>(Tables::Column::NAME) + "-update");
+      column.put(Tables::Column::ORDINAL_POSITION,
+                 column.get<int32_t>(Tables::Column::ORDINAL_POSITION) + 1);
+    }
+
+    // update table metadata.
+    DaoTestTableMetadata::update_table_metadata(ret_table_id_2,
+                                                expected_table_metadata);
+  }
+
+  // get table metadata.
+  ptree table_metadata_updated_1;
+  DaoTestTableMetadata::get_table_metadata(ret_table_id_1,
+                                           table_metadata_updated_1);
+  ptree table_metadata_updated_2;
+  DaoTestTableMetadata::get_table_metadata(ret_table_id_2,
+                                           table_metadata_updated_2);
+  ptree table_metadata_updated_3;
+  DaoTestTableMetadata::get_table_metadata(ret_table_id_3,
+                                           table_metadata_updated_3);
+
+  UTUtils::print(std::string(30, '-'));
+  UTUtils::print("-- output table metadata before update --");
+  UTUtils::print(UTUtils::get_tree_string(table_metadata_1));
+  UTUtils::print(std::string(10, '-'));
+  UTUtils::print(UTUtils::get_tree_string(table_metadata_2));
+  UTUtils::print(std::string(10, '-'));
+  UTUtils::print(UTUtils::get_tree_string(table_metadata_3));
+  UTUtils::print(std::string(30, '-'));
+  UTUtils::print("-- output table metadata after update --");
+  UTUtils::print(UTUtils::get_tree_string(table_metadata_updated_1));
+  UTUtils::print(std::string(10, '-'));
+  UTUtils::print(UTUtils::get_tree_string(table_metadata_updated_2));
+  UTUtils::print(std::string(10, '-'));
+  UTUtils::print(UTUtils::get_tree_string(table_metadata_updated_3));
+
+  // Verify that there is no change in the data after the update.
+  UTUtils::print(
+      "-- Verify that there is no change in the data after the update --");
+  TableMetadataHelper::check_table_metadata_expected(table_metadata_1,
+                                                     table_metadata_updated_1);
+  TableMetadataHelper::check_table_metadata_expected(table_metadata_3,
+                                                     table_metadata_updated_3);
+
+  // Verify the data after the update.
+  UTUtils::print("-- Verify the data after the update. --");
+  TableMetadataHelper::check_table_metadata_expected(expected_table_metadata,
+                                                     table_metadata_updated_2);
+
+  // cleanup
+  remove_table_metadata(ret_table_id_1);
+  remove_table_metadata(ret_table_id_2);
+  remove_table_metadata(ret_table_id_3);
 }
 
 /**
@@ -387,8 +565,9 @@ TEST_F(DaoTestTableMetadata, remove_table_metadata_by_table_name) {
   UTTableMetadata testdata_table_metadata =
       *(global->testdata_table_metadata.get());
   ptree new_table = testdata_table_metadata.tables;
-  std::string new_table_name =
-      new_table.get<std::string>(Tables::NAME) + "_DaoTestTableMetadata3";
+  std::string new_table_name = new_table.get<std::string>(Tables::NAME) +
+                               "_DaoTestTableMetadata" +
+                               std::to_string(__LINE__);
   new_table.put(Tables::NAME, new_table_name);
 
   // add table metadata.
@@ -418,8 +597,9 @@ TEST_F(DaoTestTableMetadata, remove_table_metadata_by_table_id) {
   UTTableMetadata testdata_table_metadata =
       *(global->testdata_table_metadata.get());
   ptree new_table = testdata_table_metadata.tables;
-  std::string new_table_name =
-      new_table.get<std::string>(Tables::NAME) + "_DaoTestTableMetadata4";
+  std::string new_table_name = new_table.get<std::string>(Tables::NAME) +
+                               "_DaoTestTableMetadata" +
+                               std::to_string(__LINE__);
   new_table.put(Tables::NAME, new_table_name);
 
   // add table metadata.

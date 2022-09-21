@@ -88,14 +88,7 @@ class Metadata {
    */
   static constexpr const char* const NAME = "name";
 
-  /**
-   *  @brief  Constructor
-   *  @param  (database)  [in]  database name.
-   *  @param  (component) [in]  your component name.
-   *  @return none.
-   */
-  Metadata(std::string_view database, std::string_view component)
-      : database_(database), component_(component) {}
+  Metadata(std::string_view database, std::string_view component);
 
   virtual ~Metadata() {}
 
@@ -106,108 +99,115 @@ class Metadata {
   std::string_view component() const { return component_; }
 
   /**
-   *  @brief  Initialization.
-   *  @param  none.
-   *  @return ErrorCode::OK
-   *  if all the following steps are successfully completed.
-   *  1. Establishes a connection to the metadata repository.
-   *  2. Sends a query to set always-secure search path
-   *     to the metadata repository.
-   *  3. Defines prepared statements in the metadata repository.
-   *  @return otherwise an error code.
+   * @brief Initialization.
+   * @param none.
+   * @return ErrorCode::OK
+   * if all the following steps are successfully completed.
+   * 1. Establishes a connection to the metadata repository.
+   * 2. Sends a query to set always-secure search path
+   *    to the metadata repository.
+   * 3. Defines prepared statements in the metadata repository.
+   * @return otherwise an error code.
    */
   virtual ErrorCode init() const = 0;
 
   /**
-   *  @brief  Load the latest metadata from metadata-table.
-   *  @param  (database)  [in]  database name.
-   *  @param  (component) [in]  component name.
-   *  @return ErrorCode::OK if success, otherwise an error code.
+   * @brief Load the latest metadata from metadata-table.
+   * @param (database)  [in]  database name.
+   * @param (component) [in]  component name.
+   * @return ErrorCode::OK if success, otherwise an error code.
    */
   ErrorCode load() const;
 
   /**
-   *  @brief  Load metadata from metadata-table.
-   *  @param  (database)   [in]  database name
-   *  @param  (pt)         [out] property_tree object to populating metadata.
-   *  @param  (generation) [in]  metadata generation to load. load latest
-   * generation if NOT provided.
-   *  @return ErrorCode::OK if success, otherwise an error code.
+   * @brief Load metadata from metadata-table.
+   * @param (database)   [in]  database name
+   * @param (pt)         [out] property_tree object to populating metadata.
+   * @param (generation) [in]  metadata generation to load.
+   *   load latest generation if NOT provided.
+   * @return ErrorCode::OK if success, otherwise an error code.
    */
   static ErrorCode load(std::string_view database,
                         boost::property_tree::ptree& object,
                         const GenerationType generation = kLatestVersion);
 
   /**
-   *  @brief  Check if the object with the specified object ID exists.
-   *  @param  object_id   [in]  ID of metadata.
-   *  @return true if success.
+   * @brief Check if the object with the specified object ID exists.
+   * @param (object_id) [in]  ID of metadata.
+   * @return true if success.
    */
   virtual bool exists(const ObjectId object_id) const;
 
   /**
-   *  @brief  Check if the object with the specified name exists.
-   *  @param  name   [in]  name of metadata.
-   *  @return true if success.
+   * @brief Check if the object with the specified name exists.
+   * @param name [in]  name of metadata.
+   * @return true if success.
    */
   virtual bool exists(std::string_view object_name) const;
 
   /**
-   *  @brief  Add metadata-object to metadata-table.
-   *  @param  (object) [in]  metadata-object to add.
-   *  @return ErrorCode::OK if success, otherwise an error code.
+   * @brief Add metadata-object to metadata-table.
+   * @param (object) [in]  metadata-object to add.
+   * @return ErrorCode::OK if success, otherwise an error code.
    */
   virtual ErrorCode add(const boost::property_tree::ptree& object) const = 0;
 
   /**
-   *  @brief  Add metadata-object to metadata-table.
-   *  @param  (object)      [in]  metadata-object to add.
-   *  @param  (object_id)   [out] ID of the added metadata-object.
-   *  @return ErrorCode::OK if success, otherwise an error code.
+   * @brief Add metadata-object to metadata-table.
+   * @param (object)    [in]  metadata-object to add.
+   * @param (object_id) [out] ID of the added metadata-object.
+   * @return ErrorCode::OK if success, otherwise an error code.
    */
   virtual ErrorCode add(const boost::property_tree::ptree& object,
                         ObjectId* object_id) const = 0;
 
   /**
-   *  @brief  Get metadata-object.
-   *  @param  (object_id) [in]  metadata-object ID.
-   *  @param  (object)    [out] metadata-object with the specified ID.
-   *  @return ErrorCode::OK if success, otherwise an error code.
+   * @brief Get metadata-object.
+   * @param (object_id) [in]  metadata-object ID.
+   * @param (object)    [out] metadata-object with the specified ID.
+   * @return ErrorCode::OK if success, otherwise an error code.
    */
   virtual ErrorCode get(const ObjectId object_id,
                         boost::property_tree::ptree& object) const = 0;
 
   /**
-   *  @brief  Get metadata-object.
-   *  @param  (object_name)   [in]  metadata-object name. (Value of "name"
-   * key.)
-   *  @param  (object)        [out] metadata-object with the specified name.
-   *  @return ErrorCode::OK if success, otherwise an error code.
+   * @brief  Get metadata-object.
+   * @param  (object_name) [in]  metadata-object name. (Value of "name" key.)
+   * @param  (object)      [out] metadata-object with the specified name.
+   * @return ErrorCode::OK if success, otherwise an error code.
    */
   virtual ErrorCode get(std::string_view object_name,
                         boost::property_tree::ptree& object) const = 0;
 
   /**
-   *  @brief  Get all table metadata-objects.
-   *  @param  (container)  [out] Container for metadata-objects.
-   *  @return ErrorCode::OK if success, otherwise an error code.
+   * @brief Get all table metadata-objects.
+   * @param (container) [out] Container for metadata-objects.
+   * @return ErrorCode::OK if success, otherwise an error code.
    */
   virtual ErrorCode get_all(
       std::vector<boost::property_tree::ptree>& container) const = 0;
 
   /**
-   *  @brief  Remove metadata-object from metadata-table.
-   *  @param  [in] metadata-object ID.
-   *  @return ErrorCode::OK if success, otherwise an error code.
+   * @brief Update metadata-table with metadata-object.
+   * @param (object_id) [in]  ID of the metadata-table to update.
+   * @param (object)    [in]  metadata-object to update.
+   * @return ErrorCode::OK if success, otherwise an error code.
+   */
+  virtual ErrorCode update(const ObjectIdType object_id,
+                           const boost::property_tree::ptree& object) const = 0;
+
+  /**
+   * @brief Remove metadata-object from metadata-table.
+   * @param (object_id) [in]  ID of the metadata-table to remove.
+   * @return ErrorCode::OK if success, otherwise an error code.
    */
   virtual ErrorCode remove(const ObjectId object_id) const = 0;
 
   /**
-   *  @brief  Remove metadata-object from metadata-table.
-   *  @param  (object_name) [in] name of metadata-object. (Value of "name"
-   * key.)
-   *  @param  (object_id)   [out] ID of the added metadata-object.
-   *  @return ErrorCode::OK if success, otherwise an error code.
+   * @brief Remove metadata-object from metadata-table.
+   * @param (object_name) [in]  name of metadata-object. (Value of "name" key.)
+   * @param (object_id)   [out] ID of the added metadata-object.
+   * @return ErrorCode::OK if success, otherwise an error code.
    */
   virtual ErrorCode remove(std::string_view object_name,
                            ObjectId* object_id) const = 0;

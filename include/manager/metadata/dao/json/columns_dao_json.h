@@ -35,9 +35,9 @@ class ColumnsDAO : public manager::metadata::db::ColumnsDAO {
     return ErrorCode::OK;
   }
 
-  manager::metadata::ErrorCode insert_one_column_metadata(
+  manager::metadata::ErrorCode insert_column_metadata(
       [[maybe_unused]] const ObjectIdType table_id,
-      [[maybe_unused]] const boost::property_tree::ptree& column)
+      [[maybe_unused]] const boost::property_tree::ptree& columns_metadata)
       const override {
     // Do nothing and return of ErrorCode::OK.
     return ErrorCode::OK;
@@ -46,7 +46,7 @@ class ColumnsDAO : public manager::metadata::db::ColumnsDAO {
   manager::metadata::ErrorCode select_column_metadata(
       [[maybe_unused]] std::string_view object_key,
       [[maybe_unused]] std::string_view object_value,
-      [[maybe_unused]] boost::property_tree::ptree& object) const override {
+      [[maybe_unused]] boost::property_tree::ptree& columns_metadata) const override {
     // Do nothing and return of ErrorCode::OK.
     return ErrorCode::OK;
   }
