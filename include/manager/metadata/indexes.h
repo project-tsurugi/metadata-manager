@@ -15,6 +15,7 @@
  */
 #pragma once
 
+#include <string>
 #include <vector>
 #include "metadata.h"
 
@@ -22,39 +23,50 @@ namespace manager::metadata {
 /**
  * @brief Index metadata object.
  */
-struct Index : public Object {
+struct Index : public ClassObject {
   Index()
-      : namespace_name(""),
+      : ClassObject(),
         owner_id(INVALID_OBJECT_ID),
         access_method(INVALID_VALUE),
-        acl(""),
-        number_of_key_indexes(INVALID_VALUE),
+        number_of_columns(INVALID_VALUE),
+        number_of_key_columns(INVALID_VALUE),
         is_unique(false),
         is_primary(false) 
       {}
+
   enum class AccessMethod : int64_t {
-    TSURGI_DEFAULT_METHOD = 0,  // temporary name.
+    MASS_TREE_METHOD = 0,
   };
+
   enum class Direction : int64_t {
     //  LSB 0th bit : 0 = ASC,        1 = DESC
     //  LSB 1st bit : 0 = NULLS_LAST, 1 = NULLS_FIRST
-    ASC_NULLS_LAST    = 0b00,   // 0, default value.
-    ASC_NULLS_FIRST   = 0b01,   // 1
-    DESC_NULLS_LAST   = 0b10,   // 2
-    DESC_NULLS_FIRST  = 0b11,   // 3
-    DEFAULT           = ASC_NULLS_LAST,
+    ASC_NULLS_LAST    = 0b0000,   //  0
+    ASC_NULLS_FIRST   = 0b0001,   //  1
+    DESC_NULLS_LAST   = 0b0010,   //  2
+    DESC_NULLS_FIRST  = 0b0011,   //  3
+    DEFAULT           = 0b1111,   // 15
   };
 
-  std::string           namespace_name;
   int64_t               owner_id;
-  int64_t               access_method;
-  std::string           acl;
-  int64_t               number_of_key_indexes;  // exclude non-key (included) indexs.
+  int64_t               access_method;          // refer to enumlation of AccessMethod.
+  int64_t               number_of_columns;      // include non-key (included) columns.
+  int64_t               number_of_key_columns;  // exclude non-key (included) columns.
   bool                  is_unique;
   bool                  is_primary;
-  std::vector<int64_t>  keys;
+  std::vector<int64_t>  keys;                   // include non-key (included) columns.
   std::vector<int64_t>  keys_id;
-  std::vector<int64_t>  options;
+  std::vector<int64_t>  options;                // refer to enumlation of Direction.
+
+  static constexpr const char* OWNER_ID = "owner_id";
+  static constexpr const char* ACCESS_METHOD = "access_method";
+  static constexpr const char* NUMBER_OF_COLUMNS = "number_of_columns";
+  static constexpr const char* NUMBER_OF_KEY_COLUMNS = "number_of_key_columns";
+  static constexpr const char* IS_UNIQUE = "is_unique";
+  static constexpr const char* IS_PRIMARY = "is_primary";
+  static constexpr const char* KEYS = "keys";
+  static constexpr const char* KEYS_ID = "keys_id";
+  static constexpr const char* OPTIONS = "options";
 };
 
 /**

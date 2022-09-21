@@ -75,7 +75,7 @@ Metadata::Metadata(std::string_view database, std::string_view component)
 
   /**
    *  @brief  Check if the object with the specified object ID exists.
-   *  @param  object_id   [in]  ID of metadata.
+   *  @param  object_id   [in]  object ID of metadata object.
    *  @return true if success.
    */
   bool Metadata::exists(const ObjectIdType object_id) const
@@ -84,12 +84,7 @@ Metadata::Metadata(std::string_view database, std::string_view component)
 
     boost::property_tree::ptree object;
     ErrorCode error = this->get(object_id, object);
-    if (error != ErrorCode::OK) {
-      return result;
-    }
-    result = true;
-
-    return result;
+    return (error == ErrorCode::OK) ? true : false;
   }
 
   /**
