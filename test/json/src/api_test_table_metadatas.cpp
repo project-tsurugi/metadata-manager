@@ -42,7 +42,8 @@ TEST_F(ApiTestTableMetadata, add_get_table_metadata_by_table_name3) {
   UTTableMetadata testdata_table_metadata =
       *(global->testdata_table_metadata.get());
   manager::metadata::Table& new_table = testdata_table_metadata.table;
-  std::string new_table_name = new_table.name + "_ApiTestTableMetadata1_1";
+  std::string new_table_name =
+      new_table.name + "_ApiTestTableMetadata1_3";
   new_table.name = new_table_name;
 
   // add table metadata.
@@ -88,7 +89,7 @@ TEST_F(ApiTestTableMetadata, add_get_table_metadata_by_table_name2) {
       *(global->testdata_table_metadata.get());
   ptree new_table = testdata_table_metadata.tables;
   std::string new_table_name =
-      new_table.get<std::string>(Tables::NAME) + "_ApiTestTableMetadata1_1";
+      new_table.get<std::string>(Tables::NAME) + "_ApiTestTableMetadata1_2";
   new_table.put(Tables::NAME, new_table_name);
 
   // add table metadata.
@@ -226,8 +227,8 @@ TEST_F(ApiTestTableMetadata, get_two_table_metadata_by_table_name) {
 
   // prepare variables for returned value from add api.
   std::vector<ObjectIdType> ret_table_id;
-  ret_table_id.emplace_back(-1);
-  ret_table_id.emplace_back(-1);
+  ret_table_id.emplace_back(INVALID_VALUE);
+  ret_table_id.emplace_back(INVALID_VALUE);
 
   // add first table metadata.
   error = tables->add(new_table, &ret_table_id[0]);
@@ -238,7 +239,7 @@ TEST_F(ApiTestTableMetadata, get_two_table_metadata_by_table_name) {
   error = tables->add(new_table, &ret_table_id[1]);
 
   EXPECT_EQ(ErrorCode::ALREADY_EXISTS, error);
-  EXPECT_EQ(ret_table_id[1], -1);
+  EXPECT_EQ(ret_table_id[1], INVALID_VALUE);
 
   UTUtils::print("-- add table metadata --");
   UTUtils::print(UTUtils::get_tree_string(new_table));

@@ -23,44 +23,49 @@
 
 #include "manager/metadata/error_code.h"
 #include "manager/metadata/metadata.h"
+#include "manager/metadata/indexes.h"
+#include "manager/metadata/constraints.h"
 
 namespace manager::metadata {
-
-struct Column {
+/**
+ * @brief Column metadata object.
+ */
+struct Column : public Object {
 	Column() {}
-  int64_t       id;
-  int64_t       table_id;
-  std::string   name;
-  int64_t       ordinal_position;
-  int64_t       data_type_id;
-  int64_t       data_length;
-  bool          varying;
-  bool          nullable;
-  std::string   default_expr;
+  static constexpr int64_t ORDINAL_POSITION_BASE_INDEX = 1;
+  int64_t               table_id;
+  int64_t               ordinal_position;
+  int64_t               data_type_id;
+  int64_t               data_length;
+  std::vector<int64_t>  data_lengths;
+  bool                  varying;
+  bool                  nullable;
+  std::string           default_expr;
 };
 
-struct Table {
-	Table() {}
-  int64_t       format_version;
-  int64_t       generation;
-  int64_t      	id;
-  std::string   namespace_name;
-  std::string   name;
-  int64_t       owner_role_id;
-  std::string   acl;
-  int64_t       tuples;
-  std::vector<int64_t>  primary_keys;
-  std::vector<Column>	  columns;
+/**
+ * @brief Table metadata object.
+ */
+struct Table : public ClassObject {
+  Table()
+      : ClassObject(),
+        namespace_name(""), 
+        owner_id(INVALID_OBJECT_ID), 
+        tuples(INVALID_VALUE) {}
+  std::string             namespace_name;
+  int64_t                 owner_id;
+  int64_t                 tuples;
+  std::vector<int64_t>    primary_keys;
+  std::vector<Column>	    columns;
+  std::vector<Index>      indexes;
+  std::vector<Constraint> constraints;
 };
 
+/**
+ * @brief Container of table metadata objects.
+ */
 class Tables : public Metadata {
  public:
-  // table metadata-object.
-  // FORMAT_VERSION is defined in base class.
-  // GENERATION is defined in base class.
-  // ID is defined in base class.
-  // NAME is defined in base class.
-
   /**
    * @brief Field name constant indicating the namespace of the metadata.
    */
@@ -120,6 +125,7 @@ class Tables : public Metadata {
      * @brief Field name constant indicating the data length of the metadata.
      */
     static constexpr const char* const DATA_LENGTH = "dataLength";
+    static constexpr const char* const DATA_LENGTHS = "dataLengths";
     /**
      * @brief Field name constant indicating the varying of the metadata.
      */
@@ -175,16 +181,16 @@ class Tables : public Metadata {
 
   ErrorCode add(const boost::property_tree::ptree& object) const override;
   ErrorCode add(const boost::property_tree::ptree& object,
-                ObjectIdType* object_id) const override;
+                ObjectId* object_id) const override;
 
-  ErrorCode get(const ObjectIdType object_id,
+  ErrorCode get(const ObjectId object_id,
                 boost::property_tree::ptree& object) const override;
   ErrorCode get(std::string_view object_name,
                 boost::property_tree::ptree& object) const override;
   ErrorCode get_all(
       std::vector<boost::property_tree::ptree>& container) const override;
 
-  ErrorCode get_statistic(const ObjectIdType table_id,
+  ErrorCode get_statistic(const ObjectId table_id,
                           boost::property_tree::ptree& object) const;
   ErrorCode get_statistic(std::string_view table_name,
                           boost::property_tree::ptree& object) const;
@@ -195,12 +201,12 @@ class Tables : public Metadata {
 
   ErrorCode remove(const ObjectIdType object_id) const override;
   ErrorCode remove(std::string_view object_name,
-                   ObjectIdType* object_id) const override;
+                   ObjectId* object_id) const override;
 
   ErrorCode get_acls(std::string_view token,
                      boost::property_tree::ptree& acls) const;
 
-  ErrorCode confirm_permission_in_acls(const ObjectIdType object_id,
+  ErrorCode confirm_permission_in_acls(const ObjectId object_id,
                                        const char* permission,
                                        bool& check_result) const;
   ErrorCode confirm_permission_in_acls(std::string_view object_name,
