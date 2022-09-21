@@ -35,7 +35,8 @@ struct Index : public ClassObject {
       {}
 
   enum class AccessMethod : int64_t {
-    MASS_TREE_METHOD = 0,
+    DEFAULT = 0,
+    MASS_TREE_METHOD,
   };
 
   enum class Direction : int64_t {
@@ -58,15 +59,15 @@ struct Index : public ClassObject {
   std::vector<int64_t>  keys_id;
   std::vector<int64_t>  options;                // refer to enumlation of Direction.
 
-  static constexpr const char* OWNER_ID = "owner_id";
-  static constexpr const char* ACCESS_METHOD = "access_method";
-  static constexpr const char* NUMBER_OF_COLUMNS = "number_of_columns";
-  static constexpr const char* NUMBER_OF_KEY_COLUMNS = "number_of_key_columns";
-  static constexpr const char* IS_UNIQUE = "is_unique";
-  static constexpr const char* IS_PRIMARY = "is_primary";
-  static constexpr const char* KEYS = "keys";
-  static constexpr const char* KEYS_ID = "keys_id";
-  static constexpr const char* OPTIONS = "options";
+  static constexpr const char* OWNER_ID               = "owner_id";
+  static constexpr const char* ACCESS_METHOD          = "access_method";
+  static constexpr const char* NUMBER_OF_COLUMNS      = "number_of_columns";
+  static constexpr const char* NUMBER_OF_KEY_COLUMNS  = "number_of_key_columns";
+  static constexpr const char* IS_UNIQUE              = "is_unique";
+  static constexpr const char* IS_PRIMARY             = "is_primary";
+  static constexpr const char* KEYS                   = "keys";
+  static constexpr const char* KEYS_ID                = "keys_id";
+  static constexpr const char* OPTIONS                = "options";
 };
 
 /**
