@@ -40,12 +40,30 @@ struct Object {
   Object()
       : format_version(1), 
         generation(1), 
-        id(INVALID_VALUE), 
+        id(INVALID_OBJECT_ID), 
         name("") {}
   int64_t format_version;
   int64_t generation;
   int64_t id;
   std::string name;
+};
+
+/**
+ * @brief
+ */
+struct ClassObject : public Object {
+  ClassObject()
+      : Object(),
+        database_name(""),
+        schema_name(""),
+        acl("") {}
+  std::string database_name;
+  std::string schema_name;
+  std::string acl;
+
+  std::string get_fullname() {
+    return database_name + '.' + schema_name + '.' + this->name;
+  }
 };
 
 /**

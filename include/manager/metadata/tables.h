@@ -31,15 +31,14 @@ namespace manager::metadata {
 /**
  * @brief Table metadata object.
  */
-struct Table : public Object {
+struct Table : public ClassObject {
   Table()
-      : namespace_name(""), 
+      : ClassObject(),
+        namespace_name(""), 
         owner_id(INVALID_OBJECT_ID), 
-        acl(""), 
         tuples(INVALID_VALUE) {}
   std::string             namespace_name;
   int64_t                 owner_id;
-  std::string             acl;
   int64_t                 tuples;
   std::vector<int64_t>    primary_keys;
   std::vector<Column>	    columns;
