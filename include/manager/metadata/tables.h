@@ -23,11 +23,26 @@
 
 #include "manager/metadata/error_code.h"
 #include "manager/metadata/metadata.h"
-#include "manager/metadata/columns.h"
 #include "manager/metadata/indexes.h"
 #include "manager/metadata/constraints.h"
 
 namespace manager::metadata {
+/**
+ * @brief Column metadata object.
+ */
+struct Column : public Object {
+	Column() {}
+  static constexpr int64_t ORDINAL_POSITION_BASE_INDEX = 1;
+  int64_t               table_id;
+  int64_t               ordinal_position;
+  int64_t               data_type_id;
+  int64_t               data_length;
+  std::vector<int64_t>  data_lengths;
+  bool                  varying;
+  bool                  nullable;
+  std::string           default_expr;
+};
+
 /**
  * @brief Table metadata object.
  */
