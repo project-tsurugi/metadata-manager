@@ -21,9 +21,11 @@
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
 
+#include "manager/metadata/common/message.h"
 #include "manager/metadata/dao/json/columns_dao_json.h"
 #include "manager/metadata/dao/json/datatypes_dao_json.h"
 #include "manager/metadata/dao/json/tables_dao_json.h"
+#include "manager/metadata/helper/logging_helper.h"
 
 // =============================================================================
 namespace manager::metadata::db::json {
@@ -56,6 +58,7 @@ ErrorCode DBSessionManager::start_transaction() {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   if (file_name_.empty()) {
+    LOG_ERROR << Message::NOT_INITIALIZED;
     error = ErrorCode::NOT_INITIALIZED;
     return error;
   }
@@ -75,6 +78,7 @@ ErrorCode DBSessionManager::commit() {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   if (file_name_.empty()) {
+    LOG_ERROR << Message::NOT_INITIALIZED;
     error = ErrorCode::NOT_INITIALIZED;
     return error;
   }
@@ -95,6 +99,7 @@ ErrorCode DBSessionManager::rollback() {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   if (file_name_.empty()) {
+    LOG_ERROR << Message::NOT_INITIALIZED;
     error = ErrorCode::NOT_INITIALIZED;
     return error;
   }
@@ -151,6 +156,7 @@ ErrorCode DBSessionManager::load_object() const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   if (file_name_.empty()) {
+    LOG_ERROR << Message::NOT_INITIALIZED;
     error = ErrorCode::NOT_INITIALIZED;
     return error;
   }
@@ -158,11 +164,12 @@ ErrorCode DBSessionManager::load_object() const {
   try {
     json_parser::read_json(file_name_, *(meta_object_.get()));
   } catch (json_parser_error& e) {
-    std::wcout << "read_json() error. " << e.what() << std::endl;
+    LOG_ERROR << Message::READ_JSON_FILE_FAILURE << file_name_ << "\n  "
+              << e.what();
     error = ErrorCode::INTERNAL_ERROR;
     return error;
   } catch (...) {
-    std::cout << "read_json() error." << std::endl;
+    LOG_ERROR << Message::READ_JSON_FILE_FAILURE << file_name_;
     error = ErrorCode::INTERNAL_ERROR;
     return error;
   }
@@ -190,6 +197,7 @@ ErrorCode DBSessionManager::save_object() const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   if (file_name_.empty()) {
+    LOG_ERROR << Message::NOT_INITIALIZED;
     error = ErrorCode::NOT_INITIALIZED;
     return error;
   }
@@ -197,11 +205,11 @@ ErrorCode DBSessionManager::save_object() const {
   try {
     json_parser::write_json(file_name_, *(meta_object_.get()));
   } catch (json_parser_error& e) {
-    std::wcout << "write_json() error. " << e.what() << std::endl;
+    LOG_ERROR << Message::WRITE_JSON_FAILURE << e.what();
     error = ErrorCode::INTERNAL_ERROR;
     return error;
   } catch (...) {
-    std::cout << "write_json() error." << std::endl;
+    LOG_ERROR << Message::WRITE_JSON_FAILURE;
     error = ErrorCode::INTERNAL_ERROR;
     return error;
   }

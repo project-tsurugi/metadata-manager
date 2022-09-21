@@ -23,6 +23,8 @@
 #include <boost/property_tree/ptree.hpp>
 
 #include "manager/metadata/common/config.h"
+#include "manager/metadata/common/message.h"
+#include "manager/metadata/helper/logging_helper.h"
 
 // =============================================================================
 namespace manager::metadata::db::json {
@@ -58,7 +60,12 @@ ErrorCode ObjectId::init() {
       ini_parser::write_ini(oid_file_name_, root);
     }
     error = ErrorCode::OK;
+  } catch (ini_parser_error& e) {
+    LOG_ERROR << Message::WRITE_INI_FILE_FAILURE << oid_file_name_ << "\n  "
+              << e.what();
+    error = ErrorCode::INTERNAL_ERROR;
   } catch (...) {
+    LOG_ERROR << Message::WRITE_INI_FILE_FAILURE << oid_file_name_;
     error = ErrorCode::INTERNAL_ERROR;
   }
 
@@ -78,10 +85,11 @@ ObjectIdType ObjectId::current(std::string_view table_name) {
   try {
     ini_parser::read_ini(oid_file_name_, pt);
   } catch (ini_parser_error& e) {
-    std::wcout << "read_ini() error. " << e.what() << std::endl;
+    LOG_ERROR << Message::READ_INI_FILE_FAILURE << oid_file_name_ << "\n  "
+              << e.what();
     return INVALID_OID;
   } catch (...) {
-    std::cout << "read_ini() error." << std::endl;
+    LOG_ERROR << Message::READ_INI_FILE_FAILURE << oid_file_name_;
     return INVALID_OID;
   }
 
@@ -109,10 +117,11 @@ ObjectIdType ObjectId::generate(std::string_view table_name) {
   try {
     ini_parser::read_ini(oid_file_name_, pt);
   } catch (ini_parser_error& e) {
-    std::wcout << "read_ini() error. " << e.what() << std::endl;
+    LOG_ERROR << Message::READ_INI_FILE_FAILURE << oid_file_name_ << "\n  "
+              << e.what();
     return INVALID_OID;
   } catch (...) {
-    std::cout << "read_ini() error." << std::endl;
+    LOG_ERROR << Message::READ_INI_FILE_FAILURE << oid_file_name_;
     return INVALID_OID;
   }
 
@@ -130,10 +139,11 @@ ObjectIdType ObjectId::generate(std::string_view table_name) {
   try {
     ini_parser::write_ini(oid_file_name_, pt);
   } catch (ini_parser_error& e) {
-    std::wcout << "write_ini() error. " << e.what() << std::endl;
+    LOG_ERROR << Message::WRITE_INI_FILE_FAILURE << oid_file_name_ << "\n  "
+              << e.what();
     return INVALID_OID;
   } catch (...) {
-    std::cout << "read_ini() error." << std::endl;
+    LOG_ERROR << Message::WRITE_INI_FILE_FAILURE << oid_file_name_;
     return INVALID_OID;
   }
 
