@@ -30,7 +30,7 @@ namespace manager::metadata {
  * @brief  Transform metadata from structure object to ptree object.
  * @return ptree object.
  */
-boost::property_tree::ptree Object::transform_to_ptree() const {
+boost::property_tree::ptree Object::convert_to_ptree() const {
   boost::property_tree::ptree ptree;
   ptree.put<int64_t>(FORMAT_VERSION,  this->format_version);
   ptree.put<int64_t>(GENERATION,      this->generation);
@@ -44,7 +44,7 @@ boost::property_tree::ptree Object::transform_to_ptree() const {
  * @param   ptree [in] ptree object of metdata.
  * @return  structure object of metadata.
  */
-void Object::generate_from_ptree(const boost::property_tree::ptree& ptree) {
+void Object::convert_from_ptree(const boost::property_tree::ptree& ptree) {
   auto format_version = ptree.get_optional<int64_t>(FORMAT_VERSION);
   auto generation     = ptree.get_optional<int64_t>(GENERATION);
   auto id             = ptree.get_optional<ObjectId>(ID);
@@ -62,8 +62,8 @@ void Object::generate_from_ptree(const boost::property_tree::ptree& ptree) {
 /** @brief  Transform metadata from structure object to ptree object.
  *  @return ptree object.
  */
-boost::property_tree::ptree ClassObject::transform_to_ptree() const {
-  boost::property_tree::ptree ptree = Object::transform_to_ptree();
+boost::property_tree::ptree ClassObject::convert_to_ptree() const {
+  boost::property_tree::ptree ptree = Object::convert_to_ptree();
   ptree.put(DATABASE_NAME, this->database_name);
   ptree.put(SCHEMA_NAME,   this->schema_name);
   ptree.put(ACL,           this->acl);
@@ -76,8 +76,8 @@ boost::property_tree::ptree ClassObject::transform_to_ptree() const {
  * @return  structure object of metadata.
  */
 void 
-ClassObject::generate_from_ptree(const boost::property_tree::ptree& ptree) {
-  Object::generate_from_ptree(ptree);
+ClassObject::convert_from_ptree(const boost::property_tree::ptree& ptree) {
+  Object::convert_from_ptree(ptree);
   auto database_name  = ptree.get_optional<std::string>(DATABASE_NAME);
   auto schema_name    = ptree.get_optional<std::string>(SCHEMA_NAME);
   auto acl            = ptree.get_optional<std::string>(ACL);

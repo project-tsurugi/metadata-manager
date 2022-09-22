@@ -60,8 +60,8 @@ struct Column : public Object {
         varying(false),
         nullable(false)
       {}
-  boost::property_tree::ptree transform_to_ptree() const override;
-  void generate_from_ptree(const boost::property_tree::ptree& ptree) override;
+  boost::property_tree::ptree convert_to_ptree() const override;
+  void convert_from_ptree(const boost::property_tree::ptree& ptree) override;
 };
 
 /**
@@ -86,8 +86,8 @@ struct Table : public ClassObject {
         owner_id(INVALID_OBJECT_ID), 
         tuples(INVALID_VALUE) 
       {}
-  boost::property_tree::ptree transform_to_ptree() const override;
-  void generate_from_ptree(const boost::property_tree::ptree& ptree) override;
+  boost::property_tree::ptree convert_to_ptree() const override;
+  void convert_from_ptree(const boost::property_tree::ptree& ptree) override;
 };
 
 /**

@@ -37,9 +37,9 @@ namespace manager::metadata {
  * @brief  Transform datatype metadata from structure object to ptree object.
  * @return ptree object.
  */
-boost::property_tree::ptree DataType::transform_to_ptree() const
+boost::property_tree::ptree DataType::convert_to_ptree() const
 {
-  boost::property_tree::ptree ptree = Object::transform_to_ptree();
+  boost::property_tree::ptree ptree = Object::convert_to_ptree();
   ptree.put<int64_t>(PG_DATA_TYPE,        this->pg_data_type);
   ptree.put(PG_DATA_TYPE_NAME,            this->pg_data_type_name);
   ptree.put(PG_DATA_TYPE_QUALIFIED_NAME,  this->pg_data_type_qualified_name);
@@ -52,9 +52,9 @@ boost::property_tree::ptree DataType::transform_to_ptree() const
  * @param   ptree [in] ptree object of metdata.
  * @return  structure object of metadata.
  */
-void DataType::generate_from_ptree(const boost::property_tree::ptree& ptree)
+void DataType::convert_from_ptree(const boost::property_tree::ptree& ptree)
 {
-  Object::generate_from_ptree(ptree);
+  Object::convert_from_ptree(ptree);
   auto pg_data_type = ptree.get_optional<int64_t>(DataType::PG_DATA_TYPE);
   auto pg_data_type_name = 
       ptree.get_optional<std::string>(DataType::PG_DATA_TYPE_NAME);
@@ -240,7 +240,7 @@ ErrorCode DataTypes::get(const ObjectId object_id,
   if (error != ErrorCode::OK) {
     return error;
   }
-  object.generate_from_ptree(ptree);
+  object.convert_from_ptree(ptree);
 
   return error;
 }
@@ -256,7 +256,7 @@ ErrorCode DataTypes::get(std::string_view object_name,
   if (error != ErrorCode::OK) {
     return error;
   }
-  object.generate_from_ptree(ptree);
+  object.convert_from_ptree(ptree);
 
   return error;  
 }

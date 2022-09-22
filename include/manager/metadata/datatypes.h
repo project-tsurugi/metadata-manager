@@ -42,8 +42,8 @@ struct DataType : public Object {
         pg_data_type_name(""),
         pg_data_type_qualified_name("") 
       {}
-  boost::property_tree::ptree transform_to_ptree() const override;
-  void generate_from_ptree(const boost::property_tree::ptree& ptree) override;
+  boost::property_tree::ptree convert_to_ptree() const override;
+  void convert_from_ptree(const boost::property_tree::ptree& ptree) override;
 };
 
 class DataTypes : public Metadata {
