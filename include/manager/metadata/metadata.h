@@ -25,8 +25,10 @@
 
 namespace manager::metadata {
 
-using FormatVersionType = std::int32_t;
-using GenerationType = std::int64_t;
+using FormatVersion = std::int32_t;
+using FormatVersionType = FormatVersion;
+using Generation = std::int64_t;
+using GenerationType = Generation;
 using ObjectId = std::int64_t;
 using ObjectIdType = ObjectId;
 
@@ -34,7 +36,7 @@ static constexpr ObjectId INVALID_OBJECT_ID = -1;
 static constexpr int64_t INVALID_VALUE = -1;
 
 /**
- * @brief
+ * @brief 
  */
 struct Object {
   Object()
@@ -42,25 +44,53 @@ struct Object {
         generation(1), 
         id(INVALID_OBJECT_ID), 
         name("") {}
-  int64_t format_version;
-  int64_t generation;
-  int64_t id;
-  std::string name;
+
+  int64_t format_version; // format version of metadata table schema.
+  int64_t generation;     
+  int64_t id;             // object ID.
+  std::string name;       // object name.
+
+  static constexpr const char* FORMAT_VERSION = "format_version";
+  static constexpr const char* GENERATION     = "generation";
+  static constexpr const char* ID             = "id";
+  static constexpr const char* NAME           = "name";
 };
 
 /**
- * @brief
+ * @brief Class object is a general object such as table.  
+ * e.g.) table, index, view, materialized-view, etc...
  */
-struct ClassObject : public Object {
+struct ClassObject {
   ClassObject()
-      : Object(),
+      : format_version(1), 
+        generation(1), 
+        id(INVALID_OBJECT_ID), 
+        name(""),
         database_name(""),
         schema_name(""),
         acl("") {}
-  std::string database_name;
-  std::string schema_name;
-  std::string acl;
 
+  int64_t     format_version; 
+  int64_t     generation;     
+  int64_t     id;             
+  std::string name;           
+  std::string database_name;  // 1st namespace of full qualified object name.
+  std::string schema_name;    // 2nd namespace of full qualified object name.
+  std::string acl;            // access control list.
+
+  static constexpr const char* FORMAT_VERSION = "format_version";
+  static constexpr const char* GENERATION     = "generation";
+  static constexpr const char* ID             = "id";
+  static constexpr const char* DATABASE_NAME  = "database_name";
+  static constexpr const char* SCHEMA_NAME    = "schema_name";
+  static constexpr const char* NAME           = "name";
+  static constexpr const char* ACL            = "acl";
+
+  /**
+   * @brief Obtain a full qualified object name.
+   * e.g. database.schema.table
+   * @return a full qualified object name.
+   */
   std::string get_fullname() {
     return database_name + '.' + schema_name + '.' + this->name;
   }
