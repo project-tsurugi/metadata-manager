@@ -31,10 +31,49 @@ std::unique_ptr<manager::metadata::db::DataTypesProvider> provider = nullptr;
 // =============================================================================
 namespace manager::metadata {
 
+// ==========================================================================
+// DataType class methods.
+/** 
+ * @brief  Transform datatype metadata from structure object to ptree object.
+ * @return ptree object.
+ */
+boost::property_tree::ptree DataType::convert_to_ptree() const
+{
+  boost::property_tree::ptree ptree = Object::convert_to_ptree();
+  ptree.put<int64_t>(PG_DATA_TYPE,        this->pg_data_type);
+  ptree.put(PG_DATA_TYPE_NAME,            this->pg_data_type_name);
+  ptree.put(PG_DATA_TYPE_QUALIFIED_NAME,  this->pg_data_type_qualified_name);
+
+  return ptree;
+}
+
+/**
+ * @brief   Transform datatype metadata from ptree object to structure object.
+ * @param   ptree [in] ptree object of metdata.
+ * @return  structure object of metadata.
+ */
+void DataType::convert_from_ptree(const boost::property_tree::ptree& ptree)
+{
+  Object::convert_from_ptree(ptree);
+  auto pg_data_type = ptree.get_optional<int64_t>(DataType::PG_DATA_TYPE);
+  auto pg_data_type_name = 
+      ptree.get_optional<std::string>(DataType::PG_DATA_TYPE_NAME);
+  auto pg_data_type_qualified_name = 
+      ptree.get_optional<std::string>(DataType::PG_DATA_TYPE_QUALIFIED_NAME);
+
+  this->pg_data_type = pg_data_type ? pg_data_type.get() : INVALID_VALUE;
+  this->pg_data_type_name = 
+      pg_data_type_name ? pg_data_type_name.get() : "";
+  this->pg_data_type_qualified_name = 
+      pg_data_type_qualified_name ? pg_data_type_qualified_name.get() : ""; 
+}
+
+// ==========================================================================
+// DataTypes class methods.
 /**
  * @brief Constructor
- * @param (database)   [in]  database name.
- * @param (component)  [in]  component name.
+ * @param database   [in]  database name.
+ * @param component  [in]  component name.
  */
 DataTypes::DataTypes(std::string_view database, std::string_view component)
     : Metadata(database, component) {
@@ -63,8 +102,8 @@ ErrorCode DataTypes::init() const {
 /**
  * @brief Gets one data type metadata object
  *   from the data types metadata table based on the given object_name.
- * @param (object_id)  [in]  metadata-object ID.
- * @param (object)     [out] one data type metadata object to get
+ * @param object_id  [in]  metadata-object ID.
+ * @param object     [out] one data type metadata object to get
  *   based on the given object_name.
  * @retval ErrorCode::OK if success.
  * @retval ErrorCode::ID_NOT_FOUND if the data type id does not exist.
@@ -102,8 +141,8 @@ ErrorCode DataTypes::get(const ObjectIdType object_id,
 /**
  * @brief Gets one data type metadata object
  *   from the data types metadata table based on the given object_name.
- * @param (object_name)  [in]  data type metadata name. (Value of "name" key.)
- * @param (object)       [out] one data type metadata object to get
+ * @param object_name  [in]  data type metadata name. (Value of "name" key.)
+ * @param object       [out] one data type metadata object to get
  *   based on the given object_name.
  * @retval ErrorCode::OK if success.
  * @retval ErrorCode::NAME_NOT_FOUND if the data type name does not exist.
@@ -139,9 +178,9 @@ ErrorCode DataTypes::get(std::string_view object_name,
 /**
  * @brief Gets one data type metadata object
  *   from the data types metadata table, where key = value.
- * @param (key)     [in]  key of data type metadata object.
- * @param (value)   [in]  value of data type metadata object.
- * @param (object)  [out] one data type metadata object to get,
+ * @param key     [in]  key of data type metadata object.
+ * @param value   [in]  value of data type metadata object.
+ * @param object  [out] one data type metadata object to get,
  *   where key = value.
  * @retval ErrorCode::OK if success.
  * @retval ErrorCode::ID_NOT_FOUND if the data types id does not exist.
@@ -188,6 +227,38 @@ ErrorCode DataTypes::get(std::string_view object_key,
   log::function_finish("DataTypes::get(Key/Value)", error);
 
   return error;
+}
+
+/**
+ * @brief
+ */
+ErrorCode DataTypes::get(const ObjectId object_id, 
+                        manager::metadata::DataType& object) const
+{
+  boost::property_tree::ptree ptree;
+  ErrorCode error = this->get(object_id, ptree);
+  if (error != ErrorCode::OK) {
+    return error;
+  }
+  object.convert_from_ptree(ptree);
+
+  return error;
+}
+
+/**
+ * @brief
+ */
+ErrorCode DataTypes::get(std::string_view object_name, 
+                        manager::metadata::DataType& object) const
+{
+  boost::property_tree::ptree ptree;
+  ErrorCode error = this->get(object_name, ptree);
+  if (error != ErrorCode::OK) {
+    return error;
+  }
+  object.convert_from_ptree(ptree);
+
+  return error;  
 }
 
 }  // namespace manager::metadata
