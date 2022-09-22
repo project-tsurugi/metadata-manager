@@ -16,6 +16,7 @@
 #ifndef MANAGER_METADATA_DATATYPES_H_
 #define MANAGER_METADATA_DATATYPES_H_
 
+#include <string>
 #include <string_view>
 #include <vector>
 
@@ -25,6 +26,25 @@
 #include "manager/metadata/metadata.h"
 
 namespace manager::metadata {
+
+struct DataType : public Object {
+  int64_t pg_data_type;
+  std::string pg_data_type_name;
+  std::string pg_data_type_qualified_name;
+
+  static constexpr const char* const PG_DATA_TYPE = "pg_dataType";
+  static constexpr const char* const PG_DATA_TYPE_NAME = "pg_dataTypeName";
+  static constexpr const char* const PG_DATA_TYPE_QUALIFIED_NAME =
+      "pg_dataTypeQualifiedName";
+
+  DataType() 
+      : pg_data_type(INVALID_VALUE),
+        pg_data_type_name(""),
+        pg_data_type_qualified_name("") 
+      {}
+  boost::property_tree::ptree transform_to_ptree() const override;
+  void generate_from_ptree(const boost::property_tree::ptree& ptree) override;
+};
 
 class DataTypes : public Metadata {
  public:
@@ -52,11 +72,11 @@ class DataTypes : public Metadata {
    * @brief represents data types id.
    */
   enum class DataTypesId : ObjectIdType {
-    INT32 = 4,    //!< @brief INT32.
-    INT64 = 6,    //!< @brief INT64.
+    INT32   = 4,  //!< @brief INT32.
+    INT64   = 6,  //!< @brief INT64.
     FLOAT32 = 8,  //!< @brief FLOAT32.
     FLOAT64 = 9,  //!< @brief FLOAT64.
-    CHAR = 13,    //!< @brief CHAR.
+    CHAR    = 13, //!< @brief CHAR.
     VARCHAR = 14  //!< @brief VARCHAR.
   };
 
@@ -102,6 +122,11 @@ class DataTypes : public Metadata {
                    [[maybe_unused]] ObjectIdType* object_id) const override {
     return ErrorCode::UNKNOWN;
   }
+
+  ErrorCode get(const ObjectId object_id, 
+                manager::metadata::DataType& object) const;
+  ErrorCode get(std::string_view object_name, 
+                manager::metadata::DataType& object) const;
 };  // class DataTypes
 
 }  // namespace manager::metadata
