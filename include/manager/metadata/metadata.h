@@ -36,8 +36,8 @@ static constexpr const ObjectId INVALID_OBJECT_ID = -1;
 static constexpr const int64_t INVALID_VALUE = -1;
 
 struct ObjectInterfaces {
-  virtual boost::property_tree::ptree transform_to_ptree() const = 0;
-  virtual void generate_from_ptree(const boost::property_tree::ptree& ptree) = 0;
+  virtual boost::property_tree::ptree convert_to_ptree() const = 0;
+  virtual void convert_from_ptree(const boost::property_tree::ptree& ptree) = 0;
 };
 
 /**
@@ -60,11 +60,11 @@ struct Object : public ObjectInterfaces {
         id(INVALID_OBJECT_ID), 
         name("") {}
   explicit Object(const boost::property_tree::ptree& ptree) {
-    this->generate_from_ptree(ptree);
+    this->convert_from_ptree(ptree);
   }
 
-  boost::property_tree::ptree transform_to_ptree() const override;
-  void generate_from_ptree(const boost::property_tree::ptree& ptree) override;
+  boost::property_tree::ptree convert_to_ptree() const override;
+  void convert_from_ptree(const boost::property_tree::ptree& ptree) override;
 };
 
 /**
@@ -90,8 +90,8 @@ struct ClassObject : public Object {
   /** @brief  Transform metadata from structure object to ptree object.
    *  @return ptree object.
    */
-  boost::property_tree::ptree transform_to_ptree() const override;
-  void generate_from_ptree(const boost::property_tree::ptree& ptree) override;
+  boost::property_tree::ptree convert_to_ptree() const override;
+  void convert_from_ptree(const boost::property_tree::ptree& ptree) override;
 
   /**
    * @brief Obtain a full qualified object name.

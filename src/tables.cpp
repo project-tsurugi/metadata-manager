@@ -49,9 +49,9 @@ using helper::TableMetadataHelper;
  * @brief  Transform column metadata from structure object to ptree object.
  * @return ptree object.
  */
-boost::property_tree::ptree Column::transform_to_ptree() const
+boost::property_tree::ptree Column::convert_to_ptree() const
 {
-  boost::property_tree::ptree ptree = Object::transform_to_ptree();
+  boost::property_tree::ptree ptree = Object::convert_to_ptree();
   ptree.put<ObjectId>(TABLE_ID,         this->table_id);
   ptree.put<int64_t>(ORDINAL_POSITION,  this->ordinal_position);
   ptree.put<ObjectId>(DATA_TYPE_ID,     this->data_type_id);
@@ -77,9 +77,9 @@ boost::property_tree::ptree Column::transform_to_ptree() const
  * @param   ptree [in] ptree object of metdata.
  * @return  structure object of metadata.
  */
-void Column::generate_from_ptree(const boost::property_tree::ptree& ptree)
+void Column::convert_from_ptree(const boost::property_tree::ptree& ptree)
 {
-  Object::generate_from_ptree(ptree);
+  Object::convert_from_ptree(ptree);
   auto table_id         = ptree.get_optional<ObjectId>(TABLE_ID);
   auto ordinal_position = ptree.get_optional<int64_t>(ORDINAL_POSITION);
   auto data_type_id     = ptree.get_optional<ObjectId>(DATA_TYPE_ID);
@@ -113,9 +113,9 @@ void Column::generate_from_ptree(const boost::property_tree::ptree& ptree)
  * @brief  Transform table metadata from structure object to ptree object.
  * @return ptree object.
  */
-boost::property_tree::ptree Table::transform_to_ptree() const
+boost::property_tree::ptree Table::convert_to_ptree() const
 {
-  boost::property_tree::ptree ptree = ClassObject::transform_to_ptree();
+  boost::property_tree::ptree ptree = ClassObject::convert_to_ptree();
   ptree.put(Tables::NAMESPACE, this->namespace_name);
 //  ptree.put<int64_t>(Tables::OWNER_ROLE_ID, table.owner_role_id);
 //  ptree.put(Tables::ACL, table.acl);
@@ -134,7 +134,7 @@ boost::property_tree::ptree Table::transform_to_ptree() const
   // columns metadata
   boost::property_tree::ptree ptree_columns;
   for (const auto& column : this->columns) {
-    boost::property_tree::ptree ptree = column.transform_to_ptree();
+    boost::property_tree::ptree ptree = column.convert_to_ptree();
     ptree_columns.push_back(std::make_pair("", ptree));
   }
   ptree.add_child(Tables::COLUMNS_NODE, ptree_columns);
@@ -147,9 +147,9 @@ boost::property_tree::ptree Table::transform_to_ptree() const
  * @param   ptree [in] ptree object of metdata.
  * @return  structure object of metadata.
  */
-void Table::generate_from_ptree(const boost::property_tree::ptree& ptree)
+void Table::convert_from_ptree(const boost::property_tree::ptree& ptree)
 {
-  ClassObject::generate_from_ptree(ptree);
+  ClassObject::convert_from_ptree(ptree);
   auto namespace_name   = ptree.get_optional<std::string>(Tables::NAMESPACE);
   auto tuples           = ptree.get_optional<int64_t>(Tables::TUPLES);
 //auto owner_id         = ptree.get_optional<int64_t>(Tables::OWNER_ROLE_ID);
@@ -173,7 +173,7 @@ void Table::generate_from_ptree(const boost::property_tree::ptree& ptree)
   BOOST_FOREACH (const auto& node, ptree.get_child(Tables::COLUMNS_NODE)) {
     const boost::property_tree::ptree& ptree_column = node.second;
     Column column;
-    column.generate_from_ptree(ptree_column);
+    column.convert_from_ptree(ptree_column);
     this->columns.emplace_back(column);
   }
 }
@@ -764,7 +764,7 @@ ErrorCode Tables::confirm_permission_in_acls(std::string_view object_name,
 ErrorCode Tables::add(const manager::metadata::Table& table,
                       ObjectIdType* object_id) const
 {
-  boost::property_tree::ptree ptree = table.transform_to_ptree();
+  boost::property_tree::ptree ptree = table.convert_to_ptree();
   ErrorCode error = this->add(ptree, object_id);
   if (error != ErrorCode::OK) {
     return error;
@@ -806,7 +806,7 @@ ErrorCode Tables::get(const ObjectIdType object_id,
   if (error != ErrorCode::OK) {
     return error;
   }
-  table.generate_from_ptree(ptree);
+  table.convert_from_ptree(ptree);
 
   return error;
 }
@@ -829,7 +829,7 @@ ErrorCode Tables::get(std::string_view table_name,
   if (error != ErrorCode::OK) {
     return error;
   }
-  table.generate_from_ptree(ptree);
+  table.convert_from_ptree(ptree);
 
   return error;
 }
