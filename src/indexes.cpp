@@ -16,11 +16,8 @@
 #include "manager/metadata/indexes.h"
 
 #include <memory>
+#include <jwt-cpp/jwt.h>
 
-#include <boost/foreach.hpp>
-#include <boost/format.hpp>
-
-#include "jwt-cpp/jwt.h"
 #include "manager/metadata/common/config.h"
 #include "manager/metadata/common/jwt_claims.h"
 #include "manager/metadata/common/message.h"
@@ -28,4 +25,58 @@
 #include "manager/metadata/helper/table_metadata_helper.h"
 #include "manager/metadata/provider/datatypes_provider.h"
 //#include "manager/metadata/provider/indexes_provider.h"
+#include "manager/metadata/helper/ptree_helper.h"
 
+namespace manager::metadata {
+
+using boost::property_tree::ptree;
+
+// ==========================================================================
+// Index struct methods.
+/**
+ * @brief 
+ */
+boost::property_tree::ptree Index::convert_to_ptree() const
+{
+  auto pt = MetadataObject::convert_to_ptree();
+  pt.put(OWNER_ID, this->owner_id);
+  pt.put(ACCESS_METHOD, this->access_method);
+  pt.put(NUMBER_OF_COLUMNS, this->number_of_columns);
+  pt.put(NUMBER_OF_KEY_COLUMNS, this->number_of_key_columns);
+  
+  ptree keys = ptree_helper::make_array_ptree(this->keys);
+  pt.push_back(std::make_pair(KEYS, keys));
+  
+  ptree keys_id = ptree_helper::make_array_ptree(this->keys_id);
+  pt.push_back(std::make_pair(KEYS_ID, keys_id));
+  
+  ptree options = ptree_helper::make_array_ptree(this->options);
+  pt.push_back(std::make_pair(OPTIONS, options));
+
+  return pt;
+}
+
+/**
+ * @brief 
+ */
+void Index::convert_from_ptree(const boost::property_tree::ptree& pt)
+{
+  MetadataObject::convert_from_ptree(pt);
+  auto opt_int = pt.get_optional<int64_t>(OWNER_ID);
+  this->owner_id = opt_int ? opt_int.get() : INVALID_OBJECT_ID;
+
+  opt_int = pt.get_optional<int64_t>(ACCESS_METHOD);
+  this->access_method = opt_int ? opt_int.get() : INVALID_VALUE;
+
+  opt_int = pt.get_optional<int64_t>(NUMBER_OF_COLUMNS);
+  this->number_of_columns = opt_int ? opt_int.get() : INVALID_VALUE;
+
+  opt_int = pt.get_optional<int64_t>(NUMBER_OF_KEY_COLUMNS);
+  this->number_of_key_columns = opt_int ? opt_int.get() : INVALID_VALUE;
+
+  this->keys = ptree_helper::make_vector(pt, KEYS);
+  this->keys_id = ptree_helper::make_vector(pt, KEYS_ID);
+  this->options = ptree_helper::make_vector(pt, OPTIONS);
+}
+
+} // namespace manager::metadata

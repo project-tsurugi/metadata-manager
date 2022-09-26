@@ -30,44 +30,49 @@ namespace manager::metadata {
 /**
  * @brief Column metadata object.
  */
-struct Column : public Object {
-  int64_t     table_id;
-  int64_t     ordinal_position;
-  int64_t     data_type_id;
-  int64_t     data_length;
-  std::vector<int64_t>  data_lengths;
-  bool        varying;
-  bool        nullable;
-  std::string default_expr;
-  int64_t     direction;
-
-  static constexpr const int64_t ORDINAL_POSITION_BASE_INDEX = 1;
+struct Column : public MetadataObject {
   static constexpr const char* const TABLE_ID         = "tableId";
   static constexpr const char* const ORDINAL_POSITION = "ordinalPosition";
   static constexpr const char* const DATA_TYPE_ID     = "dataTypeId";
   static constexpr const char* const DATA_LENGTH      = "dataLength";
+  static constexpr const char* const DATA_LENGTHS     = "dataLengths";
   static constexpr const char* const VARYING          = "varying";
   static constexpr const char* const NULLABLE         = "nullable";
   static constexpr const char* const DEFAULT_EXPR     = "defaultExpr";
   static constexpr const char* const DIRECTION        = "direction";
-  
+
+  static constexpr const int64_t ORDINAL_POSITION_BASE_INDEX = 1;
+
+  int64_t               table_id;
+  int64_t               ordinal_position;
+  int64_t               data_type_id;
+  int64_t               data_length;
+  std::vector<int64_t>  data_lengths;
+  bool                  varying;
+  bool                  nullable;
+  std::string           default_expr;
+  int64_t               direction;
+
 	Column() 
-      : Object(),
+      : MetadataObject(),
         table_id(INVALID_OBJECT_ID),
         ordinal_position(INVALID_VALUE),
         data_type_id(INVALID_OBJECT_ID),
         data_length(INVALID_VALUE),
         varying(false),
-        nullable(false)
-      {}
+        nullable(false) {}
   boost::property_tree::ptree convert_to_ptree() const override;
-  void convert_from_ptree(const boost::property_tree::ptree& ptree) override;
+  void convert_from_ptree(const boost::property_tree::ptree& pt) override;
 };
 
 /**
  * @brief Table metadata object.
  */
 struct Table : public ClassObject {
+  static constexpr const char* const NAMESPACE  = "namespace";
+  static constexpr const char* const OWNER_ID   = "ownerId";
+  static constexpr const char* const TUPLES     = "tuples";
+
   std::string namespace_name;
   int64_t     owner_id;
   int64_t     tuples;
@@ -76,18 +81,13 @@ struct Table : public ClassObject {
   std::vector<Index>      indexes;
   std::vector<Constraint> constraints;
 
-  static constexpr const char* const NAMESPACE  = "namespace";
-  static constexpr const char* const OWNER_ID   = "ownerId";
-  static constexpr const char* const TUPLES     = "tuples";
-
   Table()
       : ClassObject(),
         namespace_name(""), 
         owner_id(INVALID_OBJECT_ID), 
-        tuples(INVALID_VALUE) 
-      {}
+        tuples(INVALID_VALUE) {}
   boost::property_tree::ptree convert_to_ptree() const override;
-  void convert_from_ptree(const boost::property_tree::ptree& ptree) override;
+  void convert_from_ptree(const boost::property_tree::ptree& pt) override;
 };
 
 /**

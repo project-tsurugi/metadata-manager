@@ -13,8 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef MANAGER_METADATA_METADATA_H_
-#define MANAGER_METADATA_METADATA_H_
+#pragma once
 
 #include <string>
 #include <string_view>
@@ -35,45 +34,30 @@ using ObjectIdType = ObjectId;
 static constexpr const ObjectId INVALID_OBJECT_ID = -1;
 static constexpr const int64_t INVALID_VALUE = -1;
 
-
-class Object {
- public:
-  Object() {}
-  virtual ~Object() {}
-    /** @brief  Convert metadata from structure object to ptree object.
-   *  @return ptree object.
-   */
-  virtual boost::property_tree::ptree convert_to_ptree() const = 0;
-  virtual void convert_from_ptree(const boost::property_tree::ptree& ptree) = 0;
-};
-
 /**
  * @brief This class manage common metadata of all metadata objects.
  */
-class BaseObject : public Object {
- public:
+struct MetadataObject {
   static constexpr const char* FORMAT_VERSION = "formatVersion";
   static constexpr const char* GENERATION     = "generation";
   static constexpr const char* ID             = "id";
   static constexpr const char* NAME           = "name";
 
-  BaseObject()
-      : format_version_(1), 
-        generation_(1), 
-        id_(INVALID_OBJECT_ID), 
-        name_("") {}
-  int64_t format_version() { return format_version_; }
-  int64_t generation() { return generation_; }
-  manager::metadata::ObjectId id() { return id_; }
-  std::string name() { return name_; }
-  boost::property_tree::ptree convert_to_ptree() const override;
-  void convert_from_ptree(const boost::property_tree::ptree& ptree) override;
+  int64_t format_version; // format version of metadata table schema.
+  int64_t generation;
+  int64_t id;             // object ID.
+  std::string name;       // object name.
 
- private:
-  int64_t format_version_; // format version of metadata table schema.
-  int64_t generation_;
-  int64_t id_;             // object ID.
-  std::string name_;       // object name.
+  MetadataObject()
+      : format_version(1), 
+        generation(1), 
+        id(INVALID_OBJECT_ID), 
+        name("") {}
+    /** @brief  Convert metadata from structure object to ptree object.
+   *  @return ptree object.
+   */
+  virtual boost::property_tree::ptree convert_to_ptree() const;
+  virtual void convert_from_ptree(const boost::property_tree::ptree& pt);
 };
 
 /**
@@ -81,42 +65,33 @@ class BaseObject : public Object {
  * @note  Class  metadata objects are such as table objects. 
  * e.g.) table, index, view, materialized-view, etc...
  */
-struct ClassObject : public Object  {
- public:
+struct ClassObject : public MetadataObject {
   static constexpr const char* const DATABASE_NAME  = "databaseName";
   static constexpr const char* const SCHEMA_NAME    = "schemaName";
   static constexpr const char* const ACL            = "acl";
 
+  std::string database_name;  // 1st namespace of full qualified object name.
+  std::string schema_name;    // 2nd namespace of full qualified object name.
+  std::string acl;            // access control list.
+
   ClassObject()
-      : database_name_(""),
-        schema_name_(""),
-        acl_("") {}
-  int64_t format_version() { base_obj_.format_version(); }
-  int64_t generation() { base_obj_.generation(); }
-  manager::metadata::ObjectId id() { base_obj_.id(); }
-  std::string name() { base_obj_.name(); }
-  std::string database_name() { return database_name_; }
-  std::string schema_name() { return schema_name_; }
-  std::string acl() { return acl_; }
+      : MetadataObject(),
+        database_name(""),
+        schema_name(""),
+        acl("") {}
   /** @brief  Convert metadata from structure object to ptree object.
    *  @return ptree object.
    */
-  boost::property_tree::ptree convert_to_ptree() const;
-  void convert_from_ptree(const boost::property_tree::ptree& ptree);
+  boost::property_tree::ptree convert_to_ptree() const override;
+  void convert_from_ptree(const boost::property_tree::ptree& pt) override;
   /**
    * @brief Obtain a full qualified object name.
    * e.g. database.schema.table
    * @return a full qualified object name.
    */
   std::string full_qualified_name() {
-    return database_name_ + '.' + schema_name_ + '.' + base_obj_.name();
+    return database_name + '.' + schema_name + '.' + this->name;
   }
-
- private:
-  BaseObject  base_obj_;
-  std::string database_name_;  // 1st namespace of full qualified object name.
-  std::string schema_name_;    // 2nd namespace of full qualified object name.
-  std::string acl_;            // access control list.
 };
 
 /**
@@ -291,5 +266,3 @@ class Metadata {
 };
 
 }  // namespace manager::metadata
-
-#endif  // MANAGER_METADATA_METADATA_H_

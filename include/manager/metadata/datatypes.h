@@ -27,23 +27,23 @@
 
 namespace manager::metadata {
 
-struct DataType : public Object {
-  int64_t pg_data_type;
-  std::string pg_data_type_name;
-  std::string pg_data_type_qualified_name;
-
+struct DataType : public MetadataObject {
   static constexpr const char* const PG_DATA_TYPE = "pg_dataType";
   static constexpr const char* const PG_DATA_TYPE_NAME = "pg_dataTypeName";
   static constexpr const char* const PG_DATA_TYPE_QUALIFIED_NAME =
       "pg_dataTypeQualifiedName";
 
+  int64_t pg_data_type;
+  std::string pg_data_type_name;
+  std::string pg_data_type_qualified_name;
+
   DataType() 
-      : pg_data_type(INVALID_VALUE),
+      : MetadataObject(),
+        pg_data_type(INVALID_VALUE),
         pg_data_type_name(""),
-        pg_data_type_qualified_name("") 
-      {}
+        pg_data_type_qualified_name("") {}
   boost::property_tree::ptree convert_to_ptree() const override;
-  void convert_from_ptree(const boost::property_tree::ptree& ptree) override;
+  void convert_from_ptree(const boost::property_tree::ptree& pt) override;
 };
 
 class DataTypes : public Metadata {

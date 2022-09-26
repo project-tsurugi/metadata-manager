@@ -17,13 +17,14 @@
 
 #include <string>
 #include <vector>
+#include <boost/property_tree/ptree.hpp>
 #include "metadata.h"
 
 namespace manager::metadata {
 /**
  * @brief Index metadata object.
  */
-struct Index : public Object {
+struct Index : public MetadataObject {
   enum class AccessMethod : int64_t {
     DEFAULT = 0,
     MASS_TREE_METHOD,
@@ -39,48 +40,37 @@ struct Index : public Object {
     DEFAULT           = 0b1111,   // 15
   };
 
-  static constexpr const char* const OWNER_ID               = "owner_id";
-  static constexpr const char* const ACCESS_METHOD          = "access_method";
-  static constexpr const char* const NUMBER_OF_COLUMNS      = "number_of_columns";
-  static constexpr const char* const NUMBER_OF_KEY_COLUMNS  = "number_of_key_columns";
-  static constexpr const char* const IS_UNIQUE              = "is_unique";
-  static constexpr const char* const IS_PRIMARY             = "is_primary";
-  static constexpr const char* const KEYS                   = "keys";
-  static constexpr const char* const KEYS_ID                = "keys_id";
-  static constexpr const char* const OPTIONS                = "options";
+  static constexpr const char* const OWNER_ID           = "owner_id";
+  static constexpr const char* const ACCESS_METHOD      = "access_method";
+  static constexpr const char* const NUMBER_OF_COLUMNS  = "number_of_columns";
+  static constexpr const char* const NUMBER_OF_KEY_COLUMNS  
+      = "number_of_key_columns";
+  static constexpr const char* const IS_UNIQUE          = "is_unique";
+  static constexpr const char* const IS_PRIMARY         = "is_primary";
+  static constexpr const char* const KEYS               = "keys";
+  static constexpr const char* const KEYS_ID            = "keys_id";
+  static constexpr const char* const OPTIONS            = "options";
+
+  int64_t owner_id;
+  int64_t access_method;           // refer to enumlation of AccessMethod.
+  int64_t number_of_columns;       // include non-key (included) columns.
+  int64_t number_of_key_columns;   // exclude non-key (included) columns.
+  bool    is_unique;
+  bool    is_primary;
+  std::vector<int64_t>  keys;      // include non-key (included) columns.
+  std::vector<int64_t>  keys_id;
+  std::vector<int64_t>  options;   // refer to enumlation of Direction.
 
   Index()
-      : Object(),
-        owner_id_(INVALID_OBJECT_ID),
-        access_method_(INVALID_VALUE),
-        number_of_columns_(INVALID_VALUE),
-        number_of_key_columns_(INVALID_VALUE),
-        is_unique_(false),
-        is_primary_(false) 
-      {}
-  int64_t owner_id() { return owner_id_; }
-  int64_t access_method() { return access_method_; }
-  int64_t number_of_columns() { return number_of_columns_; }
-  int64_t number_of_key_columns() { return number_of_key_columns_; }
-  bool is_unique() { return is_unique_; }
-  bool is_primary() { return is_primary_; }
-  std::vector<int64_t> keys() { return keys_; }
-  std::vector<int64_t> keys_id() { return keys_id_; }
-  std::vector<int64_t> options() { return options_; }
-  virtual boost::property_tree::ptree convert_to_ptree() const override;
-  virtual void convert_from_ptree(const boost::property_tree::ptree& ptree) override;
-
- private:
-  BaseObject obj_;
-  int64_t owner_id_;
-  int64_t access_method_;           // refer to enumlation of AccessMethod.
-  int64_t number_of_columns_;       // include non-key (included) columns.
-  int64_t number_of_key_columns_;   // exclude non-key (included) columns.
-  bool    is_unique_;
-  bool    is_primary_;
-  std::vector<int64_t>  keys_;      // include non-key (included) columns.
-  std::vector<int64_t>  keys_id_;
-  std::vector<int64_t>  options_;   // refer to enumlation of Direction.
+      : MetadataObject(),
+        owner_id(INVALID_OBJECT_ID),
+        access_method(INVALID_VALUE),
+        number_of_columns(INVALID_VALUE),
+        number_of_key_columns(INVALID_VALUE),
+        is_unique(false),
+        is_primary(false) {}
+  boost::property_tree::ptree convert_to_ptree() const override;
+  void convert_from_ptree(const boost::property_tree::ptree& pt) override;
 };
 
 /**

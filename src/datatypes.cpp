@@ -32,19 +32,19 @@ std::unique_ptr<manager::metadata::db::DataTypesProvider> provider = nullptr;
 namespace manager::metadata {
 
 // ==========================================================================
-// DataType class methods.
+// DataType struct methods.
 /** 
  * @brief  Transform datatype metadata from structure object to ptree object.
  * @return ptree object.
  */
 boost::property_tree::ptree DataType::convert_to_ptree() const
 {
-  boost::property_tree::ptree ptree = Object::convert_to_ptree();
-  ptree.put<int64_t>(PG_DATA_TYPE,        this->pg_data_type);
-  ptree.put(PG_DATA_TYPE_NAME,            this->pg_data_type_name);
-  ptree.put(PG_DATA_TYPE_QUALIFIED_NAME,  this->pg_data_type_qualified_name);
+  auto pt = MetadataObject::convert_to_ptree();
+  pt.put<int64_t>(PG_DATA_TYPE, this->pg_data_type);
+  pt.put(PG_DATA_TYPE_NAME, this->pg_data_type_name);
+  pt.put(PG_DATA_TYPE_QUALIFIED_NAME, this->pg_data_type_qualified_name);
 
-  return ptree;
+  return pt;
 }
 
 /**
@@ -52,20 +52,18 @@ boost::property_tree::ptree DataType::convert_to_ptree() const
  * @param   ptree [in] ptree object of metdata.
  * @return  structure object of metadata.
  */
-void DataType::convert_from_ptree(const boost::property_tree::ptree& ptree)
+void DataType::convert_from_ptree(const boost::property_tree::ptree& pt)
 {
-  Object::convert_from_ptree(ptree);
-  auto pg_data_type = ptree.get_optional<int64_t>(DataType::PG_DATA_TYPE);
-  auto pg_data_type_name = 
-      ptree.get_optional<std::string>(DataType::PG_DATA_TYPE_NAME);
-  auto pg_data_type_qualified_name = 
-      ptree.get_optional<std::string>(DataType::PG_DATA_TYPE_QUALIFIED_NAME);
+  MetadataObject::convert_from_ptree(pt);
+  auto opt_int = pt.get_optional<int64_t>(DataType::PG_DATA_TYPE);
+  this->pg_data_type = opt_int ? opt_int.get() : INVALID_VALUE;
 
-  this->pg_data_type = pg_data_type ? pg_data_type.get() : INVALID_VALUE;
-  this->pg_data_type_name = 
-      pg_data_type_name ? pg_data_type_name.get() : "";
-  this->pg_data_type_qualified_name = 
-      pg_data_type_qualified_name ? pg_data_type_qualified_name.get() : ""; 
+  auto opt_str = pt.get_optional<std::string>(DataType::PG_DATA_TYPE_NAME);
+  this->pg_data_type_name = opt_str ? opt_str.get() : "";
+
+  opt_str = 
+      pt.get_optional<std::string>(DataType::PG_DATA_TYPE_QUALIFIED_NAME);
+  this->pg_data_type_qualified_name = opt_str ? opt_str.get() : ""; 
 }
 
 // ==========================================================================

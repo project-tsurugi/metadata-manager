@@ -23,7 +23,7 @@ namespace manager::metadata {
 /**
  * @brief Constraint metadata object.
  */
-struct Constraint : public Object {
+struct Constraint : public MetadataObject {
   Constraint() {
     namespace_name = "";
   }
