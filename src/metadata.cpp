@@ -30,12 +30,12 @@ namespace manager::metadata {
  * @brief  Transform metadata from structure object to ptree object.
  * @return ptree object.
  */
-boost::property_tree::ptree Object::convert_to_ptree() const {
+boost::property_tree::ptree BaseObject::convert_to_ptree() const {
   boost::property_tree::ptree ptree;
-  ptree.put<int64_t>(FORMAT_VERSION,  this->format_version);
-  ptree.put<int64_t>(GENERATION,      this->generation);
-  ptree.put<ObjectId>(ID,             this->id);
-  ptree.put(NAME,                     this->name);
+  ptree.put<int64_t>(FORMAT_VERSION,  format_version_);
+  ptree.put<int64_t>(GENERATION,      generation_);
+  ptree.put<ObjectId>(ID,             id_);
+  ptree.put(NAME,                     name_);
 
   return ptree;
 };
@@ -44,17 +44,16 @@ boost::property_tree::ptree Object::convert_to_ptree() const {
  * @param   ptree [in] ptree object of metdata.
  * @return  structure object of metadata.
  */
-void Object::convert_from_ptree(const boost::property_tree::ptree& ptree) {
+void BaseObject::convert_from_ptree(const boost::property_tree::ptree& ptree) {
   auto format_version = ptree.get_optional<int64_t>(FORMAT_VERSION);
   auto generation     = ptree.get_optional<int64_t>(GENERATION);
   auto id             = ptree.get_optional<ObjectId>(ID);
   auto name           = ptree.get_optional<std::string>(NAME);
 
-  this->format_version = 
-      format_version  ? format_version.get()  : INVALID_VALUE;
-  this->generation  = generation  ? generation.get()  : INVALID_VALUE;
-  this->id          = id          ? id.get()          : INVALID_OBJECT_ID;
-  this->name        = name        ? name.get()        : "";
+  format_version_ = format_version  ? format_version.get()  : INVALID_VALUE;
+  generation_     = generation      ? generation.get()  : INVALID_VALUE;
+  id_             = id              ? id.get()          : INVALID_OBJECT_ID;
+  name_           = name            ? name.get()        : "";
 };
 
 // ==========================================================================
@@ -63,10 +62,10 @@ void Object::convert_from_ptree(const boost::property_tree::ptree& ptree) {
  *  @return ptree object.
  */
 boost::property_tree::ptree ClassObject::convert_to_ptree() const {
-  boost::property_tree::ptree ptree = Object::convert_to_ptree();
-  ptree.put(DATABASE_NAME, this->database_name);
-  ptree.put(SCHEMA_NAME,   this->schema_name);
-  ptree.put(ACL,           this->acl);
+  boost::property_tree::ptree ptree = base_obj_.convert_to_ptree();
+  ptree.put(DATABASE_NAME, database_name_);
+  ptree.put(SCHEMA_NAME,   schema_name_);
+  ptree.put(ACL,           acl_);
 
   return ptree;
 };
@@ -77,14 +76,14 @@ boost::property_tree::ptree ClassObject::convert_to_ptree() const {
  */
 void 
 ClassObject::convert_from_ptree(const boost::property_tree::ptree& ptree) {
-  Object::convert_from_ptree(ptree);
+  base_obj_.convert_from_ptree(ptree);
   auto database_name  = ptree.get_optional<std::string>(DATABASE_NAME);
   auto schema_name    = ptree.get_optional<std::string>(SCHEMA_NAME);
   auto acl            = ptree.get_optional<std::string>(ACL);
 
-  this->database_name = database_name ? database_name.get() : "";
-  this->schema_name   = schema_name   ? schema_name.get()   : "";
-  this->acl           = acl           ? acl.get()           : "";
+  database_name_  = database_name ? database_name.get() : "";
+  schema_name_    = schema_name   ? schema_name.get()   : "";
+  acl_            = acl           ? acl.get()           : "";
 };
 
 // ==========================================================================
