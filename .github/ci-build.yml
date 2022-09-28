@@ -1,0 +1,48 @@
+name: Metadata-Manager-CI
+
+on: [push, pull_request]
+
+jobs:
+  Build:
+    name: Build Metadata-Manager ( ${{ matrix.container-tag }} ) 
+    runs-on: [self-hosted, docker]
+    timeout-minutes: 30
+    container:
+      image:  ghcr.io/project-tsurugi/oltp-sandbox:${{ matrix.container-tag }}
+      credentials:
+        username: ${{ github.repository_owner }}
+        password: ${{ secrets.GHCR_PAT }}
+    defaults:
+      run:
+        shell: bash
+    env:
+      BUILD_TYPE: ''
+    strategy:
+      fail-fast: false
+      matrix:
+        container-tag: [ubuntu-20.04]
+        
+    steps:
+      - id: Checkout
+        name: Checkout
+        uses: actions/checkout@v2
+        with:
+          path: ${GITHUB_WORKSPACE}
+          submodules: recursive
+          token: ${{ secrets.GHA_PAT }}
+
+      - id: CMake_Build_metadata-manager
+        name: CMake_Build_metadata-manager
+        run: |
+          rm -rf build
+          mkdir build
+          cd build
+          cmake -B ${GITHUB_WORKSPACE}/build -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -DFORCE_INSTALL_RPATH=ON -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/.local ..
+          cmake --build . --target install --clean-first -- -j8
+          make
+          make install
+
+      - id: Cleanup
+        name: Cleanup
+        run: |
+          rm -rf ${GITHUB_WORKSPACE}/.local/
