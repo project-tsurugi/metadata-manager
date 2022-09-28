@@ -26,7 +26,7 @@ namespace manager::metadata {
 
 // ==========================================================================
 // Object class methods.
-/** 
+/**
  * @brief  Transform metadata from structure object to ptree object.
  * @return ptree object.
  */
@@ -38,7 +38,8 @@ boost::property_tree::ptree Object::convert_to_ptree() const {
   ptree.put(NAME,                     this->name);
 
   return ptree;
-};
+}
+
 /**
  * @brief   Transform metadata from ptree object to structure object.
  * @param   ptree [in] ptree object of metdata.
@@ -55,7 +56,7 @@ void Object::convert_from_ptree(const boost::property_tree::ptree& ptree) {
   this->generation  = generation  ? generation.get()  : INVALID_VALUE;
   this->id          = id          ? id.get()          : INVALID_OBJECT_ID;
   this->name        = name        ? name.get()        : "";
-};
+}
 
 // ==========================================================================
 // ClassObject class methods.
@@ -69,23 +70,23 @@ boost::property_tree::ptree ClassObject::convert_to_ptree() const {
   ptree.put(ACL,           this->acl);
 
   return ptree;
-};
+}
+
 /**
  * @brief   Transform metadata from ptree object to structure object.
- * @param   ptree [in] ptree object of metdata.
+ * @param   ptree [in] ptree object of metadata.
  * @return  structure object of metadata.
  */
-void 
-ClassObject::convert_from_ptree(const boost::property_tree::ptree& ptree) {
+void ClassObject::convert_from_ptree(const boost::property_tree::ptree& ptree) {
   Object::convert_from_ptree(ptree);
-  auto database_name  = ptree.get_optional<std::string>(DATABASE_NAME);
-  auto schema_name    = ptree.get_optional<std::string>(SCHEMA_NAME);
-  auto acl            = ptree.get_optional<std::string>(ACL);
+  auto database_name = ptree.get_optional<std::string>(DATABASE_NAME);
+  auto schema_name   = ptree.get_optional<std::string>(SCHEMA_NAME);
+  auto acl           = ptree.get_optional<std::string>(ACL);
 
   this->database_name = database_name ? database_name.get() : "";
   this->schema_name   = schema_name   ? schema_name.get()   : "";
   this->acl           = acl           ? acl.get()           : "";
-};
+}
 
 // ==========================================================================
 // Metadata class methods.

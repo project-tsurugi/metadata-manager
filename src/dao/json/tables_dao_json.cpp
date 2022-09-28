@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 tsurugi project.
+ * Copyright 2021-2022 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -63,8 +63,8 @@ ErrorCode TablesDAO::prepare() const {
 
 /**
  * @brief Add metadata object to metadata table file.
- * @param (table_metadata) [in]   one table metadata to add.
- * @param (table_id)       [out]  table id.
+ * @param table_metadata  [in]  one table metadata to add.
+ * @param table_id        [out] table id.
  * @return ErrorCode::OK if success, otherwise an error code.
  */
 
@@ -123,6 +123,29 @@ ErrorCode TablesDAO::insert_table_metadata(
     column.put(Tables::Column::TABLE_ID, table_id);
   }
 
+  // constraint metadata
+  ptree empty_ptree;
+  auto constraints_node = tmp_table.get_child_optional(Tables::CONSTRAINTS_NODE);
+  if (constraints_node) {
+    BOOST_FOREACH (ptree::value_type& node, constraints_node.get()) {
+      ptree& constraint = node.second;
+      // constraint ID
+      constraint.put(Constraint::ID, object_id->generate(OID_KEY_NAME_CONSTRAINT));
+      // table ID
+      constraint.put(Constraint::TABLE_ID, table_id);
+      // columns
+      if (constraint.find(Constraint::COLUMNS) == constraint.not_found()) {
+        constraint.add_child(Constraint::COLUMNS, empty_ptree);
+      }
+      // columnsId
+      if (constraint.find(Constraint::COLUMNS_ID) == constraint.not_found()) {
+        constraint.add_child(Constraint::COLUMNS_ID, empty_ptree);
+      }
+    }
+  } else {
+    tmp_table.add_child(Tables::CONSTRAINTS_NODE, empty_ptree);
+  }
+
   // Add new element.
   ptree node = container->get_child(TablesDAO::TABLES_NODE);
 
@@ -136,10 +159,9 @@ ErrorCode TablesDAO::insert_table_metadata(
 
 /**
  * @brief Get metadata object from a metadata table file.
- * @param (object_key)     [in]  key. column name of a table metadata table.
- * @param (object_value)   [in]  value to be filtered.
- * @param (table_metadata) [out] table metadata to get,
- *   where the given key equals the given value.
+ * @param object_key      [in]  key. column name of a table metadata table.
+ * @param object_value    [in]  value to be filtered.
+ * @param table_metadata  [out] table metadata to get, where the given key equals the given value.
  * @retval ErrorCode::OK if success,
  * @retval ErrorCode::ID_NOT_FOUND if the table id does not exist.
  * @retval ErrorCode::NAME_NOT_FOUND if the table name does not exist.
@@ -178,7 +200,7 @@ ErrorCode TablesDAO::select_table_metadata(
 /**
  * @brief Get all metadata objects from a metadata table file.
  *   If the table metadata does not exist, return the container as empty.
- * @param (table_container)  [out] all table metadata.
+ * @param table_container  [out] all table metadata.
  * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode TablesDAO::select_table_metadata(
@@ -203,10 +225,10 @@ ErrorCode TablesDAO::select_table_metadata(
 }
 
 /**
- * @brief Executes an UPDATE statement to update the table metadata table with
- *   the specified table metadata.
- * @param (table_id)       [in]  table id.
- * @param (table_metadata) [in]  table metadata object to be updated.
+ * @brief Executes an UPDATE statement to update the table metadata table with the specified
+ *   table metadata.
+ * @param table_id        [in]  table id.
+ * @param table_metadata  [in]  table metadata object to be updated.
  * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode TablesDAO::update_table_metadata(
@@ -264,6 +286,26 @@ ErrorCode TablesDAO::update_table_metadata(
     column.put(Tables::Column::TABLE_ID, table_id);
   }
 
+  // constraint metadata
+  BOOST_FOREACH (ptree::value_type& node, tmp_table.get_child(Tables::CONSTRAINTS_NODE)) {
+    ptree& constraint           = node.second;
+    ObjectIdType constraints_id = 0;
+
+    auto optional_constraints_id = constraint.get_optional<ObjectIdType>(Constraint::ID);
+    if (optional_constraints_id) {
+      // Set the specified object ID to the metadata object to be added.
+      constraints_id = optional_constraints_id.value();
+      object_id->update(OID_KEY_NAME_CONSTRAINT, constraints_id);
+    } else {
+      // Generate the object ID of the metadata object to be added.
+      constraints_id = object_id->generate(OID_KEY_NAME_CONSTRAINT);
+    }
+
+    // Add or update constraint and table IDs.
+    constraint.put(Constraint::ID, constraints_id);
+    constraint.put(Constraint::TABLE_ID, table_id);
+  }
+
   // Add new element.
   ptree node = container->get_child(TablesDAO::TABLES_NODE);
 
@@ -277,9 +319,9 @@ ErrorCode TablesDAO::update_table_metadata(
 
 /**
  * @brief Delete a metadata object from a metadata table file.
- * @param (object_key)    [in]  key. column name of a table metadata table.
- * @param (object_value)  [in]  value to be filtered.
- * @param (table_id)      [out]  table id of the row deleted.
+ * @param object_key    [in]  key. column name of a table metadata table.
+ * @param object_value  [in]  value to be filtered.
+ * @param table_id      [out]  table id of the row deleted.
  * @retval ErrorCode::OK if success.
  * @retval ErrorCode::ID_NOT_FOUND if the table id does not exist.
  * @retval ErrorCode::NAME_NOT_FOUND if the table name does not exist.
@@ -312,10 +354,10 @@ ErrorCode TablesDAO::delete_table_metadata(std::string_view object_key,
 
 /**
  * @brief Get metadata-object.
- * @param (container)      [in]  metadata container.
- * @param (object_key)     [in]  key. column name of a table metadata table.
- * @param (object_value)   [in]  value to be filtered.
- * @param (table_metadata) [out] metadata-object with the specified name.
+ * @param container       [in]  metadata container.
+ * @param object_key      [in]  key. column name of a table metadata table.
+ * @param object_value    [in]  value to be filtered.
+ * @param table_metadata  [out] metadata-object with the specified name.
  * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode TablesDAO::get_metadata_object(
@@ -346,10 +388,10 @@ ErrorCode TablesDAO::get_metadata_object(
 
 /**
  * @brief Delete a metadata object from a metadata table file.
- * @param (container)    [in/out] metadata container.
- * @param (object_key)   [in]     key. column name of a table metadata table.
- * @param (object_value) [in]     value to be filtered.
- * @param (table_id)     [out]    table id of the row deleted.
+ * @param container     [in/out] metadata container.
+ * @param object_key    [in]     key. column name of a table metadata table.
+ * @param object_value  [in]     value to be filtered.
+ * @param table_id      [out]    table id of the row deleted.
  * @retval ErrorCode::OK if success.
  * @retval ErrorCode::ID_NOT_FOUND if the table id does not exist.
  * @retval ErrorCode::NAME_NOT_FOUND if the table name does not exist.

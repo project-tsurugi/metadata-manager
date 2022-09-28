@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 tsurugi project.
+ * Copyright 2020-2022 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,71 +21,73 @@
 #include <vector>
 
 #include <boost/property_tree/ptree.hpp>
+
 #include "manager/metadata/error_code.h"
 
 namespace manager::metadata {
 
-using FormatVersion = std::int32_t;
+using FormatVersion     = std::int32_t;
 using FormatVersionType = FormatVersion;
-using Generation = std::int64_t;
-using GenerationType = Generation;
-using ObjectId = std::int64_t;
-using ObjectIdType = ObjectId;
+using Generation        = std::int64_t;
+using GenerationType    = Generation;
+using ObjectId          = std::int64_t;
+using ObjectIdType      = ObjectId;
 
 static constexpr const ObjectId INVALID_OBJECT_ID = -1;
-static constexpr const int64_t INVALID_VALUE = -1;
+static constexpr const int64_t INVALID_VALUE      = -1;
 
 struct ObjectInterfaces {
-  virtual boost::property_tree::ptree convert_to_ptree() const = 0;
+  virtual boost::property_tree::ptree convert_to_ptree() const              = 0;
   virtual void convert_from_ptree(const boost::property_tree::ptree& ptree) = 0;
 };
 
 /**
- * @brief 
+ * @brief
  */
 struct Object : public ObjectInterfaces {
-  int64_t format_version; // format version of metadata table schema.
-  int64_t generation;
-  int64_t id;             // object ID.
-  std::string name;       // object name.
+  FormatVersion format_version;  //!< @brief format version of metadata table schema.
+  Generation generation;         //!< @brief generation.
+  ObjectId id;                   //!< @brief object ID.
+  std::string name;              //!< @brief object name.
 
-  static constexpr const char* FORMAT_VERSION = "formatVersion";
-  static constexpr const char* GENERATION     = "generation";
-  static constexpr const char* ID             = "id";
-  static constexpr const char* NAME           = "name";
+  /**
+   * @brief Field name constant indicating the format version of the metadata.
+   */
+  static constexpr const char* const FORMAT_VERSION = "formatVersion";
+  /**
+   * @brief Field name constant indicating the generation of the metadata.
+   */
+  static constexpr const char* const GENERATION = "generation";
+  /**
+   * @brief Field name constant indicating the object id of the metadata.
+   */
+  static constexpr const char* const ID = "id";
+  /**
+   * @brief Field name constant indicating the object name of the metadata.
+   */
+  static constexpr const char* const NAME = "name";
 
-  Object()
-      : format_version(1), 
-        generation(1), 
-        id(INVALID_OBJECT_ID), 
-        name("") {}
-  explicit Object(const boost::property_tree::ptree& ptree) {
-    this->convert_from_ptree(ptree);
-  }
+  Object() : format_version(1), generation(1), id(INVALID_OBJECT_ID), name("") {}
+  explicit Object(const boost::property_tree::ptree& ptree) { this->convert_from_ptree(ptree); }
 
   boost::property_tree::ptree convert_to_ptree() const override;
   void convert_from_ptree(const boost::property_tree::ptree& ptree) override;
 };
 
 /**
- * @brief Class object is a general object such as table.  
- * e.g.) table, index, view, materialized-view, etc...
+ * @brief Class object is a general object such as table.
+ *   e.g.) table, index, view, materialized-view, etc...
  */
 struct ClassObject : public Object {
   std::string database_name;  // 1st namespace of full qualified object name.
   std::string schema_name;    // 2nd namespace of full qualified object name.
   std::string acl;            // access control list.
 
-  static constexpr const char* const DATABASE_NAME  = "databaseName";
-  static constexpr const char* const SCHEMA_NAME    = "schemaName";
-  static constexpr const char* const ACL            = "acl";
+  static constexpr const char* const DATABASE_NAME = "databaseName";
+  static constexpr const char* const SCHEMA_NAME   = "schemaName";
+  static constexpr const char* const ACL           = "acl";
 
-  ClassObject()
-      : Object(),
-        database_name(""),
-        schema_name(""),
-        acl("") 
-      {}
+  ClassObject() : Object(), database_name(""), schema_name(""), acl("") {}
 
   /** @brief  Transform metadata from structure object to ptree object.
    *  @return ptree object.
@@ -98,9 +100,7 @@ struct ClassObject : public Object {
    * e.g. database.schema.table
    * @return a full qualified object name.
    */
-  std::string get_fullname() {
-    return database_name + '.' + schema_name + '.' + this->name;
-  }
+  std::string get_fullname() { return database_name + '.' + schema_name + '.' + this->name; }
 };
 
 /**
@@ -164,8 +164,7 @@ class Metadata {
    *   load latest generation if NOT provided.
    * @return ErrorCode::OK if success, otherwise an error code.
    */
-  static ErrorCode load(std::string_view database,
-                        boost::property_tree::ptree& object,
+  static ErrorCode load(std::string_view database, boost::property_tree::ptree& object,
                         const GenerationType generation = kLatestVersion);
 
   /**
@@ -181,8 +180,7 @@ class Metadata {
    * @param object_id [out] ID of the added metadata-object.
    * @return ErrorCode::OK if success, otherwise an error code.
    */
-  virtual ErrorCode add(const boost::property_tree::ptree& object,
-                        ObjectId* object_id) const = 0;
+  virtual ErrorCode add(const boost::property_tree::ptree& object, ObjectId* object_id) const = 0;
 
   /**
    * @brief Get metadata-object.
@@ -190,8 +188,7 @@ class Metadata {
    * @param object    [out] metadata-object with the specified ID.
    * @return ErrorCode::OK if success, otherwise an error code.
    */
-  virtual ErrorCode get(const ObjectId object_id,
-                        boost::property_tree::ptree& object) const = 0;
+  virtual ErrorCode get(const ObjectId object_id, boost::property_tree::ptree& object) const = 0;
 
   /**
    * @brief  Get metadata-object.
@@ -207,8 +204,7 @@ class Metadata {
    * @param container [out] Container for metadata-objects.
    * @return ErrorCode::OK if success, otherwise an error code.
    */
-  virtual ErrorCode get_all(
-      std::vector<boost::property_tree::ptree>& container) const = 0;
+  virtual ErrorCode get_all(std::vector<boost::property_tree::ptree>& container) const = 0;
 
   /**
    * @brief Update metadata-table with metadata-object.
@@ -232,16 +228,14 @@ class Metadata {
    * @param object_id   [out] ID of the added metadata-object.
    * @return ErrorCode::OK if success, otherwise an error code.
    */
-  virtual ErrorCode remove(std::string_view object_name,
-                           ObjectId* object_id) const = 0;
+  virtual ErrorCode remove(std::string_view object_name, ObjectId* object_id) const = 0;
 
   /**
    *  @brief  Check if the object with the specified object ID exists.
    *  @param  object_id   [in]  object ID of metadata object.
    *  @return true if success.
    */
-  bool exists(const ObjectIdType object_id) const
-  {
+  bool exists(const ObjectIdType object_id) const {
     boost::property_tree::ptree object;
     ErrorCode error = this->get(object_id, object);
     return (error == ErrorCode::OK) ? true : false;
@@ -252,22 +246,21 @@ class Metadata {
    *  @param  name   [in]  name of metadata.
    *  @return true if success.
    */
-  bool exists(std::string_view object_name) const
-  {
+  bool exists(std::string_view object_name) const {
     boost::property_tree::ptree object;
     ErrorCode error = this->get(object_name, object);
     return (error == ErrorCode::OK) ? true : false;
   }
 
-  Metadata(const Metadata&) = delete;
+  Metadata(const Metadata&)            = delete;
   Metadata& operator=(const Metadata&) = delete;
 
  protected:
   static constexpr const char* const kDefaultComponent = "visitor";
-  static const GenerationType kLatestVersion = 0;
+  static const GenerationType kLatestVersion           = 0;
 
  private:
-  static constexpr GenerationType kGeneration = 1;
+  static constexpr GenerationType kGeneration       = 1;
   static constexpr FormatVersionType kFormatVersion = 1;
 
   std::string database_;

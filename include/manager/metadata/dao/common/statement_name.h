@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 tsurugi project.
+ * Copyright 2020-2022 tsurugi project.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,6 +40,9 @@ enum class StatementName {
   COLUMNS_DAO_INSERT_ONE_COLUMN_METADATA_ID,
   COLUMNS_DAO_SELECT_ALL_COLUMN_METADATA,
   COLUMNS_DAO_DELETE_ALL_COLUMN_METADATA,
+  CONSTRAINTS_DAO_INSERT_CONSTRAINTS_METADATA,
+  CONSTRAINTS_DAO_INSERT_CONSTRAINTS_METADATA_ID,
+  CONSTRAINTS_DAO_SELECT_ALL_CONSTRAINTS_METADATA,
   ROLES_DAO_SELECT,
   PRIVILEGES_DAO_SELECT,
   PRIVILEGES_DAO_CHECK_EXISTS,

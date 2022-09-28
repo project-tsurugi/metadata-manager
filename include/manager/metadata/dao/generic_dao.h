@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 tsurugi project.
+ * Copyright 2020-2022 tsurugi project.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ class GenericDAO {
     TABLES,
     DATATYPES,
     COLUMNS,
+    CONSTRAINTS,
     ROLES,
     PRIVILEGES
   };

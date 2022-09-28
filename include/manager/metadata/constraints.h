@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2022 tsurugi project.
+ * Copyright 2022 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,27 +13,70 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#pragma once
+#ifndef MANAGER_METADATA_CONSTRAINTS_H_
+#define MANAGER_METADATA_CONSTRAINTS_H_
 
-#include <vector>
 #include <string>
-#include "metadata.h"
+#include <vector>
+
+#include "manager/metadata/metadata.h"
 
 namespace manager::metadata {
+
 /**
  * @brief Constraint metadata object.
  */
 struct Constraint : public Object {
-  Constraint() {
-    namespace_name = "";
-  }
-  std::string           namespace_name;
-  int64_t               type;
-  int64_t               table_id;
-  int64_t               constraint_id;
-  std::vector<int64_t>  keys;
-  std::vector<ObjectId> keys_id;
-  std::string           expression;
+  /**
+   * @brief Field name constant indicating the table id of the metadata.
+   */
+  static constexpr const char* const TABLE_ID = "tableId";
+  /**
+   * @brief Field name constant indicating the constraint TYPE of the
+   *   metadata.
+   */
+  static constexpr const char* const TYPE = "type";
+  /**
+   * @brief Field name constant indicating the list of column numbers subject to constraints.
+   */
+  static constexpr const char* const COLUMNS = "columns";
+  /**
+   * @brief Field name constant indicating the list of column IDs subject to constraints.
+   */
+  static constexpr const char* const COLUMNS_ID = "columnsId";
+  /**
+   * @brief Field name constant indicating the index ID.
+   */
+  static constexpr const char* const INDEX_ID = "indexId";
+  /**
+   * @brief Field name constant indicating the constraints with expressions (CHECK) of
+   *   the metadata.
+   */
+  static constexpr const char* const EXPRESSION = "expression";
+
+  /**
+   * @brief Represents the type of constraint.
+   */
+  enum class ConstraintType {
+    PRIMARY_KEY = 0,          //!< @brief Primary Key Constraints.
+    UNIQUE,                   //!< @brief Uniqueness Constraints.
+    CHECK,                    //!< @brief Check Constraints.
+    FOREIGN_KEY,              //!< @brief Foreign Key Constraints.
+    TRIGGER,                  //!< @brief Constraint Triggers. (Not supported)
+    EXCLUDE,                  //!< @brief Exclusive Constraints. (Not supported)
+    UNKNOWN = INVALID_VALUE,  //!< @brief Unknown Constraints.
+  };
+
+  Constraint() {}
+  ObjectId table_id;                 //!< @brief Table id of the metadata.
+  ConstraintType type;               //!< @brief Constraint TYPE of the metadata.
+  std::vector<int64_t> columns;      //!< @brief List of column numbers subject to constraints.
+  std::vector<ObjectId> columns_id;  //!< @brief Column IDs subject to constraints.
+  int64_t index_id;                  //!< @brief Index ID.
+  std::string expression;            //!< @brief Expression of constraint (CHECK).
+
+  boost::property_tree::ptree convert_to_ptree() const override;
+  void convert_from_ptree(const boost::property_tree::ptree& ptree) override;
 };
 
 /**
@@ -41,37 +84,36 @@ struct Constraint : public Object {
  */
 class Constraints : public Metadata {
  public:
-  explicit Constraints(std::string_view database)
-      : Constraints(database, kDefaultComponent) {}
+  explicit Constraints(std::string_view database) : Constraints(database, kDefaultComponent) {}
   Constraints(std::string_view database, std::string_view component);
 
-  Constraints(const Constraints&) = delete;
+  Constraints(const Constraints&)            = delete;
   Constraints& operator=(const Constraints&) = delete;
 
   ErrorCode init() const override;
 
   ErrorCode add(const boost::property_tree::ptree& object) const override;
-  ErrorCode add(const boost::property_tree::ptree& object,
-                ObjectIdType* object_id) const override;
+  ErrorCode add(const boost::property_tree::ptree& object, ObjectId* object_id) const override;
 
-  ErrorCode get(const ObjectIdType object_id,
-                boost::property_tree::ptree& object) const override;
-  ErrorCode get(std::string_view object_name,
-                boost::property_tree::ptree& object) const override;
-  ErrorCode get_all(
-      std::vector<boost::property_tree::ptree>& container) const override;
+  ErrorCode get(const ObjectId object_id, boost::property_tree::ptree& object) const override;
+  ErrorCode get(std::string_view object_name, boost::property_tree::ptree& object) const override;
+  ErrorCode get_all(std::vector<boost::property_tree::ptree>& container) const override;
 
-  ErrorCode remove(const ObjectIdType object_id) const override;
-  ErrorCode remove(std::string_view object_name,
-                   ObjectIdType* object_id) const override;
+  ErrorCode remove(const ObjectId object_id) const override;
+  ErrorCode remove(std::string_view object_name, ObjectId* object_id) const override;
 
   ErrorCode add(const manager::metadata::Constraint& constraint) const;
-  ErrorCode add(const manager::metadata::Constraint& constraint,
-                ObjectIdType* object_id) const;
-  
-  ErrorCode get(const ObjectIdType object_id,
-                manager::metadata::Constraint& constraint) const; 
-  ErrorCode get_all(
-      std::vector<manager::metadata::Constraint>& container) const;
+  ErrorCode add(const manager::metadata::Constraint& constraint, ObjectId* object_id) const;
+
+  ErrorCode get(const ObjectId object_id, manager::metadata::Constraint& constraint) const;
+  ErrorCode get(std::string_view object_name, manager::metadata::Constraint& constraint) const;
+  ErrorCode get_all(std::vector<manager::metadata::Constraint>& container) const;
+
+ private:
+  manager::metadata::ErrorCode param_check_metadata_add(
+      const boost::property_tree::ptree& object) const;
 };
-} // namespace manager::metadata
+
+}  // namespace manager::metadata
+
+#endif  // MANAGER_METADATA_CONSTRAINTS_H_

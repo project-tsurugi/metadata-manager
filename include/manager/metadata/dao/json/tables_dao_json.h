@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 tsurugi project.
+ * Copyright 2020-2022 tsurugi project.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,14 +30,12 @@ namespace manager::metadata::db::json {
 
 class TablesDAO : public manager::metadata::db::TablesDAO {
  public:
-  explicit TablesDAO(DBSessionManager* session_manager)
-      : session_manager_(session_manager) {}
+  explicit TablesDAO(DBSessionManager* session_manager) : session_manager_(session_manager) {}
 
   manager::metadata::ErrorCode prepare() const override;
 
   manager::metadata::ErrorCode insert_table_metadata(
-      const boost::property_tree::ptree& table_metadata,
-      ObjectIdType& table_id) const override;
+      const boost::property_tree::ptree& table_metadata, ObjectIdType& table_id) const override;
 
   manager::metadata::ErrorCode select_table_metadata(
       std::string_view object_key, std::string_view object_value,
@@ -50,16 +48,15 @@ class TablesDAO : public manager::metadata::db::TablesDAO {
       const boost::property_tree::ptree& table_metadata) const override;
 
   manager::metadata::ErrorCode update_reltuples(
-      [[maybe_unused]] const float reltuples,
-      [[maybe_unused]] std::string_view object_key,
+      [[maybe_unused]] const float reltuples, [[maybe_unused]] std::string_view object_key,
       [[maybe_unused]] std::string_view object_value,
       [[maybe_unused]] ObjectIdType& table_id) const override {
     return ErrorCode::NOT_SUPPORTED;
   }
 
-  manager::metadata::ErrorCode delete_table_metadata(
-      std::string_view object_key, std::string_view object_value,
-      ObjectIdType& table_id) const override;
+  manager::metadata::ErrorCode delete_table_metadata(std::string_view object_key,
+                                                     std::string_view object_value,
+                                                     ObjectIdType& table_id) const override;
 
  private:
   // root node.
@@ -70,16 +67,18 @@ class TablesDAO : public manager::metadata::db::TablesDAO {
   static constexpr const char* const OID_KEY_NAME_TABLE = "tables";
   // Object ID key name for column ID.
   static constexpr const char* const OID_KEY_NAME_COLUMN = "column";
+  // Object ID key name for constraint ID.
+  static constexpr const char* const OID_KEY_NAME_CONSTRAINT = "constraint";
 
   DBSessionManager* session_manager_;
 
   manager::metadata::ErrorCode get_metadata_object(
-      const boost::property_tree::ptree& container,
-      std::string_view object_key, std::string_view object_value,
-      boost::property_tree::ptree& table_metadata) const;
-  manager::metadata::ErrorCode delete_metadata_object(
-      boost::property_tree::ptree& container, std::string_view object_key,
-      std::string_view object_value, ObjectIdType* table_id) const;
+      const boost::property_tree::ptree& container, std::string_view object_key,
+      std::string_view object_value, boost::property_tree::ptree& table_metadata) const;
+  manager::metadata::ErrorCode delete_metadata_object(boost::property_tree::ptree& container,
+                                                      std::string_view object_key,
+                                                      std::string_view object_value,
+                                                      ObjectIdType* table_id) const;
 };  // class TablesDAO
 
 }  // namespace manager::metadata::db::json

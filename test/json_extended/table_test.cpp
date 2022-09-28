@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 tsurugi project.
+ * Copyright 2020-2022 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,6 +32,7 @@
 
 using boost::property_tree::ptree;
 using boost::property_tree::ptree_error;
+using manager::metadata::Constraint;
 using manager::metadata::DataTypes;
 using manager::metadata::ErrorCode;
 using manager::metadata::ObjectIdType;
@@ -41,16 +42,21 @@ using manager::metadata::db::json::ObjectId;
 const char* const TEST_DB = "test_DB";
 
 std::vector<std::pair<ObjectIdType, std::string>> datatypes_list = {
-    {4, "INT32"},   {6, "INT64"}, {8, "FLOAT32"},
-    {9, "FLOAT64"}, {13, "CHAR"}, {14, "VARCHAR"}};
+    { 4,   "INT32"},
+    { 6,   "INT64"},
+    { 8, "FLOAT32"},
+    { 9, "FLOAT64"},
+    {13,    "CHAR"},
+    {14, "VARCHAR"}
+};
 
 /*
  * @brief print error code and line number.
  */
 void print_error(ErrorCode error, const char* file, uint64_t line) {
   std::cout << std::endl
-            << "error occurred at " << file << ":" << line
-            << ", errorno: " << (uint64_t)error << std::endl;
+            << "error occurred at " << file << ":" << line << ", errorno: " << (uint64_t)error
+            << std::endl;
 }
 
 /*
@@ -60,7 +66,7 @@ const std::string get_table_name() {
   auto oid_manager = std::make_unique<ObjectId>();
 
   ObjectIdType number = oid_manager->current("tables") + 1;
-  std::string name = "table_" + std::to_string(number);
+  std::string name    = "table_" + std::to_string(number);
 
   return name;
 }
@@ -69,8 +75,7 @@ const std::string get_table_name() {
  *  @brief Output for object.
  */
 template <typename T>
-ErrorCode check_object(std::string_view key, bool required,
-                       const ptree& object) {
+ErrorCode check_object(std::string_view key, bool required, const ptree& object) {
   ErrorCode error = ErrorCode::OK;
 
   boost::optional<T> optional_object = object.get_optional<T>(key.data());
@@ -95,12 +100,14 @@ ErrorCode check_object(std::string_view key, bool required,
  *  @brief Output for difference.
  */
 template <typename T>
-ErrorCode output_object_diff(std::string_view key, const ptree& before,
-                             const ptree& after) {
+ErrorCode output_object_diff(std::string_view key, const ptree& before, const ptree& after) {
   ErrorCode error = ErrorCode::OK;
 
+  std::ios::fmtflags original_flags = std::cout.flags();
+  std::cout.fill(' ');
+
   boost::optional<T> optional_before = before.get_optional<T>(key.data());
-  boost::optional<T> optional_after = after.get_optional<T>(key.data());
+  boost::optional<T> optional_after  = after.get_optional<T>(key.data());
 
   std::cout << " " << std::right << std::setw(10) << key.substr(0, 10) << ": ";
   if (optional_before) {
@@ -116,66 +123,23 @@ ErrorCode output_object_diff(std::string_view key, const ptree& before,
   }
   std::cout << std::endl;
 
+  std::cout.flags(original_flags);
+
   return error;
 }
 
 /**
- *  @brief display table-metadata-object.
+ *  @brief display columns-metadata-object.
  */
-ErrorCode display_table_metadata_object(const ptree& table) {
+ErrorCode display_columns_metadata_object(const ptree& table) {
   ErrorCode error = ErrorCode::OK;
 
-  auto datatypes = std::make_unique<DataTypes>(TEST_DB);
-  ptree datatype;
-
-  // table metadata
-  std::cout << "--- table metadata ---" << std::endl;
-
-  // id
-  error = check_object<ObjectIdType>(Tables::ID, true, table);
-  if (error != ErrorCode::OK) {
-    ERROR(error);
-    return error;
-  }
-
-  // name
-  error = check_object<std::string>(Tables::NAME, true, table);
-  if (error != ErrorCode::OK) {
-    ERROR(error);
-    return error;
-  }
-
-  // namespace
-  error = check_object<std::string>(Tables::NAMESPACE, false, table);
-  if (error != ErrorCode::OK) {
-    ERROR(error);
-    return error;
-  }
-
-  // primaryKey
-  ptree primary_keys = table.get_child(Tables::PRIMARY_KEY_NODE);
-  std::string primary_keys_string;
-  std::for_each(primary_keys.begin(), primary_keys.end(),
-                [&primary_keys_string](ptree::value_type v) mutable {
-                  primary_keys_string =
-                      primary_keys_string +
-                      (primary_keys_string.empty() ? "" : ",") +
-                      v.second.data();
-                });
-  std::cout << " " << std::right << std::setw(10) << Tables::PRIMARY_KEY_NODE
-            << ": [" << primary_keys_string << "]" << std::endl;
-
-  // tuples
-  error = check_object<ObjectIdType>(Tables::TUPLES, false, table);
-  if (error != ErrorCode::OK) {
-    ERROR(error);
-    return error;
-  }
+  std::ios::fmtflags original_flags = std::cout.flags();
+  std::cout.fill(' ');
 
   // column metadata
   std::cout << "--- columns metadata ---" << std::endl;
-  BOOST_FOREACH (const ptree::value_type& node,
-                 table.get_child(Tables::COLUMNS_NODE)) {
+  BOOST_FOREACH (const ptree::value_type& node, table.get_child(Tables::COLUMNS_NODE)) {
     const ptree& column = node.second;
 
     // id
@@ -193,16 +157,14 @@ ErrorCode display_table_metadata_object(const ptree& table) {
     }
 
     // ordinalPosition
-    error =
-        check_object<uint64_t>(Tables::Column::ORDINAL_POSITION, true, column);
+    error = check_object<uint64_t>(Tables::Column::ORDINAL_POSITION, true, column);
     if (error != ErrorCode::OK) {
       ERROR(error);
       return error;
     }
 
     // dataTypeId
-    error =
-        check_object<ObjectIdType>(Tables::Column::DATA_TYPE_ID, true, column);
+    error = check_object<ObjectIdType>(Tables::Column::DATA_TYPE_ID, true, column);
     if (error != ErrorCode::OK) {
       ERROR(error);
       return error;
@@ -245,6 +207,90 @@ ErrorCode display_table_metadata_object(const ptree& table) {
 
     std::cout << "  ------------------" << std::endl;
   }
+  std::cout.flags(original_flags);
+
+  return ErrorCode::OK;
+}
+
+/**
+ *  @brief display constraints-metadata-object.
+ */
+ErrorCode display_constraint_metadata_object(const ptree& table) {
+  ErrorCode error = ErrorCode::OK;
+
+  std::ios::fmtflags original_flags = std::cout.flags();
+  std::cout.fill(' ');
+
+  // column metadata
+  std::cout << "--- constraints metadata ---" << std::endl;
+  BOOST_FOREACH (const ptree::value_type& node, table.get_child(Tables::CONSTRAINTS_NODE)) {
+    const ptree& constraint = node.second;
+
+    // id
+    error = check_object<ObjectIdType>(Constraint::ID, true, constraint);
+    if (error != ErrorCode::OK) {
+      ERROR(error);
+      return error;
+    }
+
+    // name
+    error = check_object<std::string>(Constraint::NAME, false, constraint);
+    if (error != ErrorCode::OK) {
+      ERROR(error);
+      return error;
+    }
+
+    // tableId
+    error = check_object<ObjectIdType>(Constraint::TABLE_ID, true, constraint);
+    if (error != ErrorCode::OK) {
+      ERROR(error);
+      return error;
+    }
+
+    // type
+    error = check_object<int64_t>(Constraint::TYPE, true, constraint);
+    if (error != ErrorCode::OK) {
+      ERROR(error);
+      return error;
+    }
+
+    // columns
+    ptree columns = constraint.get_child(Constraint::COLUMNS);
+    std::string columns_string;
+    std::for_each(columns.begin(), columns.end(), [&columns_string](ptree::value_type v) mutable {
+      columns_string = columns_string + (columns_string.empty() ? "" : ",") + v.second.data();
+    });
+    std::cout << " " << std::right << std::setw(10) << Constraint::COLUMNS << ": ["
+              << columns_string << "]" << std::endl;
+
+    // columnsId
+    ptree columns_id = constraint.get_child(Constraint::COLUMNS_ID);
+    std::string columns_id_string;
+    std::for_each(
+        columns_id.begin(), columns_id.end(), [&columns_id_string](ptree::value_type v) mutable {
+          columns_id_string =
+              columns_id_string + (columns_id_string.empty() ? "" : ",") + v.second.data();
+        });
+    std::cout << " " << std::right << std::setw(10) << Constraint::COLUMNS_ID << ": ["
+              << columns_id_string << "]" << std::endl;
+
+    // indexId
+    error = check_object<int64_t>(Constraint::INDEX_ID, false, constraint);
+    if (error != ErrorCode::OK) {
+      ERROR(error);
+      return error;
+    }
+
+    // expression
+    error = check_object<std::string>(Constraint::EXPRESSION, false, constraint);
+    if (error != ErrorCode::OK) {
+      ERROR(error);
+      return error;
+    }
+
+    std::cout << "  ------------------" << std::endl;
+  }
+  std::cout.flags(original_flags);
 
   return ErrorCode::OK;
 }
@@ -252,9 +298,84 @@ ErrorCode display_table_metadata_object(const ptree& table) {
 /**
  *  @brief display table-metadata-object.
  */
-ErrorCode display_table_metadata_object(const ptree& before,
-                                        const ptree& after) {
+ErrorCode display_table_metadata_object(const ptree& table) {
   ErrorCode error = ErrorCode::OK;
+
+  std::ios::fmtflags original_flags = std::cout.flags();
+  std::cout.fill(' ');
+
+  auto datatypes = std::make_unique<DataTypes>(TEST_DB);
+  ptree datatype;
+
+  // table metadata
+  std::cout << "--- table metadata ---" << std::endl;
+
+  // id
+  error = check_object<ObjectIdType>(Tables::ID, true, table);
+  if (error != ErrorCode::OK) {
+    ERROR(error);
+    return error;
+  }
+
+  // name
+  error = check_object<std::string>(Tables::NAME, true, table);
+  if (error != ErrorCode::OK) {
+    ERROR(error);
+    return error;
+  }
+
+  // namespace
+  error = check_object<std::string>(Tables::NAMESPACE, false, table);
+  if (error != ErrorCode::OK) {
+    ERROR(error);
+    return error;
+  }
+
+  // primaryKey
+  ptree primary_keys = table.get_child(Tables::PRIMARY_KEY_NODE);
+  std::string primary_keys_string;
+  std::for_each(primary_keys.begin(), primary_keys.end(),
+                [&primary_keys_string](ptree::value_type v) mutable {
+                  primary_keys_string = primary_keys_string +
+                                        (primary_keys_string.empty() ? "" : ",") + v.second.data();
+                });
+  std::cout << " " << std::right << std::setw(10) << Tables::PRIMARY_KEY_NODE << ": ["
+            << primary_keys_string << "]" << std::endl;
+
+  // tuples
+  error = check_object<ObjectIdType>(Tables::TUPLES, false, table);
+  if (error != ErrorCode::OK) {
+    ERROR(error);
+    return error;
+  }
+
+  // columns node.
+  error = display_columns_metadata_object(table);
+  if (error != ErrorCode::OK) {
+    ERROR(error);
+    return error;
+  }
+
+  // constraint node.
+  error = display_constraint_metadata_object(table);
+  if (error != ErrorCode::OK) {
+    ERROR(error);
+    return error;
+  }
+
+  std::cout.flags(original_flags);
+
+  return ErrorCode::OK;
+}
+
+/**
+ *  @brief display table-metadata-object.
+ */
+ErrorCode display_table_metadata_object(const ptree& before, const ptree& after) {
+  ErrorCode error = ErrorCode::OK;
+
+  std::ios::fmtflags original_flags = std::cout.flags();
+  std::cout.fill(' ');
 
   auto datatypes = std::make_unique<DataTypes>(TEST_DB);
   ptree datatype;
@@ -283,25 +404,21 @@ ErrorCode display_table_metadata_object(const ptree& before,
 
   // primaryKey
   ptree pk_node_before = before.get_child(Tables::PRIMARY_KEY_NODE);
-  ptree pk_node_after = after.get_child(Tables::PRIMARY_KEY_NODE);
+  ptree pk_node_after  = after.get_child(Tables::PRIMARY_KEY_NODE);
   std::string primary_keys_before;
   std::for_each(pk_node_before.begin(), pk_node_before.end(),
                 [&primary_keys_before](ptree::value_type v) mutable {
-                  primary_keys_before =
-                      primary_keys_before +
-                      (primary_keys_before.empty() ? "" : ",") +
-                      v.second.data();
+                  primary_keys_before = primary_keys_before +
+                                        (primary_keys_before.empty() ? "" : ",") + v.second.data();
                 });
   std::string primary_keys_after;
   std::for_each(pk_node_after.begin(), pk_node_after.end(),
                 [&primary_keys_after](ptree::value_type v) mutable {
                   primary_keys_after = primary_keys_after +
-                                       (primary_keys_after.empty() ? "" : ",") +
-                                       v.second.data();
+                                       (primary_keys_after.empty() ? "" : ",") + v.second.data();
                 });
-  std::cout << " " << std::right << std::setw(10) << Tables::PRIMARY_KEY_NODE
-            << ": [" << primary_keys_before << "] --> [" << primary_keys_after
-            << "]" << std::endl;
+  std::cout << " " << std::right << std::setw(10) << Tables::PRIMARY_KEY_NODE << ": ["
+            << primary_keys_before << "] --> [" << primary_keys_after << "]" << std::endl;
 
   // tuples
   output_object_diff<float>(Tables::TUPLES, before, after);
@@ -310,9 +427,9 @@ ErrorCode display_table_metadata_object(const ptree& before,
 
   // column metadata
   auto columns_node_before = before.get_child(Tables::COLUMNS_NODE);
-  auto columns_node_after = after.get_child(Tables::COLUMNS_NODE);
-  auto columns_before = columns_node_before.begin();
-  auto columns_after = columns_node_after.begin();
+  auto columns_node_after  = after.get_child(Tables::COLUMNS_NODE);
+  auto columns_before      = columns_node_before.begin();
+  auto columns_after       = columns_node_after.begin();
 
   // Inspection to see if the required fields are set.
   const std::vector<std::string> required_keys = {
@@ -324,8 +441,7 @@ ErrorCode display_table_metadata_object(const ptree& before,
 
     for (std::string key : required_keys) {
       if (column.find(key) == column.not_found()) {
-        std::cout << "Required fields are not set: \"" << key << "\""
-                  << std::endl;
+        std::cout << "Required fields are not set: \"" << key << "\"" << std::endl;
         error = ErrorCode::NOT_FOUND;
         ERROR(error);
         return error;
@@ -334,20 +450,17 @@ ErrorCode display_table_metadata_object(const ptree& before,
   }
 
   // before-metadata loop.
-  for (auto it_before = columns_node_before.begin();
-       it_before != columns_node_before.end(); it_before++) {
+  for (auto it_before = columns_node_before.begin(); it_before != columns_node_before.end();
+       it_before++) {
     boost::optional<manager::metadata::ObjectIdType> opt_id_before;
-    auto before_id =
-        it_before->second.get_optional<ObjectIdType>(Tables::Column::ID)
-            .value();
+    auto before_id = it_before->second.get_optional<ObjectIdType>(Tables::Column::ID).value();
 
     ptree temp_after;
     temp_after.clear();
     // Extract updated metadata.
-    for (auto it_after = columns_node_after.begin();
-         it_after != columns_node_after.end(); it_after++) {
-      auto opt_id_after =
-          it_after->second.get_optional<ObjectIdType>(Tables::Column::ID);
+    for (auto it_after = columns_node_after.begin(); it_after != columns_node_after.end();
+         it_after++) {
+      auto opt_id_after = it_after->second.get_optional<ObjectIdType>(Tables::Column::ID);
       if (opt_id_after && (opt_id_after.value() == before_id)) {
         temp_after = it_after->second;
         it_after->second.erase(Tables::Column::ID);
@@ -356,35 +469,25 @@ ErrorCode display_table_metadata_object(const ptree& before,
     }
 
     // id
-    output_object_diff<ObjectIdType>(Tables::Column::ID, it_before->second,
-                                     temp_after);
+    output_object_diff<ObjectIdType>(Tables::Column::ID, it_before->second, temp_after);
     // tableId
-    output_object_diff<ObjectIdType>(Tables::Column::TABLE_ID,
-                                     it_before->second, temp_after);
+    output_object_diff<ObjectIdType>(Tables::Column::TABLE_ID, it_before->second, temp_after);
     // name
-    output_object_diff<std::string>(Tables::Column::NAME, it_before->second,
-                                    temp_after);
+    output_object_diff<std::string>(Tables::Column::NAME, it_before->second, temp_after);
     // ordinalPosition
-    output_object_diff<uint64_t>(Tables::Column::ORDINAL_POSITION,
-                                 it_before->second, temp_after);
+    output_object_diff<uint64_t>(Tables::Column::ORDINAL_POSITION, it_before->second, temp_after);
     // dataTypeId
-    output_object_diff<ObjectIdType>(Tables::Column::DATA_TYPE_ID,
-                                     it_before->second, temp_after);
+    output_object_diff<ObjectIdType>(Tables::Column::DATA_TYPE_ID, it_before->second, temp_after);
     // dataLength
-    output_object_diff<uint64_t>(Tables::Column::DATA_LENGTH, it_before->second,
-                                 temp_after);
+    output_object_diff<uint64_t>(Tables::Column::DATA_LENGTH, it_before->second, temp_after);
     // varying
-    output_object_diff<bool>(Tables::Column::VARYING, it_before->second,
-                             temp_after);
+    output_object_diff<bool>(Tables::Column::VARYING, it_before->second, temp_after);
     // nullable
-    output_object_diff<bool>(Tables::Column::NULLABLE, it_before->second,
-                             temp_after);
+    output_object_diff<bool>(Tables::Column::NULLABLE, it_before->second, temp_after);
     // defaultExpr
-    output_object_diff<std::string>(Tables::Column::DEFAULT, it_before->second,
-                                    temp_after);
+    output_object_diff<std::string>(Tables::Column::DEFAULT, it_before->second, temp_after);
     // direction
-    output_object_diff<uint64_t>(Tables::Column::DIRECTION, it_before->second,
-                                 temp_after);
+    output_object_diff<uint64_t>(Tables::Column::DIRECTION, it_before->second, temp_after);
 
     std::cout << " ------------------" << std::endl;
   }
@@ -394,8 +497,7 @@ ErrorCode display_table_metadata_object(const ptree& before,
   BOOST_FOREACH (const ptree::value_type& node, columns_node_after) {
     const ptree& column = node.second;
 
-    auto optional_object =
-        column.get_optional<ObjectIdType>(Tables::Column::ID);
+    auto optional_object = column.get_optional<ObjectIdType>(Tables::Column::ID);
     if (optional_object) {
       // id
       output_object_diff<ObjectIdType>(Tables::Column::ID, dummy, column);
@@ -404,11 +506,9 @@ ErrorCode display_table_metadata_object(const ptree& before,
       // name
       output_object_diff<std::string>(Tables::Column::NAME, dummy, column);
       // ordinalPosition
-      output_object_diff<uint64_t>(Tables::Column::ORDINAL_POSITION, dummy,
-                                   column);
+      output_object_diff<uint64_t>(Tables::Column::ORDINAL_POSITION, dummy, column);
       // dataTypeId
-      output_object_diff<ObjectIdType>(Tables::Column::DATA_TYPE_ID, dummy,
-                                       column);
+      output_object_diff<ObjectIdType>(Tables::Column::DATA_TYPE_ID, dummy, column);
       // dataLength
       output_object_diff<uint64_t>(Tables::Column::DATA_LENGTH, dummy, column);
       // varying
@@ -423,6 +523,7 @@ ErrorCode display_table_metadata_object(const ptree& before,
       std::cout << " ------------------" << std::endl;
     }
   }
+  std::cout.flags(original_flags);
 
   return ErrorCode::OK;
 }
@@ -435,7 +536,7 @@ ErrorCode add_table_metadata() {
 
   ptree datatype_metadata;
   ptree new_table_metadata;
-  auto tables = std::make_unique<Tables>(TEST_DB);  // use Template-Method.
+  auto tables    = std::make_unique<Tables>(TEST_DB);  // use Template-Method.
   auto datatypes = std::make_unique<DataTypes>(TEST_DB);
 
   //
@@ -470,38 +571,31 @@ ErrorCode add_table_metadata() {
     // column #1
     column.clear();
     column.put(Tables::Column::NAME, column_name[0]);
-    column.put(Tables::Column::ORDINAL_POSITION,
-               static_cast<int>(ordinal_position::column_1));
-    datatypes->get(DataTypes::PG_DATA_TYPE_QUALIFIED_NAME, "float4",
-                   datatype_metadata);
-    ObjectIdType data_type_id =
-        datatype_metadata.get<ObjectIdType>(DataTypes::ID);
+    column.put(Tables::Column::ORDINAL_POSITION, static_cast<int>(ordinal_position::column_1));
+    datatypes->get(DataTypes::PG_DATA_TYPE_QUALIFIED_NAME, "float4", datatype_metadata);
+    ObjectIdType data_type_id = datatype_metadata.get<ObjectIdType>(DataTypes::ID);
     if (!data_type_id) {
       return ErrorCode::NOT_FOUND;
     } else {
-      if (DataTypes::DataTypesId::FLOAT32 !=
-          static_cast<DataTypes::DataTypesId>(data_type_id)) {
+      if (DataTypes::DataTypesId::FLOAT32 != static_cast<DataTypes::DataTypesId>(data_type_id)) {
         return ErrorCode::UNKNOWN;
       }
     }
     column.put<ObjectIdType>(Tables::Column::DATA_TYPE_ID, data_type_id);
     column.put<bool>(Tables::Column::NULLABLE, false);
-    column.put(Tables::Column::DIRECTION,
-               static_cast<int>(Tables::Column::Direction::ASCENDANT));
+    column.put(Tables::Column::DIRECTION, static_cast<int>(Tables::Column::Direction::ASCENDANT));
     columns_metadata.push_back(std::make_pair("", column));
 
     // column #2
     column.clear();
     column.put(Tables::Column::NAME, column_name[1]);
-    column.put(Tables::Column::ORDINAL_POSITION,
-               static_cast<int>(ordinal_position::column_2));
+    column.put(Tables::Column::ORDINAL_POSITION, static_cast<int>(ordinal_position::column_2));
     datatypes->get("VARCHAR", datatype_metadata);
     data_type_id = datatype_metadata.get<ObjectIdType>(DataTypes::ID);
     if (!data_type_id) {
       return ErrorCode::NOT_FOUND;
     } else {
-      if (DataTypes::DataTypesId::VARCHAR !=
-          static_cast<DataTypes::DataTypesId>(data_type_id)) {
+      if (DataTypes::DataTypesId::VARCHAR != static_cast<DataTypes::DataTypesId>(data_type_id)) {
         return ErrorCode::UNKNOWN;
       }
     }
@@ -509,22 +603,19 @@ ErrorCode add_table_metadata() {
     column.put<uint64_t>(Tables::Column::DATA_LENGTH, 8);
     column.put<bool>(Tables::Column::VARYING, true);
     column.put<bool>(Tables::Column::NULLABLE, false);
-    column.put(Tables::Column::DIRECTION,
-               static_cast<int>(Tables::Column::Direction::DEFAULT));
+    column.put(Tables::Column::DIRECTION, static_cast<int>(Tables::Column::Direction::DEFAULT));
     columns_metadata.push_back(std::make_pair("", column));
 
     // column #3
     column.clear();
     column.put(Tables::Column::NAME, column_name[2]);
-    column.put(Tables::Column::ORDINAL_POSITION,
-               static_cast<int>(ordinal_position::column_3));
+    column.put(Tables::Column::ORDINAL_POSITION, static_cast<int>(ordinal_position::column_3));
     datatypes->get("CHAR", datatype_metadata);
     data_type_id = datatype_metadata.get<ObjectIdType>(DataTypes::ID);
     if (!data_type_id) {
       return ErrorCode::NOT_FOUND;
     } else {
-      if (DataTypes::DataTypesId::CHAR !=
-          static_cast<DataTypes::DataTypesId>(data_type_id)) {
+      if (DataTypes::DataTypesId::CHAR != static_cast<DataTypes::DataTypesId>(data_type_id)) {
         return ErrorCode::UNKNOWN;
       }
     }
@@ -532,11 +623,55 @@ ErrorCode add_table_metadata() {
     column.put<uint64_t>(Tables::Column::DATA_LENGTH, 1);
     column.put<bool>(Tables::Column::VARYING, false);
     column.put<bool>(Tables::Column::NULLABLE, true);
-    column.put(Tables::Column::DIRECTION,
-               static_cast<int>(Tables::Column::Direction::DEFAULT));
+    column.put(Tables::Column::DIRECTION, static_cast<int>(Tables::Column::Direction::DEFAULT));
     columns_metadata.push_back(std::make_pair("", column));
   }
   new_table_metadata.add_child(Tables::COLUMNS_NODE, columns_metadata);
+
+  //
+  // constraints-metadata
+  //
+  ptree constraints;
+  {
+    // Set the value of the constraints to ptree.
+    ptree constraint;
+    ptree columns_num;
+    ptree columns_num_value;
+    ptree columns_id;
+    ptree columns_id_value;
+
+    constraint.put(Constraint::TYPE, static_cast<int32_t>(Constraint::ConstraintType::UNIQUE));
+    constraint.put(Constraint::NAME, "unique constraint");
+    // constraint.add_child(Constraint::COLUMNS, columns_num);
+    // constraint.add_child(Constraint::COLUMNS_ID, columns_id);
+    // constraints
+    constraints.push_back(std::make_pair("", constraint));
+
+    constraint.clear();
+    columns_num.clear();
+    columns_num_value.clear();
+    columns_id.clear();
+    columns_id_value.clear();
+    // type
+    constraint.put(Constraint::TYPE, static_cast<int32_t>(Constraint::ConstraintType::CHECK));
+    // columns
+    columns_num_value.put("", 1);
+    columns_num.push_back(std::make_pair("", columns_num_value));
+    columns_num_value.put("", 2);
+    columns_num.push_back(std::make_pair("", columns_num_value));
+    constraint.add_child(Constraint::COLUMNS, columns_num);
+    // columns id
+    columns_id_value.put("", 1234);
+    columns_id.push_back(std::make_pair("", columns_id_value));
+    columns_id_value.put("", 5678);
+    columns_id.push_back(std::make_pair("", columns_id_value));
+    constraint.add_child(Constraint::COLUMNS_ID, columns_id);
+    // expression
+    constraint.put(Constraint::EXPRESSION, "expression text");
+    // constraints
+    constraints.push_back(std::make_pair("", constraint));
+  }
+  new_table_metadata.add_child(Tables::CONSTRAINTS_NODE, constraints);
 
   //
   // add table-metadata object
@@ -568,9 +703,9 @@ ErrorCode test_tables_add_get() {
   }
 
   ptree table_metadata;
-  auto tables = std::make_unique<Tables>(TEST_DB);  // use Template-Method.
+  auto tables      = std::make_unique<Tables>(TEST_DB);  // use Template-Method.
   auto oid_manager = std::make_unique<ObjectId>();
-  auto table_id = oid_manager->current("tables");
+  auto table_id    = oid_manager->current("tables");
 
   std::string table_name = "table_" + std::to_string(table_id);
   if (error == ErrorCode::OK) {
@@ -614,8 +749,8 @@ ErrorCode test_tables_add_get() {
 ErrorCode test_tables_update() {
   ErrorCode error = ErrorCode::UNKNOWN;
 
-  auto tables = std::make_unique<Tables>(TEST_DB);  // use Template-Method.
-  auto datatypes = std::make_unique<DataTypes>(TEST_DB);
+  auto tables      = std::make_unique<Tables>(TEST_DB);  // use Template-Method.
+  auto datatypes   = std::make_unique<DataTypes>(TEST_DB);
   auto oid_manager = std::make_unique<ObjectId>();
 
   try {
@@ -641,16 +776,12 @@ ErrorCode test_tables_update() {
   if (error == ErrorCode::OK) {
     table_metadata = table_metadata_before;
 
-    auto optional_name =
-        table_metadata_before.get_optional<std::string>(Tables::NAME);
-    table_metadata.put(Tables::NAME,
-                       optional_name.value_or("unknown-name") + "-update");
+    auto optional_name = table_metadata_before.get_optional<std::string>(Tables::NAME);
+    table_metadata.put(Tables::NAME, optional_name.value_or("unknown-name") + "-update");
 
-    auto optional_namespace =
-        table_metadata_before.get_optional<std::string>(Tables::NAMESPACE);
-    table_metadata.put(
-        Tables::NAMESPACE,
-        optional_namespace.value_or("unknown-namespace") + "-update");
+    auto optional_namespace = table_metadata_before.get_optional<std::string>(Tables::NAMESPACE);
+    table_metadata.put(Tables::NAMESPACE,
+                       optional_namespace.value_or("unknown-namespace") + "-update");
 
     table_metadata.erase(Tables::PRIMARY_KEY_NODE);
     ptree primary_key;
@@ -659,8 +790,7 @@ ErrorCode test_tables_update() {
     primary_keys.push_back(std::make_pair("", primary_key));
     table_metadata.add_child(Tables::PRIMARY_KEY_NODE, primary_keys);
 
-    auto optional_tuples =
-        table_metadata_before.get_optional<float>(Tables::TUPLES);
+    auto optional_tuples = table_metadata_before.get_optional<float>(Tables::TUPLES);
     table_metadata.put(Tables::TUPLES, optional_tuples.value_or(-1.0f) + 1.23f);
 
     //
@@ -678,31 +808,26 @@ ErrorCode test_tables_update() {
       // 2 item update.
       column = (++it)->second;
       column.put(Tables::Column::NAME,
-                 it->second.get_optional<std::string>(Tables::Column::NAME)
-                         .value_or("unknown-1") +
+                 it->second.get_optional<std::string>(Tables::Column::NAME).value_or("unknown-1") +
                      "-update");
       column.put(Tables::Column::ORDINAL_POSITION, 1);
       datatypes->get("INT64", datatype);
-      column.put(Tables::Column::DATA_TYPE_ID,
-                 datatype.get<ObjectIdType>(DataTypes::ID));
+      column.put(Tables::Column::DATA_TYPE_ID, datatype.get<ObjectIdType>(DataTypes::ID));
       column.erase(Tables::Column::DATA_LENGTH);
       column.put<bool>(Tables::Column::VARYING, false);
       column.put<bool>(Tables::Column::NULLABLE, true);
       column.put(Tables::Column::DEFAULT, -1);
-      column.put(Tables::Column::DIRECTION,
-                 static_cast<int>(Tables::Column::Direction::ASCENDANT));
+      column.put(Tables::Column::DIRECTION, static_cast<int>(Tables::Column::Direction::ASCENDANT));
       columns.push_back(std::make_pair("", column));
 
       // 3 item update.
       column = (++it)->second;
       column.put(Tables::Column::NAME,
-                 it->second.get_optional<std::string>(Tables::Column::NAME)
-                         .value_or("unknown-2") +
+                 it->second.get_optional<std::string>(Tables::Column::NAME).value_or("unknown-2") +
                      "-update");
       column.put(Tables::Column::ORDINAL_POSITION, 2);
       datatypes->get("VARCHAR", datatype);
-      column.put(Tables::Column::DATA_TYPE_ID,
-                 datatype.get<ObjectIdType>(DataTypes::ID));
+      column.put(Tables::Column::DATA_TYPE_ID, datatype.get<ObjectIdType>(DataTypes::ID));
       column.put(Tables::Column::DATA_LENGTH, 123);
       column.put<bool>(Tables::Column::VARYING, true);
       column.put<bool>(Tables::Column::NULLABLE, false);
@@ -716,13 +841,11 @@ ErrorCode test_tables_update() {
       column.put(Tables::Column::NAME, "new-col");
       column.put(Tables::Column::ORDINAL_POSITION, 3);
       datatypes->get("INT32", datatype);
-      column.put(Tables::Column::DATA_TYPE_ID,
-                 datatype.get<ObjectIdType>(DataTypes::ID));
+      column.put(Tables::Column::DATA_TYPE_ID, datatype.get<ObjectIdType>(DataTypes::ID));
       column.put<bool>(Tables::Column::VARYING, false);
       column.put<bool>(Tables::Column::NULLABLE, false);
       column.put(Tables::Column::DEFAULT, 9999);
-      column.put(Tables::Column::DIRECTION,
-                 static_cast<int>(Tables::Column::Direction::DEFAULT));
+      column.put(Tables::Column::DIRECTION, static_cast<int>(Tables::Column::Direction::DEFAULT));
       columns.push_back(std::make_pair("", column));
     }
     table_metadata.add_child(Tables::COLUMNS_NODE, columns);
@@ -745,8 +868,7 @@ ErrorCode test_tables_update() {
   }
 
   if (error == ErrorCode::OK) {
-    error = display_table_metadata_object(table_metadata_before,
-                                          table_metadata_after);
+    error = display_table_metadata_object(table_metadata_before, table_metadata_after);
   }
 
   // Remove metadata used in testing.
@@ -759,7 +881,7 @@ ErrorCode test_tables_update() {
  *  @brief Test to remove a table-metadata to metadata-table.
  */
 ErrorCode tables_remove_test() {
-  ErrorCode error = ErrorCode::UNKNOWN;
+  ErrorCode error     = ErrorCode::UNKNOWN;
   int TABLE_NUM_ADDED = 4;
 
   for (int num = 0; num < TABLE_NUM_ADDED; num++) {
@@ -777,34 +899,30 @@ ErrorCode tables_remove_test() {
   //
   auto oid_manager = std::make_unique<ObjectId>();
 
-  ObjectIdType number = oid_manager->current("tables");
+  ObjectIdType number                  = oid_manager->current("tables");
   std::vector<std::string> table_names = {
-      "table_" + std::to_string(number - 3),
-      "table_" + std::to_string(number - 1),
-      "table_" + std::to_string(number - 0),
-      "table_" + std::to_string(number - 2)};
+      "table_" + std::to_string(number - 3), "table_" + std::to_string(number - 1),
+      "table_" + std::to_string(number - 0), "table_" + std::to_string(number - 2)};
 
   for (std::string name : table_names) {
     ObjectIdType object_id = 0;
-    error = tables->remove(name.c_str(), &object_id);
+    error                  = tables->remove(name.c_str(), &object_id);
     if (error != ErrorCode::OK) {
       ERROR(error);
       return error;
     } else {
-      std::cout << "remove table name :" << name << ", id:" << object_id
-                << std::endl;
+      std::cout << "remove table name :" << name << ", id:" << object_id << std::endl;
     }
   }
 
   const char* const table_name_not_exists = "table_name_not_exists";
-  ObjectIdType ret_object_id = 0;
-  error = tables->remove(table_name_not_exists, &ret_object_id);
+  ObjectIdType ret_object_id              = 0;
+  error                                   = tables->remove(table_name_not_exists, &ret_object_id);
   if (error == ErrorCode::OK) {
     ERROR(error);
     return error;
   } else {
-    std::cout << "can't remove table name not exists :" << table_name_not_exists
-              << std::endl;
+    std::cout << "can't remove table name not exists :" << table_name_not_exists << std::endl;
   }
 
   for (int num = 0; num < TABLE_NUM_ADDED; num++) {
@@ -819,9 +937,8 @@ ErrorCode tables_remove_test() {
   // remove table-metadata object
   //
 
-  number = oid_manager->current("tables");
-  std::vector<ObjectIdType> object_ids = {number - 3, number - 1, number - 0,
-                                          number - 2};
+  number                               = oid_manager->current("tables");
+  std::vector<ObjectIdType> object_ids = {number - 3, number - 1, number - 0, number - 2};
 
   for (uint64_t object_id : object_ids) {
     error = tables->remove(object_id);
@@ -834,13 +951,12 @@ ErrorCode tables_remove_test() {
   }
 
   uint64_t table_id_not_exists = 0;
-  error = tables->remove(table_id_not_exists);
+  error                        = tables->remove(table_id_not_exists);
   if (error == ErrorCode::OK) {
     ERROR(error);
     return error;
   } else {
-    std::cout << "can't remove table id not exists :" << table_id_not_exists
-              << std::endl;
+    std::cout << "can't remove table id not exists :" << table_id_not_exists << std::endl;
   }
 
   error = ErrorCode::OK;
@@ -862,44 +978,36 @@ ErrorCode datatypes_test() {
     for (std::pair<ObjectIdType, std::string> datatype : datatypes_list) {
       error = datatypes->get(datatype.first, datatype_id);
       if (error != ErrorCode::OK) {
-        std::cout << "DataTypes does not exist. [" << datatype.first << "]"
-                  << std::endl;
+        std::cout << "DataTypes does not exist. [" << datatype.first << "]" << std::endl;
         return error;
       }
 
       error = datatypes->get(datatype.second, datatype_name);
       if (error != ErrorCode::OK) {
-        std::cout << "DataTypes does not exist. [" << datatype.second << "]"
-                  << std::endl;
+        std::cout << "DataTypes does not exist. [" << datatype.second << "]" << std::endl;
         return error;
       }
 
-      std::string data_type_name =
-          datatype_id.get<std::string>(DataTypes::NAME);
+      std::string data_type_name = datatype_id.get<std::string>(DataTypes::NAME);
       if (data_type_name != datatype.second) {
-        std::cout << "DataTypes Name error. [" << datatype.first
-                  << "] expected:[" << datatype.second << "], actual:["
-                  << data_type_name << "]" << std::endl;
+        std::cout << "DataTypes Name error. [" << datatype.first << "] expected:["
+                  << datatype.second << "], actual:[" << data_type_name << "]" << std::endl;
         return ErrorCode::INTERNAL_ERROR;
       }
 
-      ObjectIdType data_type_id =
-          datatype_name.get<ObjectIdType>(DataTypes::ID);
+      ObjectIdType data_type_id = datatype_name.get<ObjectIdType>(DataTypes::ID);
       if (data_type_id != datatype.first) {
-        std::cout << "DataTypes ID error. [" << datatype.second
-                  << "] expected:[" << datatype.first << "], actual:["
-                  << data_type_id << "]" << std::endl;
+        std::cout << "DataTypes ID error. [" << datatype.second << "] expected:[" << datatype.first
+                  << "], actual:[" << data_type_id << "]" << std::endl;
         return ErrorCode::INTERNAL_ERROR;
       }
 
-      uint16_t format_version =
-          datatype_name.get<uint16_t>(DataTypes::FORMAT_VERSION);
-      uint32_t generation = datatype_name.get<uint32_t>(DataTypes::GENERATION);
+      uint16_t format_version = datatype_name.get<uint16_t>(DataTypes::FORMAT_VERSION);
+      uint32_t generation     = datatype_name.get<uint32_t>(DataTypes::GENERATION);
 
-      std::cout << "DataTypes -> FORMAT_VERSION:[" << format_version
-                << "] / GENERATION:[" << generation << "] / ID:["
-                << datatype.first << "] / NAME:[" << datatype.second << "]"
-                << std::endl;
+      std::cout << "DataTypes -> FORMAT_VERSION:[" << format_version << "] / GENERATION:["
+                << generation << "] / ID:[" << datatype.first << "] / NAME:[" << datatype.second
+                << "]" << std::endl;
     }
   } catch (const ptree_error& e) {
     std::cerr << e.what() << std::endl;
@@ -918,8 +1026,7 @@ ErrorCode datatypes_test() {
  */
 int main(void) {
   std::cout << "*** TableMetadata test start. ***" << std::endl << std::endl;
-  std::cout << "=== Start test of add and get of Tables class. ==="
-            << std::endl;
+  std::cout << "=== Start test of add and get of Tables class. ===" << std::endl;
   ErrorCode tables_add_get_test_error = test_tables_add_get();
   std::cout << "=== Done test of add and get of Tables class. ===" << std::endl;
   std::cout << std::endl;
@@ -941,21 +1048,16 @@ int main(void) {
 
   std::cout << std::endl;
   std::cout << "Tables add and get functions test: "
-            << (tables_add_get_test_error == ErrorCode::OK ? "Success"
-                                                           : "*** Failure ***")
+            << (tables_add_get_test_error == ErrorCode::OK ? "Success" : "*** Failure ***")
             << std::endl;
   std::cout << "Tables update functions test     : "
-            << (tables_update_test_error == ErrorCode::OK ? "Success"
-                                                          : "*** Failure ***")
+            << (tables_update_test_error == ErrorCode::OK ? "Success" : "*** Failure ***")
             << std::endl;
   std::cout << "Tables remove functions test     : "
-            << (tables_remove_test_error == ErrorCode::OK ? "Success"
-                                                          : "*** Failure ***")
+            << (tables_remove_test_error == ErrorCode::OK ? "Success" : "*** Failure ***")
             << std::endl;
   std::cout << "DataTypes get functions test     : "
-            << (datatypes_test_error == ErrorCode::OK ? "Success"
-                                                      : "*** Failure ***")
-            << std::endl;
+            << (datatypes_test_error == ErrorCode::OK ? "Success" : "*** Failure ***") << std::endl;
   std::cout << std::endl;
 
   std::cout << "*** TableMetadata test completed. ***" << std::endl;

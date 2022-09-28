@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 tsurugi project.
+ * Copyright 2020-2022 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,15 +16,16 @@
 #ifndef MANAGER_METADATA_TABLES_H_
 #define MANAGER_METADATA_TABLES_H_
 
+#include <string>
 #include <string_view>
 #include <vector>
 
 #include <boost/property_tree/ptree.hpp>
 
-#include "manager/metadata/error_code.h"
-#include "manager/metadata/metadata.h"
-#include "manager/metadata/indexes.h"
 #include "manager/metadata/constraints.h"
+#include "manager/metadata/error_code.h"
+#include "manager/metadata/indexes.h"
+#include "manager/metadata/metadata.h"
 
 namespace manager::metadata {
 /**
@@ -42,24 +43,23 @@ struct Column : public Object {
   int64_t     direction;
 
   static constexpr const int64_t ORDINAL_POSITION_BASE_INDEX = 1;
-  static constexpr const char* const TABLE_ID         = "tableId";
-  static constexpr const char* const ORDINAL_POSITION = "ordinalPosition";
-  static constexpr const char* const DATA_TYPE_ID     = "dataTypeId";
-  static constexpr const char* const DATA_LENGTH      = "dataLength";
-  static constexpr const char* const VARYING          = "varying";
-  static constexpr const char* const NULLABLE         = "nullable";
-  static constexpr const char* const DEFAULT_EXPR     = "defaultExpr";
-  static constexpr const char* const DIRECTION        = "direction";
-  
-	Column() 
+  static constexpr const char* const TABLE_ID                = "tableId";
+  static constexpr const char* const ORDINAL_POSITION        = "ordinalPosition";
+  static constexpr const char* const DATA_TYPE_ID            = "dataTypeId";
+  static constexpr const char* const DATA_LENGTH             = "dataLength";
+  static constexpr const char* const VARYING                 = "varying";
+  static constexpr const char* const NULLABLE                = "nullable";
+  static constexpr const char* const DEFAULT_EXPR            = "defaultExpr";
+  static constexpr const char* const DIRECTION               = "direction";
+
+  Column()
       : Object(),
         table_id(INVALID_OBJECT_ID),
         ordinal_position(INVALID_VALUE),
         data_type_id(INVALID_OBJECT_ID),
         data_length(INVALID_VALUE),
         varying(false),
-        nullable(false)
-      {}
+        nullable(false) {}
   boost::property_tree::ptree convert_to_ptree() const override;
   void convert_from_ptree(const boost::property_tree::ptree& ptree) override;
 };
@@ -68,24 +68,19 @@ struct Column : public Object {
  * @brief Table metadata object.
  */
 struct Table : public ClassObject {
-  std::string namespace_name;
-  int64_t     owner_id;
-  int64_t     tuples;
-  std::vector<int64_t>    primary_keys;
-  std::vector<Column>	    columns;
-  std::vector<Index>      indexes;
+  std::string          namespace_name;
+  int64_t              owner_id;
+  int64_t              tuples;
+  std::vector<int64_t> primary_keys;
+  std::vector<Column>  columns;
+  std::vector<Index>   indexes;
   std::vector<Constraint> constraints;
 
-  static constexpr const char* const NAMESPACE  = "namespace";
-  static constexpr const char* const OWNER_ID   = "ownerId";
-  static constexpr const char* const TUPLES     = "tuples";
+  static constexpr const char* const NAMESPACE = "namespace";
+  static constexpr const char* const OWNER_ID  = "ownerId";
+  static constexpr const char* const TUPLES    = "tuples";
 
-  Table()
-      : ClassObject(),
-        namespace_name(""), 
-        owner_id(INVALID_OBJECT_ID), 
-        tuples(INVALID_VALUE) 
-      {}
+  Table() : ClassObject(), namespace_name(""), owner_id(INVALID_OBJECT_ID), tuples(INVALID_VALUE) {}
   boost::property_tree::ptree convert_to_ptree() const override;
   void convert_from_ptree(const boost::property_tree::ptree& ptree) override;
 };
@@ -103,6 +98,10 @@ class Tables : public Metadata {
    * @brief Field name constant indicating the columns node of the metadata.
    */
   static constexpr const char* const COLUMNS_NODE = "columns";
+  /**
+   * @brief Field name constant indicating the constraints node of the metadata.
+   */
+  static constexpr const char* const CONSTRAINTS_NODE = "constraints";
   /**
    * @brief Field name constant indicating the primary keys of the metadata.
    */
@@ -153,7 +152,7 @@ class Tables : public Metadata {
     /**
      * @brief Field name constant indicating the data length of the metadata.
      */
-    static constexpr const char* const DATA_LENGTH = "dataLength";
+    static constexpr const char* const DATA_LENGTH  = "dataLength";
     static constexpr const char* const DATA_LENGTHS = "dataLengths";
     /**
      * @brief Field name constant indicating the varying of the metadata.
@@ -176,77 +175,55 @@ class Tables : public Metadata {
      * @brief represents sort direction of elements.
      */
     enum class Direction {
-      /**
-       * @brief default order.
-       */
-      DEFAULT = 0,
-
-      /**
-       * @brief ascendant order.
-       */
-      ASCENDANT,
-
-      /**
-       * @brief descendant order.
-       */
-      DESCENDANT,
+      DEFAULT = 0,  //!< @brief Default order.
+      ASCENDANT,    //!< @brief Ascendant order.
+      DESCENDANT,   //!< @brief Descendant order.
     };
   };
 
   /**
    * @brief Field name constants for metadata indicating
-   *    table authorization information.
+   *   table authorization information.
    */
   static constexpr const char* const TABLE_ACL_NODE = "tables";
 
-  explicit Tables(std::string_view database)
-      : Tables(database, kDefaultComponent) {}
+  explicit Tables(std::string_view database) : Tables(database, kDefaultComponent) {}
   Tables(std::string_view database, std::string_view component);
 
-  Tables(const Tables&) = delete;
+  Tables(const Tables&)            = delete;
   Tables& operator=(const Tables&) = delete;
 
   ErrorCode init() const override;
 
   ErrorCode add(const boost::property_tree::ptree& object) const override;
-  ErrorCode add(const boost::property_tree::ptree& object,
-                ObjectId* object_id) const override;
+  ErrorCode add(const boost::property_tree::ptree& object, ObjectId* object_id) const override;
 
-  ErrorCode get(const ObjectId object_id,
-                boost::property_tree::ptree& object) const override;
-  ErrorCode get(std::string_view object_name,
-                boost::property_tree::ptree& object) const override;
-  ErrorCode get_all(
-      std::vector<boost::property_tree::ptree>& container) const override;
+  ErrorCode get(const ObjectId object_id, boost::property_tree::ptree& object) const override;
+  ErrorCode get(std::string_view object_name, boost::property_tree::ptree& object) const override;
+  ErrorCode get_all(std::vector<boost::property_tree::ptree>& container) const override;
 
-  ErrorCode get_statistic(const ObjectId table_id,
-                          boost::property_tree::ptree& object) const;
-  ErrorCode get_statistic(std::string_view table_name,
-                          boost::property_tree::ptree& object) const;
+  ErrorCode get_statistic(const ObjectId table_id, boost::property_tree::ptree& object) const;
+  ErrorCode get_statistic(std::string_view table_name, boost::property_tree::ptree& object) const;
   ErrorCode set_statistic(boost::property_tree::ptree& object) const;
 
-  ErrorCode remove(const ObjectId object_id) const override;
-  ErrorCode remove(std::string_view object_name,
-                   ObjectId* object_id) const override;
+  ErrorCode update(const ObjectIdType object_id,
+                   const boost::property_tree::ptree& object) const override;
 
-  ErrorCode get_acls(std::string_view token,
-                     boost::property_tree::ptree& acls) const;
+  ErrorCode remove(const ObjectIdType object_id) const override;
+  ErrorCode remove(std::string_view object_name, ObjectId* object_id) const override;
 
-  ErrorCode confirm_permission_in_acls(const ObjectId object_id,
-                                       const char* permission,
+  ErrorCode get_acls(std::string_view token, boost::property_tree::ptree& acls) const;
+
+  ErrorCode confirm_permission_in_acls(const ObjectId object_id, const char* permission,
                                        bool& check_result) const;
-  ErrorCode confirm_permission_in_acls(std::string_view object_name,
-                                       const char* permission,
+  ErrorCode confirm_permission_in_acls(std::string_view object_name, const char* permission,
                                        bool& check_result) const;
 
   ErrorCode add(const manager::metadata::Table& table) const;
-  ErrorCode add(const manager::metadata::Table& table,
-                ObjectId* object_id) const;
-  
-  ErrorCode get(const ObjectId object_id,
-                manager::metadata::Table& table) const;
-  ErrorCode get(std::string_view table_name,
-                manager::metadata::Table& table) const;
+  ErrorCode add(const manager::metadata::Table& table, ObjectIdType* object_id) const;
+
+  ErrorCode get(const ObjectIdType object_id, manager::metadata::Table& table) const;
+  ErrorCode get(std::string_view table_name, manager::metadata::Table& table) const;
 
  private:
   manager::metadata::ErrorCode param_check_metadata_add(
