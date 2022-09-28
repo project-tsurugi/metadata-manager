@@ -12,6 +12,15 @@
                     "nullable": "false",
                     "dataTypeId": "4"
                 }
+            ],
+            "constraints": [
+                {
+                    "name": "constraint1",
+                    "type": "1",
+                    "columns": "1",
+                    "columnsId": "4",
+                    "indexId": "1"
+                }
             ]
         },
         {
@@ -41,6 +50,22 @@
                     "nullable": "true",
                     "dataTypeId": "9"
                 }
+            ],
+            "constraints": [
+                {
+                    "name": "constraint1",
+                    "type": "1",
+                    "columns": "1",
+                    "columnsId": "4",
+                    "indexId": "1"
+                },
+                {
+                    "name": "constraint2",
+                    "type": "2",
+                    "columns": "1",
+                    "columnsId": "5",
+                    "indexId": "1"
+                }
             ]
         },
         {
@@ -50,7 +75,8 @@
             "primaryKey": [
                 "1"
             ],
-            "columns": []
+            "columns": [],
+            "constraints": []
         },
         {
             "formatVersion": "1",
@@ -66,6 +92,15 @@
                     "direction": "0",
                     "nullable": "false",
                     "dataTypeId": "9"
+                }
+            ],
+            "constraints": [
+                {
+                    "name": "constraint1",
+                    "type": "1",
+                    "columns": "1",
+                    "columnsId": "4",
+                    "indexId": "1"
                 }
             ]
         },
@@ -93,6 +128,22 @@
                     "varying": "false",
                     "dataLength": "2"
                 }
+            ],
+            "constraints": [
+                {
+                    "name": "constraint1",
+                    "type": "1",
+                    "columns": "1",
+                    "columnsId": "4",
+                    "indexId": "1"
+                },
+                {
+                    "name": "constraint2",
+                    "type": "2",
+                    "columns": "1",
+                    "columnsId": "5",
+                    "indexId": "1"
+                }
             ]
         },
         {
@@ -110,6 +161,15 @@
                     "nullable": "false",
                     "dataTypeId": "4"
                 }
+            ],
+            "constraints": [
+                {
+                    "name": "制約1",
+                    "type": "1",
+                    "columns": "1",
+                    "columnsId": "4",
+                    "indexId": "1"
+                }
             ]
         },
         {
@@ -126,6 +186,15 @@
                     "direction": "1",
                     "nullable": "false",
                     "dataTypeId": "4"
+                }
+            ],
+            "constraints": [
+                {
+                    "name": "constraint1",
+                    "type": "1",
+                    "columns": "1",
+                    "columnsId": "4",
+                    "indexId": "1"
                 }
             ]
         },
@@ -310,6 +379,22 @@
                     "varying": "true",
                     "dataLength": "500"
                 }
+            ],
+            "constraints": [
+                {
+                    "name": "constraint1",
+                    "type": "1",
+                    "columns": "1",
+                    "columnsId": "4",
+                    "indexId": "1"
+                },
+                {
+                    "name": "constraint2",
+                    "type": "2",
+                    "columns": "1",
+                    "columnsId": "5",
+                    "indexId": "1"
+                }
             ]
         },
         {
@@ -326,6 +411,15 @@
                     "direction": "1",
                     "nullable": "false",
                     "dataTypeId": "4"
+                }
+            ],
+            "constraints": [
+                {
+                    "name": "constraint1",
+                    "type": "1",
+                    "columns": "1",
+                    "columnsId": "4",
+                    "indexId": "1"
                 }
             ]
         },
@@ -351,6 +445,22 @@
                     "nullable": "true",
                     "dataTypeId": "6"
                 }
+            ],
+            "constraints": [
+                {
+                    "name": "constraint1",
+                    "type": "1",
+                    "columns": "1",
+                    "columnsId": "4",
+                    "indexId": "1"
+                },
+                {
+                    "name": "constraint2",
+                    "type": "2",
+                    "columns": "1",
+                    "columnsId": "5",
+                    "indexId": "1"
+                }
             ]
         },
         {
@@ -368,7 +478,8 @@
                     "nullable": "false",
                     "dataTypeId": "8"
                 }
-            ]
+            ],
+            "constraints": []
         },
         {
             "formatVersion": "1",
@@ -385,7 +496,8 @@
                     "nullable": "false",
                     "dataTypeId": "9"
                 }
-            ]
+            ],
+            "constraints": []
         },
         {
             "formatVersion": "1",
@@ -404,7 +516,8 @@
                     "varying": "false",
                     "dataLength": "10"
                 }
-            ]
+            ],
+            "constraints": []
         },
         {
             "formatVersion": "1",
@@ -423,7 +536,8 @@
                     "varying": "true",
                     "dataLength": "10"
                 }
-            ]
+            ],
+            "constraints": []
         }
     ]
 }
