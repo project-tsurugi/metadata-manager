@@ -39,18 +39,11 @@ class ApiTestTableMetadata : public ::testing::Test {};
  */
 TEST_F(ApiTestTableMetadata, add_get_table_metadata_by_table_name3) {
   // prepare test data for adding table metadata.
-<<<<<<< HEAD:test/json/src/api_test_table_metadatas.cpp
-  UTTableMetadata testdata_table_metadata =
-      *(global->testdata_table_metadata.get());
-  manager::metadata::Table& new_table = testdata_table_metadata.table;
-  std::string new_table_name = new_table.name + "_ApiTestTableMetadata1_1";
-  new_table.name = new_table_name;
-=======
+
   UTTableMetadata testdata_table_metadata = *(global->testdata_table_metadata.get());
   manager::metadata::Table& new_table     = testdata_table_metadata.table;
   std::string new_table_name = new_table.name + "_ApiTestTableMetadata" + std::to_string(__LINE__);
   new_table.name             = new_table_name;
->>>>>>> 0e1d2c6 (Added test (JSON version) of constraint metadata manager.):test/json/src/api_test_table_metadata.cpp
 
   // add table metadata.
   ObjectIdType ret_table_id = INVALID_OBJECT_ID;
