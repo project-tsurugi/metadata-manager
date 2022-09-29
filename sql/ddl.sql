@@ -64,6 +64,14 @@ CREATE TABLE tsurugi_catalog.tsurugi_statistic
     UNIQUE(column_id)
 );
 
+CREATE TABLE tsurugi_catalog.indexes
+(
+    format_version integer NOT NULL,
+    generation bigint NOT NULL,
+    id bigserial NOT NULL,
+    name text
+);
+
 -- INT32
 INSERT INTO tsurugi_catalog.tsurugi_type (format_version, generation, id, name, pg_data_type, pg_data_type_name, pg_data_type_qualified_name) values (1, 1, 4, 'INT32', 23,'integer','int4');
 -- INT64
