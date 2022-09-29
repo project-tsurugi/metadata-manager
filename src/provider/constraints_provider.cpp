@@ -15,8 +15,8 @@
  */
 #include "manager/metadata/provider/constraints_provider.h"
 
-#include "manager/metadata/helper/logging_helper.h"
 #include "manager/metadata/constraints.h"
+#include "manager/metadata/helper/logging_helper.h"
 
 // =============================================================================
 namespace manager::metadata::db {
@@ -28,7 +28,7 @@ using boost::property_tree::ptree;
  * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode ConstraintsProvider::init() {
-  ErrorCode error = ErrorCode::UNKNOWN;
+  ErrorCode error                  = ErrorCode::UNKNOWN;
   std::shared_ptr<GenericDAO> gdao = nullptr;
 
   if (constraints_dao_ == nullptr) {
@@ -51,8 +51,8 @@ ErrorCode ConstraintsProvider::init() {
  * @param constraint_id  [out] ID of the added constraint metadata.
  * @return ErrorCode::OK if success, otherwise an error code.
  */
-ErrorCode ConstraintsProvider::add_constraint_metadata(
-    const boost::property_tree::ptree& object, ObjectIdType& constraint_id) {
+ErrorCode ConstraintsProvider::add_constraint_metadata(const boost::property_tree::ptree& object,
+                                                       ObjectIdType& constraint_id) {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   // Initialization
@@ -87,24 +87,16 @@ ErrorCode ConstraintsProvider::add_constraint_metadata(
 /**
  * @brief Gets one constraint metadata object from the constraint metadata repository,
  *   where key = value.
- * @param key     [in]  key of constraint metadata object.
- * @param value   [in]  value of constraint metadata object.
- * @param object  [out] one constraint metadata object to get, where key = value.
+ * @param constraint_id  [in]  constraint id.
+ * @param object         [out] one constraint metadata object to get, where key = value.
  * @retval ErrorCode::OK if success,
  * @retval ErrorCode::ID_NOT_FOUND if the constraint id does not exist.
- * @retval ErrorCode::NAME_NOT_FOUND if the constraint name does not exist.
+ * @retval ErrorCode::NOT_FOUND if the table id does not exist.
  * @retval otherwise an error code.
  */
-ErrorCode ConstraintsProvider::get_constraint_metadata(
-    std::string_view key, std::string_view value,
-    boost::property_tree::ptree& object) {
+ErrorCode ConstraintsProvider::get_constraint_metadata(const ObjectId constraint_id,
+                                                       boost::property_tree::ptree& object) {
   ErrorCode error = ErrorCode::UNKNOWN;
-
-  // Parameter value check.
-  if ((key != Constraint::ID) && (key != Constraint::NAME)) {
-    error = ErrorCode::INVALID_PARAMETER;
-    return error;
-  }
 
   // Initialization
   error = init();
@@ -112,21 +104,11 @@ ErrorCode ConstraintsProvider::get_constraint_metadata(
     return error;
   }
 
+  std::string key_constraint_id = std::to_string(constraint_id);
   // Get constraint metadata.
-  error = constraints_dao_->select_constraint_metadata(key, value, object);
+  error = constraints_dao_->select_constraint_metadata(Constraint::ID, key_constraint_id, object);
   if (error != ErrorCode::OK) {
     return error;
-  }
-
-  // Set the search key for column metadata.
-  std::string constraint_id;
-  if (key == Constraint::ID) {
-    constraint_id = value;
-  } else {
-    auto o_constraint_id = object.get_optional<std::string>(Constraint::ID);
-    if (o_constraint_id) {
-      constraint_id = o_constraint_id.value();
-    }
   }
 
   return error;
@@ -155,18 +137,13 @@ ErrorCode ConstraintsProvider::get_constraint_metadata(
 }
 
 /**
- * @brief Remove all metadata-object based on the given constraint name from metadata-repositories.
- * @param key            [in]  key of constraint metadata object.
- * @param value          [in]  value of constraint metadata object.
- * @param constraint_id  [out] ID of the removed constraint metadata.
+ * @brief Remove metadata-object based on the given constraint id from metadata-repositories.
+ * @param constraint_id  [in]  constraint id.
  * @retval ErrorCode::OK if success.
  * @retval ErrorCode::ID_NOT_FOUND if the constraint id does not exist.
- * @retval ErrorCode::NAME_NOT_FOUND if the constraint name does not exist.
  * @retval otherwise an error code.
  */
-ErrorCode ConstraintsProvider::remove_constraint_metadata(std::string_view key,
-                                                std::string_view value,
-                                                ObjectIdType& constraint_id) {
+ErrorCode ConstraintsProvider::remove_constraint_metadata(const ObjectId constraint_id) {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   // Initialization
@@ -181,7 +158,8 @@ ErrorCode ConstraintsProvider::remove_constraint_metadata(std::string_view key,
     return error;
   }
 
-  error = constraints_dao_->delete_constraint_metadata(key, value, constraint_id);
+  std::string key_constraint_id = std::to_string(constraint_id);
+  error = constraints_dao_->delete_constraint_metadata(Constraint::ID, key_constraint_id);
   if (error == ErrorCode::OK) {
     // Commit the transaction.
     error = session_manager_->commit();

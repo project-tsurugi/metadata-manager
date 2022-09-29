@@ -22,9 +22,9 @@
 
 #include <boost/property_tree/ptree.hpp>
 
+#include "manager/metadata/constraints.h"
 #include "manager/metadata/dao/generic_dao.h"
 #include "manager/metadata/error_code.h"
-#include "manager/metadata/constraints.h"
 
 namespace manager::metadata::db {
 
@@ -42,8 +42,7 @@ class ConstraintsDAO : public GenericDAO {
       std::vector<boost::property_tree::ptree>& constraint_container) const = 0;
 
   virtual manager::metadata::ErrorCode delete_constraint_metadata(
-      std::string_view object_key, std::string_view object_value,
-      ObjectId& constraint_id) const = 0;
+      std::string_view object_key, std::string_view object_value) const = 0;
 };  // class ConstraintsDAO
 
 }  // namespace manager::metadata::db

@@ -79,8 +79,17 @@ void transform_object(const boost::property_tree::ptree& ptree_object,
 boost::property_tree::ptree Constraint::convert_to_ptree() const {
   ptree metadata = Object::convert_to_ptree();
 
+  // ID.
+  if (this->id <= 0) {
+    // If the value is invalid, the put data is erased.
+    metadata.erase(ID);
+  }
+
   // table ID.
-  metadata.put(TABLE_ID, this->table_id);
+  if (this->table_id > 0) {
+    // Put only if the value is valid.
+    metadata.put(TABLE_ID, this->table_id);
+  }
 
   // constraint type.
   metadata.put(TYPE, static_cast<int32_t>(this->type));
@@ -235,47 +244,11 @@ ErrorCode Constraints::get(const ObjectId object_id, boost::property_tree::ptree
 
   // Get the constraint metadata through the provider.
   if (error == ErrorCode::OK) {
-    auto s_object_id = std::to_string(object_id);
-
-    error = provider->get_constraint_metadata(Constraint::ID, s_object_id, object);
+    error = provider->get_constraint_metadata(object_id, object);
   }
 
   // Log of API function finish.
   log::function_finish("Constraints::get(ConstraintId)", error);
-
-  return error;
-}
-
-/**
- * @brief Get constraint metadata object based on constraint name.
- * @param object_name  [in]  constraint name. (Value of "name" key.)
- * @param object       [out] constraint metadata object with the specified name.
- * @retval ErrorCode::OK if success,
- * @retval ErrorCode::NAME_NOT_FOUND if the constraint name does not exist.
- * @retval otherwise an error code.
- */
-ErrorCode Constraints::get(std::string_view object_name,
-                           boost::property_tree::ptree& object) const {
-  ErrorCode error = ErrorCode::UNKNOWN;
-
-  // Log of API function start.
-  log::function_start("Constraints::get(ConstraintName)");
-
-  // Parameter value check.
-  if (!object_name.empty()) {
-    error = ErrorCode::OK;
-  } else {
-    LOG_WARNING << "An empty value was specified for ConstraintName.";
-    error = ErrorCode::NAME_NOT_FOUND;
-  }
-
-  // Get the constraint metadata through the provider.
-  if (error == ErrorCode::OK) {
-    error = provider->get_constraint_metadata(Constraint::NAME, object_name, object);
-  }
-
-  // Log of API function finish.
-  log::function_finish("Constraints::get(ConstraintName)", error);
 
   return error;
 }
@@ -325,51 +298,11 @@ ErrorCode Constraints::remove(const ObjectId object_id) const {
 
   // Remove the constraint metadata through the provider.
   if (error == ErrorCode::OK) {
-    ObjectId retval_object_id = 0;
-
-    error = provider->remove_constraint_metadata(Constraint::ID, std::to_string(object_id),
-                                                 retval_object_id);
+    error = provider->remove_constraint_metadata(object_id);
   }
 
   // Log of API function finish.
   log::function_finish("Constraints::remove(ConstraintId)", error);
-
-  return error;
-}
-
-/**
- * @brief Remove all metadata-object based on the given constraint name from metadata-table.
- * @param object_name  [in]  constraint name.
- * @param object_id    [out] object id of constraint removed.
- * @retval ErrorCode::OK if success,
- * @retval ErrorCode::NAME_NOT_FOUND if the constraint name does not exist.
- * @retval otherwise an error code.
- */
-ErrorCode Constraints::remove(std::string_view object_name, ObjectId* object_id) const {
-  ErrorCode error = ErrorCode::UNKNOWN;
-
-  // Log of API function start.
-  log::function_start("Constraints::remove(ConstraintName)");
-
-  // Parameter value check.
-  if (!object_name.empty()) {
-    error = ErrorCode::OK;
-  } else {
-    LOG_WARNING << "An empty value was specified for ConstraintName.";
-    error = ErrorCode::NAME_NOT_FOUND;
-  }
-
-  ObjectId retval_object_id = 0;
-  // Remove the constraint metadata through the provider.
-  error = provider->remove_constraint_metadata(Constraint::NAME, object_name, retval_object_id);
-
-  // Set a value if object_id is not null.
-  if ((error == ErrorCode::OK) && (object_id != nullptr)) {
-    *object_id = retval_object_id;
-  }
-
-  // Log of API function finish.
-  log::function_finish("Constraints::remove(ConstraintName)", error);
 
   return error;
 }
@@ -436,28 +369,6 @@ ErrorCode Constraints::get(const ObjectId object_id,
   return error;
 }
 
-/**
- * @brief Get constraint metadata object based on constraint name.
- * @param constraint_name  [in]  constraint name. (Value of "name" key.)
- * @param constraint       [out] constraint metadata object with the specified name.
- * @retval ErrorCode::OK if success,
- * @retval ErrorCode::NAME_NOT_FOUND if the table name does not exist.
- * @retval otherwise an error code.
- */
-ErrorCode Constraints::get(std::string_view constraint_name,
-                           manager::metadata::Constraint& constraint) const {
-  ErrorCode error = ErrorCode::UNKNOWN;
-  ptree ptree;
-
-  error = this->get(constraint_name, ptree);
-  if (error != ErrorCode::OK) {
-    return error;
-  }
-  constraint.convert_from_ptree(ptree);
-
-  return error;
-}
-
 /* =============================================================================
  * Private method area
  */
@@ -472,7 +383,9 @@ ErrorCode Constraints::param_check_metadata_add(const boost::property_tree::ptre
   constexpr const char* const kLogFormat = R"("%s" => undefined or empty)";
 
   auto table_id = object.get_optional<ObjectId>(Constraint::TABLE_ID);
-  if (!table_id.value_or(0) <= 0) {
+  if (table_id.value_or(0) > 0) {
+    error = ErrorCode::OK;
+  } else {
     LOG_ERROR << Message::PARAMETER_FAILED
               << (boost::format(kLogFormat) % Constraint::TABLE_ID).str();
 

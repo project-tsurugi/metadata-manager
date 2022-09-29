@@ -151,7 +151,7 @@ std::string select_equal_to(std::string_view column_name) {
 }
 
 /**
- * @brief Returns a SELECT statement to get metadata:
+ * @brief Returns a DELETE statement to get metadata:
  *   delete from table_name where column_name = $1.
  * @param column_name  [in]  column name of metadata-table.
  * @return a DELETE statement:
@@ -159,9 +159,8 @@ std::string select_equal_to(std::string_view column_name) {
  */
 std::string delete_equal_to(std::string_view column_name) {
   // SQL statement
-  boost::format query = boost::format("DELETE FROM %1%.%2% WHERE %3% = $1 RETURNING %4%") %
-                        SCHEMA_NAME % ConstraintsDAO::kTableName % column_name.data() %
-                        ConstraintsDAO::ColumnName::kId;
+  boost::format query = boost::format("DELETE FROM %1%.%2% WHERE %3% = $1") % SCHEMA_NAME %
+                        ConstraintsDAO::kTableName % column_name.data();
 
   return query.str();
 }
@@ -193,7 +192,6 @@ ConstraintsDAO::ConstraintsDAO(DBSessionManager* session_manager)
   // later defines a prepared statement
   // "select * from where id = ?".
   constraints_column_names.emplace(Constraint::ID, ColumnName::kId);
-  constraints_column_names.emplace(Constraint::NAME, ColumnName::kName);
   constraints_column_names.emplace(Constraint::TABLE_ID, ColumnName::kTableId);
 
   // Creates a list of unique name
@@ -398,7 +396,7 @@ ErrorCode ConstraintsDAO::insert_constraint_metadata(
  *   given value.
  * @retval ErrorCode::OK if success.
  * @retval ErrorCode::ID_NOT_FOUND if the constraint id does not exist.
- * @retval ErrorCode::NAME_NOT_FOUND if the constraint name does not exist.
+ * @retval ErrorCode::NOT_FOUND if the table id does not exist.
  * @retval otherwise an error code.
  */
 ErrorCode ConstraintsDAO::select_constraint_metadata(
@@ -424,23 +422,27 @@ ErrorCode ConstraintsDAO::select_constraint_metadata(
   if (error == ErrorCode::OK) {
     int nrows = PQntuples(res);
     if (nrows >= 1) {
-      for (int ordinal_position = 0; ordinal_position < nrows; ordinal_position++) {
-        ptree constraint;
-
+      if (object_key == Constraint::ID) {
+        int ordinal_position = 0;
         // Convert acquired data to ptree type.
-        error = convert_pgresult_to_ptree(res, ordinal_position, constraint);
-        if (error != ErrorCode::OK) {
-          break;
-        }
+        error = convert_pgresult_to_ptree(res, ordinal_position, constraint_metadata);
+      } else {
+        for (int ordinal_position = 0; ordinal_position < nrows; ordinal_position++) {
+          ptree constraint;
 
-        constraint_metadata.push_back(std::make_pair("", constraint));
+          // Convert acquired data to ptree type.
+          error = convert_pgresult_to_ptree(res, ordinal_position, constraint);
+          if (error != ErrorCode::OK) {
+            constraint_metadata.clear();
+            break;
+          }
+          constraint_metadata.push_back(std::make_pair("", constraint));
+        }
       }
     } else {
       // Convert the error code.
       if (object_key == Constraint::ID) {
         error = ErrorCode::ID_NOT_FOUND;
-      } else if (object_key == Constraint::NAME) {
-        error = ErrorCode::NAME_NOT_FOUND;
       } else {
         error = ErrorCode::NOT_FOUND;
       }
@@ -495,15 +497,13 @@ ErrorCode ConstraintsDAO::select_constraint_metadata(
  *   from the constraint metadata table based on the given constraint name.
  * @param object_key     [in]  key. column name of a constraint metadata table.
  * @param object_value   [in]  value to be filtered.
- * @param constraint_id  [out] constraint id of the row deleted.
  * @retval ErrorCode::OK if success.
  * @retval ErrorCode::ID_NOT_FOUND if the constraint id does not exist.
- * @retval ErrorCode::NAME_NOT_FOUND if the constraint name does not exist.
+ * @retval ErrorCode::NOT_FOUND if the table id does not exist.
  * @retval otherwise an error code.
  */
 ErrorCode ConstraintsDAO::delete_constraint_metadata(std::string_view object_key,
-                                                     std::string_view object_value,
-                                                     ObjectId& constraint_id) const {
+                                                     std::string_view object_value) const {
   ErrorCode error = ErrorCode::UNKNOWN;
   std::vector<const char*> param_values;
 
@@ -528,17 +528,10 @@ ErrorCode ConstraintsDAO::delete_constraint_metadata(std::string_view object_key
 
     if (error_get != ErrorCode::OK) {
       error = error_get;
-    } else if (number_of_rows_affected == 1) {
-      int ordinal_position = 0;
-      // Get the constraint id of the row deleted.
-      error =
-          DbcUtils::str_to_integral<ObjectId>(PQgetvalue(res, ordinal_position, 0), constraint_id);
     } else if (number_of_rows_affected == 0) {
       // Convert the error code.
       if (object_key == Constraint::ID) {
         error = ErrorCode::ID_NOT_FOUND;
-      } else if (object_key == Constraint::NAME) {
-        error = ErrorCode::NAME_NOT_FOUND;
       } else {
         error = ErrorCode::NOT_FOUND;
       }

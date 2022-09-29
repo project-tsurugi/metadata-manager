@@ -93,9 +93,8 @@ class ConstraintsDAO : public manager::metadata::db::ConstraintsDAO {
   manager::metadata::ErrorCode select_constraint_metadata(
       std::vector<boost::property_tree::ptree>& constraint_container) const override;
 
-  manager::metadata::ErrorCode delete_constraint_metadata(std::string_view object_key,
-                                                          std::string_view object_value,
-                                                          ObjectId& constraint_id) const override;
+  manager::metadata::ErrorCode delete_constraint_metadata(
+      std::string_view object_key, std::string_view object_value) const override;
 
  private:
   ConnectionSPtr connection_;

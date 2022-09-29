@@ -57,8 +57,8 @@ class ConstraintsDAO : public manager::metadata::db::ConstraintsDAO {
   }
 
   manager::metadata::ErrorCode delete_constraint_metadata(
-      [[maybe_unused]] std::string_view object_key, [[maybe_unused]] std::string_view object_value,
-      [[maybe_unused]] ObjectId& constraint_id) const override {
+      [[maybe_unused]] std::string_view object_key,
+      [[maybe_unused]] std::string_view object_value) const override {
     // Do nothing and return of ErrorCode::OK.
     return ErrorCode::OK;
   }

@@ -34,16 +34,14 @@ class ConstraintsProvider : public ProviderBase {
   manager::metadata::ErrorCode init();
 
   manager::metadata::ErrorCode add_constraint_metadata(const boost::property_tree::ptree& object,
-                                                       ObjectId& table_id);
+                                                       ObjectId& constraint_id);
 
-  manager::metadata::ErrorCode get_constraint_metadata(std::string_view key, std::string_view value,
+  manager::metadata::ErrorCode get_constraint_metadata(const ObjectId constraint_id,
                                                        boost::property_tree::ptree& object);
   manager::metadata::ErrorCode get_constraint_metadata(
       std::vector<boost::property_tree::ptree>& container);
 
-  manager::metadata::ErrorCode remove_constraint_metadata(std::string_view key,
-                                                          std::string_view value,
-                                                          ObjectId& table_id);
+  manager::metadata::ErrorCode remove_constraint_metadata(const ObjectId constraint_id);
 
  private:
   std::shared_ptr<ConstraintsDAO> constraints_dao_ = nullptr;

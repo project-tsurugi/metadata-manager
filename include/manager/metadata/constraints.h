@@ -96,17 +96,27 @@ class Constraints : public Metadata {
   ErrorCode add(const boost::property_tree::ptree& object, ObjectId* object_id) const override;
 
   ErrorCode get(const ObjectId object_id, boost::property_tree::ptree& object) const override;
-  ErrorCode get(std::string_view object_name, boost::property_tree::ptree& object) const override;
+  ErrorCode get([[maybe_unused]] std::string_view object_name,
+                [[maybe_unused]] boost::property_tree::ptree& object) const override {
+    return ErrorCode::UNKNOWN;
+  }
   ErrorCode get_all(std::vector<boost::property_tree::ptree>& container) const override;
 
+  ErrorCode update([[maybe_unused]] const ObjectIdType object_id,
+                   [[maybe_unused]] const boost::property_tree::ptree& object) const override {
+    return ErrorCode::UNKNOWN;
+  }
+
   ErrorCode remove(const ObjectId object_id) const override;
-  ErrorCode remove(std::string_view object_name, ObjectId* object_id) const override;
+  ErrorCode remove([[maybe_unused]] std::string_view object_name,
+                   [[maybe_unused]] ObjectId* object_id) const override {
+    return ErrorCode::UNKNOWN;
+  }
 
   ErrorCode add(const manager::metadata::Constraint& constraint) const;
   ErrorCode add(const manager::metadata::Constraint& constraint, ObjectId* object_id) const;
 
   ErrorCode get(const ObjectId object_id, manager::metadata::Constraint& constraint) const;
-  ErrorCode get(std::string_view object_name, manager::metadata::Constraint& constraint) const;
   ErrorCode get_all(std::vector<manager::metadata::Constraint>& container) const;
 
  private:
