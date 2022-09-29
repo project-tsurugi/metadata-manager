@@ -24,7 +24,7 @@
 #include "manager/metadata/helper/logging_helper.h"
 #include "manager/metadata/helper/table_metadata_helper.h"
 #include "manager/metadata/provider/datatypes_provider.h"
-//#include "manager/metadata/provider/indexes_provider.h"
+#include "manager/metadata/provider/indexes_provider.h"
 #include "manager/metadata/helper/ptree_helper.h"
 
 namespace manager::metadata {
@@ -38,7 +38,7 @@ using boost::property_tree::ptree;
  */
 boost::property_tree::ptree Index::convert_to_ptree() const
 {
-  auto pt = MetadataObject::convert_to_ptree();
+  auto pt = Object::convert_to_ptree();
   pt.put(OWNER_ID, this->owner_id);
   pt.put(ACCESS_METHOD, this->access_method);
   pt.put(NUMBER_OF_COLUMNS, this->number_of_columns);
@@ -61,7 +61,7 @@ boost::property_tree::ptree Index::convert_to_ptree() const
  */
 void Index::convert_from_ptree(const boost::property_tree::ptree& pt)
 {
-  MetadataObject::convert_from_ptree(pt);
+  Object::convert_from_ptree(pt);
   auto opt_int = pt.get_optional<int64_t>(OWNER_ID);
   this->owner_id = opt_int ? opt_int.get() : INVALID_OBJECT_ID;
 
@@ -77,6 +77,65 @@ void Index::convert_from_ptree(const boost::property_tree::ptree& pt)
   this->keys = ptree_helper::make_vector(pt, KEYS);
   this->keys_id = ptree_helper::make_vector(pt, KEYS_ID);
   this->options = ptree_helper::make_vector(pt, OPTIONS);
+}
+
+// ==========================================================================
+// Indexes class methods.
+
+ErrorCode Indexes::init() const {
+  return ErrorCode::OK;
+}
+
+ErrorCode Indexes::add(const boost::property_tree::ptree& object) const {
+  return ErrorCode::OK;
+}
+ErrorCode Indexes::add(const boost::property_tree::ptree& object,
+              ObjectId* object_id) const {
+  return ErrorCode::OK;
+}
+
+ErrorCode Indexes::get(const ObjectId object_id,
+              boost::property_tree::ptree& object) const {
+  return ErrorCode::OK;
+}
+
+ErrorCode Indexes::get(std::string_view object_name,
+              boost::property_tree::ptree& object) const {
+  return ErrorCode::OK;
+}
+
+ErrorCode Indexes::get_all(
+    std::vector<boost::property_tree::ptree>& container) const {
+  return ErrorCode::OK;
+}
+
+ErrorCode Indexes::remove(const ObjectId object_id) const {
+  return ErrorCode::OK;
+}
+ErrorCode Indexes::remove(std::string_view object_name,
+                  ObjectId* object_id) const {
+  return ErrorCode::OK;
+              
+}
+
+ErrorCode Indexes::add(const manager::metadata::Index& index) const {
+  return ErrorCode::OK;
+}
+ErrorCode Indexes::add(const manager::metadata::Index& index,
+              ObjectId* object_id) const {
+  return ErrorCode::OK;
+
+}
+
+ErrorCode Indexes::get(const ObjectId object_id,
+              manager::metadata::Index& index) const {
+  return ErrorCode::OK;
+}
+
+ErrorCode Indexes::get_all(
+    std::vector<manager::metadata::Index>& container) const {
+  return ErrorCode::OK;
+      
 }
 
 } // namespace manager::metadata

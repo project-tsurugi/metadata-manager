@@ -51,7 +51,7 @@ using helper::TableMetadataHelper;
  */
 boost::property_tree::ptree Column::convert_to_ptree() const
 {
-  auto pt = MetadataObject::convert_to_ptree();
+  auto pt = Object::convert_to_ptree();
   pt.put<ObjectId>(TABLE_ID,         this->table_id);
   pt.put<int64_t>(ORDINAL_POSITION,  this->ordinal_position);
   pt.put<ObjectId>(DATA_TYPE_ID,     this->data_type_id);
@@ -73,7 +73,7 @@ boost::property_tree::ptree Column::convert_to_ptree() const
  */
 void Column::convert_from_ptree(const boost::property_tree::ptree& pt)
 {
-  MetadataObject::convert_from_ptree(pt);
+  Object::convert_from_ptree(pt);
   auto opt_id = pt.get_optional<ObjectId>(TABLE_ID);
   this->table_id = opt_id ? opt_id.get() : INVALID_OBJECT_ID;
 

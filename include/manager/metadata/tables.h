@@ -30,7 +30,7 @@ namespace manager::metadata {
 /**
  * @brief Column metadata object.
  */
-struct Column : public MetadataObject {
+struct Column : public Object {
   static constexpr const char* const TABLE_ID         = "tableId";
   static constexpr const char* const ORDINAL_POSITION = "ordinalPosition";
   static constexpr const char* const DATA_TYPE_ID     = "dataTypeId";
@@ -54,7 +54,7 @@ struct Column : public MetadataObject {
   int64_t               direction;
 
 	Column() 
-      : MetadataObject(),
+      : Object(),
         table_id(INVALID_OBJECT_ID),
         ordinal_position(INVALID_VALUE),
         data_type_id(INVALID_OBJECT_ID),

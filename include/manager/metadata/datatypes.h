@@ -27,7 +27,7 @@
 
 namespace manager::metadata {
 
-struct DataType : public MetadataObject {
+struct DataType : public Object {
   static constexpr const char* const PG_DATA_TYPE = "pg_dataType";
   static constexpr const char* const PG_DATA_TYPE_NAME = "pg_dataTypeName";
   static constexpr const char* const PG_DATA_TYPE_QUALIFIED_NAME =
@@ -38,7 +38,7 @@ struct DataType : public MetadataObject {
   std::string pg_data_type_qualified_name;
 
   DataType() 
-      : MetadataObject(),
+      : Object(),
         pg_data_type(INVALID_VALUE),
         pg_data_type_name(""),
         pg_data_type_qualified_name("") {}

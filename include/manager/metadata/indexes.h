@@ -19,12 +19,13 @@
 #include <vector>
 #include <boost/property_tree/ptree.hpp>
 #include "metadata.h"
+#include "manager/metadata/provider/indexes_provider.h"
 
 namespace manager::metadata {
 /**
  * @brief Index metadata object.
  */
-struct Index : public MetadataObject {
+struct Index : public Object {
   enum class AccessMethod : int64_t {
     DEFAULT = 0,
     MASS_TREE_METHOD,
@@ -62,7 +63,7 @@ struct Index : public MetadataObject {
   std::vector<int64_t>  options;   // refer to enumlation of Direction.
 
   Index()
-      : MetadataObject(),
+      : Object(),
         owner_id(INVALID_OBJECT_ID),
         access_method(INVALID_VALUE),
         number_of_columns(INVALID_VALUE),
@@ -79,7 +80,9 @@ struct Index : public MetadataObject {
 class Indexes : public Metadata {
   explicit Indexes(std::string_view database)
       : Indexes(database, kDefaultComponent) {}
-  Indexes(std::string_view database, std::string_view component);
+  Indexes(std::string_view database, std::string_view component)
+      : Metadata(database, component),
+        provider_(std::make_unique<db::IndexesProvider>()) {}
 
   Indexes(const Indexes&) = delete;
   Indexes& operator=(const Indexes&) = delete;
@@ -109,5 +112,8 @@ class Indexes : public Metadata {
                 manager::metadata::Index& index) const;
   ErrorCode get_all(
       std::vector<manager::metadata::Index>& container) const;
+
+ private:
+  std::unique_ptr<manager::metadata::db::IndexesProvider> provider_ = nullptr;
 };
 } // namespace manager::metadata

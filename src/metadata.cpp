@@ -25,12 +25,12 @@
 namespace manager::metadata {
 
 // ==========================================================================
-// MetadataObject struct methods.
+// Object struct methods.
 /** 
  * @brief  Transform metadata from structure object to ptree object.
  * @return ptree object.
  */
-boost::property_tree::ptree MetadataObject::convert_to_ptree() const {
+boost::property_tree::ptree Object::convert_to_ptree() const {
   boost::property_tree::ptree pt;
   pt.put<int64_t>(FORMAT_VERSION, this->format_version);
   pt.put<int64_t>(GENERATION, this->generation);
@@ -45,7 +45,7 @@ boost::property_tree::ptree MetadataObject::convert_to_ptree() const {
  * @return  structure object of metadata.
  */
 void 
-MetadataObject::convert_from_ptree(const boost::property_tree::ptree& pt) {
+Object::convert_from_ptree(const boost::property_tree::ptree& pt) {
   auto opt_int = pt.get_optional<int64_t>(FORMAT_VERSION);
   this->format_version = opt_int  ? opt_int.get() : INVALID_VALUE;
 
@@ -65,7 +65,7 @@ MetadataObject::convert_from_ptree(const boost::property_tree::ptree& pt) {
  *  @return ptree object.
  */
 boost::property_tree::ptree ClassObject::convert_to_ptree() const {
-  auto pt = MetadataObject::convert_to_ptree();
+  auto pt = Object::convert_to_ptree();
   pt.put(DATABASE_NAME, this->database_name);
   pt.put(SCHEMA_NAME, this->schema_name);
   pt.put(ACL, this->acl);
@@ -80,7 +80,7 @@ boost::property_tree::ptree ClassObject::convert_to_ptree() const {
  */
 void 
 ClassObject::convert_from_ptree(const boost::property_tree::ptree& pt) {
-  MetadataObject::convert_from_ptree(pt);
+  Object::convert_from_ptree(pt);
   auto opt_str = pt.get_optional<std::string>(DATABASE_NAME);
   this->database_name = opt_str ? opt_str.get() : "";
 

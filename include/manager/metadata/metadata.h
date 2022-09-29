@@ -37,7 +37,7 @@ static constexpr const int64_t INVALID_VALUE = -1;
 /**
  * @brief This class manage common metadata of all metadata objects.
  */
-struct MetadataObject {
+struct Object {
   static constexpr const char* FORMAT_VERSION = "formatVersion";
   static constexpr const char* GENERATION     = "generation";
   static constexpr const char* ID             = "id";
@@ -48,7 +48,7 @@ struct MetadataObject {
   int64_t id;             // object ID.
   std::string name;       // object name.
 
-  MetadataObject()
+  Object()
       : format_version(1), 
         generation(1), 
         id(INVALID_OBJECT_ID), 
@@ -65,7 +65,7 @@ struct MetadataObject {
  * @note  Class  metadata objects are such as table objects. 
  * e.g.) table, index, view, materialized-view, etc...
  */
-struct ClassObject : public MetadataObject {
+struct ClassObject : public Object {
   static constexpr const char* const DATABASE_NAME  = "databaseName";
   static constexpr const char* const SCHEMA_NAME    = "schemaName";
   static constexpr const char* const ACL            = "acl";
@@ -75,7 +75,7 @@ struct ClassObject : public MetadataObject {
   std::string acl;            // access control list.
 
   ClassObject()
-      : MetadataObject(),
+      : Object(),
         database_name(""),
         schema_name(""),
         acl("") {}
