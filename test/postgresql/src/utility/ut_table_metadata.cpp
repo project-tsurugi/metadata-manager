@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 tsurugi project.
+ * Copyright 2020-2022 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -118,8 +118,44 @@ void UTTableMetadata::generate_ptree() {
 
     ptree_columns.push_back(std::make_pair("", ptree_column));
   }
-
   tables.add_child(Tables::COLUMNS_NODE, ptree_columns);
+
+  // constraints
+  ptree ptree_constraints;
+  for (UTConstraintMetadata constraint : constraints) {
+    ptree ptree_constraint;
+
+    // constraint name
+    ptree_constraint.put(Constraint::NAME, constraint.name);
+
+    // constraint type
+    ptree_constraint.put(Constraint::TYPE, constraint.type);
+
+    // constraint columns
+    if (constraint.columns >= 0) {
+      ptree_constraint.put(Constraint::COLUMNS, constraint.columns);
+    }
+    if (!constraint.p_columns.empty()) {
+      ptree_constraint.add_child(Constraint::COLUMNS, constraint.p_columns);
+    }
+
+    // constraint columns id
+    if (constraint.columns_id >= 0) {
+      ptree_constraint.put(Constraint::COLUMNS_ID, constraint.columns_id);
+    }
+    if (!constraint.p_columns_id.empty()) {
+      ptree_constraint.add_child(Constraint::COLUMNS_ID, constraint.p_columns_id);
+    }
+
+    // constraint type
+    ptree_constraint.put(Constraint::INDEX_ID, constraint.index_id);
+
+    // constraint type
+    ptree_constraint.put(Constraint::EXPRESSION, constraint.expression);
+
+    ptree_constraints.push_back(std::make_pair("", ptree_constraint));
+  }
+  tables.add_child(Tables::CONSTRAINTS_NODE, ptree_constraints);
 }
 
 }  // namespace manager::metadata::testing
