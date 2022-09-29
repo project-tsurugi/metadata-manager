@@ -13,23 +13,59 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef MANAGER_METADATA_DAO_POSTGRESQL_DB_SESSION_MANAGER_PG_H_
-#define MANAGER_METADATA_DAO_POSTGRESQL_DB_SESSION_MANAGER_PG_H_
+#pragma once
 
 #include <memory>
 
 #include "manager/metadata/dao/db_session_manager.h"
 #include "manager/metadata/dao/postgresql/common_pg.h"
+#include "manager/metadata/dao/postgresql/pg_common.h"
 #include "manager/metadata/error_code.h"
 
-namespace manager::metadata::db::postgresql {
+namespace manager::metadata::db {
+/**
+ * @brief
+ */
+struct Connection {
+  PgConnectionPtr pg_conn;
+};
 
+/**
+ * @brief
+ */
+class DbSessionManagerPg : public DBSessionManager {
+ public:
+  std::shared_ptr<Dao> get_index_dao() override;
+
+  Connection connection() const { return conn_; }
+  manager::metadata::ErrorCode start_transaction() override;
+  manager::metadata::ErrorCode commit() override;
+  manager::metadata::ErrorCode rollback() override;
+
+ private:
+   Connection conn_;
+
+  manager::metadata::ErrorCode connect();
+  manager::metadata::ErrorCode set_always_secure_search_path() const;
+};  // class DBSessionManager
+
+}  // namespace manager::metadata::db
+
+
+
+namespace manager::metadata::db::postgresql {
+/**
+ * @brief
+ */
 class DBSessionManager : public manager::metadata::db::DBSessionManager {
  public:
   manager::metadata::ErrorCode get_dao(
       const GenericDAO::TableName table_name,
       std::shared_ptr<GenericDAO>& gdao) override;
 
+  std::shared_ptr<Dao> get_index_dao() override { return nullptr; } // dummy
+
+  Connection connection() const { return conn_; }
   manager::metadata::ErrorCode start_transaction() override;
   manager::metadata::ErrorCode commit() override;
   manager::metadata::ErrorCode rollback() override;
@@ -37,6 +73,7 @@ class DBSessionManager : public manager::metadata::db::DBSessionManager {
   ConnectionSPtr get_connection() const { return connection_; }
 
  private:
+  manager::metadata::db::Connection conn_;  // dummy for build.
   ConnectionSPtr connection_;
 
   manager::metadata::ErrorCode connect();
@@ -44,5 +81,3 @@ class DBSessionManager : public manager::metadata::db::DBSessionManager {
 };  // class DBSessionManager
 
 }  // namespace manager::metadata::db::postgresql
-
-#endif  // MANAGER_METADATA_DAO_POSTGRESQL_DB_SESSION_MANAGER_PG_H_

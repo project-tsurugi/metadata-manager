@@ -181,14 +181,15 @@ template ErrorCode DbcUtils::str_to_integral(const char* str,
 
 /**
  * @brief Convert string to integer.
- * @param (input)        [in]   C-string containing the representation of
- *   decimal integer literal (base 10).
- * @param (return_value) [out]  the converted integral number.
+ * @param input   [in]  C-string containing the representation of 
+ * decimal integer literal (base 10).
+ * @param output  [out] the converted integral number.
  * @return ErrorCode::OK if success, otherwise an error code.
  */
 template <typename T>
 [[nodiscard]] ErrorCode DbcUtils::str_to_integral(const char* input,
-                                                  T& return_value) {
+                                                  T& output) {
+
   if (!input || *input == '\0' || std::isspace(*input)) {
     return ErrorCode::INTERNAL_ERROR;
   }
@@ -198,12 +199,13 @@ template <typename T>
 
   const T result = call_integral<T>(input, &end, BASE_10);
   if (errno == 0 && *end == '\0') {
-    return_value = result;
+    output = result;
     return ErrorCode::OK;
   }
   LOG_ERROR << Message::CONVERT_STRING_TO_INT_FAILURE;
   return ErrorCode::INTERNAL_ERROR;
 }
+
 /**
  * @brief Gets the number of affected rows
  *   if command was INSERT, UPDATE, or DELETE.
@@ -290,6 +292,15 @@ ErrorCode DbcUtils::prepare(const ConnectionSPtr& connection,
   }
 
   return ErrorCode::OK;
+}
+
+ErrorCode DbcUtils::execute_statement(const ConnectionSPtr& connection,
+                                      std::string_view statement_name,
+                                      const std::vector<char const*>& param_values,
+                                      PGresult*& res) {
+  return exec_prepared(connection,
+                       statement_name,
+                       param_values, res);
 }
 
 /**

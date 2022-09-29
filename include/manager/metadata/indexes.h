@@ -78,6 +78,7 @@ struct Index : public Object {
  * @brief Container of index metadata objects.
  */
 class Indexes : public Metadata {
+ public:
   explicit Indexes(std::string_view database)
       : Indexes(database, kDefaultComponent) {}
   Indexes(std::string_view database, std::string_view component)
@@ -99,6 +100,9 @@ class Indexes : public Metadata {
                 boost::property_tree::ptree& object) const override;
   ErrorCode get_all(
       std::vector<boost::property_tree::ptree>& container) const override;
+
+  ErrorCode update(const ObjectIdType object_id,
+                  const boost::property_tree::ptree& object) const override;
 
   ErrorCode remove(const ObjectId object_id) const override;
   ErrorCode remove(std::string_view object_name,

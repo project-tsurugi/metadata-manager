@@ -60,8 +60,8 @@ boost::property_tree::ptree Column::convert_to_ptree() const
   pt.put<bool>(NULLABLE,             this->nullable);
   pt.put(DEFAULT_EXPR,               this->default_expr);
   pt.put<int64_t>(DIRECTION,         this->direction);
-  ptree params = ptree_helper::make_array_ptree(this->data_lengths);
-  pt.push_back(std::make_pair(DATA_LENGTHS, params));
+//  ptree params = ptree_helper::make_array_ptree(this->data_lengths);
+//  pt.push_back(std::make_pair(DATA_LENGTHS, params));
 
   return pt;
 }
@@ -86,7 +86,7 @@ void Column::convert_from_ptree(const boost::property_tree::ptree& pt)
   opt_int = pt.get_optional<int64_t>(DATA_LENGTH);
   this->data_length = opt_int ? opt_int.get() : INVALID_VALUE;
 
-  this->data_lengths = ptree_helper::make_vector(pt, DATA_LENGTHS);
+//  this->data_lengths = ptree_helper::make_vector(pt, DATA_LENGTHS);
 
   auto opt_bool = pt.get_optional<bool>(VARYING);
   this->varying = opt_bool ? opt_bool.get() : INVALID_VALUE;
@@ -110,10 +110,10 @@ void Column::convert_from_ptree(const boost::property_tree::ptree& pt)
 boost::property_tree::ptree Table::convert_to_ptree() const
 {
   boost::property_tree::ptree ptree = ClassObject::convert_to_ptree();
-  ptree.put(Tables::NAMESPACE, namespace_name);
-//  ptree.put<int64_t>(Tables::OWNER_ROLE_ID, table.owner_id);
-//  ptree.put(Tables::ACL, table.acl);
-  ptree.put<int64_t>(Tables::TUPLES, tuples);
+  ptree.put(Table::NAMESPACE, namespace_name);
+//  ptree.put<int64_t>(Table::OWNER_ROLE_ID, table.owner_id);
+//  ptree.put(Table::ACL, table.acl);
+  ptree.put<int64_t>(Table::TUPLES, tuples);
 
   boost::property_tree::ptree child;
   
@@ -144,17 +144,17 @@ boost::property_tree::ptree Table::convert_to_ptree() const
 void Table::convert_from_ptree(const boost::property_tree::ptree& ptree)
 {
   ClassObject::convert_from_ptree(ptree);
-  auto namespace_name   = ptree.get_optional<std::string>(Tables::NAMESPACE);
-  auto tuples           = ptree.get_optional<int64_t>(Tables::TUPLES);
-//auto owner_id         = ptree.get_optional<int64_t>(Tables::OWNER_ROLE_ID);
-//auto acl              = ptree.get_optional<std::string>(Tables::ACL);
+  auto namespace_name = ptree.get_optional<std::string>(Table::NAMESPACE);
+  this->namespace_name = namespace_name ? namespace_name.get()  : "";
 
+  auto tuples = ptree.get_optional<int64_t>(Table::TUPLES);
+  this->tuples = tuples ? tuples.get() : INVALID_VALUE;
 
-  namespace_name  = 
-      namespace_name  ? namespace_name.get()  : "";
-  tuples    = tuples    ? tuples.get()        : INVALID_VALUE;
-//table.owner_id  = owner_id  ? owner_role_id.get() : INVALID_VALUE;
-//table.acl       = acl       ? acl.get()           : INVALID_VALUE;
+//auto owner_id = ptree.get_optional<int64_t>(Table::OWNER_ROLE_ID);
+//table.owner_id = owner_id  ? owner_role_id.get() : INVALID_VALUE;
+
+//auto acl = ptree.get_optional<std::string>(Table::ACL);
+//table.acl= acl ? acl.get() : INVALID_VALUE;
 
   // primary keys
   BOOST_FOREACH (const auto& node, ptree.get_child(Tables::PRIMARY_KEY_NODE)) {

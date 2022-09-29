@@ -13,8 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef MANAGER_METADATA_DAO_DB_SESSION_MANAGER_H_
-#define MANAGER_METADATA_DAO_DB_SESSION_MANAGER_H_
+#pragma once
 
 #include <memory>
 #include <string>
@@ -23,18 +22,32 @@
 #include "manager/metadata/error_code.h"
 
 namespace manager::metadata::db {
+class Dao;
 
+/**
+ * @brief
+ */
 class DBSessionManager {
  public:
+  DBSessionManager() {}
   virtual ~DBSessionManager() {}
 
   virtual manager::metadata::ErrorCode get_dao(
       const GenericDAO::TableName table_name,
       std::shared_ptr<GenericDAO>& gdao) = 0;
 
+  virtual std::shared_ptr<Dao> get_index_dao() = 0;
+
   virtual manager::metadata::ErrorCode start_transaction() = 0;
   virtual manager::metadata::ErrorCode commit() = 0;
   virtual manager::metadata::ErrorCode rollback() = 0;
+
+//  virtual Connection connection() const = 0;
+//  virtual manager::metadata::ErrorCode connect() = 0;
+//  virtual manager::metadata::ErrorCode start_transaction() = 0;
+//  virtual manager::metadata::ErrorCode commit() = 0;
+//  virtual manager::metadata::ErrorCode rollback() = 0;
+//  virtual void close() = 0;
 
  protected:
   manager::metadata::ErrorCode create_dao(
@@ -44,5 +57,3 @@ class DBSessionManager {
 };  // class DBSessionManager
 
 }  // namespace manager::metadata::db
-
-#endif  // MANAGER_METADATA_DAO_DB_SESSION_MANAGER_H_

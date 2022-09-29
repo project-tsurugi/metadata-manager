@@ -109,6 +109,18 @@ ErrorCode Indexes::get_all(
   return ErrorCode::OK;
 }
 
+/**
+ * @brief Update metadata-table with metadata-object.
+ * @param object_id [in]  ID of the metadata-table to update.
+ * @param object    [in]  metadata-object to update.
+ * @return ErrorCode::OK if success, otherwise an error code.
+ */
+ErrorCode Indexes::update(const ObjectIdType object_id,
+                          const boost::property_tree::ptree& object) const {
+                          
+  return ErrorCode::OK;
+}
+
 ErrorCode Indexes::remove(const ObjectId object_id) const {
   return ErrorCode::OK;
 }

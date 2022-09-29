@@ -72,6 +72,7 @@ struct ClassObject : public Object {
 
   std::string database_name;  // 1st namespace of full qualified object name.
   std::string schema_name;    // 2nd namespace of full qualified object name.
+  std::string namespace_name; // obsolete.
   std::string acl;            // access control list.
 
   ClassObject()
