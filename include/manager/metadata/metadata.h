@@ -68,17 +68,19 @@ struct Object {
 struct ClassObject : public Object {
   static constexpr const char* const DATABASE_NAME  = "databaseName";
   static constexpr const char* const SCHEMA_NAME    = "schemaName";
+  static constexpr const char* const NAMESPACE      = "namespace";
   static constexpr const char* const ACL            = "acl";
 
   std::string database_name;  // 1st namespace of full qualified object name.
   std::string schema_name;    // 2nd namespace of full qualified object name.
-  std::string namespace_name; // obsolete.
+  std::string namespace_name; 
   std::string acl;            // access control list.
 
   ClassObject()
       : Object(),
         database_name(""),
         schema_name(""),
+        namespace_name(""),
         acl("") {}
   /** @brief  Convert metadata from structure object to ptree object.
    *  @return ptree object.

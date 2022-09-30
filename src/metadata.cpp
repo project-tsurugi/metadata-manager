@@ -39,6 +39,7 @@ boost::property_tree::ptree Object::convert_to_ptree() const {
 
   return pt;
 };
+
 /**
  * @brief   Transform metadata from ptree object to structure object.
  * @param   pt [in] ptree object of metdata.
@@ -68,6 +69,7 @@ boost::property_tree::ptree ClassObject::convert_to_ptree() const {
   auto pt = Object::convert_to_ptree();
   pt.put(DATABASE_NAME, this->database_name);
   pt.put(SCHEMA_NAME, this->schema_name);
+  pt.put(NAMESPACE, namespace_name);
   pt.put(ACL, this->acl);
 
   return pt;
@@ -86,6 +88,9 @@ ClassObject::convert_from_ptree(const boost::property_tree::ptree& pt) {
 
   opt_str = pt.get_optional<std::string>(SCHEMA_NAME);
   this->schema_name = opt_str ? opt_str.get()   : "";
+
+  auto namespace_name = pt.get_optional<std::string>(NAMESPACE);
+  this->namespace_name = namespace_name ? namespace_name.get()  : "";
 
   opt_str = pt.get_optional<std::string>(ACL);
   this->acl = opt_str ? opt_str.get() : "";

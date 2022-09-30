@@ -69,11 +69,9 @@ struct Column : public Object {
  * @brief Table metadata object.
  */
 struct Table : public ClassObject {
-  static constexpr const char* const NAMESPACE  = "namespace";
   static constexpr const char* const OWNER_ID   = "ownerId";
   static constexpr const char* const TUPLES     = "tuples";
 
-  std::string namespace_name;
   int64_t     owner_id;
   int64_t     tuples;
   std::vector<int64_t>    primary_keys;
@@ -83,7 +81,6 @@ struct Table : public ClassObject {
 
   Table()
       : ClassObject(),
-        namespace_name(""), 
         owner_id(INVALID_OBJECT_ID), 
         tuples(INVALID_VALUE) {}
   boost::property_tree::ptree convert_to_ptree() const override;
