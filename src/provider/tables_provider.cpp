@@ -129,20 +129,18 @@ ErrorCode TablesProvider::add_table_metadata(const boost::property_tree::ptree& 
         // Copy to the temporary area.
         ptree constraint = node.second;
 
+        // Erase constraint-id.
+        constraint.erase(Constraint::ID);
         // Set table-id.
         constraint.put(Constraint::TABLE_ID, table_id);
 
         ObjectId added_id = 0;
         // Insert the constraint metadata.
         error = constraints_dao_->insert_constraint_metadata(constraint, added_id);
+        error = (error == ErrorCode::NOT_FOUND ? ErrorCode::OK : error);
 
         if (error != ErrorCode::OK) {
-          // Roll back the transaction.
-          ErrorCode rollback_result = session_manager_->rollback();
-          if (rollback_result != ErrorCode::OK) {
-            error = rollback_result;
-          }
-          return error;
+          break;
         }
       }
     }

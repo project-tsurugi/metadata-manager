@@ -37,6 +37,8 @@ class TableMetadataHelper {
   static void add_table(const boost::property_tree::ptree& new_table,
                         ObjectIdType* ret_table_id = nullptr);
 
+  static void remove_table(const ObjectIdType table_id);
+
   static void check_table_metadata_expected(const boost::property_tree::ptree& expected,
                                             const boost::property_tree::ptree& actual);
 

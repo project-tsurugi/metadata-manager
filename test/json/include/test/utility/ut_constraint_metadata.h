@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TEST_JSON_INCLUDE_TEST_UTILITY_UT_CONSTRAINT_METADATA_H_
-#define TEST_JSON_INCLUDE_TEST_UTILITY_UT_CONSTRAINT_METADATA_H_
+#ifndef TEST_JSON_INCLUDE_TEST_UTILITY_UT_CONSTRAINT_METADATA_1_H_
+#define TEST_JSON_INCLUDE_TEST_UTILITY_UT_CONSTRAINT_METADATA_1_H_
 
 #include <string>
 #include <vector>
@@ -40,11 +40,13 @@ class UTConstraintMetadata {
   int64_t index_id = NOT_INITIALIZED;
   std::string expression;
 
+  boost::property_tree::ptree constraints_metadata;
+
   UTConstraintMetadata() = delete;
   explicit UTConstraintMetadata(std::string name, Constraint::ConstraintType type)
       : name(name), type(static_cast<int64_t>(type)) {}
 
-  void show();
+  void generate_ptree();
 
  private:
   static constexpr int64_t NOT_INITIALIZED = -1;
@@ -52,4 +54,4 @@ class UTConstraintMetadata {
 
 }  // namespace manager::metadata::testing
 
-#endif  // TEST_JSON_INCLUDE_TEST_UTILITY_UT_CONSTRAINT_METADATA_H_
+#endif  // TEST_JSON_INCLUDE_TEST_UTILITY_UT_CONSTRAINT_METADATA_1_H_

@@ -29,7 +29,7 @@ namespace manager::metadata::db::json {
 class DBSessionManager : public manager::metadata::db::DBSessionManager {
  public:
   DBSessionManager()
-      : meta_object_(std::make_unique<boost::property_tree::ptree>()) {}
+      : file_name_(""), meta_object_(std::make_unique<boost::property_tree::ptree>()) {}
 
   manager::metadata::ErrorCode get_dao(
       const GenericDAO::TableName table_name,

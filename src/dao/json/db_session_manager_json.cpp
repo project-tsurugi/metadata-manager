@@ -65,7 +65,9 @@ ErrorCode DBSessionManager::start_transaction() {
 
   init_meta_data();
 
-  error = ErrorCode::OK;
+  // Load the meta data from the JSON file.
+  error = load_object();
+
   return error;
 }
 
@@ -120,20 +122,24 @@ ErrorCode DBSessionManager::connect(std::string_view file_name,
                                     std::string_view initial_node) {
   ErrorCode error = ErrorCode::UNKNOWN;
 
-  file_name_ = std::string(file_name);
-
-  std::ifstream file(file_name_);
-  if (file) {
-    // open metadata-table
+  if (!file_name_.empty()) {
     error = ErrorCode::OK;
   } else {
-    // create metadata-table
-    init_meta_data();
-    meta_object_->put(initial_node.data(), "");
-    error = save_object();
+    file_name_ = std::string(file_name);
 
-    if (error != ErrorCode::OK) {
-      file_name_.clear();
+    std::ifstream file(file_name_);
+    if (file) {
+      // open metadata-table
+      error = ErrorCode::OK;
+    } else {
+      // create metadata-table
+      init_meta_data();
+      meta_object_->put(initial_node.data(), "");
+      error = save_object();
+
+      if (error != ErrorCode::OK) {
+        file_name_.clear();
+      }
     }
   }
 
@@ -160,6 +166,13 @@ ErrorCode DBSessionManager::load_object() const {
     error = ErrorCode::NOT_INITIALIZED;
     return error;
   }
+
+  if (!meta_object_->empty()) {
+    LOG_DEBUG << "Metadata is already loaded.";
+    error = ErrorCode::OK;
+    return error;
+  }
+  LOG_DEBUG << "Loading Metadata.";
 
   try {
     json_parser::read_json(file_name_, *(meta_object_.get()));

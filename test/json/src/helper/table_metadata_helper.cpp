@@ -31,6 +31,10 @@
 
 namespace manager::metadata::testing {
 
+#define EXPECT_EQ_T(expected, actual, text)                 \
+  if (expected != actual) std::cout << "[" << text << "] "; \
+  EXPECT_EQ(expected, actual)
+
 namespace json_parser = boost::property_tree::json_parser;
 
 using boost::property_tree::json_parser_error;
@@ -231,12 +235,31 @@ void TableMetadataHelper::add_table(const manager::metadata::Table& new_table,
   EXPECT_GT(ret_table_id, 0);
 
   UTUtils::print("-- add table metadata --");
-  UTUtils::print("new table id:", ret_table_id);
+  UTUtils::print(" new table id:", ret_table_id);
   //  UTUtils::print(new_table);
 
   if (table_id != nullptr) {
     *table_id = ret_table_id;
   }
+}
+
+/**
+ * @brief Remove one table metadata to table metadata table.
+ * @param (table_id)  [in]   table id of remove table metadata.
+ * @return none.
+ */
+void TableMetadataHelper::remove_table(const ObjectIdType table_id) {
+  UTUtils::print("-- remove table metadata --");
+  UTUtils::print(" table id: ", table_id);
+
+  auto tables = std::make_unique<Tables>(GlobalTestEnvironment::TEST_DB);
+
+  ErrorCode error = tables->init();
+  ASSERT_EQ(ErrorCode::OK, error);
+
+  // remove table metadata.
+  error = tables->remove(table_id);
+  ASSERT_EQ(ErrorCode::OK, error);
 }
 
 /**
@@ -428,8 +451,7 @@ void TableMetadataHelper::check_table_metadata_expected(const manager::metadata:
         }
       }
     } else {
-      bool actual = (columns_expected.size() == 0) && !o_constraints_actual;
-      EXPECT_TRUE(actual);
+      EXPECT_EQ((columns_expected.size() == 0), !o_constraints_actual.is_initialized());
     }
   }
 }
@@ -458,10 +480,8 @@ void TableMetadataHelper::check_table_metadata_expected(const boost::property_tr
     std::string& s_namespace_expected = o_namespace_expected.value();
     std::string& s_namespace_actual   = o_namespace_actual.value();
     EXPECT_EQ(s_namespace_expected, s_namespace_actual);
-  } else if (!o_namespace_expected && !o_namespace_actual) {
-    ASSERT_TRUE(true);
   } else {
-    ASSERT_TRUE(false);
+    EXPECT_EQ(o_namespace_expected.is_initialized(), o_namespace_actual.is_initialized());
   }
 
   // primary keys
@@ -472,10 +492,8 @@ void TableMetadataHelper::check_table_metadata_expected(const boost::property_tr
   auto o_tuples_actual   = expected.get_optional<float>(Tables::TUPLES);
   if (o_tuples_expected && o_tuples_actual) {
     EXPECT_EQ(o_tuples_expected.value(), o_tuples_actual.value());
-  } else if (!o_tuples_expected && !o_tuples_actual) {
-    ASSERT_TRUE(true);
   } else {
-    ASSERT_TRUE(false);
+    EXPECT_EQ(o_namespace_expected.is_initialized(), o_namespace_actual.is_initialized());
   }
 
   // column metadata
@@ -489,7 +507,7 @@ void TableMetadataHelper::check_table_metadata_expected(const boost::property_tr
       p_columns_expected.emplace_back(column);
     }
     // Verifies that the number of column metadata is expected number.
-    EXPECT_EQ(p_columns_expected.size(), o_columns_actual.size());
+    ASSERT_EQ(p_columns_expected.size(), o_columns_actual.size());
 
     auto column_actual = o_columns_actual.begin();
     for (int op = 0; static_cast<size_t>(op) < p_columns_expected.size(); op++) {
@@ -541,10 +559,8 @@ void TableMetadataHelper::check_table_metadata_expected(const boost::property_tr
       }
       column_actual++;
     }
-  } else if (!o_columns_expected) {
-    ASSERT_TRUE(true);
   } else {
-    ASSERT_TRUE(false);
+    EXPECT_FALSE(o_columns_expected.is_initialized());
   }
 }
 
@@ -580,27 +596,27 @@ void TableMetadataHelper::check_table_metadata_expected(const boost::property_tr
 
   // column metadata
   {
-    auto o_columns_expected = expected.get_child_optional(Tables::COLUMNS_NODE);
-    auto o_columns_actual   = actual.get_child_optional(Tables::COLUMNS_NODE);
+    auto o_expected = expected.get_child_optional(Tables::COLUMNS_NODE);
+    auto o_actual   = actual.get_child_optional(Tables::COLUMNS_NODE);
 
-    if (o_columns_expected && o_columns_actual) {
-      std::vector<ptree> p_columns_expected;
-      std::vector<ptree> p_columns_actual;
-      BOOST_FOREACH (const ptree::value_type& node, o_columns_expected.value()) {
+    if (o_expected && o_actual) {
+      std::vector<ptree> p_expected;
+      std::vector<ptree> p_actual;
+      BOOST_FOREACH (const ptree::value_type& node, o_expected.value()) {
         ptree column = node.second;
-        p_columns_expected.emplace_back(column);
+        p_expected.emplace_back(column);
       }
-      BOOST_FOREACH (const ptree::value_type& node, o_columns_actual.value()) {
+      BOOST_FOREACH (const ptree::value_type& node, o_actual.value()) {
         ptree column = node.second;
-        p_columns_actual.emplace_back(column);
+        p_actual.emplace_back(column);
       }
 
       // Verifies that the number of column metadata is expected number.
-      EXPECT_EQ(p_columns_expected.size(), p_columns_actual.size());
+      EXPECT_EQ(p_expected.size(), p_actual.size());
 
-      for (int op = 0; static_cast<size_t>(op) < p_columns_expected.size(); op++) {
-        ptree column_expected = p_columns_expected[op];
-        ptree column_actual   = p_columns_actual[op];
+      for (int op = 0; static_cast<size_t>(op) < p_expected.size(); op++) {
+        ptree column_expected = p_expected[op];
+        ptree column_actual   = p_actual[op];
 
         // column metadata id
         boost::optional<ObjectIdType> id_actual =
@@ -630,33 +646,33 @@ void TableMetadataHelper::check_table_metadata_expected(const boost::property_tr
         check_expected<std::string>(column_expected, column_actual, Tables::Column::DEFAULT);
       }
     } else {
-      EXPECT_TRUE(!o_columns_expected && !o_columns_actual);
+      EXPECT_EQ(o_expected.is_initialized(), o_actual.is_initialized());
     }
   }
 
   // constraint metadata
   {
-    auto o_constraints_expected = expected.get_child_optional(Tables::CONSTRAINTS_NODE);
-    auto o_constraints_actual   = actual.get_child_optional(Tables::CONSTRAINTS_NODE);
+    auto o_expected = expected.get_child_optional(Tables::CONSTRAINTS_NODE);
+    auto o_actual   = actual.get_child_optional(Tables::CONSTRAINTS_NODE);
 
-    if (o_constraints_expected && o_constraints_actual) {
-      std::vector<ptree> p_constraints_expected;
-      std::vector<ptree> p_constraints_actual;
-      BOOST_FOREACH (const ptree::value_type& node, o_constraints_expected.value()) {
+    if (o_expected && o_actual) {
+      std::vector<ptree> p_expected;
+      std::vector<ptree> p_actual;
+      BOOST_FOREACH (const ptree::value_type& node, o_expected.value()) {
         ptree constraint = node.second;
-        p_constraints_expected.emplace_back(constraint);
+        p_expected.emplace_back(constraint);
       }
-      BOOST_FOREACH (const ptree::value_type& node, o_constraints_actual.value()) {
+      BOOST_FOREACH (const ptree::value_type& node, o_actual.value()) {
         ptree constraint = node.second;
-        p_constraints_actual.emplace_back(constraint);
+        p_actual.emplace_back(constraint);
       }
 
       // Verifies that the number of constraint metadata is expected number.
-      EXPECT_EQ(p_constraints_expected.size(), p_constraints_actual.size());
+      ASSERT_EQ(p_expected.size(), p_actual.size());
 
-      for (std::size_t op = 0; op < p_constraints_expected.size(); op += 1) {
-        ptree constraints_expected = p_constraints_expected[op];
-        ptree constraints_actual   = p_constraints_actual[op];
+      for (std::size_t op = 0; op < p_expected.size(); op += 1) {
+        ptree constraints_expected = p_expected[op];
+        ptree constraints_actual   = p_actual[op];
 
         // constraint metadata id
         boost::optional<ObjectIdType> id_actual =
@@ -682,8 +698,12 @@ void TableMetadataHelper::check_table_metadata_expected(const boost::property_tr
         check_expected<std::string>(constraints_expected, constraints_actual,
                                     Constraint::EXPRESSION);
       }
+    } else if (o_expected) {
+      EXPECT_EQ(o_expected.value().empty(), !o_actual.is_initialized());
+    } else if (o_actual) {
+      EXPECT_EQ(!o_expected.is_initialized(), o_actual.value().empty());
     } else {
-      EXPECT_TRUE(!o_constraints_expected && !o_constraints_actual);
+      EXPECT_EQ(!o_expected.is_initialized(), !o_actual.is_initialized());
     }
   }
 }
@@ -704,14 +724,14 @@ void TableMetadataHelper::check_child_expected(const boost::property_tree::ptree
   if (o_expected && o_actual) {
     auto& p_expected = o_expected.value();
     auto& p_actual   = o_actual.value();
-    EXPECT_EQ(UTUtils::get_tree_string(p_expected), UTUtils::get_tree_string(p_actual));
-
+    EXPECT_EQ_T(UTUtils::get_tree_string(p_expected), UTUtils::get_tree_string(p_actual),
+                meta_name);
   } else if (o_expected) {
-    EXPECT_EQ(o_expected.value().empty(), !o_actual.is_initialized());
+    EXPECT_EQ_T(o_expected.value().empty(), !o_actual.is_initialized(), meta_name);
   } else if (o_actual) {
-    EXPECT_EQ(!o_expected.is_initialized(), o_actual.value().empty());
+    EXPECT_EQ_T(!o_expected.is_initialized(), o_actual.value().empty(), meta_name);
   } else {
-    EXPECT_EQ(!o_expected.is_initialized(), !o_actual.is_initialized());
+    EXPECT_EQ_T(!o_expected.is_initialized(), !o_actual.is_initialized(), meta_name);
   }
 }
 
@@ -734,11 +754,11 @@ void TableMetadataHelper::check_child_expected(const std::vector<T>& expected,
                    [](boost::property_tree::ptree::value_type v) {
                      return v.second.get_optional<T>("").get();
                    });
-    EXPECT_EQ(expected, actual_array);
+    EXPECT_EQ_T(expected, actual_array, meta_name);
   } else if (o_actual) {
-    EXPECT_EQ((expected.size() == 0), o_actual.value().empty());
+    EXPECT_EQ_T((expected.size() == 0), o_actual.value().empty(), meta_name);
   } else {
-    EXPECT_EQ((expected.size() == 0), !o_actual.is_initialized());
+    EXPECT_EQ_T((expected.size() == 0), !o_actual.is_initialized(), meta_name);
   }
 }
 
@@ -757,9 +777,9 @@ void TableMetadataHelper::check_expected(const boost::property_tree::ptree& expe
   auto value_actual   = actual.get_optional<T>(meta_name);
 
   if (value_expected && value_actual) {
-    EXPECT_EQ(value_expected.value(), value_actual.value());
+    EXPECT_EQ_T(value_expected.value(), value_actual.value(), meta_name);
   } else {
-    EXPECT_TRUE(!value_expected && !value_actual);
+    EXPECT_EQ_T(value_expected.is_initialized(), value_actual.is_initialized(), meta_name);
   }
 }
 

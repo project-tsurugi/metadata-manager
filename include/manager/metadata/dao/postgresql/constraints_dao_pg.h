@@ -85,11 +85,12 @@ class ConstraintsDAO : public manager::metadata::db::ConstraintsDAO {
   manager::metadata::ErrorCode prepare() const override;
 
   manager::metadata::ErrorCode insert_constraint_metadata(
-      const boost::property_tree::ptree& columns_metadata, ObjectId& constraint_id) const override;
+      const boost::property_tree::ptree& constraint_metadata,
+      ObjectId& constraint_id) const override;
 
   manager::metadata::ErrorCode select_constraint_metadata(
       std::string_view object_key, std::string_view object_value,
-      boost::property_tree::ptree& columns_metadata) const override;
+      boost::property_tree::ptree& constraint_metadata) const override;
   manager::metadata::ErrorCode select_constraint_metadata(
       std::vector<boost::property_tree::ptree>& constraint_container) const override;
 

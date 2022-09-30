@@ -28,40 +28,39 @@ namespace manager::metadata::db::json {
 
 class ConstraintsDAO : public manager::metadata::db::ConstraintsDAO {
  public:
-  explicit ConstraintsDAO(DBSessionManager* session_manager) {}
+  explicit ConstraintsDAO(DBSessionManager* session_manager) : session_manager_(session_manager) {}
 
-  manager::metadata::ErrorCode prepare() const override {
-    // Do nothing and return of ErrorCode::OK.
-    return ErrorCode::OK;
-  }
+  manager::metadata::ErrorCode prepare() const override;
 
   manager::metadata::ErrorCode insert_constraint_metadata(
-      [[maybe_unused]] const boost::property_tree::ptree& constraint,
-      [[maybe_unused]] ObjectId& constraint_id) const override {
-    // Do nothing and return of ErrorCode::OK.
-    return ErrorCode::OK;
-  }
+      const boost::property_tree::ptree& constraint_metadata,
+      ObjectIdType& constraint_id) const override;
 
   manager::metadata::ErrorCode select_constraint_metadata(
-      [[maybe_unused]] std::string_view object_key, [[maybe_unused]] std::string_view object_value,
-      [[maybe_unused]] boost::property_tree::ptree& object) const override {
-    // Do nothing and return of ErrorCode::OK.
-    return ErrorCode::OK;
-  }
-
+      std::string_view object_key, std::string_view object_value,
+      boost::property_tree::ptree& constraint_metadata) const override;
   manager::metadata::ErrorCode select_constraint_metadata(
-      [[maybe_unused]] std::vector<boost::property_tree::ptree>& constraint_container)
-      const override {
-    // Do nothing and return of ErrorCode::OK.
-    return ErrorCode::OK;
-  }
+      std::vector<boost::property_tree::ptree>& constraint_container) const override;
 
   manager::metadata::ErrorCode delete_constraint_metadata(
-      [[maybe_unused]] std::string_view object_key,
-      [[maybe_unused]] std::string_view object_value) const override {
-    // Do nothing and return of ErrorCode::OK.
-    return ErrorCode::OK;
-  }
+      std::string_view object_key, std::string_view object_value) const override;
+
+ private:
+  // root node.
+  static constexpr const char* const ROOT_NODE = "tables";
+  // Name of the table metadata management file.
+  static constexpr const char* const CONSTRAINTS_METADATA_NAME = "tables";
+  // Object ID key name for constraint ID.
+  static constexpr const char* const OID_KEY_NAME_CONSTRAINT = "constraint";
+
+  DBSessionManager* session_manager_;
+
+  manager::metadata::ErrorCode get_constraint_metadata_object(
+      const boost::property_tree::ptree& container, std::string_view object_key,
+      std::string_view object_value, boost::property_tree::ptree& constraint_metadata) const;
+  manager::metadata::ErrorCode delete_metadata_object(boost::property_tree::ptree& container,
+                                                      std::string_view object_key,
+                                                      std::string_view object_value) const;
 };  // class ConstraintsDAO
 
 }  // namespace manager::metadata::db::json

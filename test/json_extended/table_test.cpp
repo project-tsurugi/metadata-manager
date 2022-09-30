@@ -423,104 +423,268 @@ ErrorCode display_table_metadata_object(const ptree& before, const ptree& after)
   // tuples
   output_object_diff<float>(Tables::TUPLES, before, after);
 
-  std::cout << "--- columns metadata ---" << std::endl;
-
   // column metadata
-  auto columns_node_before = before.get_child(Tables::COLUMNS_NODE);
-  auto columns_node_after  = after.get_child(Tables::COLUMNS_NODE);
-  auto columns_before      = columns_node_before.begin();
-  auto columns_after       = columns_node_after.begin();
+  std::cout << "--- columns metadata ---" << std::endl;
+  {
+    auto columns_node_before = before.get_child(Tables::COLUMNS_NODE);
+    auto columns_node_after  = after.get_child(Tables::COLUMNS_NODE);
+    auto columns_before      = columns_node_before.begin();
+    auto columns_after       = columns_node_after.begin();
 
-  // Inspection to see if the required fields are set.
-  const std::vector<std::string> required_keys = {
-      Tables::Column::ID,           Tables::Column::TABLE_ID,
-      Tables::Column::NAME,         Tables::Column::ORDINAL_POSITION,
-      Tables::Column::DATA_TYPE_ID, Tables::Column::NULLABLE};
-  BOOST_FOREACH (const ptree::value_type& node, columns_node_after) {
-    const ptree& column = node.second;
+    // Inspection to see if the required fields are set.
+    const std::vector<std::string> required_keys = {
+        Tables::Column::ID,           Tables::Column::TABLE_ID,
+        Tables::Column::NAME,         Tables::Column::ORDINAL_POSITION,
+        Tables::Column::DATA_TYPE_ID, Tables::Column::NULLABLE};
+    BOOST_FOREACH (const ptree::value_type& node, columns_node_after) {
+      const ptree& column = node.second;
 
-    for (std::string key : required_keys) {
-      if (column.find(key) == column.not_found()) {
-        std::cout << "Required fields are not set: \"" << key << "\"" << std::endl;
-        error = ErrorCode::NOT_FOUND;
-        ERROR(error);
-        return error;
-      }
-    }
-  }
-
-  // before-metadata loop.
-  for (auto it_before = columns_node_before.begin(); it_before != columns_node_before.end();
-       it_before++) {
-    boost::optional<manager::metadata::ObjectIdType> opt_id_before;
-    auto before_id = it_before->second.get_optional<ObjectIdType>(Tables::Column::ID).value();
-
-    ptree temp_after;
-    temp_after.clear();
-    // Extract updated metadata.
-    for (auto it_after = columns_node_after.begin(); it_after != columns_node_after.end();
-         it_after++) {
-      auto opt_id_after = it_after->second.get_optional<ObjectIdType>(Tables::Column::ID);
-      if (opt_id_after && (opt_id_after.value() == before_id)) {
-        temp_after = it_after->second;
-        it_after->second.erase(Tables::Column::ID);
-        break;
+      for (std::string key : required_keys) {
+        if (column.find(key) == column.not_found()) {
+          std::cout << "Required fields are not set: \"" << key << "\"" << std::endl;
+          error = ErrorCode::NOT_FOUND;
+          ERROR(error);
+          return error;
+        }
       }
     }
 
-    // id
-    output_object_diff<ObjectIdType>(Tables::Column::ID, it_before->second, temp_after);
-    // tableId
-    output_object_diff<ObjectIdType>(Tables::Column::TABLE_ID, it_before->second, temp_after);
-    // name
-    output_object_diff<std::string>(Tables::Column::NAME, it_before->second, temp_after);
-    // ordinalPosition
-    output_object_diff<uint64_t>(Tables::Column::ORDINAL_POSITION, it_before->second, temp_after);
-    // dataTypeId
-    output_object_diff<ObjectIdType>(Tables::Column::DATA_TYPE_ID, it_before->second, temp_after);
-    // dataLength
-    output_object_diff<uint64_t>(Tables::Column::DATA_LENGTH, it_before->second, temp_after);
-    // varying
-    output_object_diff<bool>(Tables::Column::VARYING, it_before->second, temp_after);
-    // nullable
-    output_object_diff<bool>(Tables::Column::NULLABLE, it_before->second, temp_after);
-    // defaultExpr
-    output_object_diff<std::string>(Tables::Column::DEFAULT, it_before->second, temp_after);
-    // direction
-    output_object_diff<uint64_t>(Tables::Column::DIRECTION, it_before->second, temp_after);
+    // before-metadata loop.
+    for (auto it_before = columns_node_before.begin(); it_before != columns_node_before.end();
+         it_before++) {
+      boost::optional<manager::metadata::ObjectIdType> opt_id_before;
+      auto before_id = it_before->second.get_optional<ObjectIdType>(Tables::Column::ID).value();
 
-    std::cout << " ------------------" << std::endl;
-  }
+      ptree temp_after;
+      temp_after.clear();
+      // Extract updated metadata.
+      for (auto it_after = columns_node_after.begin(); it_after != columns_node_after.end();
+           it_after++) {
+        auto opt_id_after = it_after->second.get_optional<ObjectIdType>(Tables::Column::ID);
+        if (opt_id_after && (opt_id_after.value() == before_id)) {
+          temp_after = it_after->second;
+          it_after->second.erase(Tables::Column::ID);
+          break;
+        }
+      }
 
-  // Outputs on added metadata.
-  const ptree dummy;
-  BOOST_FOREACH (const ptree::value_type& node, columns_node_after) {
-    const ptree& column = node.second;
-
-    auto optional_object = column.get_optional<ObjectIdType>(Tables::Column::ID);
-    if (optional_object) {
       // id
-      output_object_diff<ObjectIdType>(Tables::Column::ID, dummy, column);
+      output_object_diff<ObjectIdType>(Tables::Column::ID, it_before->second, temp_after);
       // tableId
-      output_object_diff<ObjectIdType>(Tables::Column::TABLE_ID, dummy, column);
+      output_object_diff<ObjectIdType>(Tables::Column::TABLE_ID, it_before->second, temp_after);
       // name
-      output_object_diff<std::string>(Tables::Column::NAME, dummy, column);
+      output_object_diff<std::string>(Tables::Column::NAME, it_before->second, temp_after);
       // ordinalPosition
-      output_object_diff<uint64_t>(Tables::Column::ORDINAL_POSITION, dummy, column);
+      output_object_diff<uint64_t>(Tables::Column::ORDINAL_POSITION, it_before->second, temp_after);
       // dataTypeId
-      output_object_diff<ObjectIdType>(Tables::Column::DATA_TYPE_ID, dummy, column);
+      output_object_diff<ObjectIdType>(Tables::Column::DATA_TYPE_ID, it_before->second, temp_after);
       // dataLength
-      output_object_diff<uint64_t>(Tables::Column::DATA_LENGTH, dummy, column);
+      output_object_diff<uint64_t>(Tables::Column::DATA_LENGTH, it_before->second, temp_after);
       // varying
-      output_object_diff<bool>(Tables::Column::VARYING, dummy, column);
+      output_object_diff<bool>(Tables::Column::VARYING, it_before->second, temp_after);
       // nullable
-      output_object_diff<bool>(Tables::Column::NULLABLE, dummy, column);
+      output_object_diff<bool>(Tables::Column::NULLABLE, it_before->second, temp_after);
       // defaultExpr
-      output_object_diff<std::string>(Tables::Column::DEFAULT, dummy, column);
+      output_object_diff<std::string>(Tables::Column::DEFAULT, it_before->second, temp_after);
       // direction
-      output_object_diff<uint64_t>(Tables::Column::DIRECTION, dummy, column);
+      output_object_diff<uint64_t>(Tables::Column::DIRECTION, it_before->second, temp_after);
 
       std::cout << " ------------------" << std::endl;
+    }
+
+    // Outputs on added metadata.
+    const ptree dummy;
+    BOOST_FOREACH (const ptree::value_type& node, columns_node_after) {
+      const ptree& column = node.second;
+
+      auto optional_object = column.get_optional<ObjectIdType>(Tables::Column::ID);
+      if (optional_object) {
+        // id
+        output_object_diff<ObjectIdType>(Tables::Column::ID, dummy, column);
+        // tableId
+        output_object_diff<ObjectIdType>(Tables::Column::TABLE_ID, dummy, column);
+        // name
+        output_object_diff<std::string>(Tables::Column::NAME, dummy, column);
+        // ordinalPosition
+        output_object_diff<uint64_t>(Tables::Column::ORDINAL_POSITION, dummy, column);
+        // dataTypeId
+        output_object_diff<ObjectIdType>(Tables::Column::DATA_TYPE_ID, dummy, column);
+        // dataLength
+        output_object_diff<uint64_t>(Tables::Column::DATA_LENGTH, dummy, column);
+        // varying
+        output_object_diff<bool>(Tables::Column::VARYING, dummy, column);
+        // nullable
+        output_object_diff<bool>(Tables::Column::NULLABLE, dummy, column);
+        // defaultExpr
+        output_object_diff<std::string>(Tables::Column::DEFAULT, dummy, column);
+        // direction
+        output_object_diff<uint64_t>(Tables::Column::DIRECTION, dummy, column);
+
+        std::cout << " ------------------" << std::endl;
+      }
+    }
+  }
+
+  // constraint metadata
+  std::cout << "--- constraints metadata ---" << std::endl;
+  {
+    auto constraints_node_before = before.get_child(Tables::CONSTRAINTS_NODE);
+    auto constraints_node_after  = after.get_child(Tables::CONSTRAINTS_NODE);
+    auto constraints_before      = constraints_node_before.begin();
+    auto constraints_after       = constraints_node_after.begin();
+
+    // Inspection to see if the required fields are set.
+    const std::vector<std::string> required_keys = {Constraint::ID, Constraint::TABLE_ID,
+                                                    Constraint::TYPE};
+    BOOST_FOREACH (const ptree::value_type& node, constraints_node_after) {
+      const ptree& constraint = node.second;
+
+      for (std::string key : required_keys) {
+        if (constraint.find(key) == constraint.not_found()) {
+          std::cout << "Required fields are not set: \"" << key << "\"" << std::endl;
+          error = ErrorCode::NOT_FOUND;
+          ERROR(error);
+          return error;
+        }
+      }
+    }
+
+    // before-metadata loop.
+    for (auto it_before = constraints_node_before.begin();
+         it_before != constraints_node_before.end(); it_before++) {
+      boost::optional<manager::metadata::ObjectIdType> opt_id_before;
+      auto before_id = it_before->second.get_optional<ObjectIdType>(Constraint::ID).value();
+
+      ptree temp_after;
+      temp_after.clear();
+      // Extract updated metadata.
+      for (auto it_after = constraints_node_after.begin(); it_after != constraints_node_after.end();
+           it_after++) {
+        auto opt_id_after = it_after->second.get_optional<ObjectIdType>(Constraint::ID);
+        if (opt_id_after && (opt_id_after.value() == before_id)) {
+          temp_after = it_after->second;
+          it_after->second.erase(Constraint::ID);
+          break;
+        }
+      }
+
+      // id
+      output_object_diff<ObjectIdType>(Constraint::ID, it_before->second, temp_after);
+      // tableId
+      output_object_diff<ObjectIdType>(Constraint::TABLE_ID, it_before->second, temp_after);
+      // name
+      output_object_diff<std::string>(Constraint::NAME, it_before->second, temp_after);
+      // type
+      output_object_diff<uint64_t>(Constraint::TYPE, it_before->second, temp_after);
+      // indexId
+      output_object_diff<int64_t>(Constraint::INDEX_ID, it_before->second, temp_after);
+      // expression
+      output_object_diff<std::string>(Constraint::EXPRESSION, it_before->second, temp_after);
+      // columns
+      auto columns_node_before = it_before->second.get_child_optional(Constraint::COLUMNS);
+      std::string columns_before;
+      if (columns_node_before) {
+        std::for_each(columns_node_before.get().begin(), columns_node_before.get().end(),
+                      [&columns_before](ptree::value_type v) mutable {
+                        columns_before =
+                            columns_before + (columns_before.empty() ? "" : ",") + v.second.data();
+                      });
+      } else {
+        columns_before = "--";
+      }
+      auto columns_node_after = temp_after.get_child_optional(Constraint::COLUMNS);
+      std::string columns_after;
+      if (columns_node_after) {
+        std::for_each(columns_node_after.get().begin(), columns_node_after.get().end(),
+                      [&columns_after](ptree::value_type v) mutable {
+                        columns_after =
+                            columns_after + (columns_after.empty() ? "" : ",") + v.second.data();
+                      });
+      } else {
+        columns_after = "--";
+      }
+      std::cout << " " << std::right << std::setw(10) << Constraint::COLUMNS << ": ["
+                << columns_before << "] --> [" << columns_after << "]" << std::endl;
+
+      // columnsId
+      auto columns_id_node_before = it_before->second.get_child_optional(Constraint::COLUMNS_ID);
+      std::string columns_id_before;
+      if (columns_node_before) {
+        std::for_each(columns_id_node_before.get().begin(), columns_id_node_before.get().end(),
+                      [&columns_id_before](ptree::value_type v) mutable {
+                        columns_id_before = columns_id_before +
+                                            (columns_id_before.empty() ? "" : ",") +
+                                            v.second.data();
+                      });
+      } else {
+        columns_id_before = "--";
+      }
+      auto columns_id_node_after = temp_after.get_child_optional(Constraint::COLUMNS_ID);
+      std::string columns_id_after;
+      if (columns_id_node_after) {
+        std::for_each(columns_id_node_after.get().begin(), columns_id_node_after.get().end(),
+                      [&columns_id_after](ptree::value_type v) mutable {
+                        columns_id_after = columns_id_after +
+                                           (columns_id_after.empty() ? "" : ",") + v.second.data();
+                      });
+      } else {
+        columns_id_after = "--";
+      }
+      std::cout << " " << std::right << std::setw(10) << Constraint::COLUMNS_ID << ": ["
+                << columns_id_before << "] --> [" << columns_id_after << "]" << std::endl;
+
+      std::cout << " ------------------" << std::endl;
+    }
+
+    // Outputs on added metadata.
+    const ptree dummy;
+    BOOST_FOREACH (const ptree::value_type& node, constraints_node_after) {
+      const ptree& constraint = node.second;
+
+      auto optional_object = constraint.get_optional<ObjectIdType>(Constraint::ID);
+      if (optional_object) {
+        // id
+        output_object_diff<ObjectIdType>(Constraint::ID, dummy, constraint);
+        // tableId
+        output_object_diff<ObjectIdType>(Constraint::TABLE_ID, dummy, constraint);
+        // name
+        output_object_diff<std::string>(Constraint::NAME, dummy, constraint);
+        // type
+        output_object_diff<uint64_t>(Constraint::TYPE, dummy, constraint);
+        // indexId
+        output_object_diff<int64_t>(Constraint::INDEX_ID, dummy, constraint);
+        // expression
+        output_object_diff<std::string>(Constraint::EXPRESSION, dummy, constraint);
+        // columns
+        auto columns_node = constraint.get_child_optional(Constraint::COLUMNS);
+        std::string columns;
+        if (columns_node) {
+          std::for_each(columns_node.get().begin(), columns_node.get().end(),
+                        [&columns](ptree::value_type v) mutable {
+                          columns = columns + (columns.empty() ? "" : ",") + v.second.data();
+                        });
+        } else {
+          columns = "--";
+        }
+        std::cout << " " << std::right << std::setw(10) << Constraint::COLUMNS << ": [--] --> ["
+                  << columns << "]" << std::endl;
+        // columnsId
+        auto columns_id_node = constraint.get_child_optional(Constraint::COLUMNS_ID);
+        std::string columns_id;
+        if (columns_node) {
+          std::for_each(columns_id_node.get().begin(), columns_id_node.get().end(),
+                        [&columns_id](ptree::value_type v) mutable {
+                          columns_id =
+                              columns_id + (columns_id.empty() ? "" : ",") + v.second.data();
+                        });
+        } else {
+          columns_id = "--";
+        }
+        std::cout << " " << std::right << std::setw(10) << Constraint::COLUMNS_ID << ": [--] --> ["
+                  << columns_id << "]" << std::endl;
+
+        std::cout << " ------------------" << std::endl;
+      }
     }
   }
   std::cout.flags(original_flags);
@@ -849,6 +1013,68 @@ ErrorCode test_tables_update() {
       columns.push_back(std::make_pair("", column));
     }
     table_metadata.add_child(Tables::COLUMNS_NODE, columns);
+
+    //
+    // constraints-metadata
+    //
+    table_metadata.erase(Tables::CONSTRAINTS_NODE);
+      ptree constraints;
+    {
+      // Set the value of the constraints to ptree.
+      ptree constraint;
+      ptree columns_num;
+      ptree columns_num_value;
+      ptree columns_id;
+      ptree columns_id_value;
+
+      auto constraints_node = table_metadata_before.get_child(Tables::CONSTRAINTS_NODE);
+
+      auto it = constraints_node.begin();
+      // 1 item skip.
+      // 2 item update.
+      constraint = (++it)->second;
+      // type
+      constraint.put(Constraint::TYPE, static_cast<int32_t>(Constraint::ConstraintType::CHECK));
+      // columns
+      constraint.erase(Constraint::COLUMNS);
+      columns_num_value.put("", 5);
+      columns_num.push_back(std::make_pair("", columns_num_value));
+      constraint.add_child(Constraint::COLUMNS, columns_num);
+
+      // columns id
+      constraint.erase(Constraint::COLUMNS_ID);
+      columns_id_value.put("", 9999);
+      columns_id.push_back(std::make_pair("", columns_id_value));
+      constraint.add_child(Constraint::COLUMNS_ID, columns_id);
+      // expression
+      constraint.put(Constraint::EXPRESSION, "expression text-update");
+      // constraints
+      constraints.push_back(std::make_pair("", constraint));
+
+      // 3 item new.
+      constraint.clear();
+      columns_num.clear();
+      columns_id.clear();
+      // type
+      constraint.put(Constraint::TYPE, static_cast<int32_t>(Constraint::ConstraintType::UNIQUE));
+      // name
+      constraint.put(Constraint::NAME, "new-constraint");
+      // columns
+      columns_num_value.put("", 10);
+      columns_num.push_back(std::make_pair("", columns_num_value));
+      constraint.add_child(Constraint::COLUMNS, columns_num);
+      // columns id
+      columns_id_value.put("", 1001);
+      columns_id.push_back(std::make_pair("", columns_id_value));
+      constraint.add_child(Constraint::COLUMNS_ID, columns_id);
+      // index id
+      constraint.put(Constraint::INDEX_ID, 11);
+      // expression
+      constraint.put(Constraint::EXPRESSION, "none");
+      // constraints
+      constraints.push_back(std::make_pair("", constraint));
+    }
+    table_metadata.add_child(Tables::CONSTRAINTS_NODE, constraints);
 
     //
     // update table-metadata object
