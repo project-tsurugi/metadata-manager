@@ -35,6 +35,10 @@ struct Connection {
  */
 class DbSessionManagerPg : public DBSessionManager {
  public:
+  manager::metadata::ErrorCode get_dao(
+      const GenericDAO::TableName,
+      std::shared_ptr<GenericDAO>&) override { return ErrorCode::UNKNOWN; }
+
   std::shared_ptr<Dao> get_index_dao() override;
 
   Connection connection() const { return conn_; }
