@@ -19,6 +19,8 @@
 
 #include "manager/metadata/dao/generic_dao.h"
 #include "manager/metadata/datatypes.h"
+#include "manager/metadata/metadata.h"
+#include "manager/metadata/index.h"
 #include "manager/metadata/indexes.h"
 #include "manager/metadata/dao/dao.h"
 #include "manager/metadata/dao/json/index_dao_json.h"
@@ -99,7 +101,7 @@ ErrorCode IndexesProvider::get_index_metadata(
 
   ErrorCode error = ErrorCode::UNKNOWN;
 
-  if ((key != Indexes::ID) && (key != Indexes::NAME)) {
+  if ((key != Object::ID) && (key != Object::NAME)) {
     error = ErrorCode::INVALID_PARAMETER;
     return error;
   }

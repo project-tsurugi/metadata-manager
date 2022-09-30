@@ -18,62 +18,11 @@
 #include <string>
 #include <vector>
 #include <boost/property_tree/ptree.hpp>
-#include "metadata.h"
+#include "manager/metadata/metadata.h"
+#include "manager/metadata/index.h"
 #include "manager/metadata/provider/indexes_provider.h"
 
 namespace manager::metadata {
-/**
- * @brief Index metadata object.
- */
-struct Index : public Object {
-  enum class AccessMethod : int64_t {
-    DEFAULT = 0,
-    MASS_TREE_METHOD,
-  };
-
-  enum class Direction : int64_t {
-    //  LSB 0th bit : 0 = ASC,        1 = DESC
-    //  LSB 1st bit : 0 = NULLS_LAST, 1 = NULLS_FIRST
-    ASC_NULLS_LAST    = 0b0000,   //  0
-    ASC_NULLS_FIRST   = 0b0001,   //  1
-    DESC_NULLS_LAST   = 0b0010,   //  2
-    DESC_NULLS_FIRST  = 0b0011,   //  3
-    DEFAULT           = 0b1111,   // 15
-  };
-
-  static constexpr const char* const OWNER_ID           = "owner_id";
-  static constexpr const char* const ACCESS_METHOD      = "access_method";
-  static constexpr const char* const NUMBER_OF_COLUMNS  = "number_of_columns";
-  static constexpr const char* const NUMBER_OF_KEY_COLUMNS  
-      = "number_of_key_columns";
-  static constexpr const char* const IS_UNIQUE          = "is_unique";
-  static constexpr const char* const IS_PRIMARY         = "is_primary";
-  static constexpr const char* const KEYS               = "keys";
-  static constexpr const char* const KEYS_ID            = "keys_id";
-  static constexpr const char* const OPTIONS            = "options";
-
-  int64_t owner_id;
-  int64_t access_method;           // refer to enumlation of AccessMethod.
-  int64_t number_of_columns;       // include non-key (included) columns.
-  int64_t number_of_key_columns;   // exclude non-key (included) columns.
-  bool    is_unique;
-  bool    is_primary;
-  std::vector<int64_t>  keys;      // include non-key (included) columns.
-  std::vector<int64_t>  keys_id;
-  std::vector<int64_t>  options;   // refer to enumlation of Direction.
-
-  Index()
-      : Object(),
-        owner_id(INVALID_OBJECT_ID),
-        access_method(INVALID_VALUE),
-        number_of_columns(INVALID_VALUE),
-        number_of_key_columns(INVALID_VALUE),
-        is_unique(false),
-        is_primary(false) {}
-  boost::property_tree::ptree convert_to_ptree() const override;
-  void convert_from_ptree(const boost::property_tree::ptree& pt) override;
-};
-
 /**
  * @brief Container of index metadata objects.
  */

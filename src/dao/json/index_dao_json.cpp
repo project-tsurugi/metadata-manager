@@ -25,6 +25,7 @@
 #include "manager/metadata/error_code.h"
 #include "manager/metadata/helper/logging_helper.h"
 #include "manager/metadata/metadata.h"
+#include "manager/metadata/index.h"
 #include "manager/metadata/indexes.h"
 
 // =============================================================================
