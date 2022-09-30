@@ -34,7 +34,7 @@ class IndexesProvider : public Provider {
 
   manager::metadata::ErrorCode add_index_metadata(
       const boost::property_tree::ptree& object, 
-      ObjectId& index_id);
+      ObjectId& object_id);
 
   manager::metadata::ErrorCode get_index_metadata(
       std::string_view key, std::string_view value,
@@ -43,9 +43,13 @@ class IndexesProvider : public Provider {
   manager::metadata::ErrorCode get_index_metadata(
       std::vector<boost::property_tree::ptree>& objects);
 
+  manager::metadata::ErrorCode update_index_metadata(
+      const ObjectIdType object_id,
+      const boost::property_tree::ptree& object);
+
   manager::metadata::ErrorCode remove_index_metadata(
       std::string_view key, std::string_view value,
-      ObjectId& index_id);
+      ObjectId& object_id);
 
  private:
   std::shared_ptr<Dao> index_dao_ = nullptr;

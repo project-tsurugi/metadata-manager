@@ -251,6 +251,9 @@ class Tables : public Metadata {
   ErrorCode get(std::string_view table_name,
                 manager::metadata::Table& table) const;
 
+  ErrorCode get_all(
+    std::vector<manager::metadata::Table>& tables) const;
+
  private:
   manager::metadata::ErrorCode param_check_metadata_add(
       const boost::property_tree::ptree& object) const;

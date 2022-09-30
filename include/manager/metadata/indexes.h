@@ -81,9 +81,7 @@ class Indexes : public Metadata {
  public:
   explicit Indexes(std::string_view database)
       : Indexes(database, kDefaultComponent) {}
-  Indexes(std::string_view database, std::string_view component)
-      : Metadata(database, component),
-        provider_(std::make_unique<db::IndexesProvider>()) {}
+  Indexes(std::string_view database, std::string_view component);
 
   Indexes(const Indexes&) = delete;
   Indexes& operator=(const Indexes&) = delete;
@@ -99,7 +97,7 @@ class Indexes : public Metadata {
   ErrorCode get(std::string_view object_name,
                 boost::property_tree::ptree& object) const override;
   ErrorCode get_all(
-      std::vector<boost::property_tree::ptree>& container) const override;
+      std::vector<boost::property_tree::ptree>& objects) const override;
 
   ErrorCode update(const ObjectIdType object_id,
                   const boost::property_tree::ptree& object) const override;
@@ -114,10 +112,12 @@ class Indexes : public Metadata {
   
   ErrorCode get(const ObjectId object_id,
                 manager::metadata::Index& index) const;
+  ErrorCode get(std::string_view object_name,
+                        manager::metadata::Index& index) const;
   ErrorCode get_all(
-      std::vector<manager::metadata::Index>& container) const;
+      std::vector<manager::metadata::Index>& indexes) const;
 
  private:
-  std::unique_ptr<manager::metadata::db::IndexesProvider> provider_ = nullptr;
+  std::unique_ptr<manager::metadata::db::IndexesProvider> provider_;
 };
 } // namespace manager::metadata

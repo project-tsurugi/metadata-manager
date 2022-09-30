@@ -47,13 +47,13 @@ ErrorCode IndexesProvider::init() {
 }
 
 /**
- * @brief Add index metadata to index metadata repository.
- * @param (object)     [in]  index metadata to add.
- * @param (index_id)   [out] ID of the added index metadata.
+ * @brief Add a index metadata object to the metadata table.
+ * @param object    [in]  index metadata to add.
+ * @param object_id [out] ID of the added index metadata.
  * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode IndexesProvider::add_index_metadata(
-    const boost::property_tree::ptree& object, ObjectIdType& index_id) {
+    const boost::property_tree::ptree& object, ObjectIdType& object_id) {
   
   ErrorCode error = ErrorCode::UNKNOWN;
 
@@ -67,10 +67,8 @@ ErrorCode IndexesProvider::add_index_metadata(
     return error;
   }
 
-  // Add index metadata object to index metadata table.
-  error = index_dao_->insert(object, index_id);
+  error = index_dao_->insert(object, object_id);
   if (error != ErrorCode::OK) {
-    // Roll back the transaction.
     ErrorCode rollback_result = session_->rollback();
     if (rollback_result != ErrorCode::OK) {
       return rollback_result;
@@ -85,15 +83,14 @@ ErrorCode IndexesProvider::add_index_metadata(
 }
 
 /**
- * @brief Gets one index metadata object from the index metadata table,
+ * @brief Gets one index metadata object from the metadata table,
  *   where key = value.
- * @param (key)     [in]  key of index metadata object.
- * @param (value)   [in]  value of index metadata object.
- * @param (object)  [out] one index metadata object to get,
- *   where key = value.
- * @retval ErrorCode::OK if success,
- * @retval ErrorCode::ID_NOT_FOUND if the index id does not exist.
- * @retval ErrorCode::NAME_NOT_FOUND if the indexes name does not exist.
+ * @param key     [in]  key of index metadata object. e.g. id or name.
+ * @param value   [in]  key value.
+ * @param object  [out] index metadata object to get.
+ * @retval ErrorCode::OK              if success,
+ * @retval ErrorCode::ID_NOT_FOUND    if the id does not exist.
+ * @retval ErrorCode::NAME_NOT_FOUND  if the name does not exist.
  * @retval otherwise an error code.
  */
 ErrorCode IndexesProvider::get_index_metadata(
@@ -112,7 +109,6 @@ ErrorCode IndexesProvider::get_index_metadata(
     return error;
   }
 
-  // Get index metadata.
   error = index_dao_->select(key, value, object);
   if (error != ErrorCode::OK) {
     return error;
@@ -122,8 +118,8 @@ ErrorCode IndexesProvider::get_index_metadata(
 }
 
 /**
- * @brief Get all index metadata objects from metadata table.
- * @param (objects) [out] table metadata object to get.
+ * @brief Get all index metadata objects from the metadata table.
+ * @param objects [out] table metadata objects.
  * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode IndexesProvider::get_index_metadata(
@@ -145,19 +141,17 @@ ErrorCode IndexesProvider::get_index_metadata(
 }
 
 /**
- * @brief Remove a metadata object which has the specified name 
- * from metadata table.
- * @param (key)       [in]  key of index metadata object.
- * @param (value)     [in]  value of index metadata object.
- * @param (index_id)  [out] ID of the removed index metadata.
- * @retval ErrorCode::OK if success.
- * @retval ErrorCode::ID_NOT_FOUND if the index id does not exist.
- * @retval ErrorCode::NAME_NOT_FOUND if the index name does not exist.
+ * @brief Update a index metadata in the metdata table.
+ * @param object_id  [in]  object ID of the index metadata to be updated.
+ * @param object     [in]  Table metadata object.
+ * @retval ErrorCode::OK if success,
+ * @retval ErrorCode::ID_NOT_FOUND if the table id does not exist.
  * @retval otherwise an error code.
  */
-ErrorCode IndexesProvider::remove_index_metadata(std::string_view key,
-                                                std::string_view value,
-                                                ObjectIdType& index_id) {
+ErrorCode IndexesProvider::update_index_metadata(
+    const ObjectIdType object_id,
+    const boost::property_tree::ptree& object) {
+
   ErrorCode error = ErrorCode::UNKNOWN;
 
   error = init();
@@ -170,11 +164,52 @@ ErrorCode IndexesProvider::remove_index_metadata(std::string_view key,
     return error;
   }
 
-  error = index_dao_->remove(key, value, index_id);
+  if (error == ErrorCode::OK) {
+    error = index_dao_->update(Object::ID, std::to_string(object_id), object);
+  }
+
   if (error == ErrorCode::OK) {
     error = session_->commit();
   } else {
-    // Roll back the transaction.
+    ErrorCode rollback_result = session_->rollback();
+    if (rollback_result != ErrorCode::OK) {
+      error = rollback_result;
+    }
+  }  
+  
+  return error;
+}
+
+/**
+ * @brief Remove a index metadata object which has the specified name 
+ * from the metadata table.
+ * @param key       [in]  key of index metadata object.
+ * @param value     [in]  value of index metadata object.
+ * @param object_id [out] ID of the removed index metadata.
+ * @retval ErrorCode::OK if success.
+ * @retval ErrorCode::ID_NOT_FOUND if the index id does not exist.
+ * @retval ErrorCode::NAME_NOT_FOUND if the index name does not exist.
+ * @retval otherwise an error code.
+ */
+ErrorCode IndexesProvider::remove_index_metadata(std::string_view key,
+                                                std::string_view value,
+                                                ObjectIdType& object_id) {
+  ErrorCode error = ErrorCode::UNKNOWN;
+
+  error = init();
+  if (error != ErrorCode::OK) {
+    return error;
+  }
+
+  error = session_->start_transaction();
+  if (error != ErrorCode::OK) {
+    return error;
+  }
+
+  error = index_dao_->remove(key, value, object_id);
+  if (error == ErrorCode::OK) {
+    error = session_->commit();
+  } else {
     ErrorCode rollback_result = session_->rollback();
     if (rollback_result != ErrorCode::OK) {
       error = rollback_result;

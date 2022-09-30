@@ -20,8 +20,11 @@
 #include "manager/metadata/provider/provider.h"
 #include <memory>
 #include "manager/metadata/dao/db_session_manager.h"
+#if defined(STORAGE_POSTGRESQL)
 #include "manager/metadata/dao/postgresql/db_session_manager_pg.h"
+#elif defined(STORAGE_JSON)
 #include "manager/metadata/dao/json/db_session_manager_json.h"
+#endif
 
 namespace manager::metadata::db {
 

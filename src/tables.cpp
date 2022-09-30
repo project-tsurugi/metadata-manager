@@ -750,16 +750,16 @@ ErrorCode Tables::confirm_permission_in_acls(std::string_view object_name,
  */
 
 /**
- * @brief Add table metadata to table metadata table.
- * @param object    [in]  table metadata to add.
+ * @brief Add a table metadata to the metadata table.
+ * @param table     [in]  table metadata to add.
  * @param object_id [out] ID of the added table metadata.
  * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode Tables::add(const manager::metadata::Table& table,
                       ObjectIdType* object_id) const
 {
-  boost::property_tree::ptree ptree = table.convert_to_ptree();
-  ErrorCode error = add(ptree, object_id);
+  ptree pt = table.convert_to_ptree();
+  ErrorCode error = this->add(pt, object_id);
   if (error != ErrorCode::OK) {
     return error;
   }
@@ -768,14 +768,14 @@ ErrorCode Tables::add(const manager::metadata::Table& table,
 }
 
 /**
- * @brief Add table metadata to table metadata table.
- * @param object    [in]  table metadata to add.
+ * @brief Add a table metadata to table metadata table.
+ * @param table  [in]  table metadata to add.
  * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode Tables::add(const manager::metadata::Table& table) const
 {
   ObjectId object_id = INVALID_OBJECT_ID;
-  ErrorCode error = add(table, &object_id);
+  ErrorCode error = this->add(table, &object_id);
   if (error != ErrorCode::OK) {
     return error;
   }
@@ -794,13 +794,13 @@ ErrorCode Tables::add(const manager::metadata::Table& table) const
 ErrorCode Tables::get(const ObjectIdType object_id,
                       manager::metadata::Table& table) const
 {
-  ptree ptree;
+  ptree pt;
 
-  ErrorCode error = get(object_id, ptree);
+  ErrorCode error = get(object_id, pt);
   if (error != ErrorCode::OK) {
     return error;
   }
-  table.convert_from_ptree(ptree);
+  table.convert_from_ptree(pt);
 
   return error;
 }
@@ -826,6 +826,30 @@ ErrorCode Tables::get(std::string_view table_name,
   table.convert_from_ptree(ptree);
 
   return error;
+}
+
+/**
+ * @brief Get all index metadata objects from the metadata table.
+ *   If no index metadata existst, return the container as empty.
+ * @param objects  [out] Container of metadata objects.
+ * @return ErrorCode::OK if success, otherwise an error code.
+ */
+ErrorCode Tables::get_all(
+    std::vector<manager::metadata::Table>& tables) const {
+
+  std::vector<ptree> pts;
+  ErrorCode error = this->get_all(pts);
+  if (error != ErrorCode::OK) {
+    return error;
+  }
+
+  for (const auto& pt : pts) {
+    Table table;
+    table.convert_from_ptree(pt);
+    tables.emplace_back(table);
+  }
+
+  return error;  
 }
 
 /* =============================================================================
