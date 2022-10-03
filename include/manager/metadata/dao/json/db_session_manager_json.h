@@ -63,7 +63,6 @@ class DbSessionManagerJson : public DBSessionManager {
 
  private:
   Connection conn_;
-  std::string file_name_;
   std::unique_ptr<boost::property_tree::ptree> contents_;
 
   manager::metadata::ErrorCode save_contents() const;

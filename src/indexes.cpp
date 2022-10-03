@@ -82,18 +82,14 @@ ErrorCode Indexes::add(const boost::property_tree::ptree& object,
   ErrorCode error = ErrorCode::UNKNOWN;
   ObjectId id = INVALID_OBJECT_ID;
 
-  ObjectIdType retval_object_id = 0;
-  if (error == ErrorCode::OK) {
-    error = provider->add_index_metadata(object, id);
-  }
-
+  error = provider->add_index_metadata(object, id);
   if ((error == ErrorCode::OK) && (object_id != nullptr)) {
     *object_id = id;
   }
 
   log::function_finish("Index::add()", error);
   
-  return ErrorCode::OK;
+  return error;
 }
 
 /**
@@ -146,12 +142,12 @@ ErrorCode Indexes::get(std::string_view object_name,
     error = provider->get_index_metadata(Object::NAME, object_name, object);
   } else {
     LOG_WARNING << "An empty value was specified for TableName.";
-    error = ErrorCode::NAME_NOT_FOUND;
+    error = ErrorCode::INVALID_PARAMETER;
   }
 
   log::function_finish("Indexes::get(object_name)", error);
 
-  return ErrorCode::OK;
+  return error;
 }
 
 /**
@@ -187,7 +183,7 @@ ErrorCode Indexes::update(const ObjectIdType object_id,
     error = provider->update_index_metadata(object_id, object);
   }
 
-  return ErrorCode::OK;
+  return error;
 }
 
 /**

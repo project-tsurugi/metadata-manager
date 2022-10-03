@@ -30,18 +30,19 @@ class ObjectIdGenerator {
   ObjectIdGenerator();
 
   manager::metadata::ErrorCode init();
-  ObjectIdType current(std::string_view table_name);
-  ObjectIdType generate(std::string_view table_name);
-  ObjectIdType update(std::string_view table_name, ObjectIdType new_oid);
+  ObjectId current(std::string_view metadata_name);
+  ObjectId generate(std::string_view metadata_name);
+  ObjectId update(std::string_view metadata_name, ObjectId new_oid);
 
  private:
-  static constexpr const char* const OID_NAME = "oid";
+  static constexpr const char* const FILE_NAME = "oid";
   std::string oid_file_name_;
 
   ErrorCode read(boost::property_tree::ptree& oid_data) const;
   ErrorCode write(const boost::property_tree::ptree& oid_data) const;
 };
 } // namespace manager::metadata::db
+
 
 namespace manager::metadata::db::json {
 class ObjectId {

@@ -47,59 +47,49 @@ using boost::property_tree::ptree;
  * @param object  [out] metadata-object with the specified name.
  * @return ErrorCode::OK if success, otherwise an error code.
  */
-manager::metadata::ErrorCode IndexDaoJson::find_metadata_object(
+manager::metadata::ErrorCode find_metadata_object(
     const boost::property_tree::ptree& objects, 
     std::string_view key, std::string_view value,
-    boost::property_tree::ptree& object) const {
+    boost::property_tree::ptree& object) {
 
   ErrorCode error = ErrorCode::NOT_FOUND;
   BOOST_FOREACH(const auto& node,
                 objects.get_child(IndexDaoJson::INDEXES_ROOT)) {
     const auto& temp_obj = node.second;
     auto temp_value = temp_obj.get_optional<std::string>(key.data());
-    if (!temp_value) {
-      error = ErrorCode::INTERNAL_ERROR;
-      break;
-    }
-    if (temp_value.get() == value) {
+    if (temp_value && (temp_value.get() == value)) {
       // find the object.
       object = temp_obj;
       error = ErrorCode::OK;
       break;
     }
   }
-
+  
   return error;
 }
 
 /**
  * @brief Delete a metadata object from a metadata table file.
- * @param (container)    [in/out] metadata container.
- * @param (object_key)   [in]     key. column name of a table metadata table.
- * @param (object_value) [in]     value to be filtered.
- * @param (table_id)     [out]    table id of the row deleted.
+ * @param container    [in/out] metadata container.
+ * @param object_key   [in]     key. column name of a table metadata table.
+ * @param object_value [in]     value to be filtered.
+ * @param table_id     [out]    table id of the row deleted.
  * @retval ErrorCode::OK if success.
  * @retval ErrorCode::ID_NOT_FOUND if the table id does not exist.
  * @retval ErrorCode::NAME_NOT_FOUND if the table name does not exist.
  * @retval otherwise an error code.
  */
-ErrorCode IndexDaoJson::delete_metadata_object(
+ErrorCode delete_metadata_object(
     boost::property_tree::ptree& objects, 
     std::string_view key, std::string_view value, 
-    ObjectIdType& object_id) const {
+    ObjectIdType& object_id) {
   
   ErrorCode error = ErrorCode::UNKNOWN;
 
   // Initialize the error code.
-  if (key == Object::ID) {
-    error = ErrorCode::ID_NOT_FOUND;
-  } else if (key == Object::NAME) {
-    error = ErrorCode::NAME_NOT_FOUND;
-  } else {
-    error = ErrorCode::NOT_FOUND;
-  }
+  error = Dao::get_not_found_error_code(key);
 
-  ptree& node = objects.get_child(INDEXES_ROOT);
+  ptree& node = objects.get_child(IndexDaoJson::INDEXES_ROOT);
   for (ptree::iterator ite = node.begin(); ite != node.end();) {
     const auto& temp_obj = ite->second;
     auto id = temp_obj.get_optional<std::string>(Object::ID);
@@ -144,16 +134,13 @@ ErrorCode IndexDaoJson::delete_metadata_object(
 ErrorCode IndexDaoJson::prepare() {
   ErrorCode error = ErrorCode::UNKNOWN;
 
-  // Filename of the table metadata.
   boost::format file_path = boost::format("%s/%s.json") %
                             Config::get_storage_dir_path() %
                             this->get_source_name();
 
-  // Connect to the table metadata file.
   error = session_->connect(file_path.str(), 
                             IndexDaoJson::INDEXES_ROOT);
 
-  // Create Object ID generator.
   oid_generator = std::make_unique<ObjectIdGenerator>();
 
   return error;
@@ -216,12 +203,12 @@ bool IndexDaoJson::exists(const boost::property_tree::ptree& object) const {
  */
 manager::metadata::ErrorCode IndexDaoJson::insert(
     const boost::property_tree::ptree& object,
-    ObjectIdType& object_id) const
-{
+    ObjectIdType& object_id) const {
+
   ErrorCode error = ErrorCode::UNKNOWN;
 
   // Check if the object is alredy exists.
-  if (exists(object)) {
+  if (this->exists(object)) {
     return ErrorCode::ALREADY_EXISTS;
   }
 
@@ -235,14 +222,16 @@ manager::metadata::ErrorCode IndexDaoJson::insert(
 
   ptree temp_obj = object;
   // Generate management metadata.
-  temp_obj.put<int64_t>(Index::FORMAT_VERSION, 1);
-  temp_obj.put<int64_t>(Index::GENERATION, 1);
+  temp_obj.put<int64_t>(Object::FORMAT_VERSION, 1);
+  temp_obj.put<int64_t>(Object::GENERATION, 1);
   object_id = oid_generator->generate(OID_KEY_NAME_TABLE);
-  temp_obj.put<ObjectIdType>(Index::ID, object_id);
+  temp_obj.put<ObjectIdType>(Object::ID, object_id);
 
   ptree root = contents->get_child(IndexDaoJson::INDEXES_ROOT);
-  root.push_back(std::make_pair("", object));
+  root.push_back(std::make_pair("", temp_obj));
   contents->put_child(IndexDaoJson::INDEXES_ROOT, root);
+
+  // The metadata object is NOT yet persisted, persisted on commit.
 
   return  ErrorCode::OK;
 }
@@ -256,26 +245,17 @@ manager::metadata::ErrorCode IndexDaoJson::insert(
  */
 manager::metadata::ErrorCode IndexDaoJson::select(
     std::string_view key, std::string_view value,
-    boost::property_tree::ptree& object) const
-{
-  ErrorCode error = ErrorCode::UNKNOWN;
+    boost::property_tree::ptree& object) const {
 
-  error = session_->load_contents();
+  ErrorCode error = session_->load_contents();
   if (error != ErrorCode::OK) {
     return error;
   }
 
-  // Getting a metadata container.
-  ptree* container = session_->get_contents();
-
-  // Getting a metadata object.
-  error = this->find_metadata_object(*container, key, value, object);
+  ptree* metadata_table = session_->get_contents();
+  error = find_metadata_object(*metadata_table, key, value, object);
   if (error == ErrorCode::NOT_FOUND) {
-    if (key == Object::ID) {
-      error = ErrorCode::ID_NOT_FOUND;
-    } else if (key == Object::NAME) {
-      error = ErrorCode::NAME_NOT_FOUND;
-    }
+    error = get_not_found_error_code(key);
   }
   
   return error;
@@ -293,13 +273,11 @@ manager::metadata::ErrorCode IndexDaoJson::select_all(
   
   ErrorCode error = ErrorCode::UNKNOWN;
 
-  // Load the meta data from the JSON file.
   error = session_->load_contents();
   if (error != ErrorCode::OK) {
     return error;
   }
 
-  // Getting a metadata container.
   ptree* contents = session_->get_contents();
 
   // Convert from ptree structure type to vector<ptree>.
@@ -336,7 +314,7 @@ manager::metadata::ErrorCode IndexDaoJson::remove(
   }
   ptree* contents = session_->get_contents();
 
-  error = this->delete_metadata_object(*contents, key, value, object_id);
+  error = delete_metadata_object(*contents, key, value, object_id);
 
   return error; 
 }

@@ -51,8 +51,8 @@ ErrorCode DbSessionManagerJson::connect(std::string_view file_name,
                                         std::string_view root_node) {
   ErrorCode error = ErrorCode::UNKNOWN;
 
-  file_name_ = std::string(file_name);
-  std::ifstream file(file_name_);
+  database_ = std::string(file_name);
+  std::ifstream file(database_);
   if (file) {
     // open a metadata-table file.
     error = ErrorCode::OK;
@@ -60,9 +60,9 @@ ErrorCode DbSessionManagerJson::connect(std::string_view file_name,
     // create a metadata-table file and initialize.
     clear_contents();
     contents_->put(root_node.data(), "");
-    error = save_contents();
+    error = this->save_contents();
     if (error != ErrorCode::OK) {
-      file_name_.clear();
+      database_.clear();
     }
   }
 
@@ -74,23 +74,24 @@ ErrorCode DbSessionManagerJson::connect(std::string_view file_name,
  * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode DbSessionManagerJson::load_contents() const {
+
   ErrorCode error = ErrorCode::UNKNOWN;
 
-  if (file_name_.empty()) {
+  if (database_.empty()) {
     LOG_ERROR << Message::NOT_INITIALIZED;
     error = ErrorCode::NOT_INITIALIZED;
     return error;
   }
 
   try {
-    json_parser::read_json(file_name_, *(contents_.get()));
+    json_parser::read_json(database_, *(contents_.get()));
   } catch (json_parser_error& e) {
-    LOG_ERROR << Message::READ_JSON_FILE_FAILURE << file_name_ << "\n  "
+    LOG_ERROR << Message::READ_JSON_FILE_FAILURE << database_ << "\n  "
               << e.what();
     error = ErrorCode::INTERNAL_ERROR;
     return error;
   } catch (...) {
-    LOG_ERROR << Message::READ_JSON_FILE_FAILURE << file_name_;
+    LOG_ERROR << Message::READ_JSON_FILE_FAILURE << database_;
     error = ErrorCode::INTERNAL_ERROR;
     return error;
   }
@@ -104,16 +105,17 @@ ErrorCode DbSessionManagerJson::load_contents() const {
  * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode DbSessionManagerJson::save_contents() const {
+
   ErrorCode error = ErrorCode::UNKNOWN;
 
-  if (file_name_.empty()) {
+  if (database_.empty()) {
     LOG_ERROR << Message::NOT_INITIALIZED;
     error = ErrorCode::NOT_INITIALIZED;
     return error;
   }
 
   try {
-    json_parser::write_json(file_name_, *(contents_.get()));
+    json_parser::write_json(database_, *(contents_.get()));
   } catch (json_parser_error& e) {
     LOG_ERROR << Message::WRITE_JSON_FAILURE << e.what();
     error = ErrorCode::INTERNAL_ERROR;
@@ -123,8 +125,8 @@ ErrorCode DbSessionManagerJson::save_contents() const {
     error = ErrorCode::INTERNAL_ERROR;
     return error;
   }
-
   error = ErrorCode::OK;
+
   return error;
 }
 
@@ -135,7 +137,7 @@ ErrorCode DbSessionManagerJson::save_contents() const {
 ErrorCode DbSessionManagerJson::start_transaction() {
   ErrorCode error = ErrorCode::UNKNOWN;
 
-  if (file_name_.empty()) {
+  if (database_.empty()) {
     LOG_ERROR << Message::NOT_INITIALIZED;
     error = ErrorCode::NOT_INITIALIZED;
     return error;
@@ -155,14 +157,14 @@ ErrorCode DbSessionManagerJson::start_transaction() {
 ErrorCode DbSessionManagerJson::commit() {
   ErrorCode error = ErrorCode::UNKNOWN;
 
-  if (file_name_.empty()) {
+  if (database_.empty()) {
     LOG_ERROR << Message::NOT_INITIALIZED;
     error = ErrorCode::NOT_INITIALIZED;
     return error;
   }
 
-  save_contents();
-  clear_contents();
+  this->save_contents();
+  this->clear_contents();
 
   error = ErrorCode::OK;
   return error;
@@ -176,7 +178,7 @@ ErrorCode DbSessionManagerJson::commit() {
 ErrorCode DbSessionManagerJson::rollback() {
   ErrorCode error = ErrorCode::UNKNOWN;
 
-  if (file_name_.empty()) {
+  if (database_.empty()) {
     LOG_ERROR << Message::NOT_INITIALIZED;
     error = ErrorCode::NOT_INITIALIZED;
     return error;

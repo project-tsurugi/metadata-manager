@@ -46,13 +46,19 @@ boost::property_tree::ptree Index::convert_to_ptree() const
   pt.put(NUMBER_OF_KEY_COLUMNS, this->number_of_key_columns);
   
   ptree keys = ptree_helper::make_array_ptree(this->keys);
-  pt.push_back(std::make_pair(KEYS, keys));
+  ptree child;
+  child.push_back(std::make_pair("", keys));
+  pt.add_child(KEYS, child);
   
   ptree keys_id = ptree_helper::make_array_ptree(this->keys_id);
-  pt.push_back(std::make_pair(KEYS_ID, keys_id));
+  child.empty();
+  child.push_back(std::make_pair("", keys_id));
+  pt.add_child(KEYS_ID, child);
   
   ptree options = ptree_helper::make_array_ptree(this->options);
-  pt.push_back(std::make_pair(OPTIONS, options));
+  child.empty();
+  child.push_back(std::make_pair("", options));
+  pt.add_child(OPTIONS, child);
 
   return pt;
 }

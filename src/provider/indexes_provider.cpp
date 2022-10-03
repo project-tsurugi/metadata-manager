@@ -39,12 +39,16 @@ using boost::property_tree::ptree;
  */
 ErrorCode IndexesProvider::init() {
 
-  std::shared_ptr<Dao> gdao = nullptr;
+//  std::shared_ptr<Dao> gdao = nullptr;
 
   if (index_dao_ == nullptr) {
     index_dao_ = session_->get_index_dao();
+    ErrorCode error = index_dao_->prepare();
+    if (error != ErrorCode::OK) {
+      return error;
+    }
   }
-
+  
   return ErrorCode::OK;
 }
 
@@ -75,7 +79,6 @@ ErrorCode IndexesProvider::add_index_metadata(
     if (rollback_result != ErrorCode::OK) {
       return rollback_result;
     }
-
     return error;
   }
 

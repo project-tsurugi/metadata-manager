@@ -32,6 +32,9 @@ namespace manager::metadata::db {
  */
 class IndexDaoJson : public Dao {
  public:
+  static constexpr const char* const INDEXES_ROOT = "indexes";
+  static constexpr const char* const OID_KEY_NAME_TABLE = "indexes";
+
   explicit IndexDaoJson(DbSessionManagerJson* session)
       : Dao(session), session_(session) {}
 
@@ -60,9 +63,6 @@ class IndexDaoJson : public Dao {
       ObjectIdType& object_id) const override;
 
  private:
-  static constexpr const char* const INDEXES_ROOT = "indexes";
-  static constexpr const char* const OID_KEY_NAME_TABLE = "indexes";
-
   DbSessionManagerJson* session_;
 
   std::string get_source_name() const override { return "indexes"; }
@@ -78,16 +78,6 @@ class IndexDaoJson : public Dao {
     return ""; 
   }
   void create_prepared_statements() override {}
-
-  manager::metadata::ErrorCode find_metadata_object(
-      const boost::property_tree::ptree& objects,
-      std::string_view key, std::string_view value,
-      boost::property_tree::ptree& object) const;
-
-  manager::metadata::ErrorCode delete_metadata_object(
-      boost::property_tree::ptree& objects, 
-      std::string_view key, std::string_view value, 
-      ObjectIdType& object_id) const;
 };
 
 }  // namespace manager::metadata::db

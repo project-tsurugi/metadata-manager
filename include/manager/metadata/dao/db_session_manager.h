@@ -50,6 +50,9 @@ class DBSessionManager {
 //  virtual void close() = 0;
 
  protected:
+  std::string database_;
+  std::string metadata_table_;
+
   manager::metadata::ErrorCode create_dao(
       const GenericDAO::TableName table_name,
       const manager::metadata::db::DBSessionManager* session_manager,

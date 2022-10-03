@@ -24,6 +24,9 @@
 #include "manager/metadata/dao/common/statements.h"
 
 namespace manager::metadata::db {
+/**
+ * @brief
+ */
 class Dao {
  public:
   explicit Dao(DBSessionManager*) {}
@@ -101,6 +104,19 @@ class Dao {
       std::string_view key, std::string_view value,
       ObjectIdType& object_id) const = 0;
 
+  /**
+   * @brief
+   */
+  static ErrorCode get_not_found_error_code(std::string_view key) {
+    if (key == Object::ID) {
+      return ErrorCode::ID_NOT_FOUND;
+    } else if (key == Object::NAME) {
+      return ErrorCode::NAME_NOT_FOUND;
+    } else {
+      return ErrorCode::NOT_FOUND;
+    }
+  }
+
 protected:
   DBSessionManager* session_;
 
@@ -117,19 +133,6 @@ protected:
   virtual std::string get_update_statement(std::string_view key) const = 0;
   virtual std::string get_delete_statement(std::string_view key) const = 0;
   virtual void create_prepared_statements() = 0;
-
-  /**
-   * @brief
-   */
-  ErrorCode get_not_found_error_code(std::string_view key) const {
-    if (key == Object::ID) {
-      return ErrorCode::ID_NOT_FOUND;
-    } else if (key == Object::NAME) {
-      return ErrorCode::NAME_NOT_FOUND;
-    } else {
-      return ErrorCode::NOT_FOUND;
-    }
-  }
 };  // class Dao
 
 } // namespace manager::metadata::db

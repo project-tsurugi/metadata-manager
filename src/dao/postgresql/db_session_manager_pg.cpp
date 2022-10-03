@@ -69,6 +69,7 @@ ErrorCode DbSessionManagerPg::start_transaction() {
  * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode DbSessionManagerPg::commit() {
+
   ErrorCode error = ErrorCode::UNKNOWN;
 
   if (!DbcUtils::is_open(conn_.pg_conn)) {

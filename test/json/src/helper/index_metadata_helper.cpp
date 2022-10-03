@@ -99,7 +99,7 @@ void IndexMetadataHelper::generate_test_metadata(const ObjectId& table_id,
   index_metadata->columns_id.push_back(2001);
   index_metadata->columns_id.push_back(2002);
 
-  // generate index id.
+  // generate options.
   index_metadata->options.push_back(static_cast<int64_t>(Index::Direction::ASC_NULLS_LAST));
   index_metadata->options.push_back(static_cast<int64_t>(Index::Direction::DESC_NULLS_FIRST));
 
@@ -186,9 +186,16 @@ void IndexMetadataHelper::remove(const Indexes* indexes, const ObjectIdType inde
 void IndexMetadataHelper::check_metadata_expected(const boost::property_tree::ptree& expected,
                                                   const boost::property_tree::ptree& actual) {
   // index metadata id
-  auto id_actual = actual.get<ObjectIdType>(Index::ID);
-  EXPECT_GT(id_actual, static_cast<ObjectIdType>(0));
+  auto id_actual = actual.get_optional<ObjectIdType>(Index::ID);
+  if (id_actual) {
+    EXPECT_GT(id_actual.get(), static_cast<ObjectIdType>(0));
+  } else {
+    UTUtils::print("Object ID not found in the actual ptree.");
+    EXPECT_GT(INVALID_OBJECT_ID, static_cast<ObjectIdType>(0));
+  }
 
+  // index metadata ID
+  check_expected<std::string>(expected, actual, Index::ID);
   // index metadata name
   check_expected<std::string>(expected, actual, Index::NAME);
   // index metadata namespace_name

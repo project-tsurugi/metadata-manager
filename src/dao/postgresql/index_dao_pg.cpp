@@ -379,7 +379,7 @@ ErrorCode IndexDaoPg::select(
       error = this->convert_pgresult_to_ptree(res, FIRST_TUPLE_NUMBER, object);
     } else if (number_of_tuples == 0) {
       // Not found.
-      error = this->get_not_found_error_code(key);
+      error = Dao::get_not_found_error_code(key);
     } else {
       error = ErrorCode::RESULT_MULTIPLE_ROWS;
     }

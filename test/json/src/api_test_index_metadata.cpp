@@ -85,23 +85,23 @@ TEST_F(ApiTestIndexMetadata, add_get_index_metadata_by_id) {
 
   // generate metadata.
   IndexMetadataHelper::generate_test_metadata(table_id, index_metadata);
-  ptree new_indexes = index_metadata->indexes_metadata;
+  ptree new_index = index_metadata->indexes_metadata;
   // change to a unique index name.
-  new_indexes.put(Index::NAME,
-                  new_indexes.get<std::string>(Index::NAME) + "_" + std::to_string(__LINE__));
+  new_index.put(Index::NAME,
+                  new_index.get<std::string>(Index::NAME) + "_" + std::to_string(__LINE__));
   // set table id.
-  new_indexes.put(Index::TABLE_ID, table_id);
+  new_index.put(Index::TABLE_ID, table_id);
 
   // generate index metadata manager.
-  auto indexes    = std::make_unique<Indexes>(GlobalTestEnvironment::TEST_DB);
+  auto indexes = std::make_unique<Indexes>(GlobalTestEnvironment::TEST_DB);
   ErrorCode error = indexes->init();
   ASSERT_EQ(ErrorCode::OK, error);
 
-  ObjectId inserted_id = -1;
+  ObjectId inserted_id = INVALID_OBJECT_ID;
   // add index metadata.
-  IndexMetadataHelper::add(indexes.get(), new_indexes, &inserted_id);
+  IndexMetadataHelper::add(indexes.get(), new_index, &inserted_id);
   // set index id.
-  new_indexes.put(Index::ID, inserted_id);
+  new_index.put(Index::ID, inserted_id);
 
   UTUtils::print("-- get index metadata by id --");
   {
@@ -113,7 +113,7 @@ TEST_F(ApiTestIndexMetadata, add_get_index_metadata_by_id) {
     UTUtils::print(UTUtils::get_tree_string(index_metadata_inserted));
 
     // verifies that the returned index metadata is expected one.
-    IndexMetadataHelper::check_metadata_expected(new_indexes, index_metadata_inserted);
+    IndexMetadataHelper::check_metadata_expected(new_index, index_metadata_inserted);
   }
 
   // remove index metadata by index id.
@@ -140,36 +140,36 @@ TEST_F(ApiTestIndexMetadata, add_get_index_metadata_by_name) {
 
   // generate metadata.
   IndexMetadataHelper::generate_test_metadata(table_id, index_metadata);
-  ptree new_indexes = index_metadata->indexes_metadata;
+  ptree new_index = index_metadata->indexes_metadata;
   // change to a unique index name.
   std::string index_name =
-      new_indexes.get<std::string>(Index::NAME) + "_" + std::to_string(__LINE__);
-  new_indexes.put(Index::NAME, index_name);
+      new_index.get<std::string>(Index::NAME) + "_" + std::to_string(__LINE__);
+  new_index.put(Index::NAME, index_name);
   // set table id.
-  new_indexes.put(Index::TABLE_ID, table_id);
+  new_index.put(Index::TABLE_ID, table_id);
 
   // generate index metadata manager.
-  auto indexes    = std::make_unique<Indexes>(GlobalTestEnvironment::TEST_DB);
+  auto indexes  = std::make_unique<Indexes>(GlobalTestEnvironment::TEST_DB);
   ErrorCode error = indexes->init();
   ASSERT_EQ(ErrorCode::OK, error);
 
-  ObjectId inserted_id = -1;
+  ObjectId inserted_id = INVALID_OBJECT_ID;
   // add index metadata.
-  IndexMetadataHelper::add(indexes.get(), new_indexes, &inserted_id);
+  IndexMetadataHelper::add(indexes.get(), new_index, &inserted_id);
   // set index id.
-  new_indexes.put(Index::ID, inserted_id);
+  new_index.put(Index::ID, inserted_id);
 
   UTUtils::print("-- get index metadata by name --");
   {
     ptree index_metadata_inserted;
-    // get index metadata by index id.
+    // get index metadata by index name.
     error = indexes->get(index_name, index_metadata_inserted);
     EXPECT_EQ(ErrorCode::OK, error);
 
     UTUtils::print(UTUtils::get_tree_string(index_metadata_inserted));
 
     // verifies that the returned index metadata is expected one.
-    IndexMetadataHelper::check_metadata_expected(new_indexes, index_metadata_inserted);
+    IndexMetadataHelper::check_metadata_expected(new_index, index_metadata_inserted);
   }
 
   UTUtils::print("-- remove index metadata by name --");
@@ -619,7 +619,7 @@ TEST_F(ApiTestIndexMetadata, add_get_index_metadata_object_ptree) {
                                                  get_index_metadata);
   }
 
-  UTUtils::print("-- get index metadata in object --");
+  UTUtils::print("-- get index metadata in struct --");
   {
     Index get_index_metadata;
     // get index metadata by index id.
@@ -667,7 +667,7 @@ TEST_F(ApiTestIndexMetadata, add_get_index_metadata_ptree_object) {
   ErrorCode error = indexes->init();
   ASSERT_EQ(ErrorCode::OK, error);
 
-  ObjectId inserted_id = -1;
+  ObjectId inserted_id = INVALID_OBJECT_ID;
   // add index metadata.
   IndexMetadataHelper::add(indexes.get(), new_indexes, &inserted_id);
   // set index id.
