@@ -149,18 +149,15 @@ std::string IndexDaoPg::get_delete_statement(std::string_view key) const {
 }
 
 /**
- * @brief Defines all prepared statements.
- * @param none.
- * @return ErrorCode::OK if success, otherwise an error code.
+ * @brief
  */
-ErrorCode IndexDaoPg::prepare() {
+void IndexDaoPg::create_prepared_statements() {
 
-  ErrorCode error = ErrorCode::UNKNOWN;
-
-  // Initialize statements.
+  // INSERT statements
   insert_statement_.set(this->get_source_name(),
                         this->get_insert_statement());
 
+  // SELECT statements
   select_all_statement_.set(this->get_source_name().data(), 
                             this->get_select_all_statement());
 
@@ -176,6 +173,7 @@ ErrorCode IndexDaoPg::prepare() {
       Object::NAME};
   select_statements_.emplace(Object::NAME, select_by_name_statement);
 
+  // UPDATE statements
   UpdateStatement update_by_id_statement{
       this->get_source_name(), 
       this->get_update_statement(Object::ID),
@@ -188,6 +186,7 @@ ErrorCode IndexDaoPg::prepare() {
       Object::NAME};
   select_statements_.emplace(Object::NAME, select_by_name_statement);
 
+  // DELETE statements
   DeleteStatement delete_by_id_statement{
       this->get_source_name(), 
       this->get_delete_statement(Object::ID),
@@ -199,7 +198,18 @@ ErrorCode IndexDaoPg::prepare() {
       this->get_delete_statement(Object::NAME),
       Object::NAME};
   delete_statements_.emplace(Object::NAME, delete_by_name_statement);
+}
 
+/**
+ * @brief Defines all prepared statements.
+ * @param none.
+ * @return ErrorCode::OK if success, otherwise an error code.
+ */
+ErrorCode IndexDaoPg::prepare() {
+
+  ErrorCode error = ErrorCode::UNKNOWN;
+
+  this->create_prepared_statements();
 
   // Set prepared statements.
   error = DbcUtils::prepare(pg_conn_,
@@ -369,7 +379,7 @@ ErrorCode IndexDaoPg::select(
       error = this->convert_pgresult_to_ptree(res, FIRST_TUPLE_NUMBER, object);
     } else if (number_of_tuples == 0) {
       // Not found.
-      error = this->get_key_not_found_error_code(key);
+      error = this->get_not_found_error_code(key);
     } else {
       error = ErrorCode::RESULT_MULTIPLE_ROWS;
     }

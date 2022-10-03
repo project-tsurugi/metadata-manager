@@ -21,6 +21,7 @@
 #include "manager/metadata/metadata.h"
 #include "manager/metadata/error_code.h"
 #include "manager/metadata/dao/db_session_manager.h"
+#include "manager/metadata/dao/common/statements.h"
 
 namespace manager::metadata::db {
 class Dao {
@@ -28,7 +29,6 @@ class Dao {
   explicit Dao(DBSessionManager*) {}
   virtual ~Dao() {}
 
-  virtual std::string get_source_name() const = 0;
   virtual manager::metadata::ErrorCode prepare() = 0;
 
   /**
@@ -104,7 +104,24 @@ class Dao {
 protected:
   DBSessionManager* session_;
 
-  ErrorCode get_key_not_found_error_code(std::string_view key) const {
+  InsertStatement insert_statement_;
+  SelectAllStatement select_all_statement_;
+  std::unordered_map<std::string, SelectStatement> select_statements_;
+  std::unordered_map<std::string, UpdateStatement> update_statements_;
+  std::unordered_map<std::string, DeleteStatement> delete_statements_;
+
+  virtual std::string get_source_name() const = 0;
+  virtual std::string get_insert_statement() const = 0;
+  virtual std::string get_select_all_statement() const = 0;
+  virtual std::string get_select_statement(std::string_view key) const = 0;
+  virtual std::string get_update_statement(std::string_view key) const = 0;
+  virtual std::string get_delete_statement(std::string_view key) const = 0;
+  virtual void create_prepared_statements() = 0;
+
+  /**
+   * @brief
+   */
+  ErrorCode get_not_found_error_code(std::string_view key) const {
     if (key == Object::ID) {
       return ErrorCode::ID_NOT_FOUND;
     } else if (key == Object::NAME) {

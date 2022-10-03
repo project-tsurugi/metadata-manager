@@ -25,7 +25,6 @@
 #include "manager/metadata/error_code.h"
 #include "manager/metadata/helper/logging_helper.h"
 #include "manager/metadata/metadata.h"
-#include "manager/metadata/index.h"
 #include "manager/metadata/indexes.h"
 
 // =============================================================================
@@ -148,7 +147,7 @@ ErrorCode IndexDaoJson::prepare() {
   // Filename of the table metadata.
   boost::format file_path = boost::format("%s/%s.json") %
                             Config::get_storage_dir_path() %
-                            std::string(IndexDaoJson::INDEX_METADATA_FILE);
+                            this->get_source_name();
 
   // Connect to the table metadata file.
   error = session_->connect(file_path.str(), 

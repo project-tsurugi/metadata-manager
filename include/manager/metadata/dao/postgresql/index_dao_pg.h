@@ -24,7 +24,6 @@
 #include "manager/metadata/dao/postgresql/pg_common.h"
 #include "manager/metadata/dao/postgresql/dbc_utils_pg.h"
 #include "manager/metadata/dao/dao.h"
-#include "manager/metadata/dao/postgresql/statements.h"
 #include "manager/metadata/dao/postgresql/db_session_manager_pg.h"
 
 namespace manager::metadata::db {
@@ -56,8 +55,6 @@ class IndexDaoPg : public Dao {
   explicit IndexDaoPg(DbSessionManagerPg* session) 
       : Dao(session), pg_conn_(session->connection().pg_conn) {};
 
-  std::string get_source_name() const override { return "indexes"; }
-
   manager::metadata::ErrorCode prepare() override;
 
   bool exists(std::string_view name) const override;
@@ -83,17 +80,13 @@ class IndexDaoPg : public Dao {
       ObjectIdType& object) const override;
 
 protected:
-  SelectAllStatement select_all_statement_;
-  InsertStatement insert_statement_;
-  std::unordered_map<std::string, SelectStatement> select_statements_;
-  std::unordered_map<std::string, UpdateStatement> update_statements_;
-  std::unordered_map<std::string, DeleteStatement> delete_statements_;
-
-  std::string get_insert_statement() const;
-  std::string get_select_all_statement() const;
-  std::string get_select_statement(std::string_view key) const;
-  std::string get_update_statement(std::string_view key) const;
-  std::string get_delete_statement(std::string_view key) const;
+  std::string get_source_name() const override { return "indexes"; }
+  std::string get_insert_statement() const override;
+  std::string get_select_all_statement() const override;
+  std::string get_select_statement(std::string_view key) const override;
+  std::string get_update_statement(std::string_view key) const override;
+  std::string get_delete_statement(std::string_view key) const override;
+  void create_prepared_statements() override;
 
  private:
   PgConnectionPtr pg_conn_;

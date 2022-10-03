@@ -21,10 +21,10 @@
 
 #include <boost/property_tree/ptree.hpp>
 
+#include "manager/metadata/error_code.h"
+#include "manager/metadata/dao/dao.h"
 #include "manager/metadata/dao/db_session_manager.h"
 #include "manager/metadata/dao/json/db_session_manager_json.h"
-#include "manager/metadata/dao/dao.h"
-#include "manager/metadata/error_code.h"
 
 namespace manager::metadata::db {
 /**
@@ -35,7 +35,6 @@ class IndexDaoJson : public Dao {
   explicit IndexDaoJson(DbSessionManagerJson* session)
       : Dao(session), session_(session) {}
 
-  std::string get_source_name() const override { return "indexes.json"; }
   manager::metadata::ErrorCode prepare() override;
 
   bool exists(std::string_view name) const override;
@@ -61,11 +60,24 @@ class IndexDaoJson : public Dao {
       ObjectIdType& object_id) const override;
 
  private:
-  static constexpr const char* const INDEX_METADATA_FILE = "indexes";
   static constexpr const char* const INDEXES_ROOT = "indexes";
   static constexpr const char* const OID_KEY_NAME_TABLE = "indexes";
 
   DbSessionManagerJson* session_;
+
+  std::string get_source_name() const override { return "indexes"; }
+  std::string get_insert_statement() const override { return ""; }
+  std::string get_select_all_statement() const override { return ""; }
+  std::string get_select_statement(std::string_view) const override { 
+    return ""; 
+  }
+  std::string get_update_statement(std::string_view) const override { 
+    return ""; 
+  };
+  std::string get_delete_statement(std::string_view) const override { 
+    return ""; 
+  }
+  void create_prepared_statements() override {}
 
   manager::metadata::ErrorCode find_metadata_object(
       const boost::property_tree::ptree& objects,
