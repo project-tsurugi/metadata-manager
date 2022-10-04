@@ -16,23 +16,22 @@
 #include "manager/metadata/dao/postgresql/index_dao_pg.h"
 
 #include <libpq-fe.h>
+
 #include <iostream>
 #include <regex>
 #include <string>
 #include <string_view>
+
 #include <boost/format.hpp>
 
-#include "manager/metadata/common/message.h"
 #include "manager/metadata/common/utility.h"
-#include "manager/metadata/dao/postgresql/pg_common.h"
 #include "manager/metadata/dao/postgresql/dbc_utils_pg.h"
-#include "manager/metadata/tables.h"
+#include "manager/metadata/helper/logging_helper.h"
+#include "manager/metadata/indexes.h"
 
 namespace manager::metadata::db {
 
 using boost::property_tree::ptree;
-using manager::metadata::ErrorCode;
-using manager::metadata::db::StatementName;
 using manager::metadata::db::postgresql::DbcUtils;
 
 // =============================================================================
@@ -42,18 +41,19 @@ using manager::metadata::db::postgresql::DbcUtils;
  * @param none.
  * @return an INSERT statement to insert table metadata.
  */
-std::string IndexDaoPg::get_insert_statement() const{
+std::string IndexDaoPg::get_insert_statement() const {
   boost::format query =
       boost::format(
-          "INSERT INTO %1%.%2% (%3%, %4%, %5%)"
-          "VALUES ($1, $2, $3)"
-          "RETURNING %6%") %
-      SCHEMA_TSURUGI_CATALOG % 
-      this->get_source_name() %
-      Column::kFormatVersion %
-      Column::kGeneration % 
-      Column::kName %
-      Column::kId; 
+          "INSERT INTO %1%.%2%"
+          " (%3%, %4%, %5%, %6%, %7%, %8%, %9%, %10%, %11%, %12%, %13%, %14%, %15%, %16%)"
+          " VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)"
+          " RETURNING %17%") %
+      SCHEMA_TSURUGI_CATALOG % this->get_source_name() %
+      Column::kFormatVersion % Column::kGeneration % Column::kName %
+      Column::kNamespace % Column::kOwnerId % Column::kAcl % Column::kTableId %
+      Column::kAccessMethod % Column::kIsUnique % Column::kIsPrimary %
+      Column::kNumKeyColumn % Column::kColumns % Column::kColumnsId %
+      Column::kOptions % Column::kId;
 
   return query.str();
 }
@@ -68,15 +68,14 @@ std::string IndexDaoPg::get_select_all_statement() const {
   // SQL statement
   boost::format query =
       boost::format(
-          "SELECT %3%, %4%, %5%, %6%"
-          "FROM %1%.%2%"
-          "ORDER BY %5%") %
-      SCHEMA_TSURUGI_CATALOG % 
-      this->get_source_name() %
-      Column::kFormatVersion %
-      Column::kGeneration % 
-      Column::kId %
-      Column::kName;
+          "SELECT %3%, %4%, %5%, %6%, %7%, %8%, %9%, %10%, %11%, %12%, %13%, %14%, %15%"
+          " FROM %1%.%2%"
+          " ORDER BY %5%") %
+      SCHEMA_TSURUGI_CATALOG % this->get_source_name() % Column::kId %
+      Column::kName % Column::kNamespace % Column::kOwnerId % Column::kAcl %
+      Column::kTableId % Column::kAccessMethod % Column::kIsUnique %
+      Column::kIsPrimary % Column::kNumKeyColumn % Column::kColumns %
+      Column::kColumnsId % Column::kOptions;
 
   return query.str();
 }
@@ -89,19 +88,18 @@ std::string IndexDaoPg::get_select_all_statement() const {
  *   select * from table_name where column_name = $1.
  */
 std::string IndexDaoPg::get_select_statement(std::string_view key) const {
-
   boost::format query =
       boost::format(
-          "SELECT tbl.%3%, tbl.%4%, tbl.%5%, tbl.%6%"
-          "FROM %1%.%2%"
-          "WHERE %7% = $1") %
-      SCHEMA_TSURUGI_CATALOG % 
-      this->get_source_name() %
-      Column::kFormatVersion %
-      Column::kGeneration % 
-      Column::kId %
-      Column::kName % 
-      key.data();
+          "SELECT %3%, %4%, %5%, %6%, %7%, %8%, %9%, %10%, %11%, %12%, %13%, %14%, %15%, %16%, %17%"
+          " FROM %1%.%2%"
+          " WHERE %18% = $1"
+          " ORDER BY %5%") %
+      SCHEMA_TSURUGI_CATALOG % this->get_source_name() %
+      Column::kFormatVersion % Column::kGeneration % Column::kId %
+      Column::kName % Column::kNamespace % Column::kOwnerId % Column::kAcl %
+      Column::kTableId % Column::kAccessMethod % Column::kIsUnique %
+      Column::kIsPrimary % Column::kNumKeyColumn % Column::kColumns %
+      Column::kColumnsId % Column::kOptions % key.data();
 
   return query.str();
 }
@@ -112,16 +110,12 @@ std::string IndexDaoPg::get_select_statement(std::string_view key) const {
  * @return an UPDATE statement to insert table metadata.
  */
 std::string IndexDaoPg::get_update_statement(std::string_view key) const {
-
-  boost::format query =
-      boost::format(
-          "UPDATE %1%.%2%"
-          "SET %3% = $1"
-          "WHERE %4% = $2") %
-      SCHEMA_TSURUGI_CATALOG % 
-      this->get_source_name() % 
-      Column::kName %
-      Column::kId;
+  boost::format query = boost::format(
+                            "UPDATE %1%.%2%"
+                            " SET %3% = $1"
+                            " WHERE %4% = $2") %
+                        SCHEMA_TSURUGI_CATALOG % this->get_source_name() %
+                        Column::kName % Column::kId;
 
   return query.str();
 }
@@ -134,16 +128,12 @@ std::string IndexDaoPg::get_update_statement(std::string_view key) const {
  *   delete from table_name where column_name = $1.
  */
 std::string IndexDaoPg::get_delete_statement(std::string_view key) const {
-
-  boost::format query =
-      boost::format("DELETE "
-                    "FROM %1%.%2% "
-                    "WHERE %3% = $1 "
-                    "RETURNING %4%") %
-      SCHEMA_TSURUGI_CATALOG % 
-      this->get_source_name() % 
-      key.data() %
-      Column::kId;
+  boost::format query = boost::format(
+                            "DELETE FROM %1%.%2%"
+                            " WHERE %3% = $1"
+                            " RETURNING %4%") %
+                        SCHEMA_TSURUGI_CATALOG % this->get_source_name() %
+                        key.data() % Column::kId;
 
   return query.str();
 }
@@ -158,43 +148,43 @@ void IndexDaoPg::create_prepared_statements() {
                         this->get_insert_statement());
 
   // SELECT statements
-  select_all_statement_.set(this->get_source_name().data(), 
+  select_all_statement_.set(this->get_source_name().data(),
                             this->get_select_all_statement());
 
   SelectStatement select_by_id_statement{
-      this->get_source_name(), 
+      this->get_source_name(),
       this->get_select_statement(Object::ID),
       Object::ID};
   select_statements_.emplace(Object::ID, select_by_id_statement );
 
   SelectStatement select_by_name_statement{
-      this->get_source_name(), 
+      this->get_source_name(),
       this->get_select_statement(Object::NAME),
       Object::NAME};
   select_statements_.emplace(Object::NAME, select_by_name_statement);
 
   // UPDATE statements
   UpdateStatement update_by_id_statement{
-      this->get_source_name(), 
+      this->get_source_name(),
       this->get_update_statement(Object::ID),
       Object::ID};
-  select_statements_.emplace(Object::ID, select_by_id_statement);
+  update_statements_.emplace(Object::ID, update_by_id_statement);
 
   UpdateStatement update_by_name_statement{
-      this->get_source_name(), 
+      this->get_source_name(),
       this->get_update_statement(Object::NAME),
       Object::NAME};
-  select_statements_.emplace(Object::NAME, select_by_name_statement);
+  update_statements_.emplace(Object::NAME, update_by_name_statement);
 
   // DELETE statements
   DeleteStatement delete_by_id_statement{
-      this->get_source_name(), 
+      this->get_source_name(),
       this->get_delete_statement(Object::ID),
       Object::ID};
   delete_statements_.emplace(Object::ID, delete_by_id_statement);
 
   DeleteStatement delete_by_name_statement{
-      this->get_source_name(), 
+      this->get_source_name(),
       this->get_delete_statement(Object::NAME),
       Object::NAME};
   delete_statements_.emplace(Object::NAME, delete_by_name_statement);
@@ -247,10 +237,10 @@ ErrorCode IndexDaoPg::prepare() {
   }
 
   for (const auto& element : delete_statements_) {
-    const DeleteStatement& deletet_statement = element.second;
+    const DeleteStatement& delete_statement = element.second;
     error = DbcUtils::prepare(pg_conn_,
-                              deletet_statement.name(),
-                              deletet_statement.statement());
+                              delete_statement.name(),
+                              delete_statement.statement());
     if (error != ErrorCode::OK) {
       return error;
     }
@@ -309,23 +299,82 @@ ErrorCode IndexDaoPg::insert(
   ErrorCode error = ErrorCode::UNKNOWN;
   std::vector<const char*> params;
 
-  std::string s_format_version = std::to_string(Tables::format_version());
+  std::string s_format_version = std::to_string(Indexes::format_version());
   params.emplace_back(s_format_version.c_str());
 
-  std::string s_generation = std::to_string(Tables::generation());
+  std::string s_generation = std::to_string(Indexes::generation());
   params.emplace_back(s_generation.c_str());
 
-  auto name = object.get_optional<std::string>(Tables::NAME);
+  auto name = object.get_optional<std::string>(Index::NAME);
   params.emplace_back((name ? name.value().c_str() : nullptr));
 
+  auto namespace_name = object.get_optional<std::string>(Index::NAMESPACE);
+  params.emplace_back((namespace_name ? namespace_name.value().c_str() : nullptr));
+
+  auto owner_id = get_string_value<ObjectId>(object, Index::OWNER_ID);
+  params.emplace_back(!owner_id.empty() ? owner_id.c_str() : nullptr);
+
+  auto acl = object.get_optional<std::string>(Index::ACL);
+  params.emplace_back((acl ? acl.value().c_str() : nullptr));
+
+  auto table_id = get_string_value<ObjectId>(object, Index::TABLE_ID);
+  params.emplace_back(!table_id.empty() ? table_id.c_str() : nullptr);
+
+  auto access_method = get_string_value<int64_t>(object, Index::ACCESS_METHOD);
+  params.emplace_back(!access_method.empty() ? access_method.c_str() : nullptr);
+
+  auto is_unique = get_string_value<bool>(object, Index::IS_UNIQUE);
+  params.emplace_back(!is_unique.empty() ? is_unique.c_str() : nullptr);
+
+  auto is_primary = get_string_value<bool>(object, Index::IS_PRIMARY);
+  params.emplace_back(!is_primary.empty() ? is_primary.c_str() : nullptr);
+
+  auto number_of_key_column = get_string_value<int64_t>(object, Index::NUMBER_OF_KEY_COLUMNS);
+  params.emplace_back(!number_of_key_column.empty() ? number_of_key_column.c_str() : nullptr);
+
+  auto columns = object.get_child_optional(Index::KEYS);
+  std::string columns_json;
+  if (columns) {
+    // Converts a property_tree to a JSON string.
+    error = Utility::ptree_to_json(columns.value(), columns_json);
+    if (error != ErrorCode::OK) {
+      return error;
+    }
+  }
+  params.emplace_back((!columns_json.empty() ? columns_json.c_str() : "{}"));
+
+  auto columns_id = object.get_child_optional(Index::KEYS_ID);
+  std::string columns_id_json;
+  if (columns_id) {
+    // Converts a property_tree to a JSON string.
+    error = Utility::ptree_to_json(columns_id.value(), columns_id_json);
+    if (error != ErrorCode::OK) {
+      return error;
+    }
+  }
+  params.emplace_back(
+      (!columns_id_json.empty() ? columns_id_json.c_str() : "{}"));
+
+  auto options = object.get_child_optional(Index::OPTIONS);
+  std::string options_json;
+  if (options) {
+    // Converts a property_tree to a JSON string.
+    error = Utility::ptree_to_json(options.value(), options_json);
+    if (error != ErrorCode::OK) {
+      return error;
+    }
+  }
+  params.emplace_back((!options_json.empty() ? options_json.c_str() : "{}"));
+
   PGresult* res = nullptr;
+  // Executes a prepared statement.
   error = DbcUtils::execute_statement(pg_conn_, 
                                       insert_statement_.name(),
                                       params, res);
   if (error == ErrorCode::OK) {
     int64_t number_of_tuples = PQntuples(res);
     if (number_of_tuples == 1) {
-      // obtain object ID.
+      // Obtain the object ID of the added metadata object.
       std::string str = PQgetvalue(res, 
                                   FIRST_TUPLE_NUMBER, 
                                   FIRST_COLUMN_NUMBER);
@@ -357,6 +406,8 @@ ErrorCode IndexDaoPg::select(
   std::vector<const char*> params;
 
   params.emplace_back(value.data());
+
+  // Set SELECT statement.
   SelectStatement select_statement;
   try {
     select_statement = select_statements_.at(key.data());
@@ -369,8 +420,9 @@ ErrorCode IndexDaoPg::select(
   }
 
   PGresult* res = nullptr;
-  error = DbcUtils::execute_statement(pg_conn_, 
-                                      select_statement.name(), 
+  // Executes a prepared statement
+  error = DbcUtils::execute_statement(pg_conn_,
+                                      select_statement.name(),
                                       params, res);
   if (error == ErrorCode::OK) {
     int64_t number_of_tuples = PQntuples(res);
@@ -401,9 +453,10 @@ ErrorCode IndexDaoPg::select_all(
   std::vector<const char*> params;
 
   PGresult* res = nullptr;
-  error = DbcUtils::execute_statement(
-      pg_conn_, select_all_statement_.name(),
-      params, res);
+  // Executes a prepared statement
+  error = DbcUtils::execute_statement(pg_conn_,
+                                      select_all_statement_.name(),
+                                      params, res);
 
   if (error == ErrorCode::OK) {
     int64_t number_of_tuples = PQntuples(res);
@@ -452,7 +505,8 @@ ErrorCode IndexDaoPg::update(
   }
 
   PGresult* res = nullptr;
-  error = DbcUtils::execute_statement(pg_conn_, 
+  // Executes a prepared statement
+  error = DbcUtils::execute_statement(pg_conn_,
                                       update_statement.name(),
                                       params, res);
 
@@ -484,7 +538,7 @@ ErrorCode IndexDaoPg::update(
 ErrorCode IndexDaoPg::remove(std::string_view key,
                              std::string_view value,
                              ObjectIdType& object_id) const {
-  
+
   ErrorCode error = ErrorCode::UNKNOWN;
   std::vector<const char*> params;
 
@@ -501,6 +555,7 @@ ErrorCode IndexDaoPg::remove(std::string_view key,
   }
 
   PGresult* res = nullptr;
+  // Executes a prepared statement
   error = DbcUtils::execute_statement(pg_conn_,
                                       delete_statement.name(),
                                       params, res);
@@ -514,17 +569,12 @@ ErrorCode IndexDaoPg::remove(std::string_view key,
       error = error_get;
     } else if (number_of_rows_affected == 1) {
       int ordinal_position = 0;
+      // Obtain the object ID of the deleted metadata object.
       error = DbcUtils::str_to_integral<ObjectIdType>(
           PQgetvalue(res, ordinal_position, 0), object_id);
     } else if (number_of_rows_affected == 0) {
-      // Convert the error code.
-      if (key == Tables::ID) {
-        error = ErrorCode::ID_NOT_FOUND;
-      } else if (key == Tables::NAME) {
-        error = ErrorCode::NAME_NOT_FOUND;
-      } else {
-        error = ErrorCode::NOT_FOUND;
-      }
+      // Not found.
+      error = Dao::get_not_found_error_code(key);
     } else {
       error = ErrorCode::INVALID_PARAMETER;
     }
@@ -550,20 +600,72 @@ ErrorCode IndexDaoPg::convert_pgresult_to_ptree(
   object.clear();
 
   object.put(Object::FORMAT_VERSION,
-            PQgetvalue(res, tuple_num,
-                      static_cast<int>(OrdinalPosition::kFormatVersion)));
+      PQgetvalue(res, tuple_num, static_cast<int>(OrdinalPosition::kFormatVersion)));
 
   object.put(Object::GENERATION,
-            PQgetvalue(res, tuple_num,
-                      static_cast<int>(OrdinalPosition::kGeneration)));
+      PQgetvalue(res, tuple_num, static_cast<int>(OrdinalPosition::kGeneration)));
 
   object.put(Object::ID,
-            PQgetvalue(res, tuple_num,
-                      static_cast<int>(OrdinalPosition::kId)));
+      PQgetvalue(res, tuple_num, static_cast<int>(OrdinalPosition::kId)));
 
   object.put(Object::NAME,
-            PQgetvalue(res, tuple_num,
-                      static_cast<int>(OrdinalPosition::kName)));
+      PQgetvalue(res, tuple_num, static_cast<int>(OrdinalPosition::kName)));
+
+  object.put(Index::NAMESPACE,
+      PQgetvalue(res, tuple_num, static_cast<int>(OrdinalPosition::kNamespace)));
+
+  object.put(Index::OWNER_ID,
+      PQgetvalue(res, tuple_num, static_cast<int>(OrdinalPosition::kOwnerId)));
+
+  object.put(Index::ACL,
+      PQgetvalue(res, tuple_num, static_cast<int>(OrdinalPosition::kAcl)));
+
+  object.put(Index::TABLE_ID,
+      PQgetvalue(res, tuple_num, static_cast<int>(OrdinalPosition::kTableId)));
+
+  object.put(Index::ACCESS_METHOD,
+      PQgetvalue(res, tuple_num, static_cast<int>(OrdinalPosition::kAccessMethod)));
+
+  // Set the boolean value converted to a string to property_tree.
+  std::string is_unique =
+      DbcUtils::convert_boolean_expression(
+          PQgetvalue(res, tuple_num, static_cast<int>(OrdinalPosition::kIsUnique)));
+  if (!is_unique.empty()) {
+    object.put(Index::IS_UNIQUE, is_unique);
+  }
+
+  // Set the boolean value converted to a string to property_tree.
+  std::string is_primary =
+      DbcUtils::convert_boolean_expression(
+          PQgetvalue(res, tuple_num, static_cast<int>(OrdinalPosition::kIsPrimary)));
+  if (!is_primary.empty()) {
+    object.put(Index::IS_PRIMARY, is_primary);
+  }
+
+  object.put(Index::NUMBER_OF_KEY_COLUMNS,
+      PQgetvalue(res, tuple_num, static_cast<int>(OrdinalPosition::kNumKeyColumn)));
+
+  ptree columns;
+  // Converts a JSON string to a property_tree.
+  // Set the boolean value converted to a string to property_tree.
+  Utility::json_to_ptree(
+      PQgetvalue(res, tuple_num, static_cast<int>(OrdinalPosition::kColumns)),
+      columns);
+  object.add_child(Index::KEYS, columns);
+
+  ptree columns_id;
+  // Converts a JSON string to a property_tree.
+  Utility::json_to_ptree(
+      PQgetvalue(res, tuple_num, static_cast<int>(OrdinalPosition::kColumnsId)),
+      columns_id);
+  object.add_child(Index::KEYS_ID, columns_id);
+
+  ptree options;
+  // Converts a JSON string to a property_tree.
+  Utility::json_to_ptree(
+      PQgetvalue(res, tuple_num, static_cast<int>(OrdinalPosition::kOptions)),
+      options);
+  object.add_child(Index::OPTIONS, options);
 
   error = ErrorCode::OK;
   return error;
@@ -576,7 +678,7 @@ ErrorCode IndexDaoPg::convert_pgresult_to_ptree(
  * @return Vector of the result of the split.
  */
 std::vector<std::string> IndexDaoPg::split(const std::string& source,
-                                          const char& delimiter) const {
+                                           const char& delimiter) const {
   std::vector<std::string> result;
   std::stringstream stream(source);
   std::string buffer;
@@ -586,6 +688,19 @@ std::vector<std::string> IndexDaoPg::split(const std::string& source,
   }
 
   return result;
+}
+
+/**
+ * The value for a key is extracted from the ptree and returned as a string.
+ * @param object    [in]  ptree object.
+ * @param key_name  [in]  key name.
+ * @return String of extracted values.
+ */
+template <typename T>
+std::string IndexDaoPg::get_string_value(
+    const boost::property_tree::ptree& object, const char* key_name) const {
+  auto value = object.get_optional<T>(key_name);
+  return (value ? std::to_string(value.value()) : "");
 }
 
 }  // namespace manager::metadata::db

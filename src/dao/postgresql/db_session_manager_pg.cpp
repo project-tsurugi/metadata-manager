@@ -32,6 +32,13 @@ namespace manager::metadata::db {
 using manager::metadata::db::postgresql::DbcUtils;
 
 std::shared_ptr<Dao> DbSessionManagerPg::get_index_dao() {
+  if (!DbcUtils::is_open(conn_.pg_conn)) {
+    ErrorCode error = this->connect();
+    if (error == ErrorCode::OK) {
+      this->set_always_secure_search_path();
+    }
+  }
+
   return std::make_shared<IndexDaoPg>(this);
 }
 
