@@ -135,6 +135,26 @@ void IndexMetadataHelper::add(const Indexes* indexes,
   }
 }
 
+void IndexMetadataHelper::add(const Metadata* indexes,
+                              const boost::property_tree::ptree& index_metadata,
+                              ObjectIdType* index_id) {
+  UTUtils::print("-- add index metadata in ptree --");
+  UTUtils::print(" " + UTUtils::get_tree_string(index_metadata));
+
+  ObjectIdType ret_id_value = INVALID_VALUE;
+  // add index metadata.
+  ErrorCode error = indexes->add(index_metadata, &ret_id_value);
+
+  ASSERT_EQ(ErrorCode::OK, error);
+  ASSERT_GT(ret_id_value, 0);
+
+  UTUtils::print(" >> new index_id: ", ret_id_value);
+
+  if (index_id != nullptr) {
+    *index_id = ret_id_value;
+  }
+}
+
 /**
  * @brief Add one new index metadata to index metadata table.
  * @param indexes         [in]  indexes metadata manager object.

@@ -662,12 +662,8 @@ TEST_F(ApiTestIndexMetadata, add_get_index_metadata_ptree_object) {
   new_index.put(Index::TABLE_ID, table_id);
 
   // generate index metadata manager.
-  auto indexes  = std::make_unique<Indexes>(GlobalTestEnvironment::TEST_DB);
+  auto indexes  = get_indexes(GlobalTestEnvironment::TEST_DB);
   ErrorCode error = indexes->init();
-  ASSERT_EQ(ErrorCode::OK, error);
-
-  auto indexes2 = get_indexes(GlobalTestEnvironment::TEST_DB);
-  error = indexes2->init();
   ASSERT_EQ(ErrorCode::OK, error);
 
   ObjectId inserted_id = INVALID_OBJECT_ID;
@@ -693,7 +689,7 @@ TEST_F(ApiTestIndexMetadata, add_get_index_metadata_ptree_object) {
   {
     Index index;
     // get index metadata by index id.
-    error = indexes2->get(inserted_id, &index);
+    error = indexes->get(inserted_id, &index);
     EXPECT_EQ(ErrorCode::OK, error);
 
     UTUtils::print(UTUtils::get_tree_string(index.convert_to_ptree()));
