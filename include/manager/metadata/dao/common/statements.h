@@ -61,7 +61,7 @@ class StatementWithKey : public Statement {
     Statement::set(table_name, statement);
     key_ = key;
   }
-  virtual std::string name() const override {
+  virtual std::string name() const {
     return table_name() + ':' + this->get_base_name() + '-' + key_.data();
   }
 
@@ -100,6 +100,10 @@ class InsertStatement : public Statement {
   InsertStatement() : Statement() {}
   InsertStatement(std::string_view table_name, std::string_view statement) 
       : Statement(table_name, statement) {}
+
+  std::string name() const override {
+    return Statement::name() + ':' + std::to_string(__LINE__);
+  }
 };
 
 /**
@@ -110,6 +114,10 @@ class SelectAllStatement : public Statement {
   SelectAllStatement() : Statement() {}
   SelectAllStatement(std::string_view table_name, std::string_view statement)
       : Statement(table_name, statement) {}
+
+  std::string name() const override {
+    return Statement::name() + ':' + std::to_string(__LINE__);
+  }
 };
 
 /**
@@ -122,6 +130,10 @@ class SelectStatement : public StatementWithKey {
                   std::string_view statement, 
                   std::string_view key)
       : StatementWithKey(table_name, statement, key) {}
+
+  std::string name() const override {
+    return StatementWithKey::name() + ':' + std::to_string(__LINE__);
+  }
 };
 
 /**
@@ -134,6 +146,10 @@ class UpdateStatement : public StatementWithKey {
                   std::string_view statement, 
                   std::string_view key)
       : StatementWithKey(table_name, statement, key) {}
+
+  std::string name() const override {
+    return StatementWithKey::name() + ':' + std::to_string(__LINE__);
+  }
 };
 
 /**
@@ -146,6 +162,10 @@ class DeleteStatement : public StatementWithKey {
                   std::string_view statement, 
                   std::string_view key)
       : StatementWithKey(table_name, statement, key) {}
+
+  std::string name() const override {
+    return StatementWithKey::name() + ':' + std::to_string(__LINE__);
+  }
 };
 
 } // namespace manager::metadata::db
