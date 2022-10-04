@@ -83,6 +83,9 @@ ErrorCode IndexesProvider::add_index_metadata(
   }
 
   error = session_->commit();
+  if (error != ErrorCode::OK) {
+    return error;
+  }
 
   return error;
 }
@@ -105,8 +108,7 @@ ErrorCode IndexesProvider::get_index_metadata(
   ErrorCode error = ErrorCode::UNKNOWN;
 
   if ((key != Object::ID) && (key != Object::NAME)) {
-    error = ErrorCode::INVALID_PARAMETER;
-    return error;
+    return ErrorCode::INVALID_PARAMETER;
   }
 
   error = this->init();

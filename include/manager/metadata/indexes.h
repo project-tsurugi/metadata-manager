@@ -31,9 +31,9 @@ class Indexes : public Metadata {
   explicit Indexes(std::string_view database)
       : Indexes(database, kDefaultComponent) {}
   Indexes(std::string_view database, std::string_view component);
-
   Indexes(const Indexes&) = delete;
   Indexes& operator=(const Indexes&) = delete;
+  virtual ~Indexes() {}
 
   ErrorCode init() const override;
 
@@ -55,18 +55,8 @@ class Indexes : public Metadata {
   ErrorCode remove(std::string_view object_name,
                    ObjectId* object_id) const override;
 
-  ErrorCode add(const manager::metadata::Index& index) const;
-  ErrorCode add(const manager::metadata::Index& index,
-                ObjectId* object_id) const;
-  
-  ErrorCode get(const ObjectId object_id,
-                manager::metadata::Index& index) const;
-  ErrorCode get(std::string_view object_name,
-                        manager::metadata::Index& index) const;
-  ErrorCode get_all(
-      std::vector<manager::metadata::Index>& indexes) const;
-
  private:
   std::unique_ptr<manager::metadata::db::IndexesProvider> provider_;
 };
+
 } // namespace manager::metadata

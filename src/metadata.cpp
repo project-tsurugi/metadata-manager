@@ -24,6 +24,8 @@
 
 namespace manager::metadata {
 
+using boost::property_tree::ptree;
+
 // ==========================================================================
 // Object struct methods.
 /** 
@@ -145,6 +147,107 @@ Metadata::Metadata(std::string_view database, std::string_view component)
     std::string_view database, boost::property_tree::ptree& object,
     const GenerationType generation) {
   return ErrorCode::OK;
+}
+
+/**
+ * @brief Add a metadata object to the metadata table.
+ * @param object    [in]  metadata object to add.
+ * @param object_id [out] ID of the added metadata object.
+ * @return ErrorCode::OK if success, otherwise an error code.
+ */
+ErrorCode Metadata::add(const manager::metadata::Object* object,
+                      ObjectIdType* object_id) const {
+
+  ptree pt = object->convert_to_ptree();
+  ErrorCode error = this->add(pt, object_id);
+  if (error != ErrorCode::OK) {
+    return error;
+  }
+
+  return error;
+}
+
+/**
+ * @brief Add a metadata object to table metadata table.
+ * @param object  [in]  table metadata to add.
+ * @return ErrorCode::OK if success, otherwise an error code.
+ */
+ErrorCode Metadata::add(const manager::metadata::Object* object) const
+{
+  ObjectId object_id = INVALID_OBJECT_ID;
+  ErrorCode error = this->add(object, &object_id);
+  if (error != ErrorCode::OK) {
+    return error;
+  }
+
+  return error;
+}
+
+/**
+ * @brief Get a metadata object.
+ * @param object_id [in]  object id.
+ * @param object     [out] metadata object with the specified ID.
+ * @retval ErrorCode::OK if success,
+ * @retval ErrorCode::ID_NOT_FOUND if the table id does not exist.
+ * @retval otherwise an error code.
+ */
+ErrorCode Metadata::get(const ObjectIdType object_id,
+                      manager::metadata::Object* object) const
+{
+  ptree pt;
+
+  ErrorCode error = this->get(object_id, pt);
+  if (error == ErrorCode::OK) {
+    object->convert_from_ptree(pt);
+  }
+
+  return error;
+}
+
+/**
+ * @brief Get a metadata object object based on object name.
+ * @param object_name [in]  object name. (Value of "name" key.)
+ * @param object       [out] metadata object object with the specified name.
+ * @retval ErrorCode::OK if success,
+ * @retval ErrorCode::NAME_NOT_FOUND if the table name does not exist.
+ * @retval otherwise an error code.
+ */
+ErrorCode Metadata::get(std::string_view object_name,
+                      manager::metadata::Object* object) const
+{
+  ptree pt;
+
+  ErrorCode error = this->get(object_name, pt);
+  if (error == ErrorCode::OK) {
+    object->convert_from_ptree(pt);
+  }
+
+  return error;
+}
+
+
+/**
+ * @brief Get all metadata object objects from the metadata table.
+ *   If no metadata object existst, return the container as empty.
+ * @param objects  [out] Container of metadata objects.
+ * @return ErrorCode::OK if success, otherwise an error code.
+ */
+ErrorCode Metadata::get_all(
+    std::vector<manager::metadata::Object>& objects) const {
+
+  std::vector<ptree> pts;
+  ErrorCode error = this->get_all(pts);
+  if (error != ErrorCode::OK) {
+    return error;
+  }
+
+  for (const auto& pt : pts) {
+    Object object;
+    object.convert_from_ptree(pt);
+    objects.emplace_back(object);
+  }
+
+  return error;  
 }
 
 }  // namespace manager::metadata

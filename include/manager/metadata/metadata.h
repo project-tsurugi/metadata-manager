@@ -120,7 +120,8 @@ class Metadata {
   static constexpr const char* const NAME = "name";
 
   Metadata(std::string_view database, std::string_view component);
-
+  Metadata(const Metadata&) = delete;
+  Metadata& operator=(const Metadata&) = delete;
   virtual ~Metadata() {}
 
   static GenerationType generation() { return kGeneration; }
@@ -253,8 +254,53 @@ class Metadata {
     return (error == ErrorCode::OK) ? true : false;
   }
 
-  Metadata(const Metadata&) = delete;
-  Metadata& operator=(const Metadata&) = delete;
+/**
+ * @brief Add a metadata object to the metadata table.
+ * @param object    [in]  metadata object to add.
+ * @param object_id [out] ID of the added metadata object.
+ * @return ErrorCode::OK if success, otherwise an error code.
+ */
+ErrorCode add(const manager::metadata::Object* object,
+                      ObjectIdType* object_id) const;
+
+/**
+ * @brief Add a metadata object to table metadata table.
+ * @param object  [in]  table metadata to add.
+ * @return ErrorCode::OK if success, otherwise an error code.
+ */
+ErrorCode add(const manager::metadata::Object* object) const;
+
+/**
+ * @brief Get a metadata object.
+ * @param object_id [in]  object id.
+ * @param object     [out] metadata object with the specified ID.
+ * @retval ErrorCode::OK if success,
+ * @retval ErrorCode::ID_NOT_FOUND if the table id does not exist.
+ * @retval otherwise an error code.
+ */
+ErrorCode get(const ObjectIdType object_id,
+                      manager::metadata::Object* object) const;
+
+/**
+ * @brief Get a metadata object object based on object name.
+ * @param object_name [in]  object name. (Value of "name" key.)
+ * @param object       [out] metadata object object with the specified name.
+ * @retval ErrorCode::OK if success,
+ * @retval ErrorCode::NAME_NOT_FOUND if the table name does not exist.
+ * @retval otherwise an error code.
+ */
+ErrorCode get(std::string_view object_name,
+                      manager::metadata::Object* object) const;
+
+
+/**
+ * @brief Get all metadata object objects from the metadata table.
+ *   If no metadata object existst, return the container as empty.
+ * @param objects  [out] Container of metadata objects.
+ * @return ErrorCode::OK if success, otherwise an error code.
+ */
+ErrorCode get_all(
+    std::vector<manager::metadata::Object>& objects) const;
 
  protected:
   static constexpr const char* const kDefaultComponent = "visitor";

@@ -34,7 +34,7 @@ class IndexMetadataHelper {
 
   static void add(const Indexes* indexes, const boost::property_tree::ptree& index_metadata,
                   ObjectIdType* index_id = nullptr);
-  static void add(const Indexes* indexes, const Index& index_metadata,
+  static void add(const Metadata* indexes, const Index& index_metadata,
                   ObjectIdType* index_id = nullptr);
 
   static void remove(const Indexes* indexes, const ObjectIdType index_id);

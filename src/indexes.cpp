@@ -63,6 +63,9 @@ ErrorCode Indexes::init() const {
   return error;
 }
 
+/**
+ * @brief
+ */
 ErrorCode Indexes::add(const boost::property_tree::ptree& object) const {
 
   return this->add(object, nullptr);
@@ -246,109 +249,6 @@ ErrorCode Indexes::remove(std::string_view object_name,
   log::function_finish("Indexes::remove(object_name)", error);
 
   return error;
-              
-}
-
-/**
- * @brief Add a index metadata to the metadata table.
- * @param object    [in]  index metadata to add.
- * @param object_id [out] ID of the added index metadata.
- * @return ErrorCode::OK if success, otherwise an error code.
- */
-ErrorCode Indexes::add(const manager::metadata::Index& index,
-                      ObjectIdType* object_id) const {
-
-  ptree pt = index.convert_to_ptree();
-  ErrorCode error = this->add(pt, object_id);
-  if (error != ErrorCode::OK) {
-    return error;
-  }
-
-  return error;
-}
-
-/**
- * @brief Add a index metadata to table metadata table.
- * @param object  [in]  table metadata to add.
- * @return ErrorCode::OK if success, otherwise an error code.
- */
-ErrorCode Indexes::add(const manager::metadata::Index& index) const
-{
-  ObjectId object_id = INVALID_OBJECT_ID;
-  ErrorCode error = this->add(index, &object_id);
-  if (error != ErrorCode::OK) {
-    return error;
-  }
-
-  return error;
-}
-
-
-/**
- * @brief Get a index metadata.
- * @param object_id [in]  object id.
- * @param index     [out] index metadata with the specified ID.
- * @retval ErrorCode::OK if success,
- * @retval ErrorCode::ID_NOT_FOUND if the table id does not exist.
- * @retval otherwise an error code.
- */
-ErrorCode Indexes::get(const ObjectIdType object_id,
-                      manager::metadata::Index& index) const
-{
-  ptree pt;
-
-  ErrorCode error = this->get(object_id, pt);
-  if (error == ErrorCode::OK) {
-    index.convert_from_ptree(pt);
-  }
-
-  return error;
-}
-
-/**
- * @brief Get a index metadata object based on index name.
- * @param object_name [in]  object name. (Value of "name" key.)
- * @param index       [out] index metadata object with the specified name.
- * @retval ErrorCode::OK if success,
- * @retval ErrorCode::NAME_NOT_FOUND if the table name does not exist.
- * @retval otherwise an error code.
- */
-ErrorCode Indexes::get(std::string_view object_name,
-                      manager::metadata::Index& index) const
-{
-
-  ptree pt;
-
-  ErrorCode error = this->get(object_name, pt);
-  if (error == ErrorCode::OK) {
-    index.convert_from_ptree(pt);
-  }
-
-  return error;
-}
-
-/**
- * @brief Get all index metadata objects from the metadata table.
- *   If no index metadata existst, return the container as empty.
- * @param objects  [out] Container of metadata objects.
- * @return ErrorCode::OK if success, otherwise an error code.
- */
-ErrorCode Indexes::get_all(
-    std::vector<manager::metadata::Index>& indexes) const {
-
-  std::vector<ptree> pts;
-  ErrorCode error = this->get_all(pts);
-  if (error != ErrorCode::OK) {
-    return error;
-  }
-
-  for (const auto& pt : pts) {
-    Index index;
-    index.convert_from_ptree(pt);
-    indexes.emplace_back(index);
-  }
-
-  return error;  
 }
 
 } // namespace manager::metadata

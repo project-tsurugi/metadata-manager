@@ -25,6 +25,8 @@
 #include "manager/metadata/error_code.h"
 #include "manager/metadata/indexes.h"
 #include "manager/metadata/tables.h"
+#include "manager/metadata/metadata_factory.h"
+
 #include "test/global_test_environment.h"
 #include "test/helper/index_metadata_helper.h"
 #include "test/helper/table_metadata_helper.h"
@@ -595,6 +597,10 @@ TEST_F(ApiTestIndexMetadata, add_get_index_metadata_object_ptree) {
   ErrorCode error = indexes->init();
   ASSERT_EQ(ErrorCode::OK, error);
 
+  auto indexes2 = get_indexes(GlobalTestEnvironment::TEST_DB);
+  error = indexes2->init();
+  ASSERT_EQ(ErrorCode::OK, error);
+
   ObjectId inserted_id = -1;
   // add index metadata.
   IndexMetadataHelper::add(indexes.get(), new_indexes, &inserted_id);
@@ -619,7 +625,7 @@ TEST_F(ApiTestIndexMetadata, add_get_index_metadata_object_ptree) {
   {
     Index get_index_metadata;
     // get index metadata by index id.
-    error = indexes->get(inserted_id, get_index_metadata);
+    error = indexes2->get(inserted_id, &get_index_metadata); 
     EXPECT_EQ(ErrorCode::OK, error);
 
     UTUtils::print(UTUtils::get_tree_string(get_index_metadata.convert_to_ptree()));
@@ -631,6 +637,7 @@ TEST_F(ApiTestIndexMetadata, add_get_index_metadata_object_ptree) {
 
   // remove index metadata by index id.
   IndexMetadataHelper::remove(indexes.get(), inserted_id);
+
 }
 
 /**
@@ -651,23 +658,27 @@ TEST_F(ApiTestIndexMetadata, add_get_index_metadata_ptree_object) {
 
   // generate metadata.
   IndexMetadataHelper::generate_test_metadata(table_id, index_metadata);
-  ptree new_indexes = index_metadata->indexes_metadata;
+  ptree new_index = index_metadata->indexes_metadata;
   // change to a unique index name.
-  new_indexes.put(Index::NAME,
-                  new_indexes.get<std::string>(Index::NAME) + "_" + std::to_string(__LINE__));
+  new_index.put(Index::NAME,
+                  new_index.get<std::string>(Index::NAME) + "_" + std::to_string(__LINE__));
   // set table id.
-  new_indexes.put(Index::TABLE_ID, table_id);
+  new_index.put(Index::TABLE_ID, table_id);
 
   // generate index metadata manager.
-  auto indexes    = std::make_unique<Indexes>(GlobalTestEnvironment::TEST_DB);
+  auto indexes  = std::make_unique<Indexes>(GlobalTestEnvironment::TEST_DB);
   ErrorCode error = indexes->init();
+  ASSERT_EQ(ErrorCode::OK, error);
+
+  auto indexes2 = get_indexes(GlobalTestEnvironment::TEST_DB);
+  error = indexes2->init();
   ASSERT_EQ(ErrorCode::OK, error);
 
   ObjectId inserted_id = INVALID_OBJECT_ID;
   // add index metadata.
-  IndexMetadataHelper::add(indexes.get(), new_indexes, &inserted_id);
+  IndexMetadataHelper::add(indexes.get(), new_index, &inserted_id);
   // set index id.
-  new_indexes.put(Index::ID, inserted_id);
+  new_index.put(Index::ID, inserted_id);
 
   UTUtils::print("-- get index metadata in ptree --");
   {
@@ -679,21 +690,22 @@ TEST_F(ApiTestIndexMetadata, add_get_index_metadata_ptree_object) {
     UTUtils::print(UTUtils::get_tree_string(get_index_metadata));
 
     // verifies that the returned index metadata is expected one.
-    IndexMetadataHelper::check_metadata_expected(new_indexes, get_index_metadata);
+    IndexMetadataHelper::check_metadata_expected(new_index, get_index_metadata);
   }
 
   UTUtils::print("-- get index metadata in struct --");
   {
-    Index get_index_metadata;
+    Index index;
     // get index metadata by index id.
-    error = indexes->get(inserted_id, get_index_metadata);
+    error = indexes2->get(inserted_id, &index);
     EXPECT_EQ(ErrorCode::OK, error);
 
-    UTUtils::print(UTUtils::get_tree_string(get_index_metadata.convert_to_ptree()));
+    UTUtils::print(UTUtils::get_tree_string(index.convert_to_ptree()));
 
     // verifies that the returned index metadata is expected one.
-    IndexMetadataHelper::check_metadata_expected(new_indexes,
-                                                 get_index_metadata.convert_to_ptree());
+    IndexMetadataHelper::check_metadata_expected(new_index,
+                                                 index.convert_to_ptree());
+
   }
 
   // remove index metadata by index id.
