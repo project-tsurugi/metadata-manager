@@ -38,26 +38,22 @@ using boost::property_tree::ptree;
  */
 boost::property_tree::ptree Index::convert_to_ptree() const
 {
-  auto pt = Object::convert_to_ptree();
+  auto pt = ClassObject::convert_to_ptree();
   pt.put(OWNER_ID, this->owner_id);
   pt.put(TABLE_ID, this->table_id);
   pt.put(ACCESS_METHOD, this->access_method);
+  pt.put(IS_PRIMARY, this->is_primary);
+  pt.put(IS_UNIQUE, this->is_unique);
   pt.put(NUMBER_OF_COLUMNS, this->number_of_columns);
   pt.put(NUMBER_OF_KEY_COLUMNS, this->number_of_key_columns);
   
-  ptree keys = ptree_helper::make_array_ptree(this->keys);
-  ptree child;
-  child.push_back(std::make_pair("", keys));
+  ptree child = ptree_helper::make_array_ptree(this->keys);
   pt.add_child(KEYS, child);
   
-  ptree keys_id = ptree_helper::make_array_ptree(this->keys_id);
-  child.empty();
-  child.push_back(std::make_pair("", keys_id));
+  child = ptree_helper::make_array_ptree(this->keys_id);
   pt.add_child(KEYS_ID, child);
   
-  ptree options = ptree_helper::make_array_ptree(this->options);
-  child.empty();
-  child.push_back(std::make_pair("", options));
+  child = ptree_helper::make_array_ptree(this->options);
   pt.add_child(OPTIONS, child);
 
   return pt;
@@ -68,7 +64,7 @@ boost::property_tree::ptree Index::convert_to_ptree() const
  */
 void Index::convert_from_ptree(const boost::property_tree::ptree& pt)
 {
-  Object::convert_from_ptree(pt);
+  ClassObject::convert_from_ptree(pt);
   auto opt_id = pt.get_optional<ObjectId>(OWNER_ID);
   this->owner_id = opt_id ? opt_id.get() : INVALID_OBJECT_ID;
 
@@ -78,15 +74,21 @@ void Index::convert_from_ptree(const boost::property_tree::ptree& pt)
   auto opt_int = pt.get_optional<int64_t>(ACCESS_METHOD);
   this->access_method = opt_int ? opt_int.get() : INVALID_VALUE;
 
+  auto opt_bool = pt.get_optional<bool>(IS_PRIMARY);
+  this->is_primary = opt_bool ? opt_bool.get() : INVALID_VALUE;
+
+  opt_bool = pt.get_optional<bool>(IS_UNIQUE);
+  this->is_unique = opt_bool ? opt_bool.get() : INVALID_VALUE;
+
   opt_int = pt.get_optional<int64_t>(NUMBER_OF_COLUMNS);
   this->number_of_columns = opt_int ? opt_int.get() : INVALID_VALUE;
 
   opt_int = pt.get_optional<int64_t>(NUMBER_OF_KEY_COLUMNS);
   this->number_of_key_columns = opt_int ? opt_int.get() : INVALID_VALUE;
 
-  this->keys = ptree_helper::make_vector(pt, KEYS);
-  this->keys_id = ptree_helper::make_vector(pt, KEYS_ID);
-  this->options = ptree_helper::make_vector(pt, OPTIONS);
+  this->keys = ptree_helper::make_vector_int(pt, KEYS);
+  this->keys_id = ptree_helper::make_vector_int(pt, KEYS_ID);
+  this->options = ptree_helper::make_vector_int(pt, OPTIONS);
 }
 
 } // namespace manager::metadata

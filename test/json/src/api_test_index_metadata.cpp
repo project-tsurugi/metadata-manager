@@ -423,12 +423,10 @@ TEST_F(ApiTestIndexMetadata, all_invalid_parameter) {
   ErrorCode error = indexes->init();
   ASSERT_EQ(ErrorCode::OK, error);
 
-  // add index metadata by index id.
-  UTUtils::print("-- add index metadata --");
+#if 0
   {
     ptree test_metadata;
-
-    // Test the case where the table name is not set.
+    UTUtils::print("-- add index metadata without name --");
     test_metadata = index_metadata->indexes_metadata;
     test_metadata.erase(Index::NAME);
     test_metadata.put(Index::TABLE_ID, table_id);
@@ -442,39 +440,37 @@ TEST_F(ApiTestIndexMetadata, all_invalid_parameter) {
     error = indexes->add(test_metadata);
     EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);
   }
-
-  // get index metadata.
-  UTUtils::print("-- get index metadata --");
+#endif
   {
     ptree index_metadata;
 
-    // Test for table id.
-    ObjectId index_id = -1;
+    UTUtils::print("-- get index metadata with invalid ID --");
+    ObjectId index_id = INVALID_OBJECT_ID;
     // Execute the API.
     error = indexes->get(index_id, index_metadata);
-    EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
+    EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);
 
-    // Test for table name.
+    UTUtils::print("-- get index metadata with invalid name --");
     std::string index_name = "";
     // Execute the API.
     error = indexes->get(index_name, index_metadata);
-    EXPECT_EQ(ErrorCode::NAME_NOT_FOUND, error);
+    EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);
   }
 
   // remove index metadata.
-  UTUtils::print("-- remove index metadata --");
   {
-    ObjectId index_id = -1;
+    UTUtils::print("-- remove index metadata with invalid ID --");
+    ObjectId index_id = INVALID_OBJECT_ID;
     // Execute the API.
     error = indexes->remove(index_id);
-    EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
+    EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);
 
-    // Test for table name.
+    UTUtils::print("-- remove index metadata with invalid name --");
     std::string index_name = "";
-    ObjectId ret_index_id  = -1;
+    ObjectId ret_index_id  =INVALID_OBJECT_ID;
     // Execute the API.
     error = indexes->remove(index_name, &ret_index_id);
-    EXPECT_EQ(ErrorCode::NAME_NOT_FOUND, error);
+    EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);
     EXPECT_EQ(-1, ret_index_id);
   }
 }
@@ -487,7 +483,7 @@ TEST_F(ApiTestIndexMetadata, get_all_index_metadata_empty) {
   std::int64_t base_table_count = IndexMetadataHelper::get_record_count();
 
   // generate index metadata manager.
-  auto indexes    = std::make_unique<Indexes>(GlobalTestEnvironment::TEST_DB);
+  auto indexes = std::make_unique<Indexes>(GlobalTestEnvironment::TEST_DB);
   ErrorCode error = indexes->init();
   EXPECT_EQ(ErrorCode::OK, error);
 

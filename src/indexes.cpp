@@ -207,7 +207,7 @@ ErrorCode Indexes::remove(const ObjectId object_id) const {
     LOG_WARNING
         << "An out-of-range value (0 or less) was specified for TableId.: "
         << object_id;
-    error = ErrorCode::ID_NOT_FOUND;
+    error = ErrorCode::INVALID_PARAMETER;
   }
 
   log::function_finish("Indexes::remove(object_id)", error);
@@ -298,10 +298,9 @@ ErrorCode Indexes::get(const ObjectIdType object_id,
   ptree pt;
 
   ErrorCode error = this->get(object_id, pt);
-  if (error != ErrorCode::OK) {
-    return error;
+  if (error == ErrorCode::OK) {
+    index.convert_from_ptree(pt);
   }
-  index.convert_from_ptree(pt);
 
   return error;
 }
@@ -321,10 +320,9 @@ ErrorCode Indexes::get(std::string_view object_name,
   ptree pt;
 
   ErrorCode error = this->get(object_name, pt);
-  if (error != ErrorCode::OK) {
-    return error;
+  if (error == ErrorCode::OK) {
+    index.convert_from_ptree(pt);
   }
-  index.convert_from_ptree(pt);
 
   return error;
 }
