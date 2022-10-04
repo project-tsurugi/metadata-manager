@@ -43,10 +43,147 @@ namespace manager::metadata {
 using boost::property_tree::ptree;
 using helper::TableMetadataHelper;
 
+// ==========================================================================
+// Column class methods.
+/** 
+ * @brief  Transform column metadata from structure object to ptree object.
+ * @return ptree object.
+ */
+boost::property_tree::ptree Column::convert_to_ptree() const
+{
+  boost::property_tree::ptree ptree = Object::convert_to_ptree();
+  ptree.put<ObjectId>(TABLE_ID,         this->table_id);
+  ptree.put<int64_t>(ORDINAL_POSITION,  this->ordinal_position);
+  ptree.put<ObjectId>(DATA_TYPE_ID,     this->data_type_id);
+  ptree.put<int64_t>(DATA_LENGTH,       this->data_length);
+  ptree.put<bool>(VARYING,              this->varying);
+  ptree.put<bool>(NULLABLE,             this->nullable);
+  ptree.put(DEFAULT_EXPR,               this->default_expr);
+  ptree.put<int64_t>(DIRECTION,         this->direction);
+#if 0
+  ptree data_lengths;
+  for (const auto& param : this->data_lengths) {
+    data_lengths.put("", param);
+  }
+  ptree.push_back(
+      std::make_pair(Tables::Column::DATA_LENGTHS, data_lengths));
+#endif
+
+  return ptree;
+}
+
+/**
+ * @brief   Transform column metadata from ptree object to structure object.
+ * @param   ptree [in] ptree object of metdata.
+ * @return  structure object of metadata.
+ */
+void Column::convert_from_ptree(const boost::property_tree::ptree& ptree)
+{
+  Object::convert_from_ptree(ptree);
+  auto table_id         = ptree.get_optional<ObjectId>(TABLE_ID);
+  auto ordinal_position = ptree.get_optional<int64_t>(ORDINAL_POSITION);
+  auto data_type_id     = ptree.get_optional<ObjectId>(DATA_TYPE_ID);
+  auto data_length      = ptree.get_optional<int64_t>(DATA_LENGTH);
+  auto varying          = ptree.get_optional<bool>(VARYING);
+  auto nullable         = ptree.get_optional<bool>(NULLABLE);
+  auto default_expr     = ptree.get_optional<std::string>(DEFAULT_EXPR);
+  auto direction        = ptree.get_optional<int64_t>(DIRECTION);
+
+  this->table_id     = table_id      ? table_id.get()     : INVALID_OBJECT_ID;
+  this->ordinal_position = 
+      ordinal_position ? ordinal_position.get() : INVALID_VALUE;
+  this->data_type_id = data_type_id  ? data_type_id.get() : INVALID_OBJECT_ID;
+  this->data_length  = data_length   ? data_length.get()  : INVALID_VALUE;
+  this->varying      = varying       ? varying.get()      : INVALID_VALUE;
+  this->nullable     = nullable      ? nullable.get()     : INVALID_VALUE;
+  this->default_expr = default_expr  ? default_expr.get() : "";
+  this->direction    = direction     ? direction.get()    : INVALID_VALUE;
+#if 0
+  BOOST_FOREACH (auto& node, ptree.get_child(DATA_LENGTHS)) {
+    const ptree& value = node.second;
+    auto length = value.get_optional<int64_t>("");
+    column.data_lengths.emplace_back(ordinal_position.get());
+  }
+#endif
+}
+
+// ==========================================================================
+// Table class methods.
+/** 
+ * @brief  Transform table metadata from structure object to ptree object.
+ * @return ptree object.
+ */
+boost::property_tree::ptree Table::convert_to_ptree() const
+{
+  boost::property_tree::ptree ptree = ClassObject::convert_to_ptree();
+  ptree.put(Tables::NAMESPACE, this->namespace_name);
+//  ptree.put<int64_t>(Tables::OWNER_ROLE_ID, table.owner_role_id);
+//  ptree.put(Tables::ACL, table.acl);
+  ptree.put<int64_t>(Tables::TUPLES, this->tuples);
+
+  boost::property_tree::ptree child;
+  
+  // primary keys
+  boost::property_tree::ptree keys;
+  for (const int64_t& ordinal_position : this->primary_keys) {
+    keys.put("", ordinal_position);
+    child.push_back(std::make_pair("", keys));
+  }
+  ptree.add_child(Tables::PRIMARY_KEY_NODE, child);
+  
+  // columns metadata
+  boost::property_tree::ptree ptree_columns;
+  for (const auto& column : this->columns) {
+    boost::property_tree::ptree ptree = column.convert_to_ptree();
+    ptree_columns.push_back(std::make_pair("", ptree));
+  }
+  ptree.add_child(Tables::COLUMNS_NODE, ptree_columns);
+
+  return ptree;
+}
+
+/**
+ * @brief   Transform table metadata from ptree object to structure object.
+ * @param   ptree [in] ptree object of metdata.
+ * @return  structure object of metadata.
+ */
+void Table::convert_from_ptree(const boost::property_tree::ptree& ptree)
+{
+  ClassObject::convert_from_ptree(ptree);
+  auto namespace_name   = ptree.get_optional<std::string>(Tables::NAMESPACE);
+  auto tuples           = ptree.get_optional<int64_t>(Tables::TUPLES);
+//auto owner_id         = ptree.get_optional<int64_t>(Tables::OWNER_ROLE_ID);
+//auto acl              = ptree.get_optional<std::string>(Tables::ACL);
+
+
+  this->namespace_name  = 
+      namespace_name  ? namespace_name.get()  : "";
+  this->tuples    = tuples    ? tuples.get()        : INVALID_VALUE;
+//table.owner_id  = owner_id  ? owner_role_id.get() : INVALID_VALUE;
+//table.acl       = acl       ? acl.get()           : INVALID_VALUE;
+
+  // primary keys
+  BOOST_FOREACH (const auto& node, ptree.get_child(Tables::PRIMARY_KEY_NODE)) {
+    const boost::property_tree::ptree& key = node.second;
+    auto ordinal_position = key.get_optional<int64_t>("");
+    this->primary_keys.emplace_back(ordinal_position.get());
+  }
+
+  // columns metadata
+  BOOST_FOREACH (const auto& node, ptree.get_child(Tables::COLUMNS_NODE)) {
+    const boost::property_tree::ptree& ptree_column = node.second;
+    Column column;
+    column.convert_from_ptree(ptree_column);
+    this->columns.emplace_back(column);
+  }
+}
+
+// ==========================================================================
+// Tables class methods.
 /**
  * @brief Constructor
- * @param (database)   [in]  database name.
- * @param (component)  [in]  component name.
+ * @param database   [in]  database name.
+ * @param component  [in]  component name.
  */
 Tables::Tables(std::string_view database, std::string_view component)
     : Metadata(database, component) {
@@ -76,7 +213,7 @@ ErrorCode Tables::init() const {
 
 /**
  * @brief Add table metadata to table metadata table.
- * @param (object)  [in]  table metadata to add.
+ * @param object  [in]  table metadata to add.
  * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode Tables::add(const boost::property_tree::ptree& object) const {
@@ -95,7 +232,8 @@ ErrorCode Tables::add(const boost::property_tree::ptree& object) const {
  * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode Tables::add(const boost::property_tree::ptree& object,
-                      ObjectIdType* object_id) const {
+                      ObjectIdType* object_id) const 
+{
   ErrorCode error = ErrorCode::UNKNOWN;
 
   // Log of API function start.
@@ -123,8 +261,8 @@ ErrorCode Tables::add(const boost::property_tree::ptree& object,
 
 /**
  * @brief Get table metadata.
- * @param (object_id)  [in]  table id.
- * @param (object)     [out] table metadata with the specified ID.
+ * @param object_id  [in]  table id.
+ * @param object     [out] table metadata with the specified ID.
  * @retval ErrorCode::OK if success,
  * @retval ErrorCode::ID_NOT_FOUND if the table id does not exist.
  * @retval otherwise an error code.
@@ -319,11 +457,37 @@ ErrorCode Tables::set_statistic(boost::property_tree::ptree& object) const {
 }
 
 /**
+ * @brief Update the metadata-table (table metadata table, column metadata
+ *   table) based on the table ID with metadata objects.
+ * @param object_id [in]  ID of the metadata-table to update.
+ * @param object    [in]  metadata-object to update.
+ * @return ErrorCode::OK if success, otherwise an error code.
+ */
+ErrorCode Tables::update(const ObjectIdType object_id,
+                   const boost::property_tree::ptree& object) const {
+  ErrorCode error = ErrorCode::UNKNOWN;
+
+  // Parameter value check.
+  if (object_id > 0) {
+    error = param_check_metadata_add(object);
+  } else {
+    error = ErrorCode::ID_NOT_FOUND;
+  }
+
+  // Update the table metadata through the provider.
+  if (error == ErrorCode::OK) {
+    error = provider->update_table_metadata(object_id, object);
+  }
+
+  return error;
+}
+
+/**
  * @brief Remove all metadata-object based on the given table id
  *   (table metadata, column metadata and column statistics)
  *   from metadata-table (the table metadata table,
  *   the column metadata table and the column statistics table).
- * @param (object_id)  [in]  table id.
+ * @param object_id  [in]  table id.
  * @retval ErrorCode::OK if success,
  * @retval ErrorCode::ID_NOT_FOUND if the table id does not exist.
  * @retval otherwise an error code.
@@ -347,8 +511,8 @@ ErrorCode Tables::remove(const ObjectIdType object_id) const {
   // Remove the table metadata through the provider.
   if (error == ErrorCode::OK) {
     ObjectIdType retval_object_id = 0;
-    error = provider->remove_table_metadata(Tables::ID, std::to_string(object_id),
-                                            retval_object_id);
+    error = provider->remove_table_metadata(
+        Tables::ID, std::to_string(object_id), retval_object_id);
   }
 
   // Log of API function finish.
@@ -401,8 +565,8 @@ ErrorCode Tables::remove(std::string_view object_name,
 
 /**
  * @brief Gets a list of table access information for authenticated users.
- * @param (token) [in]  authentication token. See also AutheticationManager.
- * @param (acls)  [out] table access information.
+ * @param token [in]  authentication token. See also AutheticationManager.
+ * @param acls  [out] table access information.
  * @retval ErrorCode::OK if success.
  * @retval ErrorCode::INVALID_PARAMETER if an invalid token is specified.
  * @retval ErrorCode::NAME_NOT_FOUND if the role name does not exist.
@@ -508,9 +672,9 @@ ErrorCode Tables::get_acls(std::string_view token,
 
 /**
  * @brief Gets whether the specified access permissions are included.
- * @param (object_id)     [in]  role id.
- * @param (permission)    [in]  permission.
- * @param (check_result)  [out] presence or absence of the specified
+ * @param object_id     [in]  role id.
+ * @param permission    [in]  permission.
+ * @param check_result  [out] presence or absence of the specified
  *   permissions.
  * @retval ErrorCode::OK if success.
  * @retval ErrorCode::NOT_FOUND if the foreign table does not exist.
@@ -550,9 +714,9 @@ ErrorCode Tables::confirm_permission_in_acls(const ObjectIdType object_id,
 
 /**
  * @brief Gets whether or not the specified permissions have been granted.
- * @param (object_name)   [in]  role name.
- * @param (permission)    [in]  permissions.
- * @param (check_result)  [out] presence or absence of the specified
+ * @param object_name   [in]  role name.
+ * @param permission    [in]  permissions.
+ * @param check_result  [out] presence or absence of the specified
  *   permissions.
  * @retval ErrorCode::OK if success.
  * @retval ErrorCode::NOT_FOUND if the foreign table does not exist.
@@ -577,8 +741,8 @@ ErrorCode Tables::confirm_permission_in_acls(std::string_view object_name,
 
   // Get the table metadata through the provider.
   if (error == ErrorCode::OK) {
-    error = provider->confirm_permission(Metadata::NAME, object_name, permission,
-                                        check_result);
+    error = provider->confirm_permission(Metadata::NAME, object_name,
+                                         permission, check_result);
   }
 
   // Log of API function finish.
@@ -588,9 +752,7 @@ ErrorCode Tables::confirm_permission_in_acls(std::string_view object_name,
 }
 
 /**
- * 
  *  structure interfaces.
- * 
  */
 
 /**
@@ -682,22 +844,7 @@ ptree transform_to_ptree(const Table& table)
 }
 
 /**
- * @brief Add table metadata to table metadata table.
- * @param object    [in]  table metadata to add.
- * @return ErrorCode::OK if success, otherwise an error code.
- */
-ErrorCode Tables::add(const manager::metadata::Table& table) const
-{
-  ptree table_tree = transform_to_ptree(table);
-  ErrorCode error = this->add(table_tree);
-  if (error != ErrorCode::OK) {
-    return error;
-  }
 
-  return ErrorCode::OK;
-}
-
-/**
  * @brief Add table metadata to table metadata table.
  * @param object    [in]  table metadata to add.
  * @param object_id [out] ID of the added table metadata.
@@ -706,8 +853,24 @@ ErrorCode Tables::add(const manager::metadata::Table& table) const
 ErrorCode Tables::add(const manager::metadata::Table& table,
                       ObjectIdType* object_id) const
 {
-  ptree table_tree = transform_to_ptree(table);
-  ErrorCode error = this->add(table_tree, object_id);
+  boost::property_tree::ptree ptree = table.convert_to_ptree();
+  ErrorCode error = this->add(ptree, object_id);
+  if (error != ErrorCode::OK) {
+    return error;
+  }
+
+  return error;
+}
+
+/**
+ * @brief Add table metadata to table metadata table.
+ * @param object    [in]  table metadata to add.
+ * @return ErrorCode::OK if success, otherwise an error code.
+ */
+ErrorCode Tables::add(const manager::metadata::Table& table) const
+{
+  ObjectId object_id = INVALID_OBJECT_ID;
+  ErrorCode error = this->add(table, &object_id);
   if (error != ErrorCode::OK) {
     return error;
   }
@@ -851,15 +1014,15 @@ Table transform_from_ptree(const ptree& ptree_table)
 ErrorCode Tables::get(const ObjectIdType object_id,
                       manager::metadata::Table& table) const
 {
-  ptree table_tree;
+  ptree ptree;
 
-  ErrorCode error = this->get(object_id, table_tree);
+  ErrorCode error = this->get(object_id, ptree);
   if (error != ErrorCode::OK) {
     return error;
   }
-  table = transform_from_ptree(table_tree);
+  table.convert_from_ptree(ptree);
 
-  return ErrorCode::OK;
+  return error;
 }
 
 /**
@@ -874,15 +1037,15 @@ ErrorCode Tables::get(std::string_view table_name,
                       manager::metadata::Table& table) const
 {
 
-  ptree table_tree;
+  ptree ptree;
 
-  ErrorCode error = this->get(table_name, table_tree);
+  ErrorCode error = this->get(table_name, ptree);
   if (error != ErrorCode::OK) {
     return error;
   }
-  table = transform_from_ptree(table_tree);
+  table.convert_from_ptree(ptree);
 
-  return ErrorCode::OK;
+  return error;
 }
 
 /* =============================================================================

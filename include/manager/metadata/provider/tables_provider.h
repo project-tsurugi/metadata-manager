@@ -48,12 +48,16 @@ class TablesProvider : public ProviderBase {
       std::string_view key, std::string_view value,
       boost::property_tree::ptree& object);
 
+  manager::metadata::ErrorCode update_table_metadata(
+      const ObjectIdType table_id,
+      const boost::property_tree::ptree& object);
+
   manager::metadata::ErrorCode set_table_statistic(
       const boost::property_tree::ptree& object, ObjectIdType& table_id);
 
-  manager::metadata::ErrorCode remove_table_metadata(
-      std::string_view key, std::string_view value,
-      ObjectIdType& table_id);
+  manager::metadata::ErrorCode remove_table_metadata(std::string_view key,
+                                                     std::string_view value,
+                                                     ObjectIdType& table_id);
 
   manager::metadata::ErrorCode confirm_permission(std::string_view key,
                                                   std::string_view value,

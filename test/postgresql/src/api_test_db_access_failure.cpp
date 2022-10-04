@@ -132,6 +132,7 @@ INSTANTIATE_TEST_CASE_P(
     ::testing::Combine(::testing::ValuesIn(table_id_not_exists_dbaf),
                        ::testing::ValuesIn(ordinal_position_not_exists_dbaf),
                        ::testing::ValuesIn(ptree_dbaf)));
+
 /**
  * @brief API to add table metadata
  *   return ErrorCode::DATABASE_ACCESS_FAILURE
@@ -198,6 +199,29 @@ TEST_F(ApiTestDBAccessFailure, get_table_metadata_by_table_name) {
   ptree empty_ptree;
   EXPECT_EQ(UTUtils::get_tree_string(empty_ptree),
             UTUtils::get_tree_string(table_metadata_inserted));
+}
+
+/**
+ * @brief API to update table metadata
+ *   return ErrorCode::DATABASE_ACCESS_FAILURE
+ */
+TEST_F(ApiTestDBAccessFailure, update_table_metadata) {
+  UTTableMetadata* testdata_table_metadata =
+      global->testdata_table_metadata.get();
+  ptree table_metadata = testdata_table_metadata->tables;
+
+  std::string table_name =
+      testdata_table_metadata->name + "ApiTestDBAccessFailure_update_table";
+  table_metadata.put(Tables::NAME, table_name);
+
+  auto tables = std::make_unique<Tables>(GlobalTestEnvironment::TEST_DB);
+
+  ErrorCode error = tables->init();
+  EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
+
+  ObjectIdType dummy_table_id = 1;
+  error = tables->update(dummy_table_id, table_metadata);
+  EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
 }
 
 /**

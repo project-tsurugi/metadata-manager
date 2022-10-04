@@ -18,6 +18,7 @@
 
 #include <string>
 #include <string_view>
+#include <vector>
 
 #include <boost/property_tree/ptree.hpp>
 
@@ -33,6 +34,7 @@ class UTColumnMetadata {
   int64_t data_length =
       NOT_INITIALIZED;  //!< @brief single value of data length
   boost::property_tree::ptree p_data_lengths;  //!< @brief array of data length
+  std::vector<int64_t> data_lengths;
   int varying = NOT_INITIALIZED;
   bool nullable;
   std::string default_expr;

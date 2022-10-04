@@ -77,6 +77,8 @@ void TableMetadataHelper::generate_table_metadata(
   column2.p_data_lengths.push_back(std::make_pair("", data_length));
   data_length.put("", 2);
   column2.p_data_lengths.push_back(std::make_pair("", data_length));
+  column2.data_lengths.emplace_back(8);
+  column2.data_lengths.emplace_back(2);
 
   column2.varying = true;
 
@@ -168,7 +170,7 @@ void TableMetadataHelper::add_table(
   EXPECT_EQ(ErrorCode::OK, error);
 
   // add table metadata.
-  ObjectIdType ret_table_id;
+  ObjectIdType ret_table_id = INVALID_VALUE;
   error = tables->add(new_table, &ret_table_id);
   EXPECT_EQ(ErrorCode::OK, error);
   EXPECT_GT(ret_table_id, 0);
@@ -198,7 +200,7 @@ void TableMetadataHelper::add_table(
   EXPECT_EQ(ErrorCode::OK, error);
 
   // add table metadata.
-  ObjectIdType ret_table_id;
+  ObjectIdType ret_table_id = INVALID_VALUE;
   error = tables->add(new_table, &ret_table_id);
   EXPECT_EQ(ErrorCode::OK, error);
   EXPECT_GT(ret_table_id, 0);
@@ -254,7 +256,9 @@ void TableMetadataHelper::check_table_metadata_expected(
   }
 
   // primary keys
-//  check_metadata_expected(expected, actual, Tables::PRIMARY_KEY_NODE);
+#if 0   // ToDo:
+    check_metadata_expected(expected, actual, Tables::PRIMARY_KEY_NODE);
+#endif
 
   // tuples
   auto o_tuples_expected = expected.tuples;
@@ -320,10 +324,11 @@ void TableMetadataHelper::check_table_metadata_expected(
       if (data_length) {
         EXPECT_EQ(column_expected->data_length, data_length.get());
       }
+      // column data lengths
 
       // column varying
       auto varying = column_actual.get_optional<bool>(Tables::Column::VARYING);
-      if (data_length) {
+      if (varying) {
         EXPECT_EQ(column_expected->varying, varying.get());
       }
 
@@ -441,6 +446,8 @@ void TableMetadataHelper::check_table_metadata_expected(
       if (data_length) {
         EXPECT_EQ(data_length.get(), column_actual->data_length);
       }
+      // column data lengths
+
       // column varying
        auto varying = column_expected.get_optional<bool>(Tables::Column::VARYING);
        if (varying) {
@@ -566,6 +573,7 @@ void TableMetadataHelper::check_table_metadata_expected(
       // column data length
       check_metadata_expected(column_expected, column_actual,
                               Tables::Column::DATA_LENGTH);
+      // column data lengths
       // column varying
       check_column_metadata_expected<bool>(column_expected, column_actual,
                                            Tables::Column::VARYING);
