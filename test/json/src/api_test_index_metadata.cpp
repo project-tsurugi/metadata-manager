@@ -593,12 +593,8 @@ TEST_F(ApiTestIndexMetadata, add_get_index_metadata_object_ptree) {
   new_indexes.table_id = table_id;
 
   // generate index metadata manager.
-  auto indexes    = std::make_unique<Indexes>(GlobalTestEnvironment::TEST_DB);
+  auto indexes = get_indexes(GlobalTestEnvironment::TEST_DB);
   ErrorCode error = indexes->init();
-  ASSERT_EQ(ErrorCode::OK, error);
-
-  auto indexes2 = get_indexes(GlobalTestEnvironment::TEST_DB);
-  error = indexes2->init();
   ASSERT_EQ(ErrorCode::OK, error);
 
   ObjectId inserted_id = -1;
@@ -625,7 +621,7 @@ TEST_F(ApiTestIndexMetadata, add_get_index_metadata_object_ptree) {
   {
     Index get_index_metadata;
     // get index metadata by index id.
-    error = indexes2->get(inserted_id, &get_index_metadata); 
+    error = indexes->get(inserted_id, &get_index_metadata); 
     EXPECT_EQ(ErrorCode::OK, error);
 
     UTUtils::print(UTUtils::get_tree_string(get_index_metadata.convert_to_ptree()));

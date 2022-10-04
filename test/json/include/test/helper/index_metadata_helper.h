@@ -38,6 +38,7 @@ class IndexMetadataHelper {
                   ObjectIdType* index_id = nullptr);
 
   static void remove(const Indexes* indexes, const ObjectIdType index_id);
+  static void remove(const Metadata* indexes, const ObjectIdType index_id);
 
   static void check_metadata_expected(const boost::property_tree::ptree& expected,
                                       const boost::property_tree::ptree& actual);

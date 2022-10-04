@@ -177,6 +177,15 @@ void IndexMetadataHelper::remove(const Indexes* indexes, const ObjectIdType inde
   ASSERT_EQ(ErrorCode::OK, error);
 }
 
+void IndexMetadataHelper::remove(const Metadata* indexes, const ObjectIdType index_id) {
+  UTUtils::print("-- remove index metadata --");
+  UTUtils::print(" index_id: ", index_id);
+
+  // remove index metadata.
+  ErrorCode error = indexes->remove(index_id);
+  ASSERT_EQ(ErrorCode::OK, error);
+}
+
 /**
  * @brief Verifies that the actual index metadata equals expected one.
  * @param expected  [in]  expected index metadata.
