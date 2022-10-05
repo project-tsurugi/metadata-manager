@@ -218,13 +218,6 @@ class Tables : public Metadata {
   ErrorCode confirm_permission_in_acls(std::string_view object_name, const char* permission,
                                        bool& check_result) const;
 
-  ErrorCode add(const manager::metadata::Table& table) const;
-  ErrorCode add(const manager::metadata::Table& table, ObjectIdType* object_id) const;
-
-  ErrorCode get(const ObjectIdType object_id, manager::metadata::Table& table) const;
-  ErrorCode get(std::string_view table_name, manager::metadata::Table& table) const;
-  ErrorCode get_all(std::vector<manager::metadata::Table>& objects) const;
-
  private:
   manager::metadata::ErrorCode param_check_metadata_add(
       const boost::property_tree::ptree& object) const;
