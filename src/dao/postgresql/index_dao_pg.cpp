@@ -376,8 +376,8 @@ ErrorCode IndexDaoPg::insert(
     if (number_of_tuples == 1) {
       // Obtain the object ID of the added metadata object.
       std::string str = PQgetvalue(res, 
-                                  FIRST_TUPLE_NUMBER, 
-                                  FIRST_COLUMN_NUMBER);
+                                  FIRST_TUPLE, 
+                                  FIRST_COLUMN);
       error = DbcUtils::str_to_integral<int64_t>(str.data(), object_id);
     } else {
       error = ErrorCode::RESULT_MULTIPLE_ROWS;
@@ -428,7 +428,7 @@ ErrorCode IndexDaoPg::select(
     int64_t number_of_tuples = PQntuples(res);
     if (number_of_tuples == 1) {
       // Obtain data.
-      error = this->convert_pgresult_to_ptree(res, FIRST_TUPLE_NUMBER, object);
+      error = this->convert_pgresult_to_ptree(res, FIRST_TUPLE, object);
     } else if (number_of_tuples == 0) {
       // Not found.
       error = Dao::get_not_found_error_code(key);

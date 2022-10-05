@@ -26,8 +26,8 @@ typedef struct pg_result PGresult;
 
 namespace manager::metadata::db {
 
-static constexpr const int64_t FIRST_TUPLE_NUMBER = 0;    // zero origin.
-static constexpr const int64_t FIRST_COLUMN_NUMBER = 0;   // zero origin.
+static constexpr const int64_t FIRST_TUPLE = 0;    // zero origin.
+static constexpr const int64_t FIRST_COLUMN = 0;   // zero origin.
 
 // Shared smart pointer for DB connection. Just an alias for user convenience.
 using PgConnectionPtr = std::shared_ptr<PGconn>;
