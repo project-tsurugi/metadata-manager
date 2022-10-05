@@ -70,11 +70,13 @@ struct ClassObject : public Object {
   static constexpr const char* const DATABASE_NAME  = "databaseName";
   static constexpr const char* const SCHEMA_NAME    = "schemaName";
   static constexpr const char* const NAMESPACE      = "namespace";
+  static constexpr const char* const OWNER_ID       = "ownerId";
   static constexpr const char* const ACL            = "acl";
 
   std::string database_name;  // 1st namespace of full qualified object name.
   std::string schema_name;    // 2nd namespace of full qualified object name.
   std::string namespace_name; 
+  int64_t     owner_id;
   std::string acl;            // access control list.
 
   ClassObject()
@@ -82,6 +84,7 @@ struct ClassObject : public Object {
         database_name(""),
         schema_name(""),
         namespace_name(""),
+        owner_id(INVALID_OBJECT_ID),
         acl("") {}
   /** @brief  Convert metadata from structure object to ptree object.
    *  @return ptree object.
@@ -202,7 +205,8 @@ class Metadata {
    * @param container [out] Container for metadata-objects.
    * @return ErrorCode::OK if success, otherwise an error code.
    */
-  virtual ErrorCode remove(const ObjectId object_id) const = 0;
+  virtual ErrorCode get_all(
+      std::vector<boost::property_tree::ptree>& container) const = 0;
 
   /**
    * @brief Update metadata-table with metadata-object.
@@ -210,7 +214,7 @@ class Metadata {
    * @param object    [in]  metadata-object to update.
    * @return ErrorCode::OK if success, otherwise an error code.
    */
-  virtual ErrorCode update(std::string_view object_name, ObjectId* object_id,
+  virtual ErrorCode update(const ObjectIdType object_id,
                            const boost::property_tree::ptree& object) const = 0;
 
   /**

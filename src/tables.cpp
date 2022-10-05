@@ -86,7 +86,7 @@ void Column::convert_from_ptree(const boost::property_tree::ptree& pt)
   opt_int = pt.get_optional<int64_t>(DATA_LENGTH);
   this->data_length = opt_int ? opt_int.get() : INVALID_VALUE;
 
-//  this->data_lengths = ptree_helper::make_vector(pt, DATA_LENGTHS);
+//  this->data_lengths = ptree_helper::make_vector_int(pt, DATA_LENGTH);
 
   auto opt_bool = pt.get_optional<bool>(VARYING);
   this->varying = opt_bool ? opt_bool.get() : INVALID_VALUE;
@@ -110,12 +110,10 @@ void Column::convert_from_ptree(const boost::property_tree::ptree& pt)
 boost::property_tree::ptree Table::convert_to_ptree() const
 {
   boost::property_tree::ptree pt = ClassObject::convert_to_ptree();
-//  ptree.put<int64_t>(Table::OWNER_ROLE_ID, table.owner_id);
-//  ptree.put(Table::ACL, table.acl);
   pt.put<int64_t>(Table::TUPLES, tuples);
 
-  boost::property_tree::ptree child;
-  
+ boost::property_tree::ptree child;
+
   // primary keys
   boost::property_tree::ptree keys;
   for (const int64_t& ordinal_position : primary_keys) {
@@ -123,7 +121,7 @@ boost::property_tree::ptree Table::convert_to_ptree() const
     child.push_back(std::make_pair("", keys));
   }
   pt.add_child(Tables::PRIMARY_KEY_NODE, child);
-  
+
   // columns metadata
   boost::property_tree::ptree ptree_columns;
   for (const auto& column : columns) {
@@ -131,6 +129,14 @@ boost::property_tree::ptree Table::convert_to_ptree() const
     ptree_columns.push_back(std::make_pair("", ptree));
   }
   pt.add_child(Tables::COLUMNS_NODE, ptree_columns);
+
+  // constraints metadata
+  boost::property_tree::ptree ptree_constraints;
+  for (const auto& constraint : this->constraints) {
+    boost::property_tree::ptree ptree = constraint.convert_to_ptree();
+    ptree_constraints.push_back(std::make_pair("", ptree));
+  }
+  pt.add_child(Tables::CONSTRAINTS_NODE, ptree_constraints);
 
   return pt;
 }
@@ -147,12 +153,6 @@ void Table::convert_from_ptree(const boost::property_tree::ptree& pt)
   auto tuples = pt.get_optional<int64_t>(Table::TUPLES);
   this->tuples = tuples ? tuples.get() : INVALID_VALUE;
 
-//auto owner_id = ptree.get_optional<int64_t>(Table::OWNER_ROLE_ID);
-//table.owner_id = owner_id  ? owner_role_id.get() : INVALID_VALUE;
-
-//auto acl = ptree.get_optional<std::string>(Table::ACL);
-//table.acl= acl ? acl.get() : INVALID_VALUE;
-
   // primary keys
   BOOST_FOREACH (const auto& node, pt.get_child(Tables::PRIMARY_KEY_NODE)) {
     const boost::property_tree::ptree& key = node.second;
@@ -167,150 +167,9 @@ void Table::convert_from_ptree(const boost::property_tree::ptree& pt)
     column.convert_from_ptree(ptree_column);
     columns.emplace_back(column);
   }
-}
-
-// ==========================================================================
-// Tables class methods.
-// ==========================================================================
-// Column class methods.
-/**
- * @brief  Transform column metadata from structure object to ptree object.
- * @return ptree object.
- */
-boost::property_tree::ptree Column::convert_to_ptree() const {
-  boost::property_tree::ptree ptree = Object::convert_to_ptree();
-  ptree.put<ObjectId>(TABLE_ID,         this->table_id);
-  ptree.put<int64_t>(ORDINAL_POSITION,  this->ordinal_position);
-  ptree.put<ObjectId>(DATA_TYPE_ID,     this->data_type_id);
-  ptree.put<int64_t>(DATA_LENGTH,       this->data_length);
-  ptree.put<bool>(VARYING,              this->varying);
-  ptree.put<bool>(NULLABLE,             this->nullable);
-  ptree.put(DEFAULT_EXPR,               this->default_expr);
-  ptree.put<int64_t>(DIRECTION,         this->direction);
-#if 0
-  ptree data_lengths;
-  for (const auto& param : this->data_lengths) {
-    data_lengths.put("", param);
-  }
-  ptree.push_back(
-      std::make_pair(Tables::Column::DATA_LENGTHS, data_lengths));
-#endif
-
-  return ptree;
-}
-
-/**
- * @brief Transform column metadata from ptree object to structure object.
- * @param ptree  [in] ptree object of metadata.
- * @return structure object of metadata.
- */
-void Column::convert_from_ptree(const boost::property_tree::ptree& ptree) {
-  Object::convert_from_ptree(ptree);
-  auto table_id         = ptree.get_optional<ObjectId>(TABLE_ID);
-  auto ordinal_position = ptree.get_optional<int64_t>(ORDINAL_POSITION);
-  auto data_type_id     = ptree.get_optional<ObjectId>(DATA_TYPE_ID);
-  auto data_length      = ptree.get_optional<int64_t>(DATA_LENGTH);
-  auto varying          = ptree.get_optional<bool>(VARYING);
-  auto nullable         = ptree.get_optional<bool>(NULLABLE);
-  auto default_expr     = ptree.get_optional<std::string>(DEFAULT_EXPR);
-  auto direction        = ptree.get_optional<int64_t>(DIRECTION);
-
-  this->table_id     = table_id      ? table_id.get()     : INVALID_OBJECT_ID;
-  this->ordinal_position = 
-      ordinal_position ? ordinal_position.get() : INVALID_VALUE;
-  this->data_type_id = data_type_id  ? data_type_id.get() : INVALID_OBJECT_ID;
-  this->data_length  = data_length   ? data_length.get()  : INVALID_VALUE;
-  this->varying      = varying       ? varying.get()      : INVALID_VALUE;
-  this->nullable     = nullable      ? nullable.get()     : INVALID_VALUE;
-  this->default_expr = default_expr  ? default_expr.get() : "";
-  this->direction    = direction     ? direction.get()    : INVALID_VALUE;
-#if 0
-  BOOST_FOREACH (auto& node, ptree.get_child(DATA_LENGTHS)) {
-    const ptree& value = node.second;
-    auto length = value.get_optional<int64_t>("");
-    column.data_lengths.emplace_back(ordinal_position.get());
-  }
-#endif
-}
-
-// ==========================================================================
-// Table class methods.
-/**
- * @brief  Transform table metadata from structure object to ptree object.
- * @return ptree object.
- */
-boost::property_tree::ptree Table::convert_to_ptree() const {
-  boost::property_tree::ptree ptree = ClassObject::convert_to_ptree();
-  ptree.put(Tables::NAMESPACE, this->namespace_name);
-//  ptree.put<int64_t>(Tables::OWNER_ROLE_ID, table.owner_role_id);
-//  ptree.put(Tables::ACL, table.acl);
-  ptree.put<int64_t>(Tables::TUPLES, this->tuples);
-
-  boost::property_tree::ptree child;
-
-  // primary keys
-  boost::property_tree::ptree keys;
-  for (const int64_t& ordinal_position : this->primary_keys) {
-    keys.put("", ordinal_position);
-    child.push_back(std::make_pair("", keys));
-  }
-  ptree.add_child(Tables::PRIMARY_KEY_NODE, child);
-
-  // columns metadata
-  boost::property_tree::ptree ptree_columns;
-  for (const auto& column : this->columns) {
-    boost::property_tree::ptree ptree = column.convert_to_ptree();
-    ptree_columns.push_back(std::make_pair("", ptree));
-  }
-  ptree.add_child(Tables::COLUMNS_NODE, ptree_columns);
 
   // constraints metadata
-  boost::property_tree::ptree ptree_constraints;
-  for (const auto& constraint : this->constraints) {
-    boost::property_tree::ptree ptree = constraint.convert_to_ptree();
-    ptree_constraints.push_back(std::make_pair("", ptree));
-  }
-  ptree.add_child(Tables::CONSTRAINTS_NODE, ptree_constraints);
-
-  return ptree;
-}
-
-/**
- * @brief Transform table metadata from ptree object to structure object.
- * @param ptree  [in] ptree object of metadata.
- * @return structure object of metadata.
- */
-void Table::convert_from_ptree(const boost::property_tree::ptree& ptree) {
-  ClassObject::convert_from_ptree(ptree);
-  auto namespace_name   = ptree.get_optional<std::string>(Tables::NAMESPACE);
-  auto tuples           = ptree.get_optional<int64_t>(Tables::TUPLES);
-//auto owner_id         = ptree.get_optional<int64_t>(Tables::OWNER_ROLE_ID);
-//auto acl              = ptree.get_optional<std::string>(Tables::ACL);
-
-
-  this->namespace_name  = 
-      namespace_name  ? namespace_name.get()  : "";
-  this->tuples    = tuples    ? tuples.get()        : INVALID_VALUE;
-//table.owner_id  = owner_id  ? owner_role_id.get() : INVALID_VALUE;
-//table.acl       = acl       ? acl.get()           : INVALID_VALUE;
-
-  // primary keys
-  BOOST_FOREACH (const auto& node, ptree.get_child(Tables::PRIMARY_KEY_NODE)) {
-    const boost::property_tree::ptree& key = node.second;
-    auto ordinal_position = key.get_optional<int64_t>("");
-    this->primary_keys.emplace_back(ordinal_position.get());
-  }
-
-  // columns metadata
-  BOOST_FOREACH (const auto& node, ptree.get_child(Tables::COLUMNS_NODE)) {
-    const boost::property_tree::ptree& ptree_column = node.second;
-    Column column;
-    column.convert_from_ptree(ptree_column);
-    this->columns.emplace_back(column);
-  }
-
-  // constraints metadata
-  BOOST_FOREACH (const auto& node, ptree.get_child(Tables::CONSTRAINTS_NODE)) {
+  BOOST_FOREACH (const auto& node, pt.get_child(Tables::CONSTRAINTS_NODE)) {
     const boost::property_tree::ptree& ptree_constraint = node.second;
 
     Constraint constraint;
@@ -976,7 +835,7 @@ ErrorCode Tables::get(std::string_view table_name,
  * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode Tables::get_all(
-    std::vector<manager::metadata::Table>& tables) const {
+    std::vector<manager::metadata::Table>& objects) const {
 
   std::vector<ptree> pts;
   ErrorCode error = this->get_all(pts);
@@ -987,7 +846,7 @@ ErrorCode Tables::get_all(
   for (const auto& pt : pts) {
     Table table;
     table.convert_from_ptree(pt);
-    tables.emplace_back(table);
+    objects.emplace_back(table);
   }
 
   return error;  

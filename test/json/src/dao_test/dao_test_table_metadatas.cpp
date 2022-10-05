@@ -107,9 +107,6 @@ class DaoTestTableMetadata : public ::testing::Test {
       // Insert the column metadata.
       error = columns_dao->insert_column_metadata(table_id_returned, column);
       EXPECT_EQ(ErrorCode::OK, error);
-    } else {
-      ErrorCode rollback_error = db_session_manager.rollback();
-      EXPECT_EQ(ErrorCode::OK, rollback_error);
     }
 
     // Add constraint metadata object to constraint metadata table.
@@ -204,18 +201,6 @@ class DaoTestTableMetadata : public ::testing::Test {
       ptree constraints;
       error = constraints_dao->select_constraint_metadata(Constraint::TABLE_ID, o_table_id.get(),
                                                           constraints);
-      EXPECT_EQ(ErrorCode::OK, error);
-      if (object.find(Tables::CONSTRAINTS_NODE) == object.not_found()) {
-        object.add_child(Tables::CONSTRAINTS_NODE, constraints);
-      }
-
-      if (table.empty()) {
-        break;
-      }
-
-      ptree constraints;
-      error = constraints_dao->select_constraint_metadata(Constraint::TABLE_ID, o_table_id.get(),
-                                                          constraints);
       error = (error == ErrorCode::NOT_FOUND ? ErrorCode::OK : error);
       EXPECT_EQ(ErrorCode::OK, error);
       if (object.find(Tables::CONSTRAINTS_NODE) == object.not_found()) {
@@ -226,47 +211,6 @@ class DaoTestTableMetadata : public ::testing::Test {
         break;
       }
     }
-  }
-
-  /**
-   * @brief Update table metadata.
-   * @param (object_id) [in]  table id.
-   * @param (object)    [in]  table metadata.
-   * @return ErrorCode::OK if success, otherwise an error code.
-   */
-  static void update_table_metadata(ObjectIdType object_id, boost::property_tree::ptree& object) {
-    ErrorCode error = ErrorCode::UNKNOWN;
-    storage::DBSessionManager db_session_manager;
-
-    // TablesDAO
-    std::shared_ptr<TablesDAO> tables_dao;
-    {
-      std::shared_ptr<GenericDAO> gdao = nullptr;
-      error = db_session_manager.get_dao(GenericDAO::TableName::TABLES, gdao);
-      EXPECT_EQ(ErrorCode::OK, error);
-
-      tables_dao = std::static_pointer_cast<TablesDAO>(gdao);
-    }
-
-    error = tables_dao->update_table_metadata(object_id, object);
-    if (error == ErrorCode::OK) {
-      EXPECT_EQ(ErrorCode::OK, error);
-    } else {
-      EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
-      return;
-    }
-
-    if (error == ErrorCode::OK) {
-      error = db_session_manager.commit();
-      EXPECT_EQ(ErrorCode::OK, error);
-    } else {
-      ErrorCode rollback_error = db_session_manager.rollback();
-      EXPECT_EQ(ErrorCode::OK, rollback_error);
-    }
-
-    UTUtils::print(std::string(30, '-'));
-    UTUtils::print("Update table id: ", object_id);
-    UTUtils::print(UTUtils::get_tree_string(object));
   }
 
   /**
