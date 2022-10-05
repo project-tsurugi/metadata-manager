@@ -159,10 +159,10 @@ Metadata::Metadata(std::string_view database, std::string_view component)
  * @param object_id [out] ID of the added metadata object.
  * @return ErrorCode::OK if success, otherwise an error code.
  */
-ErrorCode Metadata::add(const manager::metadata::Object* object,
+ErrorCode Metadata::add(const manager::metadata::Object& object,
                       ObjectIdType* object_id) const {
 
-  ptree pt = object->convert_to_ptree();
+  ptree pt = object.convert_to_ptree();
   ErrorCode error = this->add(pt, object_id);
   if (error != ErrorCode::OK) {
     return error;
@@ -176,7 +176,7 @@ ErrorCode Metadata::add(const manager::metadata::Object* object,
  * @param object  [in]  table metadata to add.
  * @return ErrorCode::OK if success, otherwise an error code.
  */
-ErrorCode Metadata::add(const manager::metadata::Object* object) const
+ErrorCode Metadata::add(const manager::metadata::Object& object) const
 {
   ObjectId object_id = INVALID_OBJECT_ID;
   ErrorCode error = this->add(object, &object_id);
@@ -196,13 +196,13 @@ ErrorCode Metadata::add(const manager::metadata::Object* object) const
  * @retval otherwise an error code.
  */
 ErrorCode Metadata::get(const ObjectIdType object_id,
-                      manager::metadata::Object* object) const
+                      manager::metadata::Object& object) const
 {
   ptree pt;
 
   ErrorCode error = this->get(object_id, pt);
   if (error == ErrorCode::OK) {
-    object->convert_from_ptree(pt);
+    object.convert_from_ptree(pt);
   }
 
   return error;
@@ -217,13 +217,13 @@ ErrorCode Metadata::get(const ObjectIdType object_id,
  * @retval otherwise an error code.
  */
 ErrorCode Metadata::get(std::string_view object_name,
-                      manager::metadata::Object* object) const
+                      manager::metadata::Object& object) const
 {
   ptree pt;
 
   ErrorCode error = this->get(object_name, pt);
   if (error == ErrorCode::OK) {
-    object->convert_from_ptree(pt);
+    object.convert_from_ptree(pt);
   }
 
   return error;

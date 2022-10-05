@@ -621,7 +621,7 @@ TEST_F(ApiTestIndexMetadata, add_get_index_metadata_object_ptree) {
   {
     Index get_index_metadata;
     // get index metadata by index id.
-    error = indexes->get(inserted_id, &get_index_metadata); 
+    error = indexes->get(inserted_id, get_index_metadata); 
     EXPECT_EQ(ErrorCode::OK, error);
 
     UTUtils::print(UTUtils::get_tree_string(get_index_metadata.convert_to_ptree()));
@@ -689,7 +689,7 @@ TEST_F(ApiTestIndexMetadata, add_get_index_metadata_ptree_object) {
   {
     Index index;
     // get index metadata by index id.
-    error = indexes->get(inserted_id, &index);
+    error = indexes->get(inserted_id, index);
     EXPECT_EQ(ErrorCode::OK, error);
 
     UTUtils::print(UTUtils::get_tree_string(index.convert_to_ptree()));

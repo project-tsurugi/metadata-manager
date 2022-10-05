@@ -108,7 +108,7 @@ TEST_F(ApiTestTableMetadata, add_get_table_metadata_by_table_name2) {
 
   // get table metadata by table name.
   metadata::Table table_metadata_inserted;
-  error = tables->get(new_table_name, &table_metadata_inserted);
+  error = tables->get(new_table_name, table_metadata_inserted);
   EXPECT_EQ(ErrorCode::OK, error);
 
   UTUtils::print("-- get table metadata --");

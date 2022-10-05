@@ -234,7 +234,7 @@ void TableMetadataHelper::add_table(const manager::metadata::Table& new_table,
 
   // add table metadata.
   ObjectIdType ret_table_id = INVALID_VALUE;
-  error                     = tables->add(&new_table, &ret_table_id);
+  error = tables->add(new_table, &ret_table_id);
   EXPECT_EQ(ErrorCode::OK, error);
   EXPECT_GT(ret_table_id, 0);
 

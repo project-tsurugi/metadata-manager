@@ -170,7 +170,7 @@ void IndexMetadataHelper::add(const Metadata* indexes, const Index& index_metada
 
   ObjectIdType ret_id_value = INVALID_VALUE;
   // add index metadata.
-  ErrorCode error = indexes->add(&index_metadata, &ret_id_value);
+  ErrorCode error = indexes->add(index_metadata, &ret_id_value);
 
   ASSERT_EQ(ErrorCode::OK, error);
   ASSERT_GT(ret_id_value, 0);

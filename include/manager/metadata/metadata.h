@@ -263,15 +263,15 @@ class Metadata {
  * @param object_id [out] ID of the added metadata object.
  * @return ErrorCode::OK if success, otherwise an error code.
  */
-ErrorCode add(const manager::metadata::Object* object,
-                      ObjectIdType* object_id) const;
+ErrorCode add(const manager::metadata::Object& object,
+              ObjectIdType* object_id) const;
 
 /**
  * @brief Add a metadata object to table metadata table.
  * @param object  [in]  table metadata to add.
  * @return ErrorCode::OK if success, otherwise an error code.
  */
-ErrorCode add(const manager::metadata::Object* object) const;
+ErrorCode add(const manager::metadata::Object& object) const;
 
 /**
  * @brief Get a metadata object.
@@ -282,7 +282,7 @@ ErrorCode add(const manager::metadata::Object* object) const;
  * @retval otherwise an error code.
  */
 ErrorCode get(const ObjectIdType object_id,
-                      manager::metadata::Object* object) const;
+              manager::metadata::Object& object) const;
 
 /**
  * @brief Get a metadata object object based on object name.
@@ -293,7 +293,7 @@ ErrorCode get(const ObjectIdType object_id,
  * @retval otherwise an error code.
  */
 ErrorCode get(std::string_view object_name,
-                      manager::metadata::Object* object) const;
+              manager::metadata::Object& object) const;
 
 
 /**
@@ -307,11 +307,11 @@ ErrorCode get_all(
 
  protected:
   static constexpr const char* const kDefaultComponent = "visitor";
-  static const GenerationType kLatestVersion           = 0;
+  static const Generation kLatestVersion = 0;
 
  private:
-  static constexpr GenerationType kGeneration       = 1;
-  static constexpr FormatVersionType kFormatVersion = 1;
+  static constexpr Generation kGeneration = 1;
+  static constexpr FormatVersion kFormatVersion = 1;
 
   std::string database_;
   std::string component_;
