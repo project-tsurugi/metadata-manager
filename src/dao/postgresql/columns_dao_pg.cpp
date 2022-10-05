@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 tsurugi project.
+ * Copyright 2020-2022 tsurugi project.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -410,20 +410,27 @@ ErrorCode ColumnsDAO::select_column_metadata(
 
   if (error == ErrorCode::OK) {
     int nrows = PQntuples(res);
-    if (nrows <= 0) {
-      PQclear(res);
-      error = ErrorCode::INVALID_PARAMETER;
-      return error;
-    }
-    for (int ordinal_position = 0; ordinal_position < nrows;
-         ordinal_position++) {
-      ptree column;
-      error = convert_pgresult_to_ptree(res, ordinal_position, column);
-      if (error != ErrorCode::OK) {
-        break;
-      }
+    if (nrows >= 1) {
+      for (int ordinal_position = 0; ordinal_position < nrows; ordinal_position++) {
+        ptree column;
 
-      columns_metadata.push_back(std::make_pair("", column));
+        // Convert acquired data to ptree type.
+        error = convert_pgresult_to_ptree(res, ordinal_position, column);
+        if (error != ErrorCode::OK) {
+          break;
+        }
+
+        columns_metadata.push_back(std::make_pair("", column));
+      }
+    } else {
+      // Convert the error code.
+      if (object_key == Tables::Column::ID) {
+        error = ErrorCode::ID_NOT_FOUND;
+      } else if (object_key == Tables::Column::NAME) {
+        error = ErrorCode::NAME_NOT_FOUND;
+      } else {
+        error = ErrorCode::NOT_FOUND;
+      }
     }
   }
 
@@ -465,6 +472,15 @@ ErrorCode ColumnsDAO::delete_column_metadata(
 
     if (error_get != ErrorCode::OK) {
       error = error_get;
+    } else if (number_of_rows_affected == 0) {
+      // Convert the error code.
+      if (object_key == Tables::Column::ID) {
+        error = ErrorCode::ID_NOT_FOUND;
+      } else if (object_key == Tables::Column::NAME) {
+        error = ErrorCode::NAME_NOT_FOUND;
+      } else {
+        error = ErrorCode::NOT_FOUND;
+      }
     }
   }
 

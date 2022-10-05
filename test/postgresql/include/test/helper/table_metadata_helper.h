@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 tsurugi project.
+ * Copyright 2021-2022 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,13 +55,13 @@ class TableMetadataHelper {
       const boost::property_tree::ptree& actual);
 
  private:
-  static void check_metadata_expected(
-      const boost::property_tree::ptree& expected,
-      const boost::property_tree::ptree& actual, const char* meta_name);
+  static void check_child_expected(const boost::property_tree::ptree& expected,
+                                   const boost::property_tree::ptree& actual,
+                                   const char* meta_name);
   template <typename T>
-  static void check_column_metadata_expected(
-      const boost::property_tree::ptree& expected,
-      const boost::property_tree::ptree& actual, const char* meta_name);
+  static void check_expected(const boost::property_tree::ptree& expected,
+                             const boost::property_tree::ptree& actual,
+                             const char* meta_name);
 };
 
 }  // namespace manager::metadata::testing

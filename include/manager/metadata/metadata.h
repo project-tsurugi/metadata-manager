@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 tsurugi project.
+ * Copyright 2020-2022 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@
 #include <vector>
 
 #include <boost/property_tree/ptree.hpp>
+
 #include "manager/metadata/error_code.h"
 
 namespace manager::metadata {
@@ -159,8 +160,7 @@ class Metadata {
    *   load latest generation if NOT provided.
    * @return ErrorCode::OK if success, otherwise an error code.
    */
-  static ErrorCode load(std::string_view database,
-                        boost::property_tree::ptree& object,
+  static ErrorCode load(std::string_view database, boost::property_tree::ptree& object,
                         const GenerationType generation = kLatestVersion);
 
   /**
@@ -202,8 +202,7 @@ class Metadata {
    * @param container [out] Container for metadata-objects.
    * @return ErrorCode::OK if success, otherwise an error code.
    */
-  virtual ErrorCode get_all(
-      std::vector<boost::property_tree::ptree>& container) const = 0;
+  virtual ErrorCode remove(const ObjectId object_id) const = 0;
 
   /**
    * @brief Update metadata-table with metadata-object.
@@ -211,7 +210,7 @@ class Metadata {
    * @param object    [in]  metadata-object to update.
    * @return ErrorCode::OK if success, otherwise an error code.
    */
-  virtual ErrorCode update(const ObjectIdType object_id,
+  virtual ErrorCode update(std::string_view object_name, ObjectId* object_id,
                            const boost::property_tree::ptree& object) const = 0;
 
   /**
@@ -304,10 +303,10 @@ ErrorCode get_all(
 
  protected:
   static constexpr const char* const kDefaultComponent = "visitor";
-  static const GenerationType kLatestVersion = 0;
+  static const GenerationType kLatestVersion           = 0;
 
  private:
-  static constexpr GenerationType kGeneration = 1;
+  static constexpr GenerationType kGeneration       = 1;
   static constexpr FormatVersionType kFormatVersion = 1;
 
   std::string database_;
