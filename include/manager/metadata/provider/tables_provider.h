@@ -57,9 +57,6 @@ class TablesProvider : public ProviderBase {
                                                      std::string_view value,
                                                      ObjectIdType& table_id);
 
-  manager::metadata::ErrorCode remove_table_metadata(std::string_view key, std::string_view value,
-                                                     ObjectIdType& table_id);
-
   manager::metadata::ErrorCode confirm_permission(std::string_view key, std::string_view value,
                                                   std::string_view permission, bool& check_result);
 

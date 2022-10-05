@@ -49,6 +49,7 @@ struct Column : public Object {
   static constexpr const char* const ORDINAL_POSITION        = "ordinalPosition";
   static constexpr const char* const DATA_TYPE_ID            = "dataTypeId";
   static constexpr const char* const DATA_LENGTH             = "dataLength";
+  static constexpr const char* const DATA_LENGTHS            = "dataLengths";
   static constexpr const char* const VARYING                 = "varying";
   static constexpr const char* const NULLABLE                = "nullable";
   static constexpr const char* const DEFAULT_EXPR            = "defaultExpr";
@@ -70,19 +71,15 @@ struct Column : public Object {
  * @brief Table metadata object.
  */
 struct Table : public ClassObject {
-  std::string          namespace_name;
-  int64_t              owner_id;
-  int64_t              tuples;
-  std::vector<int64_t> primary_keys;
-  std::vector<Column>  columns;
-  std::vector<Index>   indexes;
+  int64_t                 tuples;
+  std::vector<int64_t>    primary_keys;
+  std::vector<Column>     columns;
+  std::vector<Index>      indexes;
   std::vector<Constraint> constraints;
 
-  static constexpr const char* const NAMESPACE = "namespace";
-  static constexpr const char* const OWNER_ID  = "ownerId";
   static constexpr const char* const TUPLES    = "tuples";
 
-  Table() : ClassObject(), namespace_name(""), owner_id(INVALID_OBJECT_ID), tuples(INVALID_VALUE) {}
+  Table() : ClassObject(), tuples(INVALID_VALUE) {}
   boost::property_tree::ptree convert_to_ptree() const override;
   void convert_from_ptree(const boost::property_tree::ptree& ptree) override;
 };
@@ -202,14 +199,11 @@ class Tables : public Metadata {
 
   ErrorCode get(const ObjectId object_id, boost::property_tree::ptree& object) const override;
   ErrorCode get(std::string_view object_name, boost::property_tree::ptree& object) const override;
-  ErrorCode get_all(std::vector<boost::property_tree::ptree>& container) const override;
+  ErrorCode get_all(std::vector<boost::property_tree::ptree>& objects) const override;
 
   ErrorCode get_statistic(const ObjectId table_id, boost::property_tree::ptree& object) const;
   ErrorCode get_statistic(std::string_view table_name, boost::property_tree::ptree& object) const;
-  ErrorCode set_statistic(boost::property_tree::ptree& object) const;
-
-  ErrorCode update(const ObjectIdType object_id,
-                   const boost::property_tree::ptree& object) const override;
+  ErrorCode set_statistic(boost::property_tree::ptree& container) const;
 
   ErrorCode update(const ObjectIdType object_id,
                    const boost::property_tree::ptree& object) const override;
@@ -229,6 +223,7 @@ class Tables : public Metadata {
 
   ErrorCode get(const ObjectIdType object_id, manager::metadata::Table& table) const;
   ErrorCode get(std::string_view table_name, manager::metadata::Table& table) const;
+  ErrorCode get_all(std::vector<manager::metadata::Table>& objects) const;
 
  private:
   manager::metadata::ErrorCode param_check_metadata_add(

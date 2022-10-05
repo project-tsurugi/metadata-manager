@@ -636,8 +636,8 @@ void TableMetadataHelper::check_table_metadata_expected(const boost::property_tr
         // column data type id
         check_expected<ObjectIdType>(column_expected, column_actual, Tables::Column::DATA_TYPE_ID);
         // column data length
-        check_child_expected(column_expected, column_actual, Tables::Column::DATA_LENGTH);
         // column data lengths
+        check_child_expected(column_expected, column_actual, Tables::Column::DATA_LENGTHS);
         // column varying
         check_expected<bool>(column_expected, column_actual, Tables::Column::VARYING);
         // nullable

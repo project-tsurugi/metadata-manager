@@ -81,12 +81,16 @@ TEST_F(ApiTestTableMetadata, add_get_table_metadata_by_table_name3) {
  * @brief happy test for adding one new table metadata
  *  and getting it by table name.
  */
+std::string get_new_table_name(ptree new_table, int64_t line_num) {
+    return new_table.get<std::string>(Tables::NAME) + "_ApiTestTableMetadata" + std::to_string(line_num);
+}
+
 TEST_F(ApiTestTableMetadata, add_get_table_metadata_by_table_name2) {
   // prepare test data for adding table metadata.
   UTTableMetadata testdata_table_metadata = *(global->testdata_table_metadata.get());
   ptree new_table                         = testdata_table_metadata.tables;
-  std::string new_table_name =
-      new_table.get<std::string>(Tables::NAME) + "_ApiTestTableMetadata" + std::to_string(__LINE__);
+  std::string new_table_name = get_new_table_name(new_table, __LINE__);
+//      new_table.get<std::string>(Tables::NAME) + "_ApiTestTableMetadata" + std::to_string(__LINE__);
   new_table.put(Tables::NAME, new_table_name);
 
   // add table metadata.
@@ -105,7 +109,8 @@ TEST_F(ApiTestTableMetadata, add_get_table_metadata_by_table_name2) {
   EXPECT_EQ(ErrorCode::OK, error);
 
   UTUtils::print("-- get table metadata --");
-  //  UTUtils::print(UTUtils::get_tree_string(table_metadata_inserted));
+  ptree pt_table = table_metadata_inserted.convert_to_ptree();
+  UTUtils::print(UTUtils::get_tree_string(pt_table));
 
   // verifies that the returned table metadata is expected one.
   TableMetadataHelper::check_table_metadata_expected(new_table, table_metadata_inserted);
@@ -120,8 +125,8 @@ TEST_F(ApiTestTableMetadata, add_get_table_metadata_by_table_name2) {
 TEST_F(ApiTestTableMetadata, add_get_table_metadata_by_table_name) {
   // prepare test data for adding table metadata.
   UTTableMetadata testdata_table_metadata = *(global->testdata_table_metadata.get());
-  ptree new_table                         = testdata_table_metadata.tables;
-  std::string new_table_name =
+  ptree new_table = testdata_table_metadata.tables;
+  std::string new_table_name = 
       new_table.get<std::string>(Tables::NAME) + "_ApiTestTableMetadata" + std::to_string(__LINE__);
   new_table.put(Tables::NAME, new_table_name);
 
