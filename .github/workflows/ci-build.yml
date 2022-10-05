@@ -26,6 +26,7 @@ jobs:
       - id: Make_CI_Directory
         name: Make_CI_Directory
         run: |
+          cd ${GITHUB_WORKSPACE}
           rm -rf ci_test
           mkdir ci_test
 
