@@ -75,6 +75,60 @@ const std::string get_table_name() {
  *  @brief Output for object.
  */
 template <typename T>
+ErrorCode check_object(std::string_view key, bool required,
+                       const ptree& object) {
+  ErrorCode error = ErrorCode::OK;
+
+  boost::optional<T> optional_object = object.get_optional<T>(key.data());
+
+  std::cout << " " << std::right << std::setw(10) << key.substr(0, 10) << ": ";
+  if (required && !optional_object) {
+    std::cout << "Required fields are undefined.";
+    error = ErrorCode::NOT_FOUND;
+  } else {
+    if (optional_object) {
+      std::cout << "[" << optional_object.value() << "]";
+    } else {
+      std::cout << "[--]";
+    }
+  }
+  std::cout << std::endl;
+
+  return error;
+}
+
+/**
+ *  @brief Output for difference.
+ */
+template <typename T>
+ErrorCode output_object_diff(std::string_view key, const ptree& before,
+                             const ptree& after) {
+  ErrorCode error = ErrorCode::OK;
+
+  boost::optional<T> optional_before = before.get_optional<T>(key.data());
+  boost::optional<T> optional_after = after.get_optional<T>(key.data());
+
+  std::cout << " " << std::right << std::setw(10) << key.substr(0, 10) << ": ";
+  if (optional_before) {
+    std::cout << "[" << optional_before.value() << "]";
+  } else {
+    std::cout << "[--]";
+  }
+  std::cout << " --> ";
+  if (optional_after) {
+    std::cout << "[" << optional_after.value() << "]";
+  } else {
+    std::cout << "[--]";
+  }
+  std::cout << std::endl;
+
+  return error;
+}
+
+/**
+ *  @brief Output for object.
+ */
+template <typename T>
 ErrorCode check_object(std::string_view key, bool required, const ptree& object) {
   ErrorCode error = ErrorCode::OK;
 
@@ -298,7 +352,8 @@ ErrorCode display_constraint_metadata_object(const ptree& table) {
 /**
  *  @brief display table-metadata-object.
  */
-ErrorCode display_table_metadata_object(const ptree& table) {
+template <typename T>
+ErrorCode check_object(std::string_view key, bool required, const ptree& object) {
   ErrorCode error = ErrorCode::OK;
 
   std::ios::fmtflags original_flags = std::cout.flags();
@@ -330,6 +385,27 @@ ErrorCode display_table_metadata_object(const ptree& table) {
     ERROR(error);
     return error;
   }
+  std::cout << " --> ";
+  if (optional_after) {
+    std::cout << "[" << optional_after.value() << "]";
+  } else {
+    std::cout << "[--]";
+  }
+  std::cout << std::endl;
+
+  std::cout.flags(original_flags);
+
+  return error;
+}
+
+/**
+ *  @brief display columns-metadata-object.
+ */
+ErrorCode display_columns_metadata_object(const ptree& table) {
+  ErrorCode error = ErrorCode::OK;
+
+  std::ios::fmtflags original_flags = std::cout.flags();
+  std::cout.fill(' ');
 
   // primaryKey
   ptree primary_keys = table.get_child(Tables::PRIMARY_KEY_NODE);
@@ -689,6 +765,59 @@ ErrorCode display_table_metadata_object(const ptree& before, const ptree& after)
   }
   std::cout.flags(original_flags);
 
+    // Outputs on added metadata.
+    const ptree dummy;
+    BOOST_FOREACH (const ptree::value_type& node, constraints_node_after) {
+      const ptree& constraint = node.second;
+
+      auto optional_object = constraint.get_optional<ObjectIdType>(Constraint::ID);
+      if (optional_object) {
+        // id
+        output_object_diff<ObjectIdType>(Constraint::ID, dummy, constraint);
+        // tableId
+        output_object_diff<ObjectIdType>(Constraint::TABLE_ID, dummy, constraint);
+        // name
+        output_object_diff<std::string>(Constraint::NAME, dummy, constraint);
+        // type
+        output_object_diff<uint64_t>(Constraint::TYPE, dummy, constraint);
+        // indexId
+        output_object_diff<int64_t>(Constraint::INDEX_ID, dummy, constraint);
+        // expression
+        output_object_diff<std::string>(Constraint::EXPRESSION, dummy, constraint);
+        // columns
+        auto columns_node = constraint.get_child_optional(Constraint::COLUMNS);
+        std::string columns;
+        if (columns_node) {
+          std::for_each(columns_node.get().begin(), columns_node.get().end(),
+                        [&columns](ptree::value_type v) mutable {
+                          columns = columns + (columns.empty() ? "" : ",") + v.second.data();
+                        });
+        } else {
+          columns = "--";
+        }
+        std::cout << " " << std::right << std::setw(10) << Constraint::COLUMNS << ": [--] --> ["
+                  << columns << "]" << std::endl;
+        // columnsId
+        auto columns_id_node = constraint.get_child_optional(Constraint::COLUMNS_ID);
+        std::string columns_id;
+        if (columns_node) {
+          std::for_each(columns_id_node.get().begin(), columns_id_node.get().end(),
+                        [&columns_id](ptree::value_type v) mutable {
+                          columns_id =
+                              columns_id + (columns_id.empty() ? "" : ",") + v.second.data();
+                        });
+        } else {
+          columns_id = "--";
+        }
+        std::cout << " " << std::right << std::setw(10) << Constraint::COLUMNS_ID << ": [--] --> ["
+                  << columns_id << "]" << std::endl;
+
+        std::cout << " ------------------" << std::endl;
+      }
+    }
+  }
+  std::cout.flags(original_flags);
+
   return ErrorCode::OK;
 }
 
@@ -844,6 +973,15 @@ ErrorCode add_table_metadata() {
   if (error != ErrorCode::OK) {
     ERROR(error);
   }
+  }
+
+  if (error == ErrorCode::OK) {
+    error = display_table_metadata_object(table_metadata_before,
+                                          table_metadata_after);
+  }
+
+  // Remove metadata used in testing.
+  tables->remove(table_id);
 
   return error;
 }

@@ -356,6 +356,50 @@ class DaoTestTableMetadata : public ::testing::Test {
   }
 
   /**
+   * @brief Update table metadata to table metadata table.
+   * @param (object_id) [in]     ID of the added table metadata.
+   * @param (object)    [in/out] table metadata object.
+   * @return ErrorCode::OK if success, otherwise an error code.
+   */
+  static void update_table(const ObjectIdType& object_id,
+                           boost::property_tree::ptree& object) {
+    auto table_name = object.get<std::string>(Tables::NAME);
+    auto table_namespace = object.get<std::string>(Tables::NAMESPACE);
+    auto table_tuples = object.get<float>(Tables::TUPLES);
+
+    object.put(Tables::NAME, table_name + "-update");
+    object.put(Tables::NAMESPACE, table_namespace + "-update");
+    object.put(Tables::TUPLES, table_tuples * 2);
+    object.erase(Tables::PRIMARY_KEY_NODE);
+    ptree primary_key;
+    ptree primary_keys;
+    primary_key.put("", 2);
+    primary_keys.push_back(std::make_pair("", primary_key));
+    object.add_child(Tables::PRIMARY_KEY_NODE, primary_keys);
+
+    // Get TablesDAO.
+    std::shared_ptr<db::GenericDAO> t_gdao = nullptr;
+    DBSessionManager db_session_manager;
+
+    ErrorCode error =
+        db_session_manager.get_dao(db::GenericDAO::TableName::TABLES, t_gdao);
+    EXPECT_EQ(ErrorCode::OK, error);
+
+    std::shared_ptr<db::TablesDAO> tdao;
+    tdao = std::static_pointer_cast<db::TablesDAO>(t_gdao);
+
+    error = db_session_manager.start_transaction();
+    EXPECT_EQ(ErrorCode::OK, error);
+
+    // Update table metadata object to table metadata table.
+    error = tdao->update_table_metadata(object_id, object);
+    EXPECT_EQ(ErrorCode::OK, error);
+
+    error = db_session_manager.commit();
+    EXPECT_EQ(ErrorCode::OK, error);
+  }
+
+  /**
    * @brief Remove all metadata-object based on the given table id
    *  (table metadata, column metadata and column statistics)
    *  from metadata-table (the table metadata table,

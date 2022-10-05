@@ -26,6 +26,8 @@
 #include "manager/metadata/error_code.h"
 #include "manager/metadata/indexes.h"
 #include "manager/metadata/metadata.h"
+#include "manager/metadata/indexes.h"
+#include "manager/metadata/constraints.h"
 
 namespace manager::metadata {
 /**
@@ -205,6 +207,9 @@ class Tables : public Metadata {
   ErrorCode get_statistic(const ObjectId table_id, boost::property_tree::ptree& object) const;
   ErrorCode get_statistic(std::string_view table_name, boost::property_tree::ptree& object) const;
   ErrorCode set_statistic(boost::property_tree::ptree& object) const;
+
+  ErrorCode update(const ObjectIdType object_id,
+                   const boost::property_tree::ptree& object) const override;
 
   ErrorCode update(const ObjectIdType object_id,
                    const boost::property_tree::ptree& object) const override;

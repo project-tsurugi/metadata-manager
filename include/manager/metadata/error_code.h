@@ -79,6 +79,11 @@ enum class ErrorCode {
   NOT_INITIALIZED,
 
   /**
+   * @brief
+   */
+  RESULT_MULTIPLE_ROWS,
+
+  /**
    * @brief internal error.
    */
   INTERNAL_ERROR

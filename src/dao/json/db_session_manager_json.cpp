@@ -26,8 +26,175 @@
 #include "manager/metadata/dao/json/datatypes_dao_json.h"
 #include "manager/metadata/dao/json/tables_dao_json.h"
 #include "manager/metadata/helper/logging_helper.h"
+#include "manager/metadata/dao/dao.h"
+#include "manager/metadata/dao/json/index_dao_json.h"
+
+namespace manager::metadata::db {
+
+namespace json_parser = boost::property_tree::json_parser;
+using boost::property_tree::json_parser_error;
 
 // =============================================================================
+// DbSessionManagerJson class methods.
+
+std::shared_ptr<Dao> DbSessionManagerJson::get_index_dao() {
+  return std::make_shared<IndexDaoJson>(this);
+}
+
+/**
+ * @brief Sets the file name of the metadata.
+ * @param file_name [in] file name.
+ * @param root_node [in] root node name.
+ * @return ErrorCode::OK if success, otherwise an error code.
+ */
+ErrorCode DbSessionManagerJson::connect(std::string_view file_name,
+                                        std::string_view root_node) {
+  ErrorCode error = ErrorCode::UNKNOWN;
+
+  database_ = std::string(file_name);
+  std::ifstream file(database_);
+  if (file) {
+    // open a metadata-table file.
+    error = ErrorCode::OK;
+  } else {
+    // create a metadata-table file and initialize.
+    clear_contents();
+    contents_->put(root_node.data(), "");
+    error = this->save_contents();
+    if (error != ErrorCode::OK) {
+      database_.clear();
+    }
+  }
+
+  return error;
+}
+
+/**
+ * @brief Load the metadata from the file.
+ * @return ErrorCode::OK if success, otherwise an error code.
+ */
+ErrorCode DbSessionManagerJson::load_contents() const {
+
+  ErrorCode error = ErrorCode::UNKNOWN;
+
+  if (database_.empty()) {
+    LOG_ERROR << Message::NOT_INITIALIZED;
+    error = ErrorCode::NOT_INITIALIZED;
+    return error;
+  }
+
+  try {
+    json_parser::read_json(database_, *(contents_.get()));
+  } catch (json_parser_error& e) {
+    LOG_ERROR << Message::READ_JSON_FILE_FAILURE << database_ << "\n  "
+              << e.what();
+    error = ErrorCode::INTERNAL_ERROR;
+    return error;
+  } catch (...) {
+    LOG_ERROR << Message::READ_JSON_FILE_FAILURE << database_;
+    error = ErrorCode::INTERNAL_ERROR;
+    return error;
+  }
+
+  error = ErrorCode::OK;
+  return error;
+}
+
+/**
+ * @brief Save the metadata to a file.
+ * @return ErrorCode::OK if success, otherwise an error code.
+ */
+ErrorCode DbSessionManagerJson::save_contents() const {
+
+  ErrorCode error = ErrorCode::UNKNOWN;
+
+  if (database_.empty()) {
+    LOG_ERROR << Message::NOT_INITIALIZED;
+    error = ErrorCode::NOT_INITIALIZED;
+    return error;
+  }
+
+  try {
+    json_parser::write_json(database_, *(contents_.get()));
+  } catch (json_parser_error& e) {
+    LOG_ERROR << Message::WRITE_JSON_FAILURE << e.what();
+    error = ErrorCode::INTERNAL_ERROR;
+    return error;
+  } catch (...) {
+    LOG_ERROR << Message::WRITE_JSON_FAILURE;
+    error = ErrorCode::INTERNAL_ERROR;
+    return error;
+  }
+  error = ErrorCode::OK;
+
+  return error;
+}
+
+/**
+ * @brief Starts a transaction scope managed by this DBSessionManager.
+ * @return ErrorCode::OK if success, otherwise an error code.
+ */
+ErrorCode DbSessionManagerJson::start_transaction() {
+  ErrorCode error = ErrorCode::UNKNOWN;
+
+  if (database_.empty()) {
+    LOG_ERROR << Message::NOT_INITIALIZED;
+    error = ErrorCode::NOT_INITIALIZED;
+    return error;
+  }
+
+  clear_contents();
+
+  error = ErrorCode::OK;
+  return error;
+}
+
+/**
+ * @brief Commits all transactions currently started for all DAO contexts
+ *   managed by this DBSessionManager.
+ * @return ErrorCode::OK if success, otherwise an error code.
+ */
+ErrorCode DbSessionManagerJson::commit() {
+  ErrorCode error = ErrorCode::UNKNOWN;
+
+  if (database_.empty()) {
+    LOG_ERROR << Message::NOT_INITIALIZED;
+    error = ErrorCode::NOT_INITIALIZED;
+    return error;
+  }
+
+  this->save_contents();
+  this->clear_contents();
+
+  error = ErrorCode::OK;
+  return error;
+}
+
+/**
+ * @brief Rollbacks all transactions currently started for all DAO contexts
+ *   managed by this DBSessionManager.
+ * @return ErrorCode::OK if success, otherwise an error code.
+ */
+ErrorCode DbSessionManagerJson::rollback() {
+  ErrorCode error = ErrorCode::UNKNOWN;
+
+  if (database_.empty()) {
+    LOG_ERROR << Message::NOT_INITIALIZED;
+    error = ErrorCode::NOT_INITIALIZED;
+    return error;
+  }
+
+  clear_contents();
+
+  error = ErrorCode::OK;
+  return error;
+}
+
+} // manager::metadata::db
+
+// ==========================================================================
+//  namespace manager::metadata::db::json
+
 namespace manager::metadata::db::json {
 
 namespace json_parser = boost::property_tree::json_parser;
@@ -35,8 +202,8 @@ using boost::property_tree::json_parser_error;
 
 /**
  * @brief Gets Dao instance for the requested table name
- * @param (table_name)   [in]  unique id for the Dao.
- * @param (gdao)         [out] Dao instance if success.
+ * @param table_name  [in]  unique id for the Dao.
+ * @param gdao        [out] Dao instance if success.
  *   for the requested table name.
  * @return ErrorCode::OK if success, otherwise an error code.
  */

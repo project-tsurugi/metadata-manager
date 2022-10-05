@@ -24,69 +24,79 @@
 
 namespace manager::metadata {
 
+using boost::property_tree::ptree;
+
 // ==========================================================================
-// Object class methods.
-/**
+// Object struct methods.
+/** 
  * @brief  Transform metadata from structure object to ptree object.
  * @return ptree object.
  */
 boost::property_tree::ptree Object::convert_to_ptree() const {
-  boost::property_tree::ptree ptree;
-  ptree.put<int64_t>(FORMAT_VERSION,  this->format_version);
-  ptree.put<int64_t>(GENERATION,      this->generation);
-  ptree.put<ObjectId>(ID,             this->id);
-  ptree.put(NAME,                     this->name);
+  boost::property_tree::ptree pt;
+  pt.put<int64_t>(FORMAT_VERSION, this->format_version);
+  pt.put<int64_t>(GENERATION, this->generation);
+  pt.put<ObjectId>(ID, this->id);
+  pt.put(NAME, this->name);
 
-  return ptree;
-}
+  return pt;
+};
 
 /**
  * @brief   Transform metadata from ptree object to structure object.
- * @param   ptree [in] ptree object of metdata.
+ * @param   pt [in] ptree object of metdata.
  * @return  structure object of metadata.
  */
-void Object::convert_from_ptree(const boost::property_tree::ptree& ptree) {
-  auto format_version = ptree.get_optional<int64_t>(FORMAT_VERSION);
-  auto generation     = ptree.get_optional<int64_t>(GENERATION);
-  auto id             = ptree.get_optional<ObjectId>(ID);
-  auto name           = ptree.get_optional<std::string>(NAME);
+void 
+Object::convert_from_ptree(const boost::property_tree::ptree& pt) {
+  auto opt_int = pt.get_optional<int64_t>(FORMAT_VERSION);
+  this->format_version = opt_int  ? opt_int.get() : INVALID_VALUE;
 
-  this->format_version = 
-      format_version  ? format_version.get()  : INVALID_VALUE;
-  this->generation  = generation  ? generation.get()  : INVALID_VALUE;
-  this->id          = id          ? id.get()          : INVALID_OBJECT_ID;
-  this->name        = name        ? name.get()        : "";
-}
+  opt_int = pt.get_optional<int64_t>(GENERATION);
+  this->generation  = opt_int ? opt_int.get() : INVALID_VALUE;
+
+  auto opt_id = pt.get_optional<ObjectId>(ID);
+  this->id = opt_id ? opt_id.get() : INVALID_OBJECT_ID;
+
+  auto opt_str = pt.get_optional<std::string>(NAME);
+  this->name = opt_str ? opt_str.get() : "";
+};
 
 // ==========================================================================
-// ClassObject class methods.
-/** @brief  Transform metadata from structure object to ptree object.
+// ClassObject struct methods.
+/** @brief  Convert metadata from structure object to ptree object.
  *  @return ptree object.
  */
 boost::property_tree::ptree ClassObject::convert_to_ptree() const {
-  boost::property_tree::ptree ptree = Object::convert_to_ptree();
-  ptree.put(DATABASE_NAME, this->database_name);
-  ptree.put(SCHEMA_NAME,   this->schema_name);
-  ptree.put(ACL,           this->acl);
+  auto pt = Object::convert_to_ptree();
+  pt.put(DATABASE_NAME, this->database_name);
+  pt.put(SCHEMA_NAME, this->schema_name);
+  pt.put(NAMESPACE, namespace_name);
+  pt.put(ACL, this->acl);
 
-  return ptree;
-}
+  return pt;
+};
 
 /**
- * @brief   Transform metadata from ptree object to structure object.
- * @param   ptree [in] ptree object of metadata.
+ * @brief   Convert metadata from ptree object to structure object.
+ * @param   ptree [in] ptree object of metdata.
  * @return  structure object of metadata.
  */
-void ClassObject::convert_from_ptree(const boost::property_tree::ptree& ptree) {
-  Object::convert_from_ptree(ptree);
-  auto database_name = ptree.get_optional<std::string>(DATABASE_NAME);
-  auto schema_name   = ptree.get_optional<std::string>(SCHEMA_NAME);
-  auto acl           = ptree.get_optional<std::string>(ACL);
+void 
+ClassObject::convert_from_ptree(const boost::property_tree::ptree& pt) {
+  Object::convert_from_ptree(pt);
+  auto opt_str = pt.get_optional<std::string>(DATABASE_NAME);
+  this->database_name = opt_str ? opt_str.get() : "";
 
-  this->database_name = database_name ? database_name.get() : "";
-  this->schema_name   = schema_name   ? schema_name.get()   : "";
-  this->acl           = acl           ? acl.get()           : "";
-}
+  opt_str = pt.get_optional<std::string>(SCHEMA_NAME);
+  this->schema_name = opt_str ? opt_str.get()   : "";
+
+  auto namespace_name = pt.get_optional<std::string>(NAMESPACE);
+  this->namespace_name = namespace_name ? namespace_name.get()  : "";
+
+  opt_str = pt.get_optional<std::string>(ACL);
+  this->acl = opt_str ? opt_str.get() : "";
+};
 
 // ==========================================================================
 // Metadata class methods.
@@ -137,6 +147,107 @@ Metadata::Metadata(std::string_view database, std::string_view component)
     std::string_view database, boost::property_tree::ptree& object,
     const GenerationType generation) {
   return ErrorCode::OK;
+}
+
+/**
+ * @brief Add a metadata object to the metadata table.
+ * @param object    [in]  metadata object to add.
+ * @param object_id [out] ID of the added metadata object.
+ * @return ErrorCode::OK if success, otherwise an error code.
+ */
+ErrorCode Metadata::add(const manager::metadata::Object* object,
+                      ObjectIdType* object_id) const {
+
+  ptree pt = object->convert_to_ptree();
+  ErrorCode error = this->add(pt, object_id);
+  if (error != ErrorCode::OK) {
+    return error;
+  }
+
+  return error;
+}
+
+/**
+ * @brief Add a metadata object to table metadata table.
+ * @param object  [in]  table metadata to add.
+ * @return ErrorCode::OK if success, otherwise an error code.
+ */
+ErrorCode Metadata::add(const manager::metadata::Object* object) const
+{
+  ObjectId object_id = INVALID_OBJECT_ID;
+  ErrorCode error = this->add(object, &object_id);
+  if (error != ErrorCode::OK) {
+    return error;
+  }
+
+  return error;
+}
+
+/**
+ * @brief Get a metadata object.
+ * @param object_id [in]  object id.
+ * @param object     [out] metadata object with the specified ID.
+ * @retval ErrorCode::OK if success,
+ * @retval ErrorCode::ID_NOT_FOUND if the table id does not exist.
+ * @retval otherwise an error code.
+ */
+ErrorCode Metadata::get(const ObjectIdType object_id,
+                      manager::metadata::Object* object) const
+{
+  ptree pt;
+
+  ErrorCode error = this->get(object_id, pt);
+  if (error == ErrorCode::OK) {
+    object->convert_from_ptree(pt);
+  }
+
+  return error;
+}
+
+/**
+ * @brief Get a metadata object object based on object name.
+ * @param object_name [in]  object name. (Value of "name" key.)
+ * @param object       [out] metadata object object with the specified name.
+ * @retval ErrorCode::OK if success,
+ * @retval ErrorCode::NAME_NOT_FOUND if the table name does not exist.
+ * @retval otherwise an error code.
+ */
+ErrorCode Metadata::get(std::string_view object_name,
+                      manager::metadata::Object* object) const
+{
+  ptree pt;
+
+  ErrorCode error = this->get(object_name, pt);
+  if (error == ErrorCode::OK) {
+    object->convert_from_ptree(pt);
+  }
+
+  return error;
+}
+
+
+/**
+ * @brief Get all metadata object objects from the metadata table.
+ *   If no metadata object existst, return the container as empty.
+ * @param objects  [out] Container of metadata objects.
+ * @return ErrorCode::OK if success, otherwise an error code.
+ */
+ErrorCode Metadata::get_all(
+    std::vector<manager::metadata::Object>& objects) const {
+
+  std::vector<ptree> pts;
+  ErrorCode error = this->get_all(pts);
+  if (error != ErrorCode::OK) {
+    return error;
+  }
+
+  for (const auto& pt : pts) {
+    Object object;
+    object.convert_from_ptree(pt);
+    objects.emplace_back(object);
+  }
+
+  return error;  
 }
 
 }  // namespace manager::metadata

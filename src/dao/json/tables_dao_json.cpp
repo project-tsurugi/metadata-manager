@@ -48,7 +48,8 @@ ErrorCode TablesDAO::prepare() const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   // Filename of the table metadata.
-  boost::format filename = boost::format("%s/%s.json") % Config::get_storage_dir_path() %
+  boost::format filename = boost::format("%s/%s.json") %
+                           Config::get_storage_dir_path() %
                            std::string(TablesDAO::TABLES_METADATA_NAME);
 
   // Connect to the table metadata file.
@@ -62,13 +63,14 @@ ErrorCode TablesDAO::prepare() const {
 
 /**
  * @brief Add metadata object to metadata table file.
- * @param table_metadata  [in]  one table metadata to add.
- * @param table_id        [out] table id.
+ * @param (table_metadata) [in]   one table metadata to add.
+ * @param (table_id)       [out]  table id.
  * @return ErrorCode::OK if success, otherwise an error code.
  */
 
-ErrorCode TablesDAO::insert_table_metadata(const boost::property_tree::ptree& table_metadata,
-                                           ObjectIdType& table_id) const {
+ErrorCode TablesDAO::insert_table_metadata(
+    const boost::property_tree::ptree& table_metadata,
+    ObjectIdType& table_id) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   // Load the metadata from the JSON file.
@@ -83,7 +85,8 @@ ErrorCode TablesDAO::insert_table_metadata(const boost::property_tree::ptree& ta
   // Getting a metadata object.
   auto optional_name = table_metadata.get_optional<std::string>(Tables::NAME);
   ptree table_name_searched;
-  error = get_metadata_object(*container, Tables::NAME, optional_name.get(), table_name_searched);
+  error = get_metadata_object(*container, Tables::NAME, optional_name.get(),
+                              table_name_searched);
   if (error == ErrorCode::OK) {
     LOG_WARNING << Message::ALREADY_EXISTS << optional_name.get();
     error = ErrorCode::ALREADY_EXISTS;
@@ -143,9 +146,9 @@ ErrorCode TablesDAO::insert_table_metadata(const boost::property_tree::ptree& ta
  * @retval ErrorCode::NAME_NOT_FOUND if the table name does not exist.
  * @retval otherwise an error code.
  */
-ErrorCode TablesDAO::select_table_metadata(std::string_view object_key,
-                                           std::string_view object_value,
-                                           boost::property_tree::ptree& table_metadata) const {
+ErrorCode TablesDAO::select_table_metadata(
+    std::string_view object_key, std::string_view object_value,
+    boost::property_tree::ptree& table_metadata) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   // Load the meta data from the JSON file.
@@ -158,7 +161,8 @@ ErrorCode TablesDAO::select_table_metadata(std::string_view object_key,
   ptree* container = session_manager_->get_container();
 
   // Getting a metadata object.
-  error = get_metadata_object(*container, object_key, object_value, table_metadata);
+  error =
+      get_metadata_object(*container, object_key, object_value, table_metadata);
 
   // Convert the error code.
   if (error == ErrorCode::NOT_FOUND) {

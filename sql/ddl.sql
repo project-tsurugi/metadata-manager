@@ -52,6 +52,28 @@ CREATE TABLE tsurugi_catalog.tsurugi_attribute
 
 CREATE INDEX ON tsurugi_catalog.tsurugi_attribute ( table_id );
 
+CREATE TABLE tsurugi_catalog.tsurugi_index
+(
+    format_version integer NOT NULL,
+    generation bigint NOT NULL,
+    id bigserial NOT NULL,
+    name text NOT NULL,
+    namespace text,
+    owner_id bigint,
+    acl text,
+    table_id bigint NOT NULL REFERENCES tsurugi_catalog.tsurugi_class (id) ON DELETE CASCADE,
+    access_method bigint,
+    is_unique bool,
+    is_primary bool,
+    number_of_key_column bigint,
+    columns json,
+    columns_id json,
+    options json,
+    PRIMARY KEY(id)
+);
+
+CREATE INDEX ON tsurugi_catalog.tsurugi_index ( table_id );
+
 CREATE TABLE tsurugi_catalog.tsurugi_constraint
 (
     format_version integer NOT NULL,
@@ -85,6 +107,14 @@ CREATE TABLE tsurugi_catalog.tsurugi_statistic
     column_statistic json,
     PRIMARY KEY (id),
     UNIQUE(column_id)
+);
+
+CREATE TABLE tsurugi_catalog.indexes
+(
+    format_version integer NOT NULL,
+    generation bigint NOT NULL,
+    id bigserial NOT NULL,
+    name text
 );
 
 -- INT32

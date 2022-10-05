@@ -40,6 +40,9 @@
 // =============================================================================
 namespace manager::metadata::db {
 
+/**
+ * Switch data storage type JSON or PostgreSQL.
+ */
 #if defined(STORAGE_POSTGRESQL)
 namespace storage = manager::metadata::db::postgresql;
 #elif defined(STORAGE_JSON)

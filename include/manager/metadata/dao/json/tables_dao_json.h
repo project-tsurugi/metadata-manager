@@ -35,7 +35,8 @@ class TablesDAO : public manager::metadata::db::TablesDAO {
   manager::metadata::ErrorCode prepare() const override;
 
   manager::metadata::ErrorCode insert_table_metadata(
-      const boost::property_tree::ptree& table_metadata, ObjectIdType& table_id) const override;
+      const boost::property_tree::ptree& table_metadata,
+      ObjectIdType& table_id) const override;
 
   manager::metadata::ErrorCode select_table_metadata(
       std::string_view object_key, std::string_view object_value,
