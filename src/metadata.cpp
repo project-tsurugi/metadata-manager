@@ -49,17 +49,12 @@ boost::property_tree::ptree Object::convert_to_ptree() const {
  */
 void 
 Object::convert_from_ptree(const boost::property_tree::ptree& pt) {
-  auto opt_int = pt.get_optional<int64_t>(FORMAT_VERSION);
-  this->format_version = opt_int  ? opt_int.get() : INVALID_VALUE;
-
-  opt_int = pt.get_optional<int64_t>(GENERATION);
-  this->generation  = opt_int ? opt_int.get() : INVALID_VALUE;
-
-  auto opt_id = pt.get_optional<ObjectId>(ID);
-  this->id = opt_id ? opt_id.get() : INVALID_OBJECT_ID;
-
-  auto opt_str = pt.get_optional<std::string>(NAME);
-  this->name = opt_str ? opt_str.get() : "";
+  this->format_version = 
+      pt.get_optional<int64_t>(FORMAT_VERSION).value_or(INVALID_VALUE);
+  this->generation = 
+      pt.get_optional<int64_t>(GENERATION).value_or(INVALID_VALUE);
+  this->id = pt.get_optional<ObjectId>(ID).value_or(INVALID_OBJECT_ID);
+  this->name = pt.get_optional<std::string>(NAME).value_or("");
 };
 
 // ==========================================================================
@@ -86,20 +81,13 @@ boost::property_tree::ptree ClassObject::convert_to_ptree() const {
 void 
 ClassObject::convert_from_ptree(const boost::property_tree::ptree& pt) {
   Object::convert_from_ptree(pt);
-  auto opt_str = pt.get_optional<std::string>(DATABASE_NAME);
-  this->database_name = opt_str ? opt_str.get() : "";
-
-  opt_str = pt.get_optional<std::string>(SCHEMA_NAME);
-  this->schema_name = opt_str ? opt_str.get()   : "";
-
-  opt_str = pt.get_optional<std::string>(NAMESPACE);
-  this->namespace_name = opt_str ? opt_str.get()  : "";
-
-  auto opt_id = pt.get_optional<ObjectId>(OWNER_ID);
-  this->owner_id = opt_id ? opt_id.get() : INVALID_OBJECT_ID;
-
-  opt_str = pt.get_optional<std::string>(ACL);
-  this->acl = opt_str ? opt_str.get() : "";
+  this->database_name = 
+      pt.get_optional<std::string>(DATABASE_NAME).value_or("");
+  this->schema_name = pt.get_optional<std::string>(SCHEMA_NAME).value_or("");
+  this->namespace_name = pt.get_optional<std::string>(NAMESPACE).value_or("");
+  this->owner_id = 
+      pt.get_optional<ObjectId>(OWNER_ID).value_or(INVALID_OBJECT_ID);
+  this->acl = pt.get_optional<std::string>(ACL).value_or("");
 };
 
 // ==========================================================================
