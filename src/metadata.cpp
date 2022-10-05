@@ -72,6 +72,7 @@ boost::property_tree::ptree ClassObject::convert_to_ptree() const {
   pt.put(DATABASE_NAME, this->database_name);
   pt.put(SCHEMA_NAME, this->schema_name);
   pt.put(NAMESPACE, namespace_name);
+  pt.put(OWNER_ID, this->owner_id);
   pt.put(ACL, this->acl);
 
   return pt;
@@ -91,8 +92,11 @@ ClassObject::convert_from_ptree(const boost::property_tree::ptree& pt) {
   opt_str = pt.get_optional<std::string>(SCHEMA_NAME);
   this->schema_name = opt_str ? opt_str.get()   : "";
 
-  auto namespace_name = pt.get_optional<std::string>(NAMESPACE);
-  this->namespace_name = namespace_name ? namespace_name.get()  : "";
+  opt_str = pt.get_optional<std::string>(NAMESPACE);
+  this->namespace_name = opt_str ? opt_str.get()  : "";
+
+  auto opt_id = pt.get_optional<ObjectId>(OWNER_ID);
+  this->owner_id = opt_id ? opt_id.get() : INVALID_OBJECT_ID;
 
   opt_str = pt.get_optional<std::string>(ACL);
   this->acl = opt_str ? opt_str.get() : "";
