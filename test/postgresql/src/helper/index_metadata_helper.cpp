@@ -16,8 +16,13 @@
 #include "test/helper/index_metadata_helper.h"
 
 #include <gtest/gtest.h>
+#include <libpq-fe.h>
 
-#include "manager/metadata/dao/json/index_dao_json.h"
+#include <boost/format.hpp>
+
+#include "manager/metadata/common/config.h"
+#include "manager/metadata/dao/postgresql/dbc_utils_pg.h"
+#include "manager/metadata/dao/postgresql/index_dao_pg.h"
 #include "test/global_test_environment.h"
 #include "test/utility/ut_utils.h"
 
@@ -27,29 +32,29 @@ namespace manager::metadata::testing {
   if (expected != actual) std::cout << "[" << text << "] "; \
   EXPECT_EQ(expected, actual)
 
-namespace storage = manager::metadata::db::json;
+namespace storage = manager::metadata::db::postgresql;
 
 using boost::property_tree::ptree;
-using manager::metadata::db::IndexDaoJson;
+using manager::metadata::db::IndexDaoPg;
 
 /**
  * @brief Get the number of records in the current index metadata.
  * @return Current number of records.
  */
 std::int64_t IndexMetadataHelper::get_record_count() {
-  // generate index metadata manager.
-  auto indexes = std::make_unique<Indexes>(GlobalTestEnvironment::TEST_DB);
+  PGconn* connection = PQconnectdb(Config::get_connection_string().c_str());
 
-  // initialize index metadata manager.
-  ErrorCode error = indexes->init();
+  boost::format statement = boost::format("SELECT COUNT(*) FROM %s.%s") % storage::SCHEMA_NAME %
+                            IndexMetadataHelper::get_source_name();
+  PGresult* res = PQexec(connection, statement.str().c_str());
 
-  std::vector<ptree> container = {};
-  if (error == ErrorCode::OK) {
-    // get all index metadata.
-    indexes->get_all(container);
-  }
+  std::int64_t res_val;
+  storage::DbcUtils::str_to_integral(PQgetvalue(res, 0, 0), res_val);
 
-  return container.size();
+  PQclear(res);
+  PQfinish(connection);
+
+  return res_val;
 }
 
 /**

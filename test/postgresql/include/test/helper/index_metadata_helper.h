@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TEST_JSON_INCLUDE_TEST_HELPER_INDEX_METADATA_HELPER_H_
-#define TEST_JSON_INCLUDE_TEST_HELPER_INDEX_METADATA_HELPER_H_
+#ifndef TEST_POSTGRESQL_INCLUDE_TEST_HELPER_INDEX_METADATA_HELPER_H_
+#define TEST_POSTGRESQL_INCLUDE_TEST_HELPER_INDEX_METADATA_HELPER_H_
 
 #include <memory>
 #include <string>
@@ -28,6 +28,7 @@ namespace manager::metadata::testing {
 
 class IndexMetadataHelper {
  public:
+  static std::string get_source_name() { return "tsurugi_index"; }
   static std::int64_t get_record_count();
 
   static void generate_test_metadata(const ObjectId& table_id,
@@ -59,4 +60,4 @@ class IndexMetadataHelper {
 
 }  // namespace manager::metadata::testing
 
-#endif  // TEST_JSON_INCLUDE_TEST_HELPER_INDEX_METADATA_HELPER_H_
+#endif  // TEST_POSTGRESQL_INCLUDE_TEST_HELPER_INDEX_METADATA_HELPER_H_
