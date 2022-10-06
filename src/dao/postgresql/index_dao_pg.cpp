@@ -68,10 +68,11 @@ std::string IndexDaoPg::get_select_all_statement() const {
   // SQL statement
   boost::format query =
       boost::format(
-          "SELECT %3%, %4%, %5%, %6%, %7%, %8%, %9%, %10%, %11%, %12%, %13%, %14%, %15%"
+          "SELECT %3%, %4%, %5%, %6%, %7%, %8%, %9%, %10%, %11%, %12%, %13%, %14%, %15%, %16%, %17%"
           " FROM %1%.%2%"
           " ORDER BY %5%") %
-      SCHEMA_TSURUGI_CATALOG % this->get_source_name() % Column::kId %
+      SCHEMA_TSURUGI_CATALOG % this->get_source_name() %
+      Column::kFormatVersion % Column::kGeneration % Column::kId %
       Column::kName % Column::kNamespace % Column::kOwnerId % Column::kAcl %
       Column::kTableId % Column::kAccessMethod % Column::kIsUnique %
       Column::kIsPrimary % Column::kNumKeyColumn % Column::kColumns %
