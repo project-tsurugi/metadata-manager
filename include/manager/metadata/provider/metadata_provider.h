@@ -28,7 +28,7 @@
 
 namespace manager::metadata::db {
 
-class IndexesProvider : public Provider {
+class MetadataProvider : public Provider {
  public:
   manager::metadata::ErrorCode init();
 
@@ -52,6 +52,8 @@ class IndexesProvider : public Provider {
       ObjectId& object_id);
 
  private:
+  std::shared_ptr<Dao> table_dao_ = nullptr;
+  std::shared_ptr<Dao> constraint_dao_ = nullptr;
   std::shared_ptr<Dao> index_dao_ = nullptr;
 };
 

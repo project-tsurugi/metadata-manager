@@ -24,7 +24,6 @@
 #include "manager/metadata/helper/logging_helper.h"
 #include "manager/metadata/helper/table_metadata_helper.h"
 #include "manager/metadata/provider/datatypes_provider.h"
-#include "manager/metadata/provider/indexes_provider.h"
 #include "manager/metadata/helper/ptree_helper.h"
 
 namespace manager::metadata {

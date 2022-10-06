@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "manager/metadata/provider/indexes_provider.h"
+#include "manager/metadata/provider/metadata_provider.h"
 
 #include <boost/foreach.hpp>
 
@@ -31,13 +31,13 @@ namespace manager::metadata::db {
 using boost::property_tree::ptree;
 
 // ============================================================================
-// IndexesProvider class methods.
+// MetadataProvider class methods.
 
 /**
  * @brief Initialize and prepare to access the metadata repository.
  * @return ErrorCode::OK if success, otherwise an error code.
  */
-ErrorCode IndexesProvider::init() {
+ErrorCode MetadataProvider::init() {
 
 //  std::shared_ptr<Dao> gdao = nullptr;
 
@@ -58,7 +58,7 @@ ErrorCode IndexesProvider::init() {
  * @param object_id [out] ID of the added index metadata.
  * @return ErrorCode::OK if success, otherwise an error code.
  */
-ErrorCode IndexesProvider::add_index_metadata(
+ErrorCode MetadataProvider::add_index_metadata(
     const boost::property_tree::ptree& object, ObjectIdType& object_id) {
   
   ErrorCode error = ErrorCode::UNKNOWN;
@@ -101,7 +101,7 @@ ErrorCode IndexesProvider::add_index_metadata(
  * @retval ErrorCode::NAME_NOT_FOUND  if the name does not exist.
  * @retval otherwise an error code.
  */
-ErrorCode IndexesProvider::get_index_metadata(
+ErrorCode MetadataProvider::get_index_metadata(
     std::string_view key, std::string_view value,
     boost::property_tree::ptree& object) {
 
@@ -129,7 +129,7 @@ ErrorCode IndexesProvider::get_index_metadata(
  * @param objects [out] table metadata objects.
  * @return ErrorCode::OK if success, otherwise an error code.
  */
-ErrorCode IndexesProvider::get_index_metadata(
+ErrorCode MetadataProvider::get_index_metadata(
     std::vector<boost::property_tree::ptree>& objects) {
 
   ErrorCode error = ErrorCode::UNKNOWN;
@@ -155,7 +155,7 @@ ErrorCode IndexesProvider::get_index_metadata(
  * @retval ErrorCode::ID_NOT_FOUND if the table id does not exist.
  * @retval otherwise an error code.
  */
-ErrorCode IndexesProvider::update_index_metadata(
+ErrorCode MetadataProvider::update_index_metadata(
     const ObjectIdType object_id,
     const boost::property_tree::ptree& object) {
 
@@ -198,7 +198,7 @@ ErrorCode IndexesProvider::update_index_metadata(
  * @retval ErrorCode::NAME_NOT_FOUND if the index name does not exist.
  * @retval otherwise an error code.
  */
-ErrorCode IndexesProvider::remove_index_metadata(std::string_view key,
+ErrorCode MetadataProvider::remove_index_metadata(std::string_view key,
                                                 std::string_view value,
                                                 ObjectIdType& object_id) {
   ErrorCode error = ErrorCode::UNKNOWN;

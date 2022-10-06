@@ -19,7 +19,6 @@
 #include <vector>
 #include <boost/property_tree/ptree.hpp>
 #include "manager/metadata/metadata.h"
-#include "manager/metadata/provider/indexes_provider.h"
 
 namespace manager::metadata {
 /**

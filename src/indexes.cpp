@@ -23,11 +23,7 @@
 #include "manager/metadata/common/message.h"
 #include "manager/metadata/helper/logging_helper.h"
 #include "manager/metadata/helper/ptree_helper.h"
-
-// =============================================================================
-namespace {
-std::unique_ptr<manager::metadata::db::IndexesProvider> provider = nullptr;
-}
+#include "manager/metadata/provider/provider_factory.h"
 
 // =============================================================================
 namespace manager::metadata {
@@ -43,8 +39,7 @@ using boost::property_tree::ptree;
  */
 Indexes::Indexes(std::string_view database, std::string_view component)
     : Metadata(database, component) {
-
-  provider = std::make_unique<db::IndexesProvider>();
+  provider_ = manager::metadata::db::get_metadata_provider();
 }
 
 /**
@@ -56,7 +51,7 @@ ErrorCode Indexes::init() const {
 
   log::function_start("Index::init()");
 
-  error = provider->init();
+  error = provider_->init();
 
   log::function_finish("Index::init()", error);
 
@@ -85,7 +80,7 @@ ErrorCode Indexes::add(const boost::property_tree::ptree& object,
   ErrorCode error = ErrorCode::UNKNOWN;
   ObjectId id = INVALID_OBJECT_ID;
 
-  error = provider->add_index_metadata(object, id);
+  error = provider_->add_index_metadata(object, id);
   if ((error == ErrorCode::OK) && (object_id != nullptr)) {
     *object_id = id;
   }
@@ -111,7 +106,7 @@ ErrorCode Indexes::get(const ObjectId object_id,
   ErrorCode error = ErrorCode::UNKNOWN;
 
   if (object_id > 0) {
-    error = provider->get_index_metadata(Object::ID, 
+    error = provider_->get_index_metadata(Object::ID, 
                                         std::to_string(object_id), 
                                         object);
   } else {
@@ -142,7 +137,7 @@ ErrorCode Indexes::get(std::string_view object_name,
   ErrorCode error = ErrorCode::UNKNOWN;
 
   if (!object_name.empty()) {
-    error = provider->get_index_metadata(Object::NAME, object_name, object);
+    error = provider_->get_index_metadata(Object::NAME, object_name, object);
   } else {
     LOG_WARNING << "An empty value was specified for TableName.";
     error = ErrorCode::INVALID_PARAMETER;
@@ -164,7 +159,7 @@ ErrorCode Indexes::get_all(
 
   log::function_start("Tables::get_all()");
 
-  ErrorCode error = provider->get_index_metadata(objects);
+  ErrorCode error = provider_->get_index_metadata(objects);
 
   log::function_finish("Tables::get_all()", error);
 
@@ -183,7 +178,7 @@ ErrorCode Indexes::update(const ObjectIdType object_id,
   ErrorCode error = ErrorCode::UNKNOWN;
 
   if (error == ErrorCode::OK) {
-    error = provider->update_index_metadata(object_id, object);
+    error = provider_->update_index_metadata(object_id, object);
   }
 
   return error;
@@ -204,7 +199,7 @@ ErrorCode Indexes::remove(const ObjectId object_id) const {
 
   if (object_id > 0) {
     ObjectIdType ret_object_id = INVALID_OBJECT_ID;
-    error = provider->remove_index_metadata(
+    error = provider_->remove_index_metadata(
         Object::ID, std::to_string(object_id), ret_object_id);
   } else {
     LOG_WARNING
@@ -235,7 +230,7 @@ ErrorCode Indexes::remove(std::string_view object_name,
 
   if (!object_name.empty()) {
     ObjectIdType ret_object_id = INVALID_OBJECT_ID;
-    error = provider->remove_index_metadata(Object::NAME, object_name,
+    error = provider_->remove_index_metadata(Object::NAME, object_name,
                                             ret_object_id);
 
     if ((error == ErrorCode::OK) && (object_id != nullptr)) {
