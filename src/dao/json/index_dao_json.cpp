@@ -251,8 +251,8 @@ manager::metadata::ErrorCode IndexDaoJson::select(
   if (error != ErrorCode::OK) {
     return error;
   }
-
   ptree* metadata_table = session_->get_contents();
+
   error = find_metadata_object(*metadata_table, key, value, object);
   if (error == ErrorCode::NOT_FOUND) {
     error = get_not_found_error_code(key);
@@ -288,11 +288,47 @@ manager::metadata::ErrorCode IndexDaoJson::select_all(
   return error;
 }
 
+/**
+ * @brief
+ */
 manager::metadata::ErrorCode IndexDaoJson::update(
     std::string_view key, std::string_view value,
     const boost::property_tree::ptree& object) const {
 
-  return ErrorCode::UNKNOWN;
+  ErrorCode error = ErrorCode::UNKNOWN;
+
+  error = session_->load_contents();
+  if (error != ErrorCode::OK) {
+    return error;
+  }
+  ptree* metadata_table = session_->get_contents();
+
+  ptree temp_obj;
+  error = find_metadata_object(*metadata_table, key, value, temp_obj);
+  if (error == ErrorCode::NOT_FOUND) {
+    error = get_not_found_error_code(key);
+  }
+
+  // copy management metadata.
+  ObjectId object_id;
+  this->remove(key, value, object_id);
+  auto format_version = temp_obj.get_optional<int64_t>(Object::FORMAT_VERSION)
+                            .value_or(INVALID_VALUE);
+  auto generation = temp_obj.get_optional<int64_t>(Object::GENERATION)
+                        .value_or(INVALID_VALUE);
+  auto id =
+      temp_obj.get_optional<ObjectId>(Object::ID).value_or(INVALID_OBJECT_ID);
+
+  temp_obj = object;
+  temp_obj.put<int64_t>(Object::FORMAT_VERSION, format_version);
+  temp_obj.put<int64_t>(Object::GENERATION, generation);
+  temp_obj.put<ObjectId>(Object::ID, id);
+
+  ptree root = metadata_table->get_child(IndexDaoJson::INDEXES_ROOT);
+  root.push_back(std::make_pair("", temp_obj));
+  metadata_table->put_child(IndexDaoJson::INDEXES_ROOT, root);
+
+  return error;
 }
 
 /**
