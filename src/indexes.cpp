@@ -175,11 +175,20 @@ ErrorCode Indexes::get_all(
 ErrorCode Indexes::update(const ObjectIdType object_id,
                           const boost::property_tree::ptree& object) const {
 
+  log::function_start("Indexes::get(object_name)");
+
   ErrorCode error = ErrorCode::UNKNOWN;
 
-  if (error == ErrorCode::OK) {
+  if (object_id > 0) {
     error = provider_->update_index_metadata(object_id, object);
+  } else {
+    LOG_WARNING
+        << "An out-of-range value (0 or less) was specified for object ID.: "
+        << object_id;
+    error = ErrorCode::INVALID_PARAMETER;
   }
+
+  log::function_finish("Indexes::get(object_name)", error);
 
   return error;
 }
