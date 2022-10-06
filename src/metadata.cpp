@@ -67,7 +67,7 @@ boost::property_tree::ptree ClassObject::convert_to_ptree() const {
   pt.put(DATABASE_NAME, this->database_name);
   pt.put(SCHEMA_NAME, this->schema_name);
   pt.put(NAMESPACE, namespace_name);
-  pt.put(OWNER_ID, this->owner_id);
+  pt.put<ObjectId>(OWNER_ID, this->owner_id);
   pt.put(ACL, this->acl);
 
   return pt;
