@@ -30,7 +30,8 @@
 #include "test/global_test_environment.h"
 #include "test/helper/index_metadata_helper.h"
 #include "test/helper/table_metadata_helper.h"
-#include "test/utility/ut_table_metadata.h"
+#include "test/utility/ut_index_metadata.h"
+// #include "test/utility/ut_table_metadata.h"
 #include "test/utility/ut_utils.h"
 
 namespace {
@@ -45,8 +46,12 @@ using boost::property_tree::ptree;
 
 class ApiTestIndexMetadata : public ::testing::Test {
   void SetUp() override {
-    UTUtils::print(">> gtest::SetUp()");
+    if (!global->is_open()) {
+      GTEST_SKIP_("metadata repository is not started.");
+    }
 
+    UTUtils::print(">> gtest::SetUp()");
+    
     // Get table metadata for testing.
     UTTableMetadata testdata_table_metadata = *(global->testdata_table_metadata.get());
     // Copy table metadata.
@@ -63,12 +68,12 @@ class ApiTestIndexMetadata : public ::testing::Test {
   }
 
   void TearDown() override {
-    UTUtils::print(">> gtest::TearDown()");
-
-    // Remove table metadata.
-    TableMetadataHelper::remove_table(table_id);
-
-    UTUtils::print("<< gtest::TearDown()\n");
+    if (global->is_open()) {
+      UTUtils::print(">> gtest::TearDown()");
+      // Remove table metadata.
+      TableMetadataHelper::remove_table(table_id);
+      UTUtils::print("<< gtest::TearDown()\n");
+    }
   }
 };
 
