@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 tsurugi project.
+ * Copyright 2022 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,6 @@
 #include "manager/metadata/indexes.h"
 
 namespace manager::metadata {
-  std::unique_ptr<Metadata> get_tables_ptr(std::string_view database);
-  std::unique_ptr<Metadata> get_indexes_ptr(std::string_view database);
+  std::unique_ptr<Metadata> get_table_metadata(std::string_view database);
+  std::unique_ptr<Metadata> get_index_metadata(std::string_view database);
 } // namespace manager::metadata

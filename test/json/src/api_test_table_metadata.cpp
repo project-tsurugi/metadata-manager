@@ -102,7 +102,7 @@ TEST_F(ApiTestTableMetadata, add_get_table_metadata_by_table_name2) {
 
   // get table metadata by table name.
 //  auto tables     = std::make_unique<Tables>(GlobalTestEnvironment::TEST_DB);
-  auto tables = get_tables_ptr(GlobalTestEnvironment::TEST_DB);
+  auto tables = get_table_metadata(GlobalTestEnvironment::TEST_DB);
   ErrorCode error = tables->init();
   EXPECT_EQ(ErrorCode::OK, error);
 

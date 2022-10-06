@@ -559,7 +559,7 @@ TEST_F(ApiTestIndexMetadata, add_get_index_metadata_object_ptree) {
   new_metadata.name = new_metadata.name + "_" + std::to_string(__LINE__);
 
   // generate index metadata manager.
-  auto indexes    = get_indexes_ptr(GlobalTestEnvironment::TEST_DB);
+  auto indexes    = get_index_metadata(GlobalTestEnvironment::TEST_DB);
   ErrorCode error = indexes->init();
   ASSERT_EQ(ErrorCode::OK, error);
 
@@ -627,7 +627,7 @@ TEST_F(ApiTestIndexMetadata, add_get_index_metadata_ptree_object) {
                   new_metadata.get<std::string>(Index::NAME) + "_" + std::to_string(__LINE__));
 
   // generate index metadata manager.
-  auto indexes  = get_indexes_ptr(GlobalTestEnvironment::TEST_DB);
+  auto indexes  = get_index_metadata(GlobalTestEnvironment::TEST_DB);
   ErrorCode error = indexes->init();
   ASSERT_EQ(ErrorCode::OK, error);
 
