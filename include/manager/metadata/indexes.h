@@ -20,7 +20,7 @@
 #include <boost/property_tree/ptree.hpp>
 #include "manager/metadata/metadata.h"
 #include "manager/metadata/index.h"
-#include "manager/metadata/provider/indexes_provider.h"
+#include "manager/metadata/provider/metadata_provider.h"
 
 namespace manager::metadata {
 /**
@@ -56,7 +56,7 @@ class Indexes : public Metadata {
                    ObjectId* object_id) const override;
 
  private:
-  std::unique_ptr<manager::metadata::db::IndexesProvider> provider_;
+  std::unique_ptr<manager::metadata::db::MetadataProvider> provider_ = nullptr;
 };
 
 } // namespace manager::metadata

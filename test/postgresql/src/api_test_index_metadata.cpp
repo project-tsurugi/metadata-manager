@@ -33,6 +33,10 @@ class ApiTestIndexMetadata : public ::testing::Test {
   manager::metadata::ObjectId table_id = 0;
 
   void SetUp() override {
+    if (!global->is_open()) {
+      GTEST_SKIP_("metadata repository is not started.");
+    }
+
     UTUtils::print(">> gtest::SetUp()");
 
     // Get table metadata for testing.
@@ -52,12 +56,14 @@ class ApiTestIndexMetadata : public ::testing::Test {
   }
 
   void TearDown() override {
-    UTUtils::print(">> gtest::TearDown()");
+    if (global->is_open()) {
+      UTUtils::print(">> gtest::TearDown()");
 
-    // Remove table metadata.
-    TableMetadataHelper::remove_table(table_id);
+      // Remove table metadata.
+      TableMetadataHelper::remove_table(table_id);
 
-    UTUtils::print("<< gtest::TearDown()\n");
+      UTUtils::print("<< gtest::TearDown()\n");
+    }
   }
 };
 

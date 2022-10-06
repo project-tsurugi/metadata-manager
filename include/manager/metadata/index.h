@@ -19,7 +19,6 @@
 #include <vector>
 #include <boost/property_tree/ptree.hpp>
 #include "manager/metadata/metadata.h"
-#include "manager/metadata/provider/indexes_provider.h"
 
 namespace manager::metadata {
 /**
@@ -41,7 +40,6 @@ struct Index : public ClassObject {
     DEFAULT           = 0b1111,   // 15
   };
 
-  static constexpr const char* const OWNER_ID           = "owner_id";
   static constexpr const char* const TABLE_ID           = "table_id";
   static constexpr const char* const ACCESS_METHOD      = "access_method";
   static constexpr const char* const NUMBER_OF_COLUMNS  = "number_of_columns";
@@ -53,7 +51,6 @@ struct Index : public ClassObject {
   static constexpr const char* const KEYS_ID            = "columns_id";
   static constexpr const char* const OPTIONS            = "options";
 
-  ObjectId  owner_id;
   ObjectId  table_id;
   int64_t   access_method;           // refer to enumlation of AccessMethod.
   int64_t   number_of_columns;       // include non-key (included) columns.
@@ -66,7 +63,6 @@ struct Index : public ClassObject {
 
   Index()
       :ClassObject(),
-        owner_id(INVALID_OBJECT_ID),
         table_id(INVALID_OBJECT_ID),
         access_method(INVALID_VALUE),
         number_of_columns(INVALID_VALUE),

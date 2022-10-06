@@ -68,10 +68,11 @@ std::string IndexDaoPg::get_select_all_statement() const {
   // SQL statement
   boost::format query =
       boost::format(
-          "SELECT %3%, %4%, %5%, %6%, %7%, %8%, %9%, %10%, %11%, %12%, %13%, %14%, %15%"
+          "SELECT %3%, %4%, %5%, %6%, %7%, %8%, %9%, %10%, %11%, %12%, %13%, %14%, %15%, %16%, %17%"
           " FROM %1%.%2%"
           " ORDER BY %5%") %
-      SCHEMA_TSURUGI_CATALOG % this->get_source_name() % Column::kId %
+      SCHEMA_TSURUGI_CATALOG % this->get_source_name() %
+      Column::kFormatVersion % Column::kGeneration % Column::kId %
       Column::kName % Column::kNamespace % Column::kOwnerId % Column::kAcl %
       Column::kTableId % Column::kAccessMethod % Column::kIsUnique %
       Column::kIsPrimary % Column::kNumKeyColumn % Column::kColumns %
@@ -110,12 +111,17 @@ std::string IndexDaoPg::get_select_statement(std::string_view key) const {
  * @return an UPDATE statement to insert table metadata.
  */
 std::string IndexDaoPg::get_update_statement(std::string_view key) const {
-  boost::format query = boost::format(
-                            "UPDATE %1%.%2%"
-                            " SET %3% = $1"
-                            " WHERE %4% = $2") %
-                        SCHEMA_TSURUGI_CATALOG % this->get_source_name() %
-                        Column::kName % Column::kId;
+  boost::format query =
+      boost::format(
+          "UPDATE %1%.%2%"
+          " SET %3% = $1, %4% = $2, %5% = $3, %6% = $4, %7% = $5, %8% = $6, %9% = $7, %10% = $8,"
+          " %11% = $9, %12% = $10, %13% = $11, %14% = $12"
+          " WHERE %15% = $13") %
+      SCHEMA_TSURUGI_CATALOG % this->get_source_name() %
+      Column::kName % Column::kNamespace % Column::kOwnerId % Column::kAcl %
+      Column::kTableId % Column::kAccessMethod % Column::kIsUnique %
+      Column::kIsPrimary % Column::kNumKeyColumn % Column::kColumns %
+      Column::kColumnsId % Column::kOptions % key.data();
 
   return query.str();
 }
@@ -368,17 +374,14 @@ ErrorCode IndexDaoPg::insert(
 
   PGresult* res = nullptr;
   // Executes a prepared statement.
-  error = DbcUtils::execute_statement(pg_conn_, 
-                                      insert_statement_.name(),
+  error = DbcUtils::execute_statement(pg_conn_, insert_statement_.name(),
                                       params, res);
   if (error == ErrorCode::OK) {
     int64_t number_of_tuples = PQntuples(res);
     if (number_of_tuples == 1) {
       // Obtain the object ID of the added metadata object.
-      std::string str = PQgetvalue(res, 
-                                  FIRST_TUPLE_NUMBER, 
-                                  FIRST_COLUMN_NUMBER);
-      error = DbcUtils::str_to_integral<int64_t>(str.data(), object_id);
+      std::string str = PQgetvalue(res, FIRST_TUPLE, FIRST_COLUMN);
+      error = DbcUtils::str_to_integral<ObjectIdType>(str.data(), object_id);
     } else {
       error = ErrorCode::RESULT_MULTIPLE_ROWS;
     }
@@ -393,9 +396,8 @@ ErrorCode IndexDaoPg::insert(
  * @param key     [in]  key name of the metadata object.
  * @param value   [in]  value of key.
  * @param object  [out] a selected metadata object.
- * @return If success ErrorCode::OK, otherwise error codes.
+ * @retval ErrorCode::OK if success.
  * @retval ErrorCode::ID_NOT_FOUND if the table id does not exist.
- * @retval ErrorCode::NAME_NOT_FOUND if the table name does not exist.
  * @retval otherwise an error code.
  */
 ErrorCode IndexDaoPg::select(
@@ -428,7 +430,7 @@ ErrorCode IndexDaoPg::select(
     int64_t number_of_tuples = PQntuples(res);
     if (number_of_tuples == 1) {
       // Obtain data.
-      error = this->convert_pgresult_to_ptree(res, FIRST_TUPLE_NUMBER, object);
+      error = this->convert_pgresult_to_ptree(res, FIRST_TUPLE, object);
     } else if (number_of_tuples == 0) {
       // Not found.
       error = Dao::get_not_found_error_code(key);
@@ -480,10 +482,12 @@ ErrorCode IndexDaoPg::select_all(
 
 /**
  * @brief Update a metadata object into the metadata table.
- * @param key       [in] key name of the metadata object.
- * @param value     [in] value of key.
- * @param object    [in]  metadata object.
- * @return  If success ErrorCode::OK, otherwise error code.
+ * @param key     [in] key name of the metadata object.
+ * @param value   [in] value of key.
+ * @param object  [in] metadata object.
+ * @retval ErrorCode::OK if success.
+ * @retval ErrorCode::ID_NOT_FOUND if the index id does not exist.
+ * @retval otherwise an error code.
  */
 ErrorCode IndexDaoPg::update(
     std::string_view key, std::string_view value,
@@ -492,7 +496,74 @@ ErrorCode IndexDaoPg::update(
   ErrorCode error = ErrorCode::UNKNOWN;
   std::vector<char const*> params;
 
+  auto name = object.get_optional<std::string>(Index::NAME);
+  params.emplace_back((name ? name.value().c_str() : nullptr));
+
+  auto namespace_name = object.get_optional<std::string>(Index::NAMESPACE);
+  params.emplace_back(
+      (namespace_name ? namespace_name.value().c_str() : nullptr));
+
+  auto owner_id = get_string_value<ObjectId>(object, Index::OWNER_ID);
+  params.emplace_back(!owner_id.empty() ? owner_id.c_str() : nullptr);
+
+  auto acl = object.get_optional<std::string>(Index::ACL);
+  params.emplace_back((acl ? acl.value().c_str() : nullptr));
+
+  auto table_id = get_string_value<ObjectId>(object, Index::TABLE_ID);
+  params.emplace_back(!table_id.empty() ? table_id.c_str() : nullptr);
+
+  auto access_method = get_string_value<int64_t>(object, Index::ACCESS_METHOD);
+  params.emplace_back(!access_method.empty() ? access_method.c_str() : nullptr);
+
+  auto is_unique = get_string_value<bool>(object, Index::IS_UNIQUE);
+  params.emplace_back(!is_unique.empty() ? is_unique.c_str() : nullptr);
+
+  auto is_primary = get_string_value<bool>(object, Index::IS_PRIMARY);
+  params.emplace_back(!is_primary.empty() ? is_primary.c_str() : nullptr);
+
+  auto number_of_key_column =
+      get_string_value<int64_t>(object, Index::NUMBER_OF_KEY_COLUMNS);
+  params.emplace_back(
+      !number_of_key_column.empty() ? number_of_key_column.c_str() : nullptr);
+
+  auto columns = object.get_child_optional(Index::KEYS);
+  std::string columns_json;
+  if (columns) {
+    // Converts a property_tree to a JSON string.
+    error = Utility::ptree_to_json(columns.value(), columns_json);
+    if (error != ErrorCode::OK) {
+      return error;
+    }
+  }
+  params.emplace_back((!columns_json.empty() ? columns_json.c_str() : "{}"));
+
+  auto columns_id = object.get_child_optional(Index::KEYS_ID);
+  std::string columns_id_json;
+  if (columns_id) {
+    // Converts a property_tree to a JSON string.
+    error = Utility::ptree_to_json(columns_id.value(), columns_id_json);
+    if (error != ErrorCode::OK) {
+      return error;
+    }
+  }
+  params.emplace_back(
+      (!columns_id_json.empty() ? columns_id_json.c_str() : "{}"));
+
+  auto options = object.get_child_optional(Index::OPTIONS);
+  std::string options_json;
+  if (options) {
+    // Converts a property_tree to a JSON string.
+    error = Utility::ptree_to_json(options.value(), options_json);
+    if (error != ErrorCode::OK) {
+      return error;
+    }
+  }
+  params.emplace_back((!options_json.empty() ? options_json.c_str() : "{}"));
+
+  // Set key value.
   params.emplace_back(value.data());
+
+  // Set UPDATE statement.
   UpdateStatement update_statement;
   try {
     update_statement = update_statements_.at(key.data());
@@ -517,7 +588,8 @@ ErrorCode IndexDaoPg::update(
     if (error_get != ErrorCode::OK) {
       error = error_get;
     } else if (number_of_rows_affected == 0) {
-      error = ErrorCode::ID_NOT_FOUND;
+      // Not found.
+      error = Dao::get_not_found_error_code(key);
     }
   }
   PQclear(res);
@@ -570,8 +642,8 @@ ErrorCode IndexDaoPg::remove(std::string_view key,
     } else if (number_of_rows_affected == 1) {
       int ordinal_position = 0;
       // Obtain the object ID of the deleted metadata object.
-      error = DbcUtils::str_to_integral<ObjectIdType>(
-          PQgetvalue(res, ordinal_position, 0), object_id);
+      std::string str = PQgetvalue(res, FIRST_TUPLE, FIRST_COLUMN);
+      error = DbcUtils::str_to_integral<ObjectIdType>(str.data(), object_id);
     } else if (number_of_rows_affected == 0) {
       // Not found.
       error = Dao::get_not_found_error_code(key);

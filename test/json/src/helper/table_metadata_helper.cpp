@@ -26,6 +26,8 @@
 
 #include "manager/metadata/datatypes.h"
 #include "manager/metadata/tables.h"
+#include "manager/metadata/metadata_factory.h"
+
 #include "test/global_test_environment.h"
 #include "test/utility/ut_utils.h"
 
@@ -194,7 +196,8 @@ void TableMetadataHelper::add_table(std::string_view table_name, ObjectIdType* r
  */
 void TableMetadataHelper::add_table(const boost::property_tree::ptree& new_table,
                                     ObjectIdType* table_id) {
-  auto tables = std::make_unique<Tables>(GlobalTestEnvironment::TEST_DB);
+//  auto tables = std::make_unique<Tables>(GlobalTestEnvironment::TEST_DB);
+  auto tables = get_table_metadata(GlobalTestEnvironment::TEST_DB);
 
   ErrorCode error = tables->init();
   ASSERT_EQ(ErrorCode::OK, error);
@@ -223,20 +226,22 @@ void TableMetadataHelper::add_table(const boost::property_tree::ptree& new_table
  */
 void TableMetadataHelper::add_table(const manager::metadata::Table& new_table,
                                     ObjectIdType* table_id) {
-  auto tables = std::make_unique<Tables>(GlobalTestEnvironment::TEST_DB);
+//  auto tables = std::make_unique<Tables>(GlobalTestEnvironment::TEST_DB);
+  auto tables = get_table_metadata(GlobalTestEnvironment::TEST_DB);
 
   ErrorCode error = tables->init();
   EXPECT_EQ(ErrorCode::OK, error);
 
   // add table metadata.
   ObjectIdType ret_table_id = INVALID_VALUE;
-  error                     = tables->add(new_table, &ret_table_id);
+  error = tables->add(new_table, &ret_table_id);
   EXPECT_EQ(ErrorCode::OK, error);
   EXPECT_GT(ret_table_id, 0);
 
   UTUtils::print("-- add table metadata --");
   UTUtils::print(" new table id:", ret_table_id);
-  //  UTUtils::print(new_table);
+  ptree pt_table = new_table.convert_to_ptree();
+  UTUtils::print(UTUtils::get_tree_string(pt_table));
 
   if (table_id != nullptr) {
     *table_id = ret_table_id;

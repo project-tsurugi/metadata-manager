@@ -69,7 +69,8 @@ CREATE TABLE tsurugi_catalog.tsurugi_index
     columns json,
     columns_id json,
     options json,
-    PRIMARY KEY(id)
+    PRIMARY KEY(id),
+    UNIQUE(table_id, name)
 );
 
 CREATE INDEX ON tsurugi_catalog.tsurugi_index ( table_id );

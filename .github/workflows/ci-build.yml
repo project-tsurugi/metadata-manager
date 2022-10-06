@@ -21,28 +21,37 @@ jobs:
       fail-fast: false
       matrix:
         container-tag: [ubuntu-20.04]
-        
+      
     steps:
+      - id: Make_CI_Directory
+        name: Make_CI_Directory
+        run: |
+          cd ${GITHUB_WORKSPACE}
+          rm -rf ci_test
+          mkdir ci_test
+
       - id: Checkout
         name: Checkout
         uses: actions/checkout@v2
         with:
-          path: ${GITHUB_WORKSPACE}
+          path: ci_test
           submodules: recursive
           token: ${{ secrets.GHA_PAT }}
 
       - id: CMake_Build_metadata-manager
         name: CMake_Build_metadata-manager
         run: |
+          cd ${GITHUB_WORKSPACE}/ci_test
           rm -rf build
           mkdir build
           cd build
-          cmake -B ${GITHUB_WORKSPACE}/build -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -DFORCE_INSTALL_RPATH=ON -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/.local ..
+          cmake -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -DFORCE_INSTALL_RPATH=ON -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/.local ..
           cmake --build . --target install --clean-first -- -j8
           make
           make install
-
+          
       - id: Cleanup
         name: Cleanup
         run: |
           rm -rf ${GITHUB_WORKSPACE}/.local/
+          rm -rf ${GITHUB_WORKSPACE}/ci_test

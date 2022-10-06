@@ -13,15 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#pragma once
+#include "manager/metadata/provider/provider_factory.h"
 
-#include <string_view>
-#include <memory>
-#include "manager/metadata/metadata.h"
-#include "manager/metadata/tables.h"
-#include "manager/metadata/indexes.h"
+namespace manager::metadata::db {
+  /**
+   * @brief
+   */
+  std::unique_ptr<MetadataProvider> get_metadata_provider() {
+    return std::make_unique<MetadataProvider>();
+  }
 
-namespace manager::metadata {
-  std::unique_ptr<Metadata> get_table_metadata(std::string_view database);
-  std::unique_ptr<Metadata> get_index_metadata(std::string_view database);
 } // namespace manager::metadata

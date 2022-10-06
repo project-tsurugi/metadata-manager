@@ -15,13 +15,9 @@
  */
 #pragma once
 
-#include <string_view>
 #include <memory>
-#include "manager/metadata/metadata.h"
-#include "manager/metadata/tables.h"
-#include "manager/metadata/indexes.h"
+#include "manager/metadata/provider/metadata_provider.h"
 
-namespace manager::metadata {
-  std::unique_ptr<Metadata> get_table_metadata(std::string_view database);
-  std::unique_ptr<Metadata> get_index_metadata(std::string_view database);
-} // namespace manager::metadata
+namespace manager::metadata::db {
+  std::unique_ptr<MetadataProvider> get_metadata_provider();
+} // namespace manager::metadata::db

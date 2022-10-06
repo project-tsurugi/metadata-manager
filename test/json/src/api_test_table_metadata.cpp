@@ -22,6 +22,8 @@
 
 #include "manager/metadata/metadata.h"
 #include "manager/metadata/tables.h"
+#include "manager/metadata/metadata_factory.h"
+
 #include "test/global_test_environment.h"
 #include "test/helper/table_metadata_helper.h"
 #include "test/utility/ut_table_metadata.h"
@@ -99,7 +101,8 @@ TEST_F(ApiTestTableMetadata, add_get_table_metadata_by_table_name2) {
   new_table.put(Tables::ID, ret_table_id);
 
   // get table metadata by table name.
-  auto tables     = std::make_unique<Tables>(GlobalTestEnvironment::TEST_DB);
+//  auto tables     = std::make_unique<Tables>(GlobalTestEnvironment::TEST_DB);
+  auto tables = get_table_metadata(GlobalTestEnvironment::TEST_DB);
   ErrorCode error = tables->init();
   EXPECT_EQ(ErrorCode::OK, error);
 
