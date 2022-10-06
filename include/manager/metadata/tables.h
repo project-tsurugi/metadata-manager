@@ -42,7 +42,6 @@ struct Column : public Object {
   bool        varying;
   bool        nullable;
   std::string default_expr;
-  int64_t     direction;
 
   static constexpr const int64_t ORDINAL_POSITION_BASE_INDEX = 1;
   static constexpr const char* const TABLE_ID                = "tableId";
@@ -53,7 +52,6 @@ struct Column : public Object {
   static constexpr const char* const VARYING                 = "varying";
   static constexpr const char* const NULLABLE                = "nullable";
   static constexpr const char* const DEFAULT_EXPR            = "defaultExpr";
-  static constexpr const char* const DIRECTION               = "direction";
 
   Column()
       : Object(),
