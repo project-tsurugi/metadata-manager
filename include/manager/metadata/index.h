@@ -44,7 +44,7 @@ struct Index : public ClassObject {
   static constexpr const char* const ACCESS_METHOD      = "accessMethod";
   static constexpr const char* const NUMBER_OF_COLUMNS  = "numberOfColumns";
   static constexpr const char* const NUMBER_OF_KEY_COLUMNS  
-      = "NumberOfColumns";
+      = "numberOfKeyColumns";
   static constexpr const char* const IS_UNIQUE          = "IsUnique";
   static constexpr const char* const IS_PRIMARY         = "IsPrimary";
   static constexpr const char* const KEYS               = "columns";
