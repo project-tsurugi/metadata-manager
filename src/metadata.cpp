@@ -24,6 +24,74 @@
 
 namespace manager::metadata {
 
+using boost::property_tree::ptree;
+
+// ==========================================================================
+// Object struct methods.
+/** 
+ * @brief  Transform metadata from structure object to ptree object.
+ * @return ptree object.
+ */
+boost::property_tree::ptree Object::convert_to_ptree() const {
+  boost::property_tree::ptree pt;
+  pt.put<int64_t>(FORMAT_VERSION, this->format_version);
+  pt.put<int64_t>(GENERATION, this->generation);
+  pt.put<ObjectId>(ID, this->id);
+  pt.put(NAME, this->name);
+
+  return pt;
+};
+
+/**
+ * @brief   Transform metadata from ptree object to structure object.
+ * @param   pt [in] ptree object of metdata.
+ * @return  structure object of metadata.
+ */
+void 
+Object::convert_from_ptree(const boost::property_tree::ptree& pt) {
+  this->format_version = 
+      pt.get_optional<int64_t>(FORMAT_VERSION).value_or(INVALID_VALUE);
+  this->generation = 
+      pt.get_optional<int64_t>(GENERATION).value_or(INVALID_VALUE);
+  this->id = pt.get_optional<ObjectId>(ID).value_or(INVALID_OBJECT_ID);
+  this->name = pt.get_optional<std::string>(NAME).value_or("");
+};
+
+// ==========================================================================
+// ClassObject struct methods.
+/** @brief  Convert metadata from structure object to ptree object.
+ *  @return ptree object.
+ */
+boost::property_tree::ptree ClassObject::convert_to_ptree() const {
+  auto pt = Object::convert_to_ptree();
+  pt.put(DATABASE_NAME, this->database_name);
+  pt.put(SCHEMA_NAME, this->schema_name);
+  pt.put(NAMESPACE, namespace_name);
+  pt.put<ObjectId>(OWNER_ID, this->owner_id);
+  pt.put(ACL, this->acl);
+
+  return pt;
+};
+
+/**
+ * @brief   Convert metadata from ptree object to structure object.
+ * @param   ptree [in] ptree object of metdata.
+ * @return  structure object of metadata.
+ */
+void 
+ClassObject::convert_from_ptree(const boost::property_tree::ptree& pt) {
+  Object::convert_from_ptree(pt);
+  this->database_name = 
+      pt.get_optional<std::string>(DATABASE_NAME).value_or("");
+  this->schema_name = pt.get_optional<std::string>(SCHEMA_NAME).value_or("");
+  this->namespace_name = pt.get_optional<std::string>(NAMESPACE).value_or("");
+  this->owner_id = 
+      pt.get_optional<ObjectId>(OWNER_ID).value_or(INVALID_OBJECT_ID);
+  this->acl = pt.get_optional<std::string>(ACL).value_or("");
+};
+
+// ==========================================================================
+// Metadata class methods.
 /**
  *  @brief Constructor
  *  @param (database)  [in]  database name.
@@ -73,42 +141,105 @@ Metadata::Metadata(std::string_view database, std::string_view component)
   return ErrorCode::OK;
 }
 
-  /**
-   *  @brief  Check if the object with the specified object ID exists.
-   *  @param  object_id   [in]  ID of metadata.
-   *  @return true if success.
-   */
-  bool Metadata::exists(const ObjectIdType object_id) const
-  {
-    bool result = false;
+/**
+ * @brief Add a metadata object to the metadata table.
+ * @param object    [in]  metadata object to add.
+ * @param object_id [out] ID of the added metadata object.
+ * @return ErrorCode::OK if success, otherwise an error code.
+ */
+ErrorCode Metadata::add(const manager::metadata::Object& object,
+                      ObjectIdType* object_id) const {
 
-    boost::property_tree::ptree object;
-    ErrorCode error = this->get(object_id, object);
-    if (error != ErrorCode::OK) {
-      return result;
-    }
-    result = true;
-
-    return result;
+  ptree pt = object.convert_to_ptree();
+  ErrorCode error = this->add(pt, object_id);
+  if (error != ErrorCode::OK) {
+    return error;
   }
 
-  /**
-   *  @brief  Check if the object with the specified name exists.
-   *  @param  name   [in]  name of metadata.
-   *  @return true if success.
-   */
-  bool Metadata::exists(std::string_view object_name) const
-  {
-    bool result = false;
+  return error;
+}
 
-    boost::property_tree::ptree object;
-    ErrorCode error = this->get(object_name, object);
-    if (error != ErrorCode::OK) {
-      return result;
-    }
-    result = true;
-
-    return result;
+/**
+ * @brief Add a metadata object to table metadata table.
+ * @param object  [in]  table metadata to add.
+ * @return ErrorCode::OK if success, otherwise an error code.
+ */
+ErrorCode Metadata::add(const manager::metadata::Object& object) const
+{
+  ObjectId object_id = INVALID_OBJECT_ID;
+  ErrorCode error = this->add(object, &object_id);
+  if (error != ErrorCode::OK) {
+    return error;
   }
+
+  return error;
+}
+
+/**
+ * @brief Get a metadata object.
+ * @param object_id [in]  object id.
+ * @param object     [out] metadata object with the specified ID.
+ * @retval ErrorCode::OK if success,
+ * @retval ErrorCode::ID_NOT_FOUND if the table id does not exist.
+ * @retval otherwise an error code.
+ */
+ErrorCode Metadata::get(const ObjectIdType object_id,
+                      manager::metadata::Object& object) const
+{
+  ptree pt;
+
+  ErrorCode error = this->get(object_id, pt);
+  if (error == ErrorCode::OK) {
+    object.convert_from_ptree(pt);
+  }
+
+  return error;
+}
+
+/**
+ * @brief Get a metadata object object based on object name.
+ * @param object_name [in]  object name. (Value of "name" key.)
+ * @param object       [out] metadata object object with the specified name.
+ * @retval ErrorCode::OK if success,
+ * @retval ErrorCode::NAME_NOT_FOUND if the table name does not exist.
+ * @retval otherwise an error code.
+ */
+ErrorCode Metadata::get(std::string_view object_name,
+                      manager::metadata::Object& object) const
+{
+  ptree pt;
+
+  ErrorCode error = this->get(object_name, pt);
+  if (error == ErrorCode::OK) {
+    object.convert_from_ptree(pt);
+  }
+
+  return error;
+}
+
+
+/**
+ * @brief Get all metadata object objects from the metadata table.
+ *   If no metadata object existst, return the container as empty.
+ * @param objects  [out] Container of metadata objects.
+ * @return ErrorCode::OK if success, otherwise an error code.
+ */
+ErrorCode Metadata::get_all(
+    std::vector<manager::metadata::Object>& objects) const {
+
+  std::vector<ptree> pts;
+  ErrorCode error = this->get_all(pts);
+  if (error != ErrorCode::OK) {
+    return error;
+  }
+
+  for (const auto& pt : pts) {
+    Object object;
+    object.convert_from_ptree(pt);
+    objects.emplace_back(object);
+  }
+
+  return error;  
+}
 
 }  // namespace manager::metadata

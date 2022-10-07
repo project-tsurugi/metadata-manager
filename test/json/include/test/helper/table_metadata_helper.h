@@ -29,40 +29,39 @@ namespace manager::metadata::testing {
 
 class TableMetadataHelper {
  public:
-  static void generate_table_metadata(
-      std::unique_ptr<UTTableMetadata>& testdata_table_metadata);
+  static void generate_table_metadata(std::unique_ptr<UTTableMetadata>& testdata_table_metadata);
 
   static std::vector<boost::property_tree::ptree> make_valid_table_metadata();
 
-  static void add_table(std::string_view table_name,
-                        ObjectIdType* ret_table_id = nullptr);
+  static void add_table(std::string_view table_name, ObjectIdType* ret_table_id = nullptr);
   static void add_table(const boost::property_tree::ptree& new_table,
                         ObjectIdType* ret_table_id = nullptr);
 
-  static void check_table_metadata_expected(
-      const boost::property_tree::ptree& expected,
-      const boost::property_tree::ptree& actual);
+  static void remove_table(const ObjectIdType table_id);
+
+  static void check_table_metadata_expected(const boost::property_tree::ptree& expected,
+                                            const boost::property_tree::ptree& actual);
 
   // add
-  static void add_table(
-      const manager::metadata::Table& new_table, ObjectIdType* table_id);
+  static void add_table(const manager::metadata::Table& new_table, ObjectIdType* table_id);
 
-  static void check_table_metadata_expected(
-      const manager::metadata::Table& expected,
-      const boost::property_tree::ptree& actual);
+  static void check_table_metadata_expected(const manager::metadata::Table& expected,
+                                            const boost::property_tree::ptree& actual);
 
-  static void check_table_metadata_expected(
-      const boost::property_tree::ptree& expected,
-      const manager::metadata::Table& actual);
+  static void check_table_metadata_expected(const boost::property_tree::ptree& expected,
+                                            const manager::metadata::Table& actual);
 
  private:
-  static void check_metadata_expected(
-      const boost::property_tree::ptree& expected,
-      const boost::property_tree::ptree& actual, const char* meta_name);
+  static void check_child_expected(const boost::property_tree::ptree& expected,
+                                   const boost::property_tree::ptree& actual,
+                                   const char* meta_name);
   template <typename T>
-  static void check_column_metadata_expected(
-      const boost::property_tree::ptree& expected,
-      const boost::property_tree::ptree& actual, const char* meta_name);
+  static void check_expected(const boost::property_tree::ptree& expected,
+                             const boost::property_tree::ptree& actual, const char* meta_name);
+  template <typename T>
+  static void check_child_expected(const std::vector<T>& expected,
+                                   const boost::property_tree::ptree& actual,
+                                   const char* meta_name);
 };
 
 }  // namespace manager::metadata::testing

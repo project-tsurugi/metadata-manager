@@ -33,14 +33,18 @@ class TablesDAO : public GenericDAO {
   virtual ~TablesDAO() {}
 
   virtual manager::metadata::ErrorCode insert_table_metadata(
-      const boost::property_tree::ptree& table,
+      const boost::property_tree::ptree& table_metadata,
       ObjectIdType& table_id) const = 0;
 
   virtual manager::metadata::ErrorCode select_table_metadata(
       std::string_view object_key, std::string_view object_value,
-      boost::property_tree::ptree& object) const = 0;
+      boost::property_tree::ptree& table_metadata) const = 0;
   virtual manager::metadata::ErrorCode select_table_metadata(
-      std::vector<boost::property_tree::ptree>& container) const = 0;
+      std::vector<boost::property_tree::ptree>& table_container) const = 0;
+
+  virtual manager::metadata::ErrorCode update_table_metadata(
+      const ObjectIdType table_id,
+      const boost::property_tree::ptree& table_metadata) const = 0;
 
   virtual manager::metadata::ErrorCode update_reltuples(
       const float reltuples, std::string_view object_key,

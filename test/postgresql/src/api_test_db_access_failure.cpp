@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 tsurugi project.
+ * Copyright 2020-2022 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@
 
 #include <boost/property_tree/ptree.hpp>
 
+#include "manager/metadata/constraints.h"
 #include "manager/metadata/datatypes.h"
 #include "manager/metadata/roles.h"
 #include "manager/metadata/statistics.h"
@@ -39,13 +40,11 @@ class ApiTestDBAccessFailure : public ::testing::Test {
   void SetUp() override { UTUtils::skip_if_connection_opened(); }
 };
 
-class ApiTestDBAccessFailureByTableId
-    : public ::testing::TestWithParam<ObjectIdType> {
+class ApiTestDBAccessFailureByTableId : public ::testing::TestWithParam<ObjectIdType> {
   void SetUp() override { UTUtils::skip_if_connection_opened(); }
 };
 
-class ApiTestDBAccessFailureByTableName
-    : public ::testing::TestWithParam<std::string> {
+class ApiTestDBAccessFailureByTableName : public ::testing::TestWithParam<std::string> {
   void SetUp() override { UTUtils::skip_if_connection_opened(); }
 };
 
@@ -65,8 +64,7 @@ class ApiTestDBAccessFailureByTableIdOrdinalPosition
 };
 
 class ApiTestDBAccessFailureByColumnStatistics
-    : public ::testing::TestWithParam<
-          std::tuple<ObjectIdType, ObjectIdType, ptree>> {
+    : public ::testing::TestWithParam<std::tuple<ObjectIdType, ObjectIdType, ptree>> {
   void SetUp() override { UTUtils::skip_if_connection_opened(); }
 };
 
@@ -101,9 +99,8 @@ std::vector<float> reltuples_dbaf = {-1,
                                      static_cast<float>(DBL_MIN)};
 
 ptree empty_column_stats_dbaf;
-std::vector<ptree> ptree_dbaf = {
-    empty_column_stats_dbaf,
-    ColumnStatisticsHelper::generate_column_statistic()};
+std::vector<ptree> ptree_dbaf            = {empty_column_stats_dbaf,
+                                            ColumnStatisticsHelper::generate_column_statistic()};
 std::vector<std::string> table_name_dbaf = {"table_name_not_exists", ""};
 
 INSTANTIATE_TEST_CASE_P(ParameterizedTest, ApiTestDBAccessFailureByTableId,
@@ -112,37 +109,32 @@ INSTANTIATE_TEST_CASE_P(ParameterizedTest, ApiTestDBAccessFailureByTableId,
 INSTANTIATE_TEST_CASE_P(ParameterizedTest, ApiTestDBAccessFailureByTableName,
                         ::testing::ValuesIn(table_name_dbaf));
 
-INSTANTIATE_TEST_CASE_P(
-    ParameterizedTest, ApiTestDBAccessFailureByTableIdReltuples,
-    ::testing::Combine(::testing::ValuesIn(table_id_not_exists_dbaf),
-                       ::testing::ValuesIn(reltuples_dbaf)));
+INSTANTIATE_TEST_CASE_P(ParameterizedTest, ApiTestDBAccessFailureByTableIdReltuples,
+                        ::testing::Combine(::testing::ValuesIn(table_id_not_exists_dbaf),
+                                           ::testing::ValuesIn(reltuples_dbaf)));
 
-INSTANTIATE_TEST_CASE_P(
-    ParameterizedTest, ApiTestDBAccessFailureByTableNameReltuples,
-    ::testing::Combine(::testing::ValuesIn(table_name_dbaf),
-                       ::testing::ValuesIn(reltuples_dbaf)));
+INSTANTIATE_TEST_CASE_P(ParameterizedTest, ApiTestDBAccessFailureByTableNameReltuples,
+                        ::testing::Combine(::testing::ValuesIn(table_name_dbaf),
+                                           ::testing::ValuesIn(reltuples_dbaf)));
 
-INSTANTIATE_TEST_CASE_P(
-    ParameterizedTest, ApiTestDBAccessFailureByTableIdOrdinalPosition,
-    ::testing::Combine(::testing::ValuesIn(table_id_not_exists_dbaf),
-                       ::testing::ValuesIn(ordinal_position_not_exists_dbaf)));
+INSTANTIATE_TEST_CASE_P(ParameterizedTest, ApiTestDBAccessFailureByTableIdOrdinalPosition,
+                        ::testing::Combine(::testing::ValuesIn(table_id_not_exists_dbaf),
+                                           ::testing::ValuesIn(ordinal_position_not_exists_dbaf)));
 
-INSTANTIATE_TEST_CASE_P(
-    ParameterizedTest, ApiTestDBAccessFailureByColumnStatistics,
-    ::testing::Combine(::testing::ValuesIn(table_id_not_exists_dbaf),
-                       ::testing::ValuesIn(ordinal_position_not_exists_dbaf),
-                       ::testing::ValuesIn(ptree_dbaf)));
+INSTANTIATE_TEST_CASE_P(ParameterizedTest, ApiTestDBAccessFailureByColumnStatistics,
+                        ::testing::Combine(::testing::ValuesIn(table_id_not_exists_dbaf),
+                                           ::testing::ValuesIn(ordinal_position_not_exists_dbaf),
+                                           ::testing::ValuesIn(ptree_dbaf)));
+
 /**
  * @brief API to add table metadata
  *   return ErrorCode::DATABASE_ACCESS_FAILURE
  */
 TEST_F(ApiTestDBAccessFailure, add_table_metadata) {
-  UTTableMetadata* testdata_table_metadata =
-      global->testdata_table_metadata.get();
-  ptree new_table = testdata_table_metadata->tables;
+  UTTableMetadata* testdata_table_metadata = global->testdata_table_metadata.get();
+  ptree new_table                          = testdata_table_metadata->tables;
 
-  std::string table_name =
-      testdata_table_metadata->name + "ApiTestDBAccessFailure_add_table";
+  std::string table_name = testdata_table_metadata->name + "ApiTestDBAccessFailure_add_table";
   new_table.put(Tables::NAME, table_name);
 
   auto tables = std::make_unique<Tables>(GlobalTestEnvironment::TEST_DB);
@@ -151,7 +143,7 @@ TEST_F(ApiTestDBAccessFailure, add_table_metadata) {
   EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
 
   ObjectIdType ret_table_id = -1;
-  error = tables->add(new_table, &ret_table_id);
+  error                     = tables->add(new_table, &ret_table_id);
   EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
   EXPECT_EQ(ret_table_id, -1);
 }
@@ -182,8 +174,7 @@ TEST_F(ApiTestDBAccessFailure, get_table_metadata_by_table_id) {
  *   return ErrorCode::DATABASE_ACCESS_FAILURE
  */
 TEST_F(ApiTestDBAccessFailure, get_table_metadata_by_table_name) {
-  UTTableMetadata testdata_table_metadata =
-      *(global->testdata_table_metadata.get());
+  UTTableMetadata testdata_table_metadata = *(global->testdata_table_metadata.get());
 
   auto tables = std::make_unique<Tables>(GlobalTestEnvironment::TEST_DB);
 
@@ -192,12 +183,33 @@ TEST_F(ApiTestDBAccessFailure, get_table_metadata_by_table_name) {
 
   ptree table_metadata_inserted;
   std::string table_name = "table_name";
-  error = tables->get(table_name, table_metadata_inserted);
+  error                  = tables->get(table_name, table_metadata_inserted);
   EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
 
   ptree empty_ptree;
   EXPECT_EQ(UTUtils::get_tree_string(empty_ptree),
             UTUtils::get_tree_string(table_metadata_inserted));
+}
+
+/**
+ * @brief API to update table metadata
+ *   return ErrorCode::DATABASE_ACCESS_FAILURE
+ */
+TEST_F(ApiTestDBAccessFailure, update_table_metadata) {
+  UTTableMetadata* testdata_table_metadata = global->testdata_table_metadata.get();
+  ptree table_metadata                     = testdata_table_metadata->tables;
+
+  std::string table_name = testdata_table_metadata->name + "ApiTestDBAccessFailure_update_table";
+  table_metadata.put(Tables::NAME, table_name);
+
+  auto tables = std::make_unique<Tables>(GlobalTestEnvironment::TEST_DB);
+
+  ErrorCode error = tables->init();
+  EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
+
+  ObjectIdType dummy_table_id = 1;
+  error                       = tables->update(dummy_table_id, table_metadata);
+  EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
 }
 
 /**
@@ -225,8 +237,8 @@ TEST_F(ApiTestDBAccessFailure, remove_table_metadata_by_table_name) {
   EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
 
   ObjectIdType ret_table_id = -1;
-  std::string table_name = "table_name";
-  error = tables->remove(table_name.c_str(), &ret_table_id);
+  std::string table_name    = "table_name";
+  error                     = tables->remove(table_name.c_str(), &ret_table_id);
   EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
   EXPECT_EQ(ret_table_id, -1);
 }
@@ -247,8 +259,7 @@ TEST_F(ApiTestDBAccessFailure, get_datatypes_by_name) {
   EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
 
   ptree empty_ptree;
-  EXPECT_EQ(UTUtils::get_tree_string(empty_ptree),
-            UTUtils::get_tree_string(datatype));
+  EXPECT_EQ(UTUtils::get_tree_string(empty_ptree), UTUtils::get_tree_string(datatype));
 }
 
 /**
@@ -261,7 +272,7 @@ TEST_F(ApiTestDBAccessFailure, get_datatypes_by_key_value) {
   ErrorCode error = datatypes->init();
   EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
 
-  std::string key = "key";
+  std::string key   = "key";
   std::string value = "value";
   ptree datatype;
 
@@ -269,8 +280,7 @@ TEST_F(ApiTestDBAccessFailure, get_datatypes_by_key_value) {
   EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
 
   ptree empty_ptree;
-  EXPECT_EQ(UTUtils::get_tree_string(empty_ptree),
-            UTUtils::get_tree_string(datatype));
+  EXPECT_EQ(UTUtils::get_tree_string(empty_ptree), UTUtils::get_tree_string(datatype));
 }
 
 /**
@@ -288,8 +298,7 @@ TEST_F(ApiTestDBAccessFailure, get_roles_by_id) {
   EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
 
   ptree empty_ptree;
-  EXPECT_EQ(UTUtils::get_tree_string(empty_ptree),
-            UTUtils::get_tree_string(role_metadata));
+  EXPECT_EQ(UTUtils::get_tree_string(empty_ptree), UTUtils::get_tree_string(role_metadata));
 }
 
 /**
@@ -307,24 +316,78 @@ TEST_F(ApiTestDBAccessFailure, get_roles_by_name) {
   EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
 
   ptree empty_ptree;
+  EXPECT_EQ(UTUtils::get_tree_string(empty_ptree), UTUtils::get_tree_string(role_metadata));
+}
+
+/**
+ * @brief API to add constraint metadata
+ *   return ErrorCode::DATABASE_ACCESS_FAILURE
+ */
+TEST_F(ApiTestDBAccessFailure, add_constraint_metadata) {
+  // generate metadata.
+  ptree new_constraints;
+  new_constraints.put<ObjectId>(Constraint::TABLE_ID, 1);
+
+  auto constraints = std::make_unique<Constraints>(GlobalTestEnvironment::TEST_DB);
+
+  ErrorCode error = constraints->init();
+  EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
+
+  ObjectIdType ret_constraint_id = -1;
+
+  error = constraints->add(new_constraints, &ret_constraint_id);
+  EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
+  EXPECT_EQ(ret_constraint_id, -1);
+}
+
+/**
+ * @brief API to get constraint metadata based on constraint id
+ *   return ErrorCode::DATABASE_ACCESS_FAILURE
+ */
+TEST_F(ApiTestDBAccessFailure, get_constraint_metadata) {
+  ObjectIdType constraint_id = 1;
+
+  auto constraints = std::make_unique<Constraints>(GlobalTestEnvironment::TEST_DB);
+
+  ErrorCode error = constraints->init();
+  EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
+
+  ptree constraint_metadata;
+  error = constraints->get(constraint_id, constraint_metadata);
+  EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
+
+  ptree empty_ptree;
   EXPECT_EQ(UTUtils::get_tree_string(empty_ptree),
-            UTUtils::get_tree_string(role_metadata));
+            UTUtils::get_tree_string(constraint_metadata));
+}
+
+/**
+ * @brief API to remove constraint metadata based on constraint id
+ *   return ErrorCode::DATABASE_ACCESS_FAILURE
+ */
+TEST_F(ApiTestDBAccessFailure, remove_constraint_metadata) {
+  auto constraints = std::make_unique<Constraints>(GlobalTestEnvironment::TEST_DB);
+
+  ErrorCode error = constraints->init();
+  EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
+
+  error = constraints->remove(1);
+  EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
 }
 
 /**
  * @brief API to add table statistics based on table id
  * return ErrorCode::DATABASE_ACCESS_FAILURE
  */
-TEST_P(ApiTestDBAccessFailureByTableIdReltuples,
-       add_table_statistic_by_table_id) {
+TEST_P(ApiTestDBAccessFailureByTableIdReltuples, add_table_statistic_by_table_id) {
   auto tables = std::make_unique<Tables>(GlobalTestEnvironment::TEST_DB);
 
   ErrorCode error = tables->init();
   EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
 
-  auto params = GetParam();
+  auto params           = GetParam();
   ObjectIdType table_id = std::get<0>(params);
-  float reltuples = std::get<1>(params);
+  float reltuples       = std::get<1>(params);
 
   // set table metadata.
   ptree table_meta;
@@ -345,16 +408,15 @@ TEST_P(ApiTestDBAccessFailureByTableIdReltuples,
  * @brief API to add table statistics based on table name
  * return ErrorCode::DATABASE_ACCESS_FAILURE
  */
-TEST_P(ApiTestDBAccessFailureByTableNameReltuples,
-       add_table_statistic_by_table_name) {
+TEST_P(ApiTestDBAccessFailureByTableNameReltuples, add_table_statistic_by_table_name) {
   auto tables = std::make_unique<Tables>(GlobalTestEnvironment::TEST_DB);
 
   ErrorCode error = tables->init();
   EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
 
-  auto params = GetParam();
+  auto params            = GetParam();
   std::string table_name = std::get<0>(params);
-  float reltuples = std::get<1>(params);
+  float reltuples        = std::get<1>(params);
 
   // set table metadata.
   ptree table_meta;
@@ -427,16 +489,15 @@ TEST_P(ApiTestDBAccessFailureByColumnStatistics, add_one_column_statistic) {
   ErrorCode error = stats->init();
   EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
 
-  auto params = GetParam();
-  ObjectIdType table_id = std::get<0>(params);
+  auto params                   = GetParam();
+  ObjectIdType table_id         = std::get<0>(params);
   ObjectIdType ordinal_position = std::get<1>(params);
-  ptree column_stats = std::get<2>(params);
+  ptree column_stats            = std::get<2>(params);
 
   ptree statistic;
   // name
   std::string statistic_name = "ApiTestDBAccessFailureByColumnStatistics_" +
-                               std::to_string(table_id) + "-" +
-                               std::to_string(ordinal_position);
+                               std::to_string(table_id) + "-" + std::to_string(ordinal_position);
   statistic.put(Statistics::NAME, statistic_name);
   // table_id
   statistic.put(Statistics::TABLE_ID, table_id);
@@ -458,15 +519,14 @@ TEST_P(ApiTestDBAccessFailureByColumnStatistics, add_one_column_statistic) {
  * @brief API to get one column statistic
  * return ErrorCode::DATABASE_ACCESS_FAILURE
  */
-TEST_P(ApiTestDBAccessFailureByTableIdOrdinalPosition,
-       get_one_column_statistic) {
+TEST_P(ApiTestDBAccessFailureByTableIdOrdinalPosition, get_one_column_statistic) {
   auto stats = std::make_unique<Statistics>(GlobalTestEnvironment::TEST_DB);
 
   ErrorCode error = stats->init();
   EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
 
-  auto params = GetParam();
-  ObjectIdType table_id = std::get<0>(params);
+  auto params                   = GetParam();
+  ObjectIdType table_id         = std::get<0>(params);
   ObjectIdType ordinal_position = std::get<1>(params);
 
   ptree column_stats;
@@ -505,15 +565,14 @@ TEST_P(ApiTestDBAccessFailureByTableId, get_all_column_statistics) {
  * @brief API to remove one column statistic
  * return ErrorCode::DATABASE_ACCESS_FAILURE
  */
-TEST_P(ApiTestDBAccessFailureByTableIdOrdinalPosition,
-       remove_one_column_statistic) {
+TEST_P(ApiTestDBAccessFailureByTableIdOrdinalPosition, remove_one_column_statistic) {
   auto stats = std::make_unique<Statistics>(GlobalTestEnvironment::TEST_DB);
 
   ErrorCode error = stats->init();
   EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
 
-  auto params = GetParam();
-  ObjectIdType table_id = std::get<0>(params);
+  auto params                   = GetParam();
+  ObjectIdType table_id         = std::get<0>(params);
   ObjectIdType ordinal_position = std::get<1>(params);
 
   error = stats->remove_by_column_number(table_id, ordinal_position);
@@ -535,7 +594,7 @@ TEST_P(ApiTestDBAccessFailureByTableId, remove_all_column_statistics) {
   EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
 
   ObjectIdType table_id = GetParam();
-  error = stats->remove_by_table_id(table_id);
+  error                 = stats->remove_by_table_id(table_id);
   if (table_id <= 0) {
     EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
   } else {

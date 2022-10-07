@@ -13,17 +13,38 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef MANAGER_METADATA_DAO_JSON_OBJECT_ID_JSON_H_
-#define MANAGER_METADATA_DAO_JSON_OBJECT_ID_JSON_H_
+#pragma once
 
 #include <string>
 #include <string_view>
 
+#include <boost/property_tree/ptree.hpp>
+
 #include "manager/metadata/error_code.h"
 #include "manager/metadata/metadata.h"
 
-namespace manager::metadata::db::json {
+namespace manager::metadata::db {
 
+class ObjectIdGenerator {
+ public:
+  ObjectIdGenerator();
+
+  manager::metadata::ErrorCode init();
+  ObjectId current(std::string_view metadata_name);
+  ObjectId generate(std::string_view metadata_name);
+  ObjectId update(std::string_view metadata_name, ObjectId new_oid);
+
+ private:
+  static constexpr const char* const FILE_NAME = "oid";
+  std::string oid_file_name_;
+
+  ErrorCode read(boost::property_tree::ptree& oid_data) const;
+  ErrorCode write(const boost::property_tree::ptree& oid_data) const;
+};
+} // namespace manager::metadata::db
+
+
+namespace manager::metadata::db::json {
 class ObjectId {
  public:
   ObjectId();
@@ -31,12 +52,14 @@ class ObjectId {
   manager::metadata::ErrorCode init();
   ObjectIdType current(std::string_view table_name);
   ObjectIdType generate(std::string_view table_name);
+  ObjectIdType update(std::string_view table_name, ObjectIdType new_oid);
 
  private:
   static constexpr const char* const OID_NAME = "oid";
   std::string oid_file_name_;
+
+  ErrorCode read(boost::property_tree::ptree& oid_data) const;
+  ErrorCode write(const boost::property_tree::ptree& oid_data) const;
 };
 
 }  // namespace manager::metadata::db::json
-
-#endif  // MANAGER_METADATA_DAO_JSON_OBJECT_ID_JSON_H_

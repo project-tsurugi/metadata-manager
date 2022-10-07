@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 tsurugi project.
+ * Copyright 2020-2022 tsurugi project.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@
 
 #if defined(STORAGE_POSTGRESQL)
 #include "manager/metadata/dao/postgresql/columns_dao_pg.h"
+#include "manager/metadata/dao/postgresql/constraints_dao_pg.h"
 #include "manager/metadata/dao/postgresql/datatypes_dao_pg.h"
 #include "manager/metadata/dao/postgresql/privileges_dao_pg.h"
 #include "manager/metadata/dao/postgresql/roles_dao_pg.h"
@@ -30,6 +31,7 @@
 #include "manager/metadata/dao/postgresql/tables_dao_pg.h"
 #elif defined(STORAGE_JSON)
 #include "manager/metadata/dao/json/columns_dao_json.h"
+#include "manager/metadata/dao/json/constraints_dao_json.h"
 #include "manager/metadata/dao/json/datatypes_dao_json.h"
 #include "manager/metadata/dao/json/privileges_dao_json.h"
 #include "manager/metadata/dao/json/tables_dao_json.h"
@@ -38,6 +40,9 @@
 // =============================================================================
 namespace manager::metadata::db {
 
+/**
+ * Switch data storage type JSON or PostgreSQL.
+ */
 #if defined(STORAGE_POSTGRESQL)
 namespace storage = manager::metadata::db::postgresql;
 #elif defined(STORAGE_JSON)
@@ -61,21 +66,17 @@ manager::metadata::ErrorCode DBSessionManager::create_dao(
     std::shared_ptr<GenericDAO>& gdao) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
-  storage::DBSessionManager* storage_session_manager =
-      (storage::DBSessionManager*)session_manager;
+  storage::DBSessionManager* storage_session_manager = (storage::DBSessionManager*)session_manager;
 
   gdao = nullptr;
   switch (table_name) {
     case GenericDAO::TableName::TABLES: {
-      auto tdao = std::make_shared<storage::TablesDAO>(storage_session_manager);
-      gdao = tdao;
+      gdao = std::make_shared<storage::TablesDAO>(storage_session_manager);
       break;
     }
     case GenericDAO::TableName::STATISTICS: {
 #if defined(STORAGE_POSTGRESQL)
-      auto sdao =
-          std::make_shared<storage::StatisticsDAO>(storage_session_manager);
-      gdao = sdao;
+      gdao = std::make_shared<storage::StatisticsDAO>(storage_session_manager);
       break;
 #elif defined(STORAGE_JSON)
       // Statistics are not supported in JSON.
@@ -83,21 +84,20 @@ manager::metadata::ErrorCode DBSessionManager::create_dao(
 #endif
     }
     case GenericDAO::TableName::DATATYPES: {
-      auto ddao =
-          std::make_shared<storage::DataTypesDAO>(storage_session_manager);
-      gdao = ddao;
+      gdao = std::make_shared<storage::DataTypesDAO>(storage_session_manager);
       break;
     }
     case GenericDAO::TableName::COLUMNS: {
-      auto cdao =
-          std::make_shared<storage::ColumnsDAO>(storage_session_manager);
-      gdao = cdao;
+      gdao = std::make_shared<storage::ColumnsDAO>(storage_session_manager);
+      break;
+    }
+    case GenericDAO::TableName::CONSTRAINTS: {
+      gdao = std::make_shared<storage::ConstraintsDAO>(storage_session_manager);
       break;
     }
     case GenericDAO::TableName::ROLES: {
 #if defined(STORAGE_POSTGRESQL)
-      auto sdao = std::make_shared<storage::RolesDAO>(storage_session_manager);
-      gdao = sdao;
+      gdao = std::make_shared<storage::RolesDAO>(storage_session_manager);
       break;
 #elif defined(STORAGE_JSON)
       // Roles are not supported in JSON.
@@ -105,9 +105,7 @@ manager::metadata::ErrorCode DBSessionManager::create_dao(
 #endif
     }
     case GenericDAO::TableName::PRIVILEGES: {
-      auto sdao =
-          std::make_shared<storage::PrivilegesDAO>(storage_session_manager);
-      gdao = sdao;
+      gdao = std::make_shared<storage::PrivilegesDAO>(storage_session_manager);
       break;
     }
     default: {
@@ -117,8 +115,7 @@ manager::metadata::ErrorCode DBSessionManager::create_dao(
   }
 
   if (gdao == nullptr) {
-    LOG_ERROR << Message::GENERATE_FAILED_DAO
-              << static_cast<std::int32_t>(table_name);
+    LOG_ERROR << Message::GENERATE_FAILED_DAO << static_cast<std::int32_t>(table_name);
     error = ErrorCode::INTERNAL_ERROR;
     return error;
   }

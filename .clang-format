@@ -1,5 +1,12 @@
 BasedOnStyle: Google
+ColumnLimit: 80
 IncludeBlocks: Preserve
 IndentWidth: 2
 DerivePointerAlignment: false
 PointerAlignment: Left
+AlignArrayOfStructures: Right
+AlignConsecutiveAssignments: Consecutive
+AlignConsecutiveBitFields: Consecutive
+AlignConsecutiveDeclarations: None
+AlignConsecutiveMacros: Consecutive
+AlignTrailingComments: true

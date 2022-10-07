@@ -1,8 +1,8 @@
 {
-    "formatVersion": "1",
-    "generation": "1",
     "tables": [
         {
+            "formatVersion": "1",
+            "generation": "1",
             "name": "no_key_of_pkey",
             "columns": [
                 {
@@ -12,12 +12,22 @@
                     "nullable": "false",
                     "dataTypeId": "4"
                 }
+            ],
+            "constraints": [
+                {
+                    "name": "constraint1",
+                    "type": "1",
+                    "columns": ["1"],
+                    "columnsId": ["1001"],
+                    "indexId": "2"
+                }
             ]
         },
         {
+            "formatVersion": "1",
+            "generation": "1",
             "name": "empty_array_of_pkey",
-            "primaryKey": [
-            ],
+            "primaryKey": [],
             "columns": [
                 {
                     "ordinalPosition": "1",
@@ -40,17 +50,37 @@
                     "nullable": "true",
                     "dataTypeId": "9"
                 }
+            ],
+            "constraints": [
+                {
+                    "name": "constraint1",
+                    "type": "1",
+                    "columns": ["1"],
+                    "columnsId": ["1001"],
+                    "indexId": "2"
+                },
+                {
+                    "name": "constraint2",
+                    "type": "2",
+                    "columns": ["2"],
+                    "columnsId": ["2001"],
+                    "indexId": "3"
+                }
             ]
         },
         {
+            "formatVersion": "1",
+            "generation": "1",
             "name": "no_column",
             "primaryKey": [
                 "1"
             ],
-            "columns": [
-            ]
+            "columns": [],
+            "constraints": []
         },
         {
+            "formatVersion": "1",
+            "generation": "1",
             "name": "one_column",
             "primaryKey": [
                 "1"
@@ -63,9 +93,20 @@
                     "nullable": "false",
                     "dataTypeId": "9"
                 }
+            ],
+            "constraints": [
+                {
+                    "name": "constraint1",
+                    "type": "1",
+                    "columns": ["1"],
+                    "columnsId": ["1001"],
+                    "indexId": "2"
+                }
             ]
         },
         {
+            "formatVersion": "1",
+            "generation": "1",
             "name": "two_column",
             "primaryKey": [
                 "1"
@@ -87,9 +128,27 @@
                     "varying": "false",
                     "dataLength": "2"
                 }
+            ],
+            "constraints": [
+                {
+                    "name": "constraint1",
+                    "type": "1",
+                    "columns": ["1"],
+                    "columnsId": ["1001"],
+                    "indexId": "2"
+                },
+                {
+                    "name": "constraint2",
+                    "type": "2",
+                    "columns": ["2"],
+                    "columnsId": ["2001"],
+                    "indexId": "3"
+                }
             ]
         },
         {
+            "formatVersion": "1",
+            "generation": "1",
             "name": "japanese_column_name",
             "primaryKey": [
                 "1"
@@ -102,9 +161,20 @@
                     "nullable": "false",
                     "dataTypeId": "4"
                 }
+            ],
+            "constraints": [
+                {
+                    "name": "制約1",
+                    "type": "1",
+                    "columns": ["1"],
+                    "columnsId": ["1001"],
+                    "indexId": "2"
+                }
             ]
         },
         {
+            "formatVersion": "1",
+            "generation": "1",
             "name": "one_english_column_name",
             "primaryKey": [
                 "1"
@@ -117,9 +187,20 @@
                     "nullable": "false",
                     "dataTypeId": "4"
                 }
+            ],
+            "constraints": [
+                {
+                    "name": "constraint1",
+                    "type": "1",
+                    "columns": ["1"],
+                    "columnsId": ["1001"],
+                    "indexId": "2"
+                }
             ]
         },
         {
+            "formatVersion": "1",
+            "generation": "1",
             "name": "customer",
             "primaryKey": [
                 "1",
@@ -298,9 +379,27 @@
                     "varying": "true",
                     "dataLength": "500"
                 }
+            ],
+            "constraints": [
+                {
+                    "name": "constraint1",
+                    "type": "1",
+                    "columns": ["1"],
+                    "columnsId": ["1001"],
+                    "indexId": "2"
+                },
+                {
+                    "name": "constraint2",
+                    "type": "2",
+                    "columns": ["2"],
+                    "columnsId": ["2001"],
+                    "indexId": "3"
+                }
             ]
         },
         {
+            "formatVersion": "1",
+            "generation": "1",
             "name": "integer1",
             "primaryKey": [
                 "1"
@@ -313,9 +412,20 @@
                     "nullable": "false",
                     "dataTypeId": "4"
                 }
+            ],
+            "constraints": [
+                {
+                    "name": "constraint1",
+                    "type": "1",
+                    "columns": ["1"],
+                    "columnsId": ["1001"],
+                    "indexId": "2"
+                }
             ]
         },
         {
+            "formatVersion": "1",
+            "generation": "1",
             "name": "bigint1",
             "primaryKey": [
                 "1"
@@ -335,9 +445,27 @@
                     "nullable": "true",
                     "dataTypeId": "6"
                 }
+            ],
+            "constraints": [
+                {
+                    "name": "constraint1",
+                    "type": "1",
+                    "columns": ["1"],
+                    "columnsId": ["1001"],
+                    "indexId": "2"
+                },
+                {
+                    "name": "constraint2",
+                    "type": "2",
+                    "columns": ["2"],
+                    "columnsId": ["2001"],
+                    "indexId": "3"
+                }
             ]
         },
         {
+            "formatVersion": "1",
+            "generation": "1",
             "name": "real1",
             "primaryKey": [
                 "1"
@@ -350,9 +478,12 @@
                     "nullable": "false",
                     "dataTypeId": "8"
                 }
-            ]
+            ],
+            "constraints": []
         },
         {
+            "formatVersion": "1",
+            "generation": "1",
             "name": "double1",
             "primaryKey": [
                 "1"
@@ -365,9 +496,12 @@
                     "nullable": "false",
                     "dataTypeId": "9"
                 }
-            ]
+            ],
+            "constraints": []
         },
         {
+            "formatVersion": "1",
+            "generation": "1",
             "name": "char_length_10",
             "primaryKey": [
                 "1"
@@ -382,9 +516,12 @@
                     "varying": "false",
                     "dataLength": "10"
                 }
-            ]
+            ],
+            "constraints": []
         },
         {
+            "formatVersion": "1",
+            "generation": "1",
             "name": "varchar_length_10",
             "primaryKey": [
                 "1"
@@ -399,7 +536,8 @@
                     "varying": "true",
                     "dataLength": "10"
                 }
-            ]
+            ],
+            "constraints": []
         }
     ]
 }

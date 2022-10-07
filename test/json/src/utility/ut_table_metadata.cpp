@@ -110,8 +110,44 @@ void UTTableMetadata::generate_ptree() {
 
     ptree_columns.push_back(std::make_pair("", ptree_column));
   }
-
   tables.add_child(Tables::COLUMNS_NODE, ptree_columns);
+
+  // constraints
+  ptree ptree_constraints;
+  for (UTConstraintMetadata constraint : constraints) {
+    ptree ptree_constraint;
+
+    // constraint name
+    ptree_constraint.put(Constraint::NAME, constraint.name);
+
+    // constraint type
+    ptree_constraint.put(Constraint::TYPE, constraint.type);
+
+    // constraint columns
+    if (constraint.columns >= 0) {
+      ptree_constraint.put(Constraint::COLUMNS, constraint.columns);
+    }
+    if (!constraint.p_columns.empty()) {
+      ptree_constraint.add_child(Constraint::COLUMNS, constraint.p_columns);
+    }
+
+    // constraint columns id
+    if (constraint.columns_id >= 0) {
+      ptree_constraint.put(Constraint::COLUMNS_ID, constraint.columns_id);
+    }
+    if (!constraint.p_columns_id.empty()) {
+      ptree_constraint.add_child(Constraint::COLUMNS_ID, constraint.p_columns_id);
+    }
+
+    // constraint type
+    ptree_constraint.put(Constraint::INDEX_ID, constraint.index_id);
+
+    // constraint type
+    ptree_constraint.put(Constraint::EXPRESSION, constraint.expression);
+
+    ptree_constraints.push_back(std::make_pair("", ptree_constraint));
+  }
+  tables.add_child(Tables::CONSTRAINTS_NODE, ptree_constraints);
 }
 
 /**
@@ -127,19 +163,44 @@ void UTTableMetadata::generate_table()
   table.namespace_name = namespace_name;
   table.name = name;
   table.primary_keys.emplace_back(1);
-  table.primary_keys.emplace_back(2);
+  table.primary_keys.emplace_back(3);
   table.tuples = tuples;
 
-  for (UTColumnMetadata column_meta : columns) {
+  // columns metadata
+  for (const auto& column_meta : columns) {
     Column column;
     column.id = column_meta.id;
     column.name = column_meta.name;
     column.ordinal_position = column_meta.ordinal_position;
     column.data_type_id = column_meta.data_type_id;
+    column.data_length = column_meta.data_length;
+    for (const auto& length : column_meta.data_lengths) {
+      column.data_lengths.emplace_back(length);
+    }
     column.nullable = column_meta.nullable;
     column.varying = column_meta.varying;
     column.default_expr = column_meta.default_expr;
+
     table.columns.emplace_back(column);
+  }
+
+  // constraints metadata
+  for (const auto& constraint_meta : constraints) {
+    Constraint constraint;
+    constraint.id = constraint_meta.id;
+    constraint.name = constraint_meta.name;
+    constraint.table_id = constraint_meta.table_id;
+    constraint.type = static_cast<Constraint::ConstraintType>(constraint_meta.type);
+    for (const auto& column_num : constraint_meta.columns_list) {
+      constraint.columns.emplace_back(column_num);
+    }
+    for (const auto& column_id : constraint_meta.columns_id_list) {
+      constraint.columns.emplace_back(column_id);
+    }
+    constraint.index_id = constraint_meta.index_id;
+    constraint.expression = constraint_meta.expression;
+
+    table.constraints.emplace_back(constraint);
   }
 }
 
