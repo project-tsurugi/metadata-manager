@@ -59,7 +59,6 @@ boost::property_tree::ptree Column::convert_to_ptree() const
   pt.put<bool>(VARYING,              this->varying);
   pt.put<bool>(NULLABLE,             this->nullable);
   pt.put(DEFAULT_EXPR,               this->default_expr);
-  pt.put<int64_t>(DIRECTION,         this->direction);
 //  ptree params = ptree_helper::make_array_ptree(this->data_lengths);
 //  pt.push_back(std::make_pair(DATA_LENGTHS, params));
 
@@ -96,9 +95,6 @@ void Column::convert_from_ptree(const boost::property_tree::ptree& pt)
 
   auto opt_str = pt.get_optional<std::string>(DEFAULT_EXPR);
   this->default_expr = opt_str ? opt_str.get() : "";
-
-  opt_int = pt.get_optional<int64_t>(DIRECTION);
-  this->direction = opt_int ? opt_int.get() : INVALID_VALUE;
 }
 
 // ==========================================================================

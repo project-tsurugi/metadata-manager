@@ -40,15 +40,15 @@ struct Index : public ClassObject {
     DEFAULT           = 0b1111,   // 15
   };
 
-  static constexpr const char* const TABLE_ID           = "table_id";
-  static constexpr const char* const ACCESS_METHOD      = "access_method";
-  static constexpr const char* const NUMBER_OF_COLUMNS  = "number_of_columns";
+  static constexpr const char* const TABLE_ID           = "tableId";
+  static constexpr const char* const ACCESS_METHOD      = "accessMethod";
+  static constexpr const char* const NUMBER_OF_COLUMNS  = "numberOfColumns";
   static constexpr const char* const NUMBER_OF_KEY_COLUMNS  
-      = "number_of_key_columns";
-  static constexpr const char* const IS_UNIQUE          = "is_unique";
-  static constexpr const char* const IS_PRIMARY         = "is_primary";
+      = "numberOfKeyColumns";
+  static constexpr const char* const IS_UNIQUE          = "IsUnique";
+  static constexpr const char* const IS_PRIMARY         = "IsPrimary";
   static constexpr const char* const KEYS               = "columns";
-  static constexpr const char* const KEYS_ID            = "columns_id";
+  static constexpr const char* const KEYS_ID            = "columnsId";
   static constexpr const char* const OPTIONS            = "options";
 
   ObjectId  table_id;
