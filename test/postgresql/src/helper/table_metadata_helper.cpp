@@ -28,6 +28,7 @@
 #include "manager/metadata/common/config.h"
 #include "manager/metadata/dao/postgresql/tables_dao_pg.h"
 #include "manager/metadata/datatypes.h"
+#include "manager/metadata/helper/ptree_helper.h"
 #include "test/global_test_environment.h"
 #include "test/utility/ut_table_metadata.h"
 #include "test/utility/ut_utils.h"
@@ -101,9 +102,11 @@ void TableMetadataHelper::generate_table_metadata(
     column2.direction = static_cast<ObjectIdType>(Tables::Column::Direction::DEFAULT);
     ptree data_length;
     data_length.put("", 8);
-    column2.p_data_lengths.push_back(std::make_pair("", data_length));
+    column2.p_data_length.push_back(std::make_pair("", data_length));
     data_length.put("", 2);
-    column2.p_data_lengths.push_back(std::make_pair("", data_length));
+    column2.p_data_length.push_back(std::make_pair("", data_length));
+    column2.data_length.emplace_back(8);
+    column2.data_length.emplace_back(2);
 
     column2.varying = true;
 
@@ -111,7 +114,7 @@ void TableMetadataHelper::generate_table_metadata(
     UTColumnMetadata column3{col_names[2], ordinal_positions[2],
                              static_cast<ObjectIdType>(DataTypes::DataTypesId::CHAR), is_null};
     column3.default_expr = "default";
-    column3.data_length  = 1;
+    column3.data_length  = {1};
     column3.varying      = false;
 
     // set table metadata to three column metadata
@@ -248,12 +251,19 @@ void TableMetadataHelper::remove_table(std::string_view table_name) {
  * @param (column_metadata)    [in] column metadata used as test data.
  */
 void TableMetadataHelper::print_column_metadata(const UTColumnMetadata& column_metadata) {
+  std::string data_length_string;
+  for (auto value : column_metadata.data_length) {
+    data_length_string = data_length_string +
+                         (data_length_string.empty() ? "" : ",") +
+                         std::to_string(value);
+  }
+
   UTUtils::print(" id: ", column_metadata.id);
   UTUtils::print(" tableId: ", column_metadata.table_id);
   UTUtils::print(" name: ", column_metadata.name);
   UTUtils::print(" ordinalPosition: ", column_metadata.ordinal_position);
   UTUtils::print(" dataTypeId: ", column_metadata.data_type_id);
-  UTUtils::print(" dataLength: ", column_metadata.data_length);
+  UTUtils::print(" dataLength: [", data_length_string, "]");
   UTUtils::print(" varying: ", column_metadata.varying);
   UTUtils::print(" nullable: ", column_metadata.nullable);
   UTUtils::print(" defaultExpr: ", column_metadata.default_expr);
@@ -313,10 +323,8 @@ void TableMetadataHelper::check_table_metadata_expected(const boost::property_tr
     std::string& s_namespace_expected = o_namespace_expected.value();
     std::string& s_namespace_actual   = o_namespace_actual.value();
     EXPECT_EQ(s_namespace_expected, s_namespace_actual);
-  } else if (namespace_empty_actual && namespace_empty_actual) {
-    ASSERT_TRUE(true);
   } else {
-    ASSERT_TRUE(false);
+    ASSERT_EQ(namespace_empty_expected, namespace_empty_actual);
   }
 
   // primary keys
@@ -327,10 +335,8 @@ void TableMetadataHelper::check_table_metadata_expected(const boost::property_tr
   auto o_tuples_actual   = expected.get_optional<float>(Tables::TUPLES);
   if (o_tuples_expected && o_tuples_actual) {
     EXPECT_EQ(o_tuples_expected.value(), o_tuples_actual.value());
-  } else if (!o_tuples_expected && !o_tuples_actual) {
-    ASSERT_TRUE(true);
   } else {
-    ASSERT_TRUE(false);
+    ASSERT_EQ(o_tuples_expected.is_initialized(), o_tuples_actual.is_initialized());
   }
 
   // column metadata
@@ -494,7 +500,7 @@ void TableMetadataHelper::check_table_acls_expected(
       }
     }
   } else {
-    EXPECT_TRUE(false);
+    FAIL();
   }
 }
 

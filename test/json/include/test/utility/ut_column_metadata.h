@@ -31,10 +31,8 @@ class UTColumnMetadata {
   std::string name;
   int64_t ordinal_position = NOT_INITIALIZED;
   int64_t data_type_id = NOT_INITIALIZED;
-  int64_t data_length =
-      NOT_INITIALIZED;  //!< @brief single value of data length
-  boost::property_tree::ptree p_data_lengths;  //!< @brief array of data length
-  std::vector<int64_t> data_lengths;
+  boost::property_tree::ptree p_data_length;  //!< @brief array of data length
+  std::vector<int64_t> data_length;
   int varying = NOT_INITIALIZED;
   bool nullable;
   std::string default_expr;

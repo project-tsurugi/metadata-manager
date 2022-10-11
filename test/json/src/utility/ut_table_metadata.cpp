@@ -14,9 +14,11 @@
  * limitations under the License.
  */
 #include "test/utility/ut_table_metadata.h"
-#include "manager/metadata/tables.h"
 
 #include <utility>
+
+#include "manager/metadata/helper/ptree_helper.h"
+#include "manager/metadata/tables.h"
 
 namespace manager::metadata::testing {
 
@@ -82,17 +84,10 @@ void UTTableMetadata::generate_ptree() {
     // column nullable
     ptree_column.put<bool>(Tables::Column::NULLABLE, column.nullable);
 
-    // add column data length to ptree
-    // if UTTableMetadata data length is initialized
-    if (column.data_length >= 0) {
-      ptree_column.put(Tables::Column::DATA_LENGTH, column.data_length);
-    }
-
     // add column data length array to ptree
     // if UTTableMetadata data length array is initialized
-    if (!column.p_data_lengths.empty()) {
-      ptree_column.add_child(Tables::Column::DATA_LENGTH,
-                             column.p_data_lengths);
+    if (!column.p_data_length.empty()) {
+      ptree_column.add_child(Tables::Column::DATA_LENGTH, column.p_data_length);
     }
 
     // add column varying to ptree
@@ -136,7 +131,8 @@ void UTTableMetadata::generate_ptree() {
       ptree_constraint.put(Constraint::COLUMNS_ID, constraint.columns_id);
     }
     if (!constraint.p_columns_id.empty()) {
-      ptree_constraint.add_child(Constraint::COLUMNS_ID, constraint.p_columns_id);
+      ptree_constraint.add_child(Constraint::COLUMNS_ID,
+                                 constraint.p_columns_id);
     }
 
     // constraint type
@@ -155,13 +151,12 @@ void UTTableMetadata::generate_ptree() {
  * from UTTableMetadata fields.
  * @return none.
  */
-void UTTableMetadata::generate_table() 
-{
+void UTTableMetadata::generate_table() {
   table.format_version = 1;
-  table.generation = 1;
-  table.id = id;
+  table.generation     = 1;
+  table.id             = id;
   table.namespace_name = namespace_name;
-  table.name = name;
+  table.name           = name;
   table.primary_keys.emplace_back(1);
   table.primary_keys.emplace_back(3);
   table.tuples = tuples;
@@ -169,17 +164,14 @@ void UTTableMetadata::generate_table()
   // columns metadata
   for (const auto& column_meta : columns) {
     Column column;
-    column.id = column_meta.id;
-    column.name = column_meta.name;
+    column.id               = column_meta.id;
+    column.name             = column_meta.name;
     column.ordinal_position = column_meta.ordinal_position;
-    column.data_type_id = column_meta.data_type_id;
-    column.data_length = column_meta.data_length;
-    for (const auto& length : column_meta.data_lengths) {
-      column.data_lengths.emplace_back(length);
-    }
-    column.nullable = column_meta.nullable;
-    column.varying = column_meta.varying;
-    column.default_expr = column_meta.default_expr;
+    column.data_type_id     = column_meta.data_type_id;
+    column.data_length      = column_meta.data_length;
+    column.nullable         = column_meta.nullable;
+    column.varying          = column_meta.varying;
+    column.default_expr     = column_meta.default_expr;
 
     table.columns.emplace_back(column);
   }
@@ -187,17 +179,14 @@ void UTTableMetadata::generate_table()
   // constraints metadata
   for (const auto& constraint_meta : constraints) {
     Constraint constraint;
-    constraint.id = constraint_meta.id;
-    constraint.name = constraint_meta.name;
+    constraint.id       = constraint_meta.id;
+    constraint.name     = constraint_meta.name;
     constraint.table_id = constraint_meta.table_id;
-    constraint.type = static_cast<Constraint::ConstraintType>(constraint_meta.type);
-    for (const auto& column_num : constraint_meta.columns_list) {
-      constraint.columns.emplace_back(column_num);
-    }
-    for (const auto& column_id : constraint_meta.columns_id_list) {
-      constraint.columns.emplace_back(column_id);
-    }
-    constraint.index_id = constraint_meta.index_id;
+    constraint.type =
+        static_cast<Constraint::ConstraintType>(constraint_meta.type);
+    constraint.columns    = constraint_meta.columns_list;
+    constraint.columns_id = constraint_meta.columns_id_list;
+    constraint.index_id   = constraint_meta.index_id;
     constraint.expression = constraint_meta.expression;
 
     table.constraints.emplace_back(constraint);

@@ -83,17 +83,10 @@ void UTTableMetadata::generate_ptree() {
     // column nullable
     ptree_column.put<bool>(Tables::Column::NULLABLE, column.nullable);
 
-    // add column data length to ptree
-    // if UTTableMetadata data length is initialized
-    if (column.data_length >= 0) {
-      ptree_column.put(Tables::Column::DATA_LENGTH, column.data_length);
-    }
-
     // add column data length array to ptree
     // if UTTableMetadata data length array is initialized
-    if (!column.p_data_lengths.empty()) {
-      ptree_column.add_child(Tables::Column::DATA_LENGTH,
-                             column.p_data_lengths);
+    if (!column.p_data_length.empty()) {
+      ptree_column.add_child(Tables::Column::DATA_LENGTH, column.p_data_length);
     }
 
     // add column varying to ptree
@@ -144,7 +137,8 @@ void UTTableMetadata::generate_ptree() {
       ptree_constraint.put(Constraint::COLUMNS_ID, constraint.columns_id);
     }
     if (!constraint.p_columns_id.empty()) {
-      ptree_constraint.add_child(Constraint::COLUMNS_ID, constraint.p_columns_id);
+      ptree_constraint.add_child(Constraint::COLUMNS_ID,
+                                 constraint.p_columns_id);
     }
 
     // constraint type

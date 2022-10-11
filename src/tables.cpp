@@ -16,19 +16,20 @@
 #include "manager/metadata/tables.h"
 
 #include <memory>
+
 #include <boost/foreach.hpp>
 #include <boost/format.hpp>
-#include <jwt-cpp/jwt.h>
+#include "jwt-cpp/jwt.h"
 
 #include "manager/metadata/common/config.h"
 #include "manager/metadata/common/jwt_claims.h"
 #include "manager/metadata/common/message.h"
 #include "manager/metadata/helper/logging_helper.h"
+#include "manager/metadata/helper/ptree_helper.h"
 #include "manager/metadata/helper/table_metadata_helper.h"
 #include "manager/metadata/provider/datatypes_provider.h"
 #include "manager/metadata/provider/roles_provider.h"
 #include "manager/metadata/provider/tables_provider.h"
-#include "manager/metadata/helper/ptree_helper.h"
 
 // =============================================================================
 namespace {
@@ -49,29 +50,26 @@ using helper::TableMetadataHelper;
  * @brief  Transform column metadata from structure object to ptree object.
  * @return ptree object.
  */
-boost::property_tree::ptree Column::convert_to_ptree() const
-{
+boost::property_tree::ptree Column::convert_to_ptree() const {
   auto pt = Object::convert_to_ptree();
-  pt.put<ObjectId>(TABLE_ID,         this->table_id);
-  pt.put<int64_t>(ORDINAL_POSITION,  this->ordinal_position);
-  pt.put<ObjectId>(DATA_TYPE_ID,     this->data_type_id);
-  pt.put<int64_t>(DATA_LENGTH,       this->data_length);
-  pt.put<bool>(VARYING,              this->varying);
-  pt.put<bool>(NULLABLE,             this->nullable);
-  pt.put(DEFAULT_EXPR,               this->default_expr);
-//  ptree params = ptree_helper::make_array_ptree(this->data_lengths);
-//  pt.push_back(std::make_pair(DATA_LENGTHS, params));
+  pt.put<ObjectId>(TABLE_ID,        this->table_id);
+  pt.put<int64_t>(ORDINAL_POSITION, this->ordinal_position);
+  pt.put<ObjectId>(DATA_TYPE_ID,    this->data_type_id);
+  pt.put<bool>(VARYING,             this->varying);
+  pt.put<bool>(NULLABLE,            this->nullable);
+  pt.put(DEFAULT_EXPR,              this->default_expr);
+  pt.push_back(std::make_pair(
+      DATA_LENGTH, ptree_helper::make_array_ptree(this->data_length)));
 
   return pt;
 }
 
 /**
  * @brief   Transform column metadata from ptree object to structure object.
- * @param   pt [in] ptree object of metdata.
+ * @param   pt [in] ptree object of metadata.
  * @return  structure object of metadata.
  */
-void Column::convert_from_ptree(const boost::property_tree::ptree& pt)
-{
+void Column::convert_from_ptree(const boost::property_tree::ptree& pt) {
   Object::convert_from_ptree(pt);
   auto opt_id = pt.get_optional<ObjectId>(TABLE_ID);
   this->table_id = opt_id ? opt_id.get() : INVALID_OBJECT_ID;
@@ -82,10 +80,7 @@ void Column::convert_from_ptree(const boost::property_tree::ptree& pt)
   opt_id = pt.get_optional<ObjectId>(DATA_TYPE_ID);
   this->data_type_id = opt_id ? opt_id.get() : INVALID_OBJECT_ID;
 
-  opt_int = pt.get_optional<int64_t>(DATA_LENGTH);
-  this->data_length = opt_int ? opt_int.get() : INVALID_VALUE;
-
-//  this->data_lengths = ptree_helper::make_vector_int(pt, DATA_LENGTH);
+  this->data_length = ptree_helper::make_vector_int(pt, DATA_LENGTH);
 
   auto opt_bool = pt.get_optional<bool>(VARYING);
   this->varying = opt_bool ? opt_bool.get() : INVALID_VALUE;
@@ -103,34 +98,27 @@ void Column::convert_from_ptree(const boost::property_tree::ptree& pt)
  * @brief  Transform table metadata from structure object to ptree object.
  * @return ptree object.
  */
-boost::property_tree::ptree Table::convert_to_ptree() const
-{
-  boost::property_tree::ptree pt = ClassObject::convert_to_ptree();
+boost::property_tree::ptree Table::convert_to_ptree() const {
+  ptree pt = ClassObject::convert_to_ptree();
   pt.put<int64_t>(Table::TUPLES, tuples);
 
- boost::property_tree::ptree child;
-
   // primary keys
-  boost::property_tree::ptree keys;
-  for (const int64_t& ordinal_position : primary_keys) {
-    keys.put("", ordinal_position);
-    child.push_back(std::make_pair("", keys));
-  }
+  ptree child = ptree_helper::make_array_ptree(primary_keys);
   pt.add_child(Tables::PRIMARY_KEY_NODE, child);
 
   // columns metadata
-  boost::property_tree::ptree ptree_columns;
+  ptree ptree_columns;
   for (const auto& column : columns) {
-    boost::property_tree::ptree ptree = column.convert_to_ptree();
-    ptree_columns.push_back(std::make_pair("", ptree));
+    ptree child = column.convert_to_ptree();
+    ptree_columns.push_back(std::make_pair("", child));
   }
   pt.add_child(Tables::COLUMNS_NODE, ptree_columns);
 
   // constraints metadata
-  boost::property_tree::ptree ptree_constraints;
+  ptree ptree_constraints;
   for (const auto& constraint : this->constraints) {
-    boost::property_tree::ptree ptree = constraint.convert_to_ptree();
-    ptree_constraints.push_back(std::make_pair("", ptree));
+    ptree child = constraint.convert_to_ptree();
+    ptree_constraints.push_back(std::make_pair("", child));
   }
   pt.add_child(Tables::CONSTRAINTS_NODE, ptree_constraints);
 
@@ -139,26 +127,22 @@ boost::property_tree::ptree Table::convert_to_ptree() const
 
 /**
  * @brief   Transform table metadata from ptree object to structure object.
- * @param   ptree [in] ptree object of metdata.
+ * @param   ptree [in] ptree object of metadata.
  * @return  structure object of metadata.
  */
-void Table::convert_from_ptree(const boost::property_tree::ptree& pt)
-{
+void Table::convert_from_ptree(const boost::property_tree::ptree& pt) {
   ClassObject::convert_from_ptree(pt);
 
   auto tuples = pt.get_optional<int64_t>(Table::TUPLES);
   this->tuples = tuples ? tuples.get() : INVALID_VALUE;
 
   // primary keys
-  BOOST_FOREACH (const auto& node, pt.get_child(Tables::PRIMARY_KEY_NODE)) {
-    const boost::property_tree::ptree& key = node.second;
-    auto ordinal_position = key.get_optional<int64_t>("");
-    primary_keys.emplace_back(ordinal_position.get());
-  }
+  this->primary_keys =
+      ptree_helper::make_vector_int(pt, Tables::PRIMARY_KEY_NODE);
 
   // columns metadata
   BOOST_FOREACH (const auto& node, pt.get_child(Tables::COLUMNS_NODE)) {
-    const boost::property_tree::ptree& ptree_column = node.second;
+    const ptree& ptree_column = node.second;
     Column column;
     column.convert_from_ptree(ptree_column);
     columns.emplace_back(column);
@@ -166,7 +150,7 @@ void Table::convert_from_ptree(const boost::property_tree::ptree& pt)
 
   // constraints metadata
   BOOST_FOREACH (const auto& node, pt.get_child(Tables::CONSTRAINTS_NODE)) {
-    const boost::property_tree::ptree& ptree_constraint = node.second;
+    const ptree& ptree_constraint = node.second;
 
     Constraint constraint;
     constraint.convert_from_ptree(ptree_constraint);
@@ -816,7 +800,7 @@ ErrorCode Tables::param_check_metadata_add(
     }
 
     // Check the data types.
-    boost::property_tree::ptree datatype_metadata;
+    ptree datatype_metadata;
     error = provider_data_types.get_datatype_metadata(
         DataTypes::ID, std::to_string(datatype_id.get()), datatype_metadata);
     if (error != ErrorCode::OK) {
