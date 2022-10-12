@@ -313,6 +313,10 @@ class Metadata {
    */
   ErrorCode get_all(std::vector<manager::metadata::Object>& objects) const;
 
+
+  ErrorCode update(const manager::metadata::ObjectIdType object_id,
+                   const manager::metadata::Object& object) const;
+
  protected:
   static constexpr const char* const kDefaultComponent = "visitor";
   static const Generation kLatestVersion               = 0;
