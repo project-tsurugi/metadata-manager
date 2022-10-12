@@ -59,13 +59,13 @@ class TableMetadataHelperByTableNameException
 };
 
 INSTANTIATE_TEST_CASE_P(
-    ParamtererizedTest, TableMetadataHelperByTableIdException,
+    ParameterizedTest, TableMetadataHelperByTableIdException,
     ::testing::Values(-1, 0, INT64_MAX - 1, INT64_MAX,
                       std::numeric_limits<ObjectIdType>::infinity(),
                       -std::numeric_limits<ObjectIdType>::infinity(),
                       std::numeric_limits<ObjectIdType>::quiet_NaN()));
 
-INSTANTIATE_TEST_CASE_P(ParamtererizedTest,
+INSTANTIATE_TEST_CASE_P(ParameterizedTest,
                         TableMetadataHelperByTableNameException,
                         ::testing::Values("table_name_not_exists", ""));
 
@@ -82,51 +82,51 @@ ApiTestAddTableMetadataException::make_invalid_table_metadata() {
 
   // remove table name
   ptree new_table = global->testdata_table_metadata->tables;
-  new_table.erase(Tables::NAME);
+  new_table.erase(Table::NAME);
   invalid_table_metadata.emplace_back(new_table);
 
   // remove all column name
   new_table = global->testdata_table_metadata->tables;
   BOOST_FOREACH (ptree::value_type& node,
-                 new_table.get_child(Tables::COLUMNS_NODE)) {
+                 new_table.get_child(Table::COLUMNS_NODE)) {
     ptree& column = node.second;
-    column.erase(Tables::Column::NAME);
+    column.erase(Column::NAME);
   }
   invalid_table_metadata.emplace_back(new_table);
 
   // remove all ordinal position
   new_table = global->testdata_table_metadata->tables;
   BOOST_FOREACH (ptree::value_type& node,
-                 new_table.get_child(Tables::COLUMNS_NODE)) {
+                 new_table.get_child(Table::COLUMNS_NODE)) {
     ptree& column = node.second;
-    column.erase(Tables::Column::ORDINAL_POSITION);
+    column.erase(Column::COLUMN_NUMBER);
   }
   invalid_table_metadata.emplace_back(new_table);
 
   // remove all data type id
   new_table = global->testdata_table_metadata->tables;
   BOOST_FOREACH (ptree::value_type& node,
-                 new_table.get_child(Tables::COLUMNS_NODE)) {
+                 new_table.get_child(Table::COLUMNS_NODE)) {
     ptree& column = node.second;
-    column.erase(Tables::Column::DATA_TYPE_ID);
+    column.erase(Column::DATA_TYPE_ID);
   }
   invalid_table_metadata.emplace_back(new_table);
 
   // add invalid data type id
   BOOST_FOREACH (ptree::value_type& node,
-                 new_table.get_child(Tables::COLUMNS_NODE)) {
-    ptree& column = node.second;
+                 new_table.get_child(Table::COLUMNS_NODE)) {
+    ptree& column            = node.second;
     int invalid_data_type_id = -1;
-    column.put(Tables::Column::DATA_TYPE_ID, invalid_data_type_id);
+    column.put(Column::DATA_TYPE_ID, invalid_data_type_id);
   }
   invalid_table_metadata.emplace_back(new_table);
 
   // remove all not null constraint
   new_table = global->testdata_table_metadata->tables;
   BOOST_FOREACH (ptree::value_type& node,
-                 new_table.get_child(Tables::COLUMNS_NODE)) {
+                 new_table.get_child(Table::COLUMNS_NODE)) {
     ptree& column = node.second;
-    column.erase(Tables::Column::NULLABLE);
+    column.erase(Column::IS_NOT_NULL);
   }
   invalid_table_metadata.emplace_back(new_table);
 
@@ -147,7 +147,7 @@ TEST_F(ApiTestAddTableMetadataException, add_table_metadata) {
     UTUtils::print(UTUtils::get_tree_string(invalid_table));
 
     ObjectIdType ret_table_id = -1;
-    error = tables->add(invalid_table, &ret_table_id);
+    error                     = tables->add(invalid_table, &ret_table_id);
     EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);
     EXPECT_EQ(ret_table_id, -1);
   }
@@ -199,7 +199,7 @@ TEST_F(ApiTestAddTableMetadataException, update_table_metadata) {
     UTUtils::print(UTUtils::get_tree_string(invalid_table));
 
     ObjectIdType dummy_table_id = 1;
-    error = tables->update(dummy_table_id, invalid_table);
+    error                       = tables->update(dummy_table_id, invalid_table);
     EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);
   }
 }
@@ -250,7 +250,7 @@ TEST_P(TableMetadataHelperByTableNameException,
   EXPECT_EQ(ErrorCode::OK, error);
 
   ObjectIdType ret_table_id = -1;
-  error = tables->remove(GetParam().c_str(), &ret_table_id);
+  error                     = tables->remove(GetParam().c_str(), &ret_table_id);
   EXPECT_EQ(ErrorCode::NAME_NOT_FOUND, error);
   EXPECT_EQ(-1, ret_table_id);
 }

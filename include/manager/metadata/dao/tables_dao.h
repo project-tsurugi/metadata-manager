@@ -47,7 +47,7 @@ class TablesDAO : public GenericDAO {
       const boost::property_tree::ptree& table_metadata) const = 0;
 
   virtual manager::metadata::ErrorCode update_reltuples(
-      const float reltuples, std::string_view object_key,
+      const int64_t number_of_tuples, std::string_view object_key,
       std::string_view object_value, ObjectIdType& table_id) const = 0;
 
   virtual manager::metadata::ErrorCode delete_table_metadata(

@@ -40,8 +40,7 @@ class TablesDAO : public manager::metadata::db::TablesDAO {
     static constexpr const char* const kId = "id";
     static constexpr const char* const kName = "name";
     static constexpr const char* const kNamespace = "namespace";
-    static constexpr const char* const kPrimaryKey = "primary_key";
-    static constexpr const char* const kTuples = "tuples";
+    static constexpr const char* const kTuples = "number_of_tuples";
   };  // class ColumnName
 
   /**
@@ -54,7 +53,6 @@ class TablesDAO : public manager::metadata::db::TablesDAO {
     kId,
     kName,
     kNamespace,
-    kPrimaryKey,
     kTuples,
     kOwnerRoleId,
     kAcl
@@ -84,7 +82,7 @@ class TablesDAO : public manager::metadata::db::TablesDAO {
       const boost::property_tree::ptree& table_metadata) const override;
 
   manager::metadata::ErrorCode update_reltuples(
-      const float reltuples, std::string_view object_key,
+      const int64_t number_of_tuples, std::string_view object_key,
       std::string_view object_value, ObjectIdType& table_id) const override;
 
   manager::metadata::ErrorCode delete_table_metadata(

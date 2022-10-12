@@ -27,11 +27,13 @@
 namespace {
 
 using boost::property_tree::ptree;
+using manager::metadata::Column;
 using manager::metadata::Constraint;
 using manager::metadata::ErrorCode;
 using manager::metadata::FormatVersionType;
 using manager::metadata::GenerationType;
 using manager::metadata::ObjectIdType;
+using manager::metadata::Table;
 using manager::metadata::Tables;
 using manager::metadata::db::postgresql::ConnectionSPtr;
 
@@ -41,13 +43,18 @@ static constexpr const char* const ROLE_NAME = "tsurugi_ut_role_user_1";
 ConnectionSPtr connection;
 bool test_succeed = true;
 
-#define EXPECT_EQ(expected, actual) func_expect_eq(expected, actual, "", __FILE__, __LINE__)
-#define EXPECT_GT(actual, value)    func_expect_gt(actual, value, "", __FILE__, __LINE__)
-#define EXPECT_TRUE(actual)         func_expect_bool(actual, true, "", __FILE__, __LINE__)
+#define EXPECT_EQ(expected, actual) \
+  func_expect_eq(expected, actual, "", __FILE__, __LINE__)
+#define EXPECT_GT(actual, value) \
+  func_expect_gt(actual, value, "", __FILE__, __LINE__)
+#define EXPECT_TRUE(actual) \
+  func_expect_bool(actual, true, "", __FILE__, __LINE__)
 #define EXPECT_EQ_T(expected, actual, text) \
   func_expect_eq(expected, actual, text, __FILE__, __LINE__)
-#define EXPECT_GT_T(actual, value, text) func_expect_gt(actual, value, text, __FILE__, __LINE__)
-#define EXPECT_TRUE_T(actual, text)      func_expect_bool(actual, true, text, __FILE__, __LINE__)
+#define EXPECT_GT_T(actual, value, text) \
+  func_expect_gt(actual, value, text, __FILE__, __LINE__)
+#define EXPECT_TRUE_T(actual, text) \
+  func_expect_bool(actual, true, text, __FILE__, __LINE__)
 
 std::ostream& operator<<(std::ostream& os, const ErrorCode& ec) {
   os << static_cast<std::int32_t>(ec);
@@ -55,8 +62,8 @@ std::ostream& operator<<(std::ostream& os, const ErrorCode& ec) {
 }
 
 template <typename T>
-bool func_expect_eq(T expected, T actual, std::string_view text, std::string_view file,
-                    std::int32_t line) {
+bool func_expect_eq(T expected, T actual, std::string_view text,
+                    std::string_view file, std::int32_t line) {
   if (expected != actual) {
     std::cout << file << ": " << line << ": Failure" << std::endl
               << "  Expecting it to be equal to " << expected << ".";
@@ -71,8 +78,8 @@ bool func_expect_eq(T expected, T actual, std::string_view text, std::string_vie
 }
 
 template <typename T1, typename T2>
-bool func_expect_gt(T1 actual, T2 value, std::string_view text, std::string_view file,
-                    std::int32_t line) {
+bool func_expect_gt(T1 actual, T2 value, std::string_view text,
+                    std::string_view file, std::int32_t line) {
   if (actual <= static_cast<T1>(value)) {
     std::cout << file << ": " << line << ": Failure" << std::endl
               << "  Expecting it to be greater than " << value << ".";
@@ -86,11 +93,12 @@ bool func_expect_gt(T1 actual, T2 value, std::string_view text, std::string_view
   return true;
 }
 
-bool func_expect_bool(bool expected, bool actual, std::string_view text, std::string_view file,
-                      std::int32_t line) {
+bool func_expect_bool(bool expected, bool actual, std::string_view text,
+                      std::string_view file, std::int32_t line) {
   if (expected != actual) {
     std::cout << file << ": " << line << ": Failure" << std::endl
-              << "  Expecting it to be equal to " << std::boolalpha << expected << ".";
+              << "  Expecting it to be equal to " << std::boolalpha << expected
+              << ".";
     if (!text.empty()) {
       std::cout << " [" << text << "]";
     }
@@ -118,7 +126,8 @@ std::string indent(int level) {
  * @param (print_tree_enabled)   [in]  enable/disable to print output_string.
  */
 void get_tree_string_internal(const boost::property_tree::ptree& pt, int level,
-                              std::string& output_string, bool print_tree_enabled) {
+                              std::string& output_string,
+                              bool print_tree_enabled) {
   if (pt.empty()) {
     output_string.append("\"");
     output_string.append(pt.data());
@@ -132,12 +141,14 @@ void get_tree_string_internal(const boost::property_tree::ptree& pt, int level,
     output_string.append("{");
 
     for (auto pos = pt.begin(); pos != pt.end();) {
-      if (print_tree_enabled) std::cerr << indent(level + 1) << "\"" << pos->first << "\": ";
+      if (print_tree_enabled)
+        std::cerr << indent(level + 1) << "\"" << pos->first << "\": ";
       output_string.append("\"");
       output_string.append(pos->first);
       output_string.append("\": ");
 
-      get_tree_string_internal(pos->second, level + 1, output_string, print_tree_enabled);
+      get_tree_string_internal(pos->second, level + 1, output_string,
+                               print_tree_enabled);
       ++pos;
       if (pos != pt.end()) {
         if (print_tree_enabled) std::cerr << ",";
@@ -176,7 +187,8 @@ namespace db = manager::metadata::db;
  * @param (ret_table_id)  [out]  (optional) table ID of the new table-metadata.
  * @return none.
  */
-void add_table(const boost::property_tree::ptree& new_table, ObjectIdType* ret_table_id = nullptr) {
+void add_table(const boost::property_tree::ptree& new_table,
+               ObjectIdType* ret_table_id = nullptr) {
   std::cout << "-- add table metadata --" << std::endl;
 
   auto tables = std::make_unique<Tables>(TEST_DB);
@@ -226,20 +238,25 @@ void remove_table(std::string_view table_name) {
  * @param (meta_name)  [in]  column name of column metadata table.
  * @return none.
  */
-void check_child_expected(const ptree& expected, const ptree& actual, const char* meta_name) {
+void check_child_expected(const ptree& expected, const ptree& actual,
+                          const char* meta_name) {
   auto o_expected = expected.get_child_optional(meta_name);
   auto o_actual   = actual.get_child_optional(meta_name);
 
   if (o_expected && o_actual) {
     const auto& p_expected = o_expected.value();
     const auto& p_actual   = o_actual.value();
-    EXPECT_EQ_T(get_tree_string(p_expected), get_tree_string(p_actual), meta_name);
+    EXPECT_EQ_T(get_tree_string(p_expected), get_tree_string(p_actual),
+                meta_name);
   } else if (o_expected) {
-    EXPECT_EQ_T(o_expected.value().empty(), !o_actual.is_initialized(), meta_name);
+    EXPECT_EQ_T(o_expected.value().empty(), !o_actual.is_initialized(),
+                meta_name);
   } else if (o_actual) {
-    EXPECT_EQ_T(!o_expected.is_initialized(), o_actual.value().empty(), meta_name);
+    EXPECT_EQ_T(!o_expected.is_initialized(), o_actual.value().empty(),
+                meta_name);
   } else {
-    EXPECT_EQ_T(!o_expected.is_initialized(), !o_actual.is_initialized(), meta_name);
+    EXPECT_EQ_T(!o_expected.is_initialized(), !o_actual.is_initialized(),
+                meta_name);
   }
 }
 
@@ -251,7 +268,8 @@ void check_child_expected(const ptree& expected, const ptree& actual, const char
  * @return none.
  */
 template <typename T>
-void check_expected(const ptree& expected, const ptree& actual, const char* meta_name) {
+void check_expected(const ptree& expected, const ptree& actual,
+                    const char* meta_name) {
   auto value_expected = expected.get_optional<T>(meta_name);
   auto value_actual   = actual.get_optional<T>(meta_name);
 
@@ -260,12 +278,15 @@ void check_expected(const ptree& expected, const ptree& actual, const char* meta
   } else {
     if (value_expected) {
       const auto& value_expected = expected.get<std::string>(meta_name);
-      EXPECT_EQ_T(value_expected.empty(), !value_actual.is_initialized(), meta_name);
+      EXPECT_EQ_T(value_expected.empty(), !value_actual.is_initialized(),
+                  meta_name);
     } else if (value_actual) {
       const auto& value_actual = actual.get<std::string>(meta_name);
-      EXPECT_EQ_T(!value_expected.is_initialized(), value_actual.empty(), meta_name);
+      EXPECT_EQ_T(!value_expected.is_initialized(), value_actual.empty(),
+                  meta_name);
     } else {
-      EXPECT_EQ_T(!value_expected.is_initialized(), !value_actual.is_initialized(), meta_name);
+      EXPECT_EQ_T(!value_expected.is_initialized(),
+                  !value_actual.is_initialized(), meta_name);
     }
   }
 }
@@ -278,27 +299,28 @@ void check_expected(const ptree& expected, const ptree& actual, const char* meta
  */
 void check_table_metadata_expected(const ptree& expected, const ptree& actual) {
   // format version
-  EXPECT_EQ(Tables::format_version(), actual.get<FormatVersionType>(Tables::FORMAT_VERSION));
+  EXPECT_EQ(Tables::format_version(),
+            actual.get<FormatVersionType>(Table::FORMAT_VERSION));
 
   // generation
-  EXPECT_EQ(Tables::generation(), actual.get<GenerationType>(Tables::GENERATION));
+  EXPECT_EQ(Tables::generation(),
+            actual.get<GenerationType>(Table::GENERATION));
 
   // table name
-  check_expected<std::string>(expected, actual, Tables::NAME);
+  check_expected<std::string>(expected, actual, Table::NAME);
 
   // table id
-  ObjectIdType table_id_expected = expected.get<ObjectIdType>(Tables::ID);
-  EXPECT_EQ(table_id_expected, actual.get<ObjectIdType>(Tables::ID));
+  ObjectIdType table_id_expected = expected.get<ObjectIdType>(Table::ID);
+  EXPECT_EQ(table_id_expected, actual.get<ObjectIdType>(Table::ID));
 
   // namespace
-  check_expected<std::string>(expected, actual, Tables::NAMESPACE);
-
-  // primary keys
-  check_child_expected(expected, actual, Tables::PRIMARY_KEY_NODE);
+  check_expected<std::string>(expected, actual, Table::NAMESPACE);
 
   // tuples
-  auto o_tuples_expected = expected.get_optional<float>(Tables::TUPLES);
-  auto o_tuples_actual   = expected.get_optional<float>(Tables::TUPLES);
+  auto o_tuples_expected =
+      expected.get_optional<int64_t>(Table::NUMBER_OF_TUPLES);
+  auto o_tuples_actual =
+      expected.get_optional<int64_t>(Table::NUMBER_OF_TUPLES);
   if (o_tuples_expected && o_tuples_actual) {
     EXPECT_EQ(o_tuples_expected.value(), o_tuples_actual.value());
   } else {
@@ -307,13 +329,14 @@ void check_table_metadata_expected(const ptree& expected, const ptree& actual) {
 
   // column metadata
   {
-    auto o_columns_expected = expected.get_child_optional(Tables::COLUMNS_NODE);
-    auto o_columns_actual   = actual.get_child_optional(Tables::COLUMNS_NODE);
+    auto o_columns_expected = expected.get_child_optional(Table::COLUMNS_NODE);
+    auto o_columns_actual   = actual.get_child_optional(Table::COLUMNS_NODE);
 
     if (o_columns_expected && o_columns_actual) {
       std::vector<ptree> p_columns_expected;
       std::vector<ptree> p_columns_actual;
-      BOOST_FOREACH (const ptree::value_type& node, o_columns_expected.value()) {
+      BOOST_FOREACH (const ptree::value_type& node,
+                     o_columns_expected.value()) {
         ptree column = node.second;
         p_columns_expected.emplace_back(column);
       }
@@ -331,49 +354,56 @@ void check_table_metadata_expected(const ptree& expected, const ptree& actual) {
 
         // column metadata id
         boost::optional<ObjectIdType> id_actual =
-            columns_actual.get<ObjectIdType>(Tables::Column::ID);
+            columns_actual.get<ObjectIdType>(Column::ID);
         EXPECT_GT(id_actual.value(), static_cast<ObjectIdType>(0));
         // column metadata table id
         boost::optional<ObjectIdType> table_id_actual =
-            columns_actual.get<ObjectIdType>(Tables::Column::TABLE_ID);
+            columns_actual.get<ObjectIdType>(Column::TABLE_ID);
         EXPECT_EQ(table_id_expected, table_id_actual.value());
         // column name
-        check_expected<std::string>(columns_expected, columns_actual, Tables::Column::NAME);
+        check_expected<std::string>(columns_expected, columns_actual,
+                                    Column::NAME);
         // column ordinal position
         check_expected<ObjectIdType>(columns_expected, columns_actual,
-                                     Tables::Column::ORDINAL_POSITION);
+                                     Column::COLUMN_NUMBER);
         // column data type id
         check_expected<ObjectIdType>(columns_expected, columns_actual,
-                                     Tables::Column::DATA_TYPE_ID);
+                                     Column::DATA_TYPE_ID);
         // column data length
-        check_child_expected(columns_expected, columns_actual, Tables::Column::DATA_LENGTH);
+        check_child_expected(columns_expected, columns_actual,
+                             Column::DATA_LENGTH);
         // column varying
-        check_expected<bool>(columns_expected, columns_actual, Tables::Column::VARYING);
+        check_expected<bool>(columns_expected, columns_actual, Column::VARYING);
         // nullable
-        check_expected<bool>(columns_expected, columns_actual, Tables::Column::NULLABLE);
+        check_expected<bool>(columns_expected, columns_actual,
+                             Column::IS_NOT_NULL);
         // default
-        check_expected<std::string>(columns_expected, columns_actual, Tables::Column::DEFAULT);
-        // direction
-        check_expected<ObjectIdType>(columns_expected, columns_actual, Tables::Column::DIRECTION);
+        check_expected<std::string>(columns_expected, columns_actual,
+                                    Column::DEFAULT_EXPR);
       }
     } else {
-      EXPECT_EQ(o_columns_expected.is_initialized(), o_columns_actual.is_initialized());
+      EXPECT_EQ(o_columns_expected.is_initialized(),
+                o_columns_actual.is_initialized());
     }
   }
 
   // constraint metadata
   {
-    auto o_constraints_expected = expected.get_child_optional(Tables::CONSTRAINTS_NODE);
-    auto o_constraints_actual   = actual.get_child_optional(Tables::CONSTRAINTS_NODE);
+    auto o_constraints_expected =
+        expected.get_child_optional(Table::CONSTRAINTS_NODE);
+    auto o_constraints_actual =
+        actual.get_child_optional(Table::CONSTRAINTS_NODE);
 
     if (o_constraints_expected && o_constraints_actual) {
       std::vector<ptree> p_constraints_expected;
       std::vector<ptree> p_constraints_actual;
-      BOOST_FOREACH (const ptree::value_type& node, o_constraints_expected.value()) {
+      BOOST_FOREACH (const ptree::value_type& node,
+                     o_constraints_expected.value()) {
         ptree constraint = node.second;
         p_constraints_expected.emplace_back(constraint);
       }
-      BOOST_FOREACH (const ptree::value_type& node, o_constraints_actual.value()) {
+      BOOST_FOREACH (const ptree::value_type& node,
+                     o_constraints_actual.value()) {
         ptree constraint = node.second;
         p_constraints_actual.emplace_back(constraint);
       }
@@ -395,13 +425,17 @@ void check_table_metadata_expected(const ptree& expected, const ptree& actual) {
         EXPECT_EQ(table_id_expected, table_id_actual.value());
 
         // constraint name
-        check_expected<std::string>(constraints_expected, constraints_actual, Constraint::NAME);
+        check_expected<std::string>(constraints_expected, constraints_actual,
+                                    Constraint::NAME);
         // constraint type
-        check_expected<ObjectIdType>(constraints_expected, constraints_actual, Constraint::TYPE);
+        check_expected<ObjectIdType>(constraints_expected, constraints_actual,
+                                     Constraint::TYPE);
         // constraint column numbers
-        check_child_expected(constraints_expected, constraints_actual, Constraint::COLUMNS);
+        check_child_expected(constraints_expected, constraints_actual,
+                             Constraint::COLUMNS);
         // constraint column IDs
-        check_child_expected(constraints_expected, constraints_actual, Constraint::COLUMNS_ID);
+        check_child_expected(constraints_expected, constraints_actual,
+                             Constraint::COLUMNS_ID);
         // constraint index id
         check_expected<ObjectIdType>(constraints_expected, constraints_actual,
                                      Constraint::INDEX_ID);
@@ -417,7 +451,8 @@ void check_table_metadata_expected(const ptree& expected, const ptree& actual) {
         EXPECT_EQ(!o_constraints_expected.is_initialized(),
                   o_constraints_actual.value().size() == 0);
       } else {
-        EXPECT_EQ(!o_constraints_expected.is_initialized(), !o_constraints_actual.is_initialized());
+        EXPECT_EQ(!o_constraints_expected.is_initialized(),
+                  !o_constraints_actual.is_initialized());
       }
     }
   }
@@ -433,40 +468,34 @@ namespace test {
 ErrorCode tables_test() {
   ErrorCode result = ErrorCode::UNKNOWN;
 
-  const std::string table_name = "UTex_test_table_name_" + std::to_string(__LINE__);
+  const std::string table_name =
+      "UTex_test_table_name_" + std::to_string(__LINE__);
 
   // create dummy metadata for Tables.
   ptree new_table;
-  new_table.put(Tables::NAME, table_name);
-  new_table.put(Tables::NAMESPACE, "namespace");
-  new_table.put(Tables::TUPLES, 1.5);
-
-  // Set the value of the primary_keys column to ptree.
-  ptree primary_keys;
-  ptree primary_keys_value;
-  primary_keys_value.put("", "1");
-  primary_keys.push_back(std::make_pair("", primary_keys_value));
-  new_table.add_child(Tables::PRIMARY_KEY_NODE, primary_keys);
+  new_table.put(Table::NAME, table_name);
+  new_table.put(Table::NAMESPACE, "namespace");
+  new_table.put(Table::NUMBER_OF_TUPLES, 15);
 
   // Set the value of the columns to ptree.
   ptree columns;
   ptree column;
-  column.put(Tables::Column::NAME, "col-1");
-  column.put(Tables::Column::ORDINAL_POSITION, 1);
-  column.put(Tables::Column::DATA_TYPE_ID, 6);
-  column.put(Tables::Column::NULLABLE, "true");
+  column.put(Column::NAME, "col-1");
+  column.put(Column::COLUMN_NUMBER, 1);
+  column.put(Column::DATA_TYPE_ID, 6);
+  column.put(Column::IS_NOT_NULL, "true");
   columns.push_back(std::make_pair("", column));
 
   column.clear();
-  column.put(Tables::Column::NAME, "col-2");
-  column.put(Tables::Column::ORDINAL_POSITION, 2);
-  column.put(Tables::Column::NULLABLE, "false");
-  column.put(Tables::Column::DATA_TYPE_ID, 14);
-  column.put(Tables::Column::VARYING, "true");
-  column.put(Tables::Column::DATA_LENGTH, 100);
-  column.put(Tables::Column::DEFAULT, "default-text");
+  column.put(Column::NAME, "col-2");
+  column.put(Column::COLUMN_NUMBER, 2);
+  column.put(Column::IS_NOT_NULL, "false");
+  column.put(Column::DATA_TYPE_ID, 14);
+  column.put(Column::VARYING, "true");
+  column.put(Column::DATA_LENGTH, 100);
+  column.put(Column::DEFAULT_EXPR, "default-text");
   columns.push_back(std::make_pair("", column));
-  new_table.add_child(Tables::COLUMNS_NODE, columns);
+  new_table.add_child(Table::COLUMNS_NODE, columns);
 
   // Set the value of the constraints to ptree.
   ptree constraints;
@@ -476,7 +505,8 @@ ErrorCode tables_test() {
   ptree columns_id;
   ptree columns_id_value;
 
-  constraint.put(Constraint::TYPE, static_cast<int32_t>(Constraint::ConstraintType::UNIQUE));
+  constraint.put(Constraint::TYPE,
+                 static_cast<int32_t>(Constraint::ConstraintType::UNIQUE));
   // constraints
   constraints.push_back(std::make_pair("", constraint));
 
@@ -486,7 +516,8 @@ ErrorCode tables_test() {
   columns_id.clear();
   columns_id_value.clear();
   // type
-  constraint.put(Constraint::TYPE, static_cast<int32_t>(Constraint::ConstraintType::CHECK));
+  constraint.put(Constraint::TYPE,
+                 static_cast<int32_t>(Constraint::ConstraintType::CHECK));
   // columns
   columns_num_value.put("", 1);
   columns_num.push_back(std::make_pair("", columns_num_value));
@@ -504,12 +535,12 @@ ErrorCode tables_test() {
   // constraints
   constraints.push_back(std::make_pair("", constraint));
 
-  new_table.add_child(Tables::CONSTRAINTS_NODE, constraints);
+  new_table.add_child(Table::CONSTRAINTS_NODE, constraints);
 
   // add table metadata.
   ObjectIdType ret_table_id = -1;
   helper::add_table(new_table, &ret_table_id);
-  new_table.put(Tables::ID, ret_table_id);
+  new_table.put(Table::ID, ret_table_id);
 
   auto tables = std::make_unique<Tables>(TEST_DB);
   result      = tables->init();
@@ -543,12 +574,12 @@ ErrorCode tables_test() {
   std::cout << std::endl << std::string(30, '-') << std::endl;
   std::cout << "-- update table metadata --" << std::endl;
   ptree update_table;
-  update_table.put(Tables::ID, ret_table_id);
-  update_table.put(Tables::NAME, table_name + "-update");
-  update_table.put(Tables::NAMESPACE, "namespace-update");
-  update_table.put(Tables::TUPLES, 3.1);
+  update_table.put(Table::ID, ret_table_id);
+  update_table.put(Table::NAME, table_name + "-update");
+  update_table.put(Table::NAMESPACE, "namespace-update");
+  update_table.put(Table::NUMBER_OF_TUPLES, 31);
 
-  auto columns_node = table_metadata.get_child(Tables::COLUMNS_NODE);
+  auto columns_node = table_metadata.get_child(Table::COLUMNS_NODE);
   auto it           = columns_node.begin();
 
   ptree update_columns;
@@ -557,33 +588,32 @@ ErrorCode tables_test() {
   // 1 item skip.
   // 2 item update.
   update_column = (++it)->second;
-  update_column.put(Tables::Column::ID,
-                    it->second.get_optional<ObjectIdType>(Tables::Column::ID).value());
+  update_column.put(Column::ID,
+                    it->second.get_optional<ObjectIdType>(Column::ID).value());
   update_column.put(
-      Tables::Column::NAME,
-      it->second.get_optional<std::string>(Tables::Column::NAME).value_or("unknown-1") + "-update");
-  update_column.put(Tables::Column::ORDINAL_POSITION, 1);
-  update_column.put(Tables::Column::DATA_TYPE_ID, 6);
-  update_column.erase(Tables::Column::DATA_LENGTH);
-  update_column.put<bool>(Tables::Column::VARYING, false);
-  update_column.put<bool>(Tables::Column::NULLABLE, true);
-  update_column.put(Tables::Column::DEFAULT, -1);
-  update_column.put(Tables::Column::DIRECTION,
-                    static_cast<int>(Tables::Column::Direction::ASCENDANT));
+      Column::NAME,
+      it->second.get_optional<std::string>(Column::NAME).value_or("unknown-1") +
+          "-update");
+  update_column.put(Column::COLUMN_NUMBER, 1);
+  update_column.put(Column::DATA_TYPE_ID, 6);
+  update_column.erase(Column::DATA_LENGTH);
+  update_column.put<bool>(Column::VARYING, false);
+  update_column.put<bool>(Column::IS_NOT_NULL, true);
+  update_column.put(Column::DEFAULT_EXPR, -1);
   update_columns.push_back(std::make_pair("", update_column));
 
   // 3 item add.
   update_column.clear();
-  update_column.put(Tables::Column::NAME, "new-col-3");
-  update_column.put(Tables::Column::ORDINAL_POSITION, 2);
-  update_column.put(Tables::Column::DATA_TYPE_ID, 14);
-  update_column.put<bool>(Tables::Column::VARYING, false);
-  update_column.put<bool>(Tables::Column::NULLABLE, true);
-  update_column.put(Tables::Column::DATA_LENGTH, 200);
-  update_column.put(Tables::Column::DEFAULT, "default-text-2");
+  update_column.put(Column::NAME, "new-col-3");
+  update_column.put(Column::COLUMN_NUMBER, 2);
+  update_column.put(Column::DATA_TYPE_ID, 14);
+  update_column.put<bool>(Column::VARYING, false);
+  update_column.put<bool>(Column::IS_NOT_NULL, true);
+  update_column.put(Column::DATA_LENGTH, 200);
+  update_column.put(Column::DEFAULT_EXPR, "default-text-2");
   update_columns.push_back(std::make_pair("", update_column));
 
-  update_table.add_child(Tables::COLUMNS_NODE, update_columns);
+  update_table.add_child(Table::COLUMNS_NODE, update_columns);
 
   // update table metadata.
   result = tables->update(ret_table_id, update_table);
@@ -603,7 +633,7 @@ ErrorCode tables_test() {
   std::cout << std::endl << std::string(30, '-') << std::endl;
 
   // remove table metadata.
-  auto remove_table_name = table_metadata.get<std::string>(Tables::NAME);
+  auto remove_table_name = table_metadata.get<std::string>(Table::NAME);
   helper::remove_table(remove_table_name);
 
   result = ErrorCode::OK;

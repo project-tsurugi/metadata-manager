@@ -190,7 +190,7 @@ void TableMetadataHelper::add_table(std::string_view table_name,
       global->testdata_table_metadata.get();
 
   ptree new_table = testdata_table_metadata->tables;
-  new_table.put(Tables::NAME, table_name);
+  new_table.put(Table::NAME, table_name);
 
   // add table metadata.
   add_table(new_table, ret_table_id);
@@ -205,7 +205,6 @@ void TableMetadataHelper::add_table(std::string_view table_name,
  */
 void TableMetadataHelper::add_table(
     const boost::property_tree::ptree& new_table, ObjectIdType* table_id) {
-  //  auto tables = std::make_unique<Tables>(GlobalTestEnvironment::TEST_DB);
   auto tables = get_table_metadata(GlobalTestEnvironment::TEST_DB);
 
   ErrorCode error = tables->init();
@@ -235,7 +234,6 @@ void TableMetadataHelper::add_table(
  */
 void TableMetadataHelper::add_table(const manager::metadata::Table& new_table,
                                     ObjectIdType* table_id) {
-  //  auto tables = std::make_unique<Tables>(GlobalTestEnvironment::TEST_DB);
   auto tables = get_table_metadata(GlobalTestEnvironment::TEST_DB);
 
   ErrorCode error = tables->init();
@@ -266,7 +264,7 @@ void TableMetadataHelper::remove_table(const ObjectIdType table_id) {
   UTUtils::print("-- remove table metadata --");
   UTUtils::print(" table id: ", table_id);
 
-  auto tables = std::make_unique<Tables>(GlobalTestEnvironment::TEST_DB);
+  auto tables = get_table_metadata(GlobalTestEnvironment::TEST_DB);
 
   ErrorCode error = tables->init();
   ASSERT_EQ(ErrorCode::OK, error);
@@ -287,35 +285,30 @@ void TableMetadataHelper::check_table_metadata_expected(
     const boost::property_tree::ptree& actual) {
   // format version
   EXPECT_EQ(expected.format_version,
-            actual.get<FormatVersionType>(Tables::FORMAT_VERSION));
+            actual.get<FormatVersionType>(Table::FORMAT_VERSION));
 
   // generation
   EXPECT_EQ(expected.generation,
-            actual.get<GenerationType>(Tables::GENERATION));
+            actual.get<GenerationType>(Table::GENERATION));
 
   // table name
-  EXPECT_EQ(expected.name, actual.get<std::string>(Tables::NAME));
+  EXPECT_EQ(expected.name, actual.get<std::string>(Table::NAME));
 
   // table id
   ObjectIdType table_id_expected = expected.id;
-  EXPECT_EQ(table_id_expected, actual.get<ObjectIdType>(Tables::ID));
+  EXPECT_EQ(table_id_expected, actual.get<ObjectIdType>(Table::ID));
 
   // namespace
   boost::optional<std::string> o_namespace_actual =
-      actual.get_optional<std::string>(Tables::NAMESPACE);
+      actual.get_optional<std::string>(Table::NAMESPACE);
   EXPECT_EQ(expected.namespace_name, o_namespace_actual.value_or(""));
 
-  // primary keys
-  std::vector<int64_t> primary_key_actual =
-      ptree_helper::make_vector_int(actual, Tables::PRIMARY_KEY_NODE);
-  EXPECT_EQ(expected.primary_keys, primary_key_actual);
-
-  // tuples
-  auto o_tuples_actual = actual.get_optional<float>(Tables::TUPLES);
-  EXPECT_EQ(expected.tuples, o_tuples_actual.value_or(INVALID_VALUE));
+  // number of tuples
+  auto o_tuples_actual = actual.get_optional<int64_t>(Table::NUMBER_OF_TUPLES);
+  EXPECT_EQ(expected.number_of_tuples, o_tuples_actual.value_or(INVALID_VALUE));
 
   // column metadata
-  auto o_columns_actual = actual.get_child_optional(Tables::COLUMNS_NODE);
+  auto o_columns_actual = actual.get_child_optional(Table::COLUMNS_NODE);
   if (o_columns_actual) {
     std::vector<metadata::Column> p_columns_expected;
     std::vector<ptree> p_columns_actual;
@@ -333,56 +326,55 @@ void TableMetadataHelper::check_table_metadata_expected(
 
       // column metadata id
       boost::optional<ObjectIdType> id_actual =
-          column_actual.get<ObjectIdType>(Tables::Column::ID);
+          column_actual.get<ObjectIdType>(Column::ID);
       EXPECT_GT(id_actual, static_cast<ObjectIdType>(0));
 
       // column metadata table id
       boost::optional<ObjectIdType> table_id_actual =
-          column_actual.get<ObjectIdType>(Tables::Column::TABLE_ID);
+          column_actual.get<ObjectIdType>(Column::TABLE_ID);
       EXPECT_EQ(column_expected->table_id, table_id_actual);
 
       // column name
-      auto name = column_actual.get_optional<std::string>(Tables::Column::NAME);
+      auto name = column_actual.get_optional<std::string>(Column::NAME);
       if (name) {
         EXPECT_EQ(column_expected->name, name.get());
       }
 
-      // column ordinal position
-      auto ordinal_position =
-          column_actual.get_optional<int64_t>(Tables::Column::ORDINAL_POSITION);
-      if (ordinal_position) {
-        EXPECT_EQ(column_expected->ordinal_position, ordinal_position.get());
+      // column number
+      auto column_number =
+          column_actual.get_optional<int64_t>(Column::COLUMN_NUMBER);
+      if (column_number) {
+        EXPECT_EQ(column_expected->column_number, column_number.get());
       }
 
       // column data type id
       auto data_type_id =
-          column_actual.get_optional<int64_t>(Tables::Column::DATA_TYPE_ID);
+          column_actual.get_optional<int64_t>(Column::DATA_TYPE_ID);
       if (data_type_id) {
         EXPECT_EQ(column_expected->data_type_id, data_type_id.get());
       }
 
       // column data length
       check_child_expected(column_expected->data_length, actual,
-                           Tables::Column::DATA_LENGTH);
+                           Column::DATA_LENGTH);
 
       // column varying
-      auto varying = column_actual.get_optional<bool>(Tables::Column::VARYING);
+      auto varying = column_actual.get_optional<bool>(Column::VARYING);
       if (varying) {
         EXPECT_EQ(column_expected->varying, varying.get());
       }
 
-      // nullable
-      auto nullable =
-          column_actual.get_optional<bool>(Tables::Column::NULLABLE);
-      if (nullable) {
-        EXPECT_EQ(column_expected->nullable, nullable.get());
+      // is not null
+      auto is_not_null = column_actual.get_optional<bool>(Column::IS_NOT_NULL);
+      if (is_not_null) {
+        EXPECT_EQ(column_expected->is_not_null, is_not_null.get());
       }
 
-      // default
+      // default expression
       auto default_expr =
-          column_actual.get_optional<std::string>(Tables::Column::DEFAULT);
+          column_actual.get_optional<std::string>(Column::DEFAULT_EXPR);
       if (default_expr) {
-        EXPECT_EQ(column_expected->default_expr, default_expr.get());
+        EXPECT_EQ(column_expected->default_expression, default_expr.get());
       }
     }
   } else {
@@ -392,7 +384,7 @@ void TableMetadataHelper::check_table_metadata_expected(
   // constraint metadata
   {
     auto o_constraints_actual =
-        actual.get_child_optional(Tables::CONSTRAINTS_NODE);
+        actual.get_child_optional(Table::CONSTRAINTS_NODE);
 
     if (o_constraints_actual) {
       std::vector<metadata::Column> p_constraints_expected;
@@ -473,15 +465,15 @@ void TableMetadataHelper::check_table_metadata_expected(
   EXPECT_EQ(Tables::generation(), actual.generation);
 
   // table name
-  EXPECT_EQ(expected.get<std::string>(Tables::NAME), actual.name);
+  EXPECT_EQ(expected.get<std::string>(Table::NAME), actual.name);
 
   // table id
-  ObjectIdType table_id_expected = expected.get<ObjectIdType>(Tables::ID);
+  ObjectIdType table_id_expected = expected.get<ObjectIdType>(Table::ID);
   EXPECT_EQ(table_id_expected, actual.id);
 
   // namespace
   boost::optional<std::string> o_namespace_expected =
-      expected.get_optional<std::string>(Tables::NAMESPACE);
+      expected.get_optional<std::string>(Table::NAMESPACE);
   boost::optional<std::string> o_namespace_actual = actual.namespace_name;
 
   if (o_namespace_expected && o_namespace_actual) {
@@ -493,17 +485,13 @@ void TableMetadataHelper::check_table_metadata_expected(
               o_namespace_actual.is_initialized());
   }
 
-  // primary keys
-  std::vector<int64_t> primary_key_expected =
-      ptree_helper::make_vector_int(expected, Tables::PRIMARY_KEY_NODE);
-  EXPECT_EQ(primary_key_expected, actual.primary_keys);
-
-  // tuples
-  auto o_tuples_expected = expected.get_optional<float>(Tables::TUPLES);
-  EXPECT_EQ(o_tuples_expected.value_or(INVALID_VALUE), actual.tuples);
+  // number of tuples
+  auto o_tuples_expected =
+      expected.get_optional<int64_t>(Table::NUMBER_OF_TUPLES);
+  EXPECT_EQ(o_tuples_expected.value_or(INVALID_VALUE), actual.number_of_tuples);
 
   // column metadata
-  auto o_columns_expected = expected.get_child_optional(Tables::COLUMNS_NODE);
+  auto o_columns_expected = expected.get_child_optional(Table::COLUMNS_NODE);
   if (o_columns_expected) {
     std::vector<ptree> p_columns_expected;
     BOOST_FOREACH (const ptree::value_type& node, o_columns_expected.value()) {
@@ -525,44 +513,42 @@ void TableMetadataHelper::check_table_metadata_expected(
       EXPECT_EQ(table_id_expected, column_actual->table_id);
 
       // column name
-      auto name =
-          column_expected.get_optional<std::string>(Tables::Column::NAME);
+      auto name = column_expected.get_optional<std::string>(Column::NAME);
       if (name) {
         EXPECT_EQ(name.get(), column_actual->name);
       }
-      // column ordinal position
-      auto ordinal_position = column_expected.get_optional<int64_t>(
-          Tables::Column::ORDINAL_POSITION);
-      if (ordinal_position) {
-        EXPECT_EQ(ordinal_position.get(), column_actual->ordinal_position);
+      // column number
+      auto column_number =
+          column_expected.get_optional<int64_t>(Column::COLUMN_NUMBER);
+      if (column_number) {
+        EXPECT_EQ(column_number.get(), column_actual->column_number);
       }
       // column data type id
       auto data_type_id =
-          column_expected.get_optional<int64_t>(Tables::Column::DATA_TYPE_ID);
+          column_expected.get_optional<int64_t>(Column::DATA_TYPE_ID);
       if (data_type_id) {
         EXPECT_EQ(data_type_id.get(), column_actual->data_type_id);
       }
       // column data length
-      std::vector<int64_t> data_length_expected = ptree_helper::make_vector_int(
-          column_expected, Tables::Column::DATA_LENGTH);
+      std::vector<int64_t> data_length_expected =
+          ptree_helper::make_vector_int(column_expected, Column::DATA_LENGTH);
       EXPECT_EQ(data_length_expected, column_actual->data_length);
       // column varying
-      auto varying =
-          column_expected.get_optional<bool>(Tables::Column::VARYING);
+      auto varying = column_expected.get_optional<bool>(Column::VARYING);
       if (varying) {
         EXPECT_EQ(varying.get(), column_actual->varying);
       }
-      // nullable
-      auto nullable =
-          column_expected.get_optional<bool>(Tables::Column::NULLABLE);
-      if (nullable) {
-        EXPECT_EQ(nullable.get(), column_actual->nullable);
+      // is not null
+      auto is_not_null =
+          column_expected.get_optional<bool>(Column::IS_NOT_NULL);
+      if (is_not_null) {
+        EXPECT_EQ(is_not_null.get(), column_actual->is_not_null);
       }
       // default
       auto default_expr =
-          column_expected.get_optional<std::string>(Tables::Column::DEFAULT);
+          column_expected.get_optional<std::string>(Column::DEFAULT_EXPR);
       if (default_expr) {
-        EXPECT_EQ(default_expr.get(), column_actual->default_expr);
+        EXPECT_EQ(default_expr.get(), column_actual->default_expression);
       }
       column_actual++;
     }
@@ -582,32 +568,29 @@ void TableMetadataHelper::check_table_metadata_expected(
     const boost::property_tree::ptree& actual) {
   // format version
   EXPECT_EQ(Tables::format_version(),
-            actual.get<FormatVersionType>(Tables::FORMAT_VERSION));
+            actual.get<FormatVersionType>(Table::FORMAT_VERSION));
 
   // generation
   EXPECT_EQ(Tables::generation(),
-            actual.get<GenerationType>(Tables::GENERATION));
+            actual.get<GenerationType>(Table::GENERATION));
 
   // table name
-  check_expected<std::string>(expected, actual, Tables::NAME);
+  check_expected<std::string>(expected, actual, Table::NAME);
 
   // table id
-  ObjectIdType table_id_expected = expected.get<ObjectIdType>(Tables::ID);
-  EXPECT_EQ(table_id_expected, actual.get<ObjectIdType>(Tables::ID));
+  ObjectIdType table_id_expected = expected.get<ObjectIdType>(Table::ID);
+  EXPECT_EQ(table_id_expected, actual.get<ObjectIdType>(Table::ID));
 
   // namespace
-  check_expected<std::string>(expected, actual, Tables::NAMESPACE);
+  check_expected<std::string>(expected, actual, Table::NAMESPACE);
 
-  // primary keys
-  check_child_expected(expected, actual, Tables::PRIMARY_KEY_NODE);
-
-  // tuples
-  check_expected<float>(expected, actual, Tables::TUPLES);
+  // number of tuples
+  check_expected<int64_t>(expected, actual, Table::NUMBER_OF_TUPLES);
 
   // column metadata
   {
-    auto o_expected = expected.get_child_optional(Tables::COLUMNS_NODE);
-    auto o_actual   = actual.get_child_optional(Tables::COLUMNS_NODE);
+    auto o_expected = expected.get_child_optional(Table::COLUMNS_NODE);
+    auto o_actual   = actual.get_child_optional(Table::COLUMNS_NODE);
 
     if (o_expected && o_actual) {
       std::vector<ptree> p_expected;
@@ -630,35 +613,35 @@ void TableMetadataHelper::check_table_metadata_expected(
 
         // column metadata id
         boost::optional<ObjectIdType> id_actual =
-            column_actual.get<ObjectIdType>(Tables::Column::ID);
+            column_actual.get<ObjectIdType>(Column::ID);
         EXPECT_GT(id_actual, static_cast<ObjectIdType>(0));
 
         // column metadata table id
         boost::optional<ObjectIdType> table_id_actual =
-            column_actual.get<ObjectIdType>(Tables::Column::TABLE_ID);
+            column_actual.get<ObjectIdType>(Column::TABLE_ID);
         EXPECT_EQ(table_id_expected, table_id_actual);
 
         // column name
         check_expected<std::string>(column_expected, column_actual,
-                                    Tables::Column::NAME);
-        // column ordinal position
+                                    Column::NAME);
+        // column number
         check_expected<ObjectIdType>(column_expected, column_actual,
-                                     Tables::Column::ORDINAL_POSITION);
+                                     Column::COLUMN_NUMBER);
         // column data type id
         check_expected<ObjectIdType>(column_expected, column_actual,
-                                     Tables::Column::DATA_TYPE_ID);
+                                     Column::DATA_TYPE_ID);
         // column data length
         check_child_expected(column_expected, column_actual,
-                             Tables::Column::DATA_LENGTH);
+                             Column::DATA_LENGTH);
         // column varying
         check_expected<bool>(column_expected, column_actual,
-                             Tables::Column::VARYING);
-        // nullable
+                             Column::VARYING);
+        // is not null
         check_expected<bool>(column_expected, column_actual,
-                             Tables::Column::NULLABLE);
-        // default
+                             Column::IS_NOT_NULL);
+        // default expression
         check_expected<std::string>(column_expected, column_actual,
-                                    Tables::Column::DEFAULT);
+                                    Column::DEFAULT_EXPR);
       }
     } else {
       EXPECT_EQ(o_expected.is_initialized(), o_actual.is_initialized());
@@ -667,8 +650,8 @@ void TableMetadataHelper::check_table_metadata_expected(
 
   // constraint metadata
   {
-    auto o_expected = expected.get_child_optional(Tables::CONSTRAINTS_NODE);
-    auto o_actual   = actual.get_child_optional(Tables::CONSTRAINTS_NODE);
+    auto o_expected = expected.get_child_optional(Table::CONSTRAINTS_NODE);
+    auto o_actual   = actual.get_child_optional(Table::CONSTRAINTS_NODE);
 
     if (o_expected && o_actual) {
       std::vector<ptree> p_expected;

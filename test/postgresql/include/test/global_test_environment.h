@@ -56,9 +56,9 @@ class GlobalTestEnvironment : public ::testing::Environment {
   std::vector<ObjectIdType> table_id_not_exists;
 
   /**
-   * @brief a list of non-existing ordinal position.
+   * @brief a list of non-existing column number.
    */
-  std::vector<ObjectIdType> ordinal_position_not_exists;
+  std::vector<ObjectIdType> column_number_not_exists;
 
   /**
    * @brief Is a connection to the metadata repository opened?

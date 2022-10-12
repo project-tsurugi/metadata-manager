@@ -57,7 +57,7 @@ class StatisticsDAO : public manager::metadata::db::StatisticsDAO {
     kColumnId,
     kColumnStatistic,
     kTableId,
-    kOrdinalPosition,
+    kColumnNumber,
     kColumnName
   };  // enum class OrdinalPosition
 

@@ -72,7 +72,7 @@ TEST_F(ApiTestTableMetadataExtra, add_get_remove_table_metadata_by_table_name) {
 
     ptree table_metadata_inserted;
     std::string table_name =
-        table_metadata_expected.get<std::string>(Tables::NAME);
+        table_metadata_expected.get<std::string>(Table::NAME);
 
     error = tables->get(table_name, table_metadata_inserted);
     EXPECT_EQ(ErrorCode::OK, error);
@@ -81,7 +81,7 @@ TEST_F(ApiTestTableMetadataExtra, add_get_remove_table_metadata_by_table_name) {
     UTUtils::print(UTUtils::get_tree_string(table_metadata_inserted));
 
     // verifies that the returned table metadata is expected one.
-    table_metadata_expected.put(Tables::ID, ret_table_id);
+    table_metadata_expected.put(Table::ID, ret_table_id);
     TableMetadataHelper::check_table_metadata_expected(table_metadata_expected,
                                                        table_metadata_inserted);
 
@@ -124,7 +124,7 @@ TEST_F(ApiTestTableMetadataExtra, add_get_remove_table_metadata_by_table_id) {
     UTUtils::print(UTUtils::get_tree_string(table_metadata_inserted));
 
     // verifies that the returned table metadata is expected one.
-    table_metadata_expected.put(Tables::ID, ret_table_id);
+    table_metadata_expected.put(Table::ID, ret_table_id);
     TableMetadataHelper::check_table_metadata_expected(table_metadata_expected,
                                                        table_metadata_inserted);
 

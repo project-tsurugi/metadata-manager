@@ -39,9 +39,9 @@ class Statistics : public Metadata {
    */
   static constexpr const char* const TABLE_ID = "tableId";
   /**
-   * @brief Field name constant indicating the ordinal position of the metadata.
+   * @brief Field name constant indicating the column number of the metadata.
    */
-  static constexpr const char* const ORDINAL_POSITION = "ordinalPosition";
+  static constexpr const char* const COLUMN_NUMBER = "columnNumber";
   /**
    * @brief Field name constant indicating the columns id of the metadata.
    */
@@ -51,7 +51,8 @@ class Statistics : public Metadata {
    */
   static constexpr const char* const COLUMN_NAME = "columnName";
   /**
-   * @brief Field name constant indicating the columns statistic of the metadata.
+   * @brief Field name constant indicating the columns statistic of the
+   *   metadata.
    */
   static constexpr const char* const COLUMN_STATISTIC = "columnStatistic";
 
@@ -59,7 +60,7 @@ class Statistics : public Metadata {
       : Statistics(database, kDefaultComponent) {}
   Statistics(std::string_view database, std::string_view component);
 
-  Statistics(const Statistics&) = delete;
+  Statistics(const Statistics&)            = delete;
   Statistics& operator=(const Statistics&) = delete;
 
   ErrorCode init() const override;
@@ -86,7 +87,8 @@ class Statistics : public Metadata {
                     std::vector<boost::property_tree::ptree>& container) const;
 
   ErrorCode update([[maybe_unused]] const ObjectIdType object_id,
-                   [[maybe_unused]] const boost::property_tree::ptree& object) const override {
+                   [[maybe_unused]] const boost::property_tree::ptree& object)
+      const override {
     return ErrorCode::UNKNOWN;
   }
 

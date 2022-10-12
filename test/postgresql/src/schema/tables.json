@@ -6,10 +6,9 @@
             "name": "no_key_of_pkey",
             "columns": [
                 {
-                    "ordinalPosition": "1",
+                    "columnNumber": "1",
                     "name": "c1",
-                    "direction": "1",
-                    "nullable": "false",
+                    "isNotNull": "false",
                     "dataTypeId": "4"
                 }
             ],
@@ -27,27 +26,23 @@
             "formatVersion": "1",
             "generation": "1",
             "name": "empty_array_of_pkey",
-            "primaryKey": [],
             "columns": [
                 {
-                    "ordinalPosition": "1",
+                    "columnNumber": "1",
                     "name": "c1",
-                    "direction": "1",
-                    "nullable": "false",
+                    "isNotNull": "false",
                     "dataTypeId": "4"
                 },
                 {
-                    "ordinalPosition": "2",
+                    "columnNumber": "2",
                     "name": "c2",
-                    "direction": "0",
-                    "nullable": "true",
+                    "isNotNull": "true",
                     "dataTypeId": "6"
                 },
                 {
-                    "ordinalPosition": "3",
+                    "columnNumber": "3",
                     "name": "c3",
-                    "direction": "0",
-                    "nullable": "true",
+                    "isNotNull": "true",
                     "dataTypeId": "9"
                 }
             ],
@@ -72,9 +67,6 @@
             "formatVersion": "1",
             "generation": "1",
             "name": "no_column",
-            "primaryKey": [
-                "1"
-            ],
             "columns": [],
             "constraints": []
         },
@@ -82,15 +74,11 @@
             "formatVersion": "1",
             "generation": "1",
             "name": "one_column",
-            "primaryKey": [
-                "1"
-            ],
             "columns": [
                 {
-                    "ordinalPosition": "4",
+                    "columnNumber": "4",
                     "name": "c1",
-                    "direction": "0",
-                    "nullable": "false",
+                    "isNotNull": "false",
                     "dataTypeId": "9"
                 }
             ],
@@ -108,25 +96,20 @@
             "formatVersion": "1",
             "generation": "1",
             "name": "two_column",
-            "primaryKey": [
-                "1"
-            ],
             "columns": [
                 {
-                    "ordinalPosition": "4",
+                    "columnNumber": "4",
                     "name": "c1",
-                    "direction": "0",
-                    "nullable": "false",
+                    "isNotNull": "false",
                     "dataTypeId": "9"
                 },
                 {
-                    "ordinalPosition": "5",
+                    "columnNumber": "5",
                     "name": "c2",
-                    "direction": "0",
-                    "nullable": "false",
+                    "isNotNull": "false",
                     "dataTypeId": "13",
                     "varying": "false",
-                    "dataLength": "2"
+                    "dataLength": ["2"]
                 }
             ],
             "constraints": [
@@ -150,15 +133,11 @@
             "formatVersion": "1",
             "generation": "1",
             "name": "japanese_column_name",
-            "primaryKey": [
-                "1"
-            ],
             "columns": [
                 {
-                    "ordinalPosition": "1",
+                    "columnNumber": "1",
                     "name": "カラム",
-                    "direction": "1",
-                    "nullable": "false",
+                    "isNotNull": "false",
                     "dataTypeId": "4"
                 }
             ],
@@ -176,15 +155,11 @@
             "formatVersion": "1",
             "generation": "1",
             "name": "one_english_column_name",
-            "primaryKey": [
-                "1"
-            ],
             "columns": [
                 {
-                    "ordinalPosition": "1",
+                    "columnNumber": "1",
                     "name": "o",
-                    "direction": "1",
-                    "nullable": "false",
+                    "isNotNull": "false",
                     "dataTypeId": "4"
                 }
             ],
@@ -202,182 +177,156 @@
             "formatVersion": "1",
             "generation": "1",
             "name": "customer",
-            "primaryKey": [
-                "1",
-                "2",
-                "3"
-            ],
             "columns": [
                 {
-                    "ordinalPosition": "1",
+                    "columnNumber": "1",
                     "name": "c_w_id",
-                    "direction": "1",
-                    "nullable": "false",
+                    "isNotNull": "false",
                     "dataTypeId": "4"
                 },
                 {
-                    "ordinalPosition": "2",
+                    "columnNumber": "2",
                     "name": "c_d_id",
-                    "direction": "1",
-                    "nullable": "false",
+                    "isNotNull": "false",
                     "dataTypeId": "4"
                 },
                 {
-                    "ordinalPosition": "3",
+                    "columnNumber": "3",
                     "name": "c_id",
-                    "direction": "1",
-                    "nullable": "false",
+                    "isNotNull": "false",
                     "dataTypeId": "4"
                 },
                 {
-                    "ordinalPosition": "4",
+                    "columnNumber": "4",
                     "name": "c_discount",
-                    "direction": "0",
-                    "nullable": "false",
+                    "isNotNull": "false",
                     "dataTypeId": "9"
                 },
                 {
-                    "ordinalPosition": "5",
+                    "columnNumber": "5",
                     "name": "c_credit",
-                    "direction": "0",
-                    "nullable": "false",
+                    "isNotNull": "false",
                     "dataTypeId": "13",
                     "varying": "false",
-                    "dataLength": "2"
+                    "dataLength": ["2"]
                 },
                 {
-                    "ordinalPosition": "6",
+                    "columnNumber": "6",
                     "name": "c_last",
-                    "direction": "0",
-                    "nullable": "false",
+                    "isNotNull": "false",
                     "dataTypeId": "14",
                     "varying": "true",
-                    "dataLength": "16"
+                    "dataLength": ["16"]
                 },
                 {
-                    "ordinalPosition": "7",
+                    "columnNumber": "7",
                     "name": "c_first",
-                    "direction": "0",
-                    "nullable": "false",
+                    "isNotNull": "false",
                     "dataTypeId": "14",
                     "varying": "true",
-                    "dataLength": "16"
+                    "dataLength": ["16"]
                 },
                 {
-                    "ordinalPosition": "8",
+                    "columnNumber": "8",
                     "name": "c_credit_lim",
-                    "direction": "0",
-                    "nullable": "false",
+                    "isNotNull": "false",
                     "dataTypeId": "9"
                 },
                 {
-                    "ordinalPosition": "9",
+                    "columnNumber": "9",
                     "name": "c_balance",
-                    "direction": "0",
-                    "nullable": "false",
+                    "isNotNull": "false",
                     "dataTypeId": "9"
                 },
                 {
-                    "ordinalPosition": "10",
+                    "columnNumber": "10",
                     "name": "c_ytd_payment",
-                    "direction": "0",
-                    "nullable": "false",
+                    "isNotNull": "false",
                     "dataTypeId": "9"
                 },
                 {
-                    "ordinalPosition": "11",
+                    "columnNumber": "11",
                     "name": "c_payment_cnt",
-                    "direction": "0",
-                    "nullable": "false",
+                    "isNotNull": "false",
                     "dataTypeId": "4"
                 },
                 {
-                    "ordinalPosition": "12",
+                    "columnNumber": "12",
                     "name": "c_delivery_cnt",
-                    "direction": "0",
-                    "nullable": "false",
+                    "isNotNull": "false",
                     "dataTypeId": "4"
                 },
                 {
-                    "ordinalPosition": "13",
+                    "columnNumber": "13",
                     "name": "c_street_1",
-                    "direction": "0",
-                    "nullable": "false",
+                    "isNotNull": "false",
                     "dataTypeId": "14",
                     "varying": "true",
-                    "dataLength": "20"
+                    "dataLength": ["20"]
                 },
                 {
-                    "ordinalPosition": "14",
+                    "columnNumber": "14",
                     "name": "c_street_2",
-                    "direction": "0",
-                    "nullable": "false",
+                    "isNotNull": "false",
                     "dataTypeId": "14",
                     "varying": "true",
-                    "dataLength": "20"
+                    "dataLength": ["20"]
                 },
                 {
-                    "ordinalPosition": "15",
+                    "columnNumber": "15",
                     "name": "c_city",
-                    "direction": "0",
-                    "nullable": "false",
+                    "isNotNull": "false",
                     "dataTypeId": "14",
                     "varying": "true",
-                    "dataLength": "20"
+                    "dataLength": ["20"]
                 },
                 {
-                    "ordinalPosition": "16",
+                    "columnNumber": "16",
                     "name": "c_state",
-                    "direction": "0",
-                    "nullable": "false",
+                    "isNotNull": "false",
                     "dataTypeId": "13",
                     "varying": "false",
-                    "dataLength": "2"
+                    "dataLength": ["2"]
                 },
                 {
-                    "ordinalPosition": "17",
+                    "columnNumber": "17",
                     "name": "c_zip",
-                    "direction": "0",
-                    "nullable": "false",
+                    "isNotNull": "false",
                     "dataTypeId": "13",
                     "varying": "false",
-                    "dataLength": "9"
+                    "dataLength": ["9"]
                 },
                 {
-                    "ordinalPosition": "18",
+                    "columnNumber": "18",
                     "name": "c_phone",
-                    "direction": "0",
-                    "nullable": "false",
+                    "isNotNull": "false",
                     "dataTypeId": "13",
                     "varying": "false",
-                    "dataLength": "16"
+                    "dataLength": ["16"]
                 },
                 {
-                    "ordinalPosition": "19",
+                    "columnNumber": "19",
                     "name": "c_since",
-                    "direction": "0",
-                    "nullable": "false",
+                    "isNotNull": "false",
                     "dataTypeId": "13",
                     "varying": "false",
-                    "dataLength": "24"
+                    "dataLength": ["24"]
                 },
                 {
-                    "ordinalPosition": "20",
+                    "columnNumber": "20",
                     "name": "c_middle",
-                    "direction": "0",
-                    "nullable": "false",
+                    "isNotNull": "false",
                     "dataTypeId": "13",
                     "varying": "false",
-                    "dataLength": "2"
+                    "dataLength": ["2"]
                 },
                 {
-                    "ordinalPosition": "21",
+                    "columnNumber": "21",
                     "name": "c_data",
-                    "direction": "0",
-                    "nullable": "false",
+                    "isNotNull": "false",
                     "dataTypeId": "14",
                     "varying": "true",
-                    "dataLength": "500"
+                    "dataLength": ["500"]
                 }
             ],
             "constraints": [
@@ -401,15 +350,11 @@
             "formatVersion": "1",
             "generation": "1",
             "name": "integer1",
-            "primaryKey": [
-                "1"
-            ],
             "columns": [
                 {
-                    "ordinalPosition": "1",
+                    "columnNumber": "1",
                     "name": "ol_w_id",
-                    "direction": "1",
-                    "nullable": "false",
+                    "isNotNull": "false",
                     "dataTypeId": "4"
                 }
             ],
@@ -427,22 +372,17 @@
             "formatVersion": "1",
             "generation": "1",
             "name": "bigint1",
-            "primaryKey": [
-                "1"
-            ],
             "columns": [
                 {
-                    "ordinalPosition": "1",
+                    "columnNumber": "1",
                     "name": "id",
-                    "direction": "1",
-                    "nullable": "false",
+                    "isNotNull": "false",
                     "dataTypeId": "4"
                 },
                 {
-                    "ordinalPosition": "2",
+                    "columnNumber": "2",
                     "name": "ol_w_id",
-                    "direction": "0",
-                    "nullable": "true",
+                    "isNotNull": "true",
                     "dataTypeId": "6"
                 }
             ],
@@ -467,15 +407,11 @@
             "formatVersion": "1",
             "generation": "1",
             "name": "real1",
-            "primaryKey": [
-                "1"
-            ],
             "columns": [
                 {
-                    "ordinalPosition": "1",
+                    "columnNumber": "1",
                     "name": "ol_w_id",
-                    "direction": "1",
-                    "nullable": "false",
+                    "isNotNull": "false",
                     "dataTypeId": "8"
                 }
             ],
@@ -485,15 +421,11 @@
             "formatVersion": "1",
             "generation": "1",
             "name": "double1",
-            "primaryKey": [
-                "1"
-            ],
             "columns": [
                 {
-                    "ordinalPosition": "1",
+                    "columnNumber": "1",
                     "name": "ol_w_id",
-                    "direction": "1",
-                    "nullable": "false",
+                    "isNotNull": "false",
                     "dataTypeId": "9"
                 }
             ],
@@ -503,18 +435,14 @@
             "formatVersion": "1",
             "generation": "1",
             "name": "char_length_10",
-            "primaryKey": [
-                "1"
-            ],
             "columns": [
                 {
-                    "ordinalPosition": "1",
+                    "columnNumber": "1",
                     "name": "ol_w_id",
-                    "direction": "1",
-                    "nullable": "false",
+                    "isNotNull": "false",
                     "dataTypeId": "13",
                     "varying": "false",
-                    "dataLength": "10"
+                    "dataLength": ["10"]
                 }
             ],
             "constraints": []
@@ -523,18 +451,14 @@
             "formatVersion": "1",
             "generation": "1",
             "name": "varchar_length_10",
-            "primaryKey": [
-                "1"
-            ],
             "columns": [
                 {
-                    "ordinalPosition": "1",
+                    "columnNumber": "1",
                     "name": "ol_w_id",
-                    "direction": "1",
-                    "nullable": "false",
+                    "isNotNull": "false",
                     "dataTypeId": "14",
                     "varying": "true",
-                    "dataLength": "10"
+                    "dataLength": ["10"]
                 }
             ],
             "constraints": []
