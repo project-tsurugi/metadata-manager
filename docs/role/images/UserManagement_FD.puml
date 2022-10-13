@@ -48,23 +48,46 @@ deactivate pg
 actor admin
 
 package PostgreSQL {
-  database pg_catalog
+  database "pg_authid(role)" as pg_authid
   component frontend
   component manager
-  entity role
 }
 
 package OLTP {
   component ogawayama
-  entity "role" as role_
 }
 
 admin --> frontend : CREATE ROLE
-frontend -> role : Create
-frontend --> pg_catalog : metadata
-pg_catalog --> manager
+frontend --> pg_authid : Update metadata of role
+pg_authid --> manager
 manager --> ogawayama : metadata
-ogawayama -> role_ : Create
 frontend --> ogawayama : message(CREATE ROLE)
 
+@enduml
+
+' ===============================================
+' GRANT/REVOKE ON OLTP TABLE
+' ===============================================
+@startuml grant_revoke
+actor admin
+
+package PostgreSQL {
+  component frontend
+  component manager
+  database "pg_class\n(t_table(ext))" as pg_class
+  database metadata
+
+  frontend -> pg_class  : Update access\nprivileges of the table
+  pg_class --> manager : JOIN metadata
+  metadata --> manager
+}
+
+package OLTP {
+  component ogawayama
+  entity "t_table" as t_table
+}
+
+admin --> frontend : GRANT/REVOKE privileges ON t_table
+manager --> ogawayama : metadata
+frontend ---> ogawayama : message(GRANT/REVOKE)
 @enduml
