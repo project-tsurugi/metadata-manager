@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentScriptType="application/ecmascript" contentStyleType="text/css" height="659px" preserveAspectRatio="none" style="width:401px;height:659px;background:#FFFFFF;" version="1.1" viewBox="0 0 401 659" width="401px" zoomAndPan="magnify"><defs><filter height="300%" id="f1kprkluqjm59n" width="300%" x="-1" y="-1"><feGaussianBlur result="blurOut" stdDeviation="2.0"/><feColorMatrix in="blurOut" result="blurOut2" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .4 0"/><feOffset dx="4.0" dy="4.0" in="blurOut2" result="blurOut3"/><feBlend in="SourceGraphic" in2="blurOut3" mode="normal"/></filter></defs><g><!--MD5=[e9cbb9dd88ded91326c7c57ecf0f8dfc]
+cluster PostgreSQL--><polygon fill="#FFFFFF" filter="url(#f1kprkluqjm59n)" points="16,151.5,105,151.5,112,175.1094,223,175.1094,223,502.5,16,502.5,16,151.5" style="stroke:#000000;stroke-width:1.5;"/><line style="stroke:#000000;stroke-width:1.5;" x1="16" x2="112" y1="175.1094" y2="175.1094"/><text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="83" x="20" y="168.0332">PostgreSQL</text><!--MD5=[46a063155973224c3fa27ddf1e3a8ae1]
+cluster OLTP--><polygon fill="#FFFFFF" filter="url(#f1kprkluqjm59n)" points="99,552.5,141,552.5,148,576.1094,247,576.1094,247,652.5,99,652.5,99,552.5" style="stroke:#000000;stroke-width:1.5;"/><line style="stroke:#000000;stroke-width:1.5;" x1="99" x2="148" y1="576.1094" y2="576.1094"/><text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="36" x="103" y="569.0332">OLTP</text><!--MD5=[83ed5406b1fbde09911aa181c62bb8e4]
+entity pg_authid--><path d="M46.5,323.5 C46.5,313.5 105,313.5 105,313.5 C105,313.5 163.5,313.5 163.5,323.5 L163.5,350.1094 C163.5,360.1094 105,360.1094 105,360.1094 C105,360.1094 46.5,360.1094 46.5,350.1094 L46.5,323.5 " fill="#FEFECE" filter="url(#f1kprkluqjm59n)" style="stroke:#000000;stroke-width:1.5;"/><path d="M46.5,323.5 C46.5,333.5 105,333.5 105,333.5 C105,333.5 163.5,333.5 163.5,323.5 " fill="none" style="stroke:#000000;stroke-width:1.5;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="97" x="56.5" y="352.0332">pg_authid(role)</text><!--MD5=[b1e3d2dcb3697de9e6328d1cb436cbc4]
+entity frontend--><rect fill="#FEFECE" filter="url(#f1kprkluqjm59n)" height="47.6094" style="stroke:#A80036;stroke-width:1.5;" width="93" x="72.5" y="187.5"/><rect fill="#FEFECE" height="10" style="stroke:#A80036;stroke-width:1.5;" width="15" x="145.5" y="192.5"/><rect fill="#FEFECE" height="2" style="stroke:#A80036;stroke-width:1.5;" width="4" x="143.5" y="194.5"/><rect fill="#FEFECE" height="2" style="stroke:#A80036;stroke-width:1.5;" width="4" x="143.5" y="198.5"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="53" x="87.5" y="222.0332">frontend</text><!--MD5=[2b2d5ad518bf6746de4ffeb5be0566d4]
+entity manager--><rect fill="#FEFECE" filter="url(#f1kprkluqjm59n)" height="47.6094" style="stroke:#A80036;stroke-width:1.5;" width="96" x="69" y="438.5"/><rect fill="#FEFECE" height="10" style="stroke:#A80036;stroke-width:1.5;" width="15" x="145" y="443.5"/><rect fill="#FEFECE" height="2" style="stroke:#A80036;stroke-width:1.5;" width="4" x="143" y="445.5"/><rect fill="#FEFECE" height="2" style="stroke:#A80036;stroke-width:1.5;" width="4" x="143" y="449.5"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="56" x="84" y="473.0332">manager</text><!--MD5=[3617a1dcecd131945f386a894a6d65d9]
+entity ogawayama--><rect fill="#FEFECE" filter="url(#f1kprkluqjm59n)" height="47.6094" style="stroke:#A80036;stroke-width:1.5;" width="115" x="115.5" y="588.5"/><rect fill="#FEFECE" height="10" style="stroke:#A80036;stroke-width:1.5;" width="15" x="210.5" y="593.5"/><rect fill="#FEFECE" height="2" style="stroke:#A80036;stroke-width:1.5;" width="4" x="208.5" y="595.5"/><rect fill="#FEFECE" height="2" style="stroke:#A80036;stroke-width:1.5;" width="4" x="208.5" y="599.5"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="75" x="130.5" y="623.0332">ogawayama</text><!--MD5=[79a439086b036a57b90a01d7b2f8bbd1]
+entity admin--><ellipse cx="119" cy="14" fill="#FEFECE" filter="url(#f1kprkluqjm59n)" rx="8" ry="8" style="stroke:#A80036;stroke-width:1.5;"/><path d="M119,22 L119,49 M106,30 L132,30 M119,49 L106,64 M119,49 L132,64 " fill="none" filter="url(#f1kprkluqjm59n)" style="stroke:#A80036;stroke-width:1.5;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="38" x="100" y="84.0332">admin</text><!--MD5=[7b7568e7b3d3d33b5be17ec55672259a]
+link admin to frontend--><path d="M119,87.84 C119,117.28 119,156.25 119,182.29 " fill="none" id="admin-to-frontend" style="stroke:#A80036;stroke-width:1.0;"/><polygon fill="#A80036" points="119,187.32,123,178.32,119,182.32,115,178.32,119,187.32" style="stroke:#A80036;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="91" x="120" y="131.9951">CREATE ROLE</text><!--MD5=[76de647c6f784243d692b29a70571335]
+link frontend to pg_authid--><path d="M86.66,235.53 C77.59,243.84 68.88,254.03 64,265.5 C57.57,280.62 65.39,296.51 75.86,309.37 " fill="none" id="frontend-to-pg_authid" style="stroke:#A80036;stroke-width:1.0;"/><polygon fill="#A80036" points="79.18,313.26,76.3979,303.8123,75.9413,309.4507,70.3029,308.9941,79.18,313.26" style="stroke:#A80036;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="138" x="65" y="279.9951">Update metadata of role</text><!--MD5=[60b2922f79bfde1c20c38ba06eb5eb34]
+link pg_authid to manager--><path d="M107.2,360.65 C109.18,381.02 112.1,411.04 114.23,433.03 " fill="none" id="pg_authid-to-manager" style="stroke:#A80036;stroke-width:1.0;"/><polygon fill="#A80036" points="114.73,438.15,117.8359,428.8037,114.2438,433.1737,109.8738,429.5816,114.73,438.15" style="stroke:#A80036;stroke-width:1.0;"/><!--MD5=[725134c58ac48e76f7dc9724fb62703c]
+link manager to ogawayama--><path d="M125.75,486.62 C135.64,512.75 151.73,555.29 162.34,583.33 " fill="none" id="manager-to-ogawayama" style="stroke:#A80036;stroke-width:1.0;"/><polygon fill="#A80036" points="164.13,588.05,164.679,578.2165,162.3572,583.3748,157.1988,581.053,164.13,588.05" style="stroke:#A80036;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="54" x="145" y="532.9951">metadata</text><!--MD5=[cac2dd5fce51c8c44451d2cde01b0fb9]
+link frontend to ogawayama--><path d="M165.63,228.93 C182.02,237.22 198.67,249.08 208,265.5 C267.52,370.21 234.09,418.91 208,536.5 C204.34,553.01 196.64,570.19 189.4,583.94 " fill="none" id="frontend-to-ogawayama" style="stroke:#A80036;stroke-width:1.0;"/><polygon fill="#A80036" points="186.97,588.46,194.7611,582.4352,189.3422,584.0586,187.7188,578.6396,186.97,588.46" style="stroke:#A80036;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="152" x="241" y="404.9951">message(CREATE ROLE)</text><!--MD5=[ded78c94dc1d4248fb4f9474bc1b11a1]
+@startuml role
+actor admin
+
+package PostgreSQL {
+  database "pg_authid(role)" as pg_authid
+  component frontend
+  component manager
+}
+
+package OLTP {
+  component ogawayama
+}
+
+admin - -> frontend : CREATE ROLE
+frontend - -> pg_authid : Update metadata of role
+pg_authid - -> manager
+manager - -> ogawayama : metadata
+frontend - -> ogawayama : message(CREATE ROLE)
+
+@enduml
+
+PlantUML version 1.2021.7(Sun May 23 21:40:07 JST 2021)
+(GPL source distribution)
+Java Runtime: Java(TM) SE Runtime Environment
+JVM: Java HotSpot(TM) Client VM
+Default Encoding: MS932
+Language: ja
+Country: JP
+--></g></svg>

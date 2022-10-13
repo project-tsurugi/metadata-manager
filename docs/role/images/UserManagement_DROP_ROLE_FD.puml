@@ -1,0 +1,205 @@
+' =========================================================
+' 全体シーケンス概要
+' =========================================================
+@startuml entire_seq
+hide footbox
+
+control PostgreSQL as pg
+control "frontend(alt-utility)" as frontend
+control "manager(message-broker)" as msgbroker
+control "metadata-manager" as metadata
+
+control "ogawayama" as stub
+
+activate pg
+  pg -> frontend : hook DDL command
+  activate frontend
+    frontend -> pg : DDL command
+    activate pg
+      alt option
+    return
+    frontend -> msgbroker : message(DDL command)
+    activate msgbroker
+      msgbroker -> stub : send_message(DDL command)
+      note right
+        ここでDROP ROLEメッセージ送信に
+        失敗したときの動作を検討する。
+      end note
+      activate stub
+        alt option
+        stub -> stub
+        activate stub
+          stub -> metadata : get/update/remove
+          activate metadata
+            alt option
+            metadata -> pg : DDL command
+            activate pg
+              alt option
+            return : DDL command result
+          return
+        return
+      return 
+    return
+  return
+deactivate pg
+@enduml
+
+' =========================================================
+' Create Table
+' =========================================================
+@startuml createTable
+start
+  partition define_relation() {
+    :table,datatypeをロードする。;
+    :構文をチェックする。;
+    :datatypeをチェックする。;
+    :メタデータを登録する。;
+  }
+  if(define_relationの結果) then (成功)
+  partition send_message() {
+    if(Ogawayamaへメッセージの初期化(Init)する) then (成功)
+      if (Ogawayamaへメッセージを送信する) then (成功)
+      else (失敗)
+        :作成したメタデータを削除する。;
+        :エラーメッセージ;
+      endif
+    else (失敗)
+      :作成したメタデータを削除する。;
+      :エラーメッセージ;
+    endif
+    :結果を返す;
+  }
+  else (失敗)
+  endif
+  :結果を返す;
+stop
+@enduml
+
+
+' =========================================================
+' Drop role message send failed. 
+' =========================================================
+@startuml dropRolePt1
+start
+  :削除するRoleデータを取得する。;
+  :DROP Role(Standard Features);
+  partition send_message() {
+    if(Ogawayamaへメッセージの初期化(Init)する) then (成功)
+      if (Ogawayamaへメッセージを送信する) then (成功)
+      else (失敗)
+        :削除したデータを元にRoleを追加する;
+        :エラーメッセージ;
+      endif
+    else (失敗)
+      :削除したデータを元にRoleを追加する;
+      :エラーメッセージ;
+    endif
+  }
+  :結果を返す;
+stop
+@enduml
+
+' =========================================================
+' Drop role message send failed. 
+' =========================================================
+@startuml dropRolePt3
+start
+  :削除するRoleデータを取得する。;
+  :DROP Role(Standard Features);
+  partition send_message() {
+    while (成功?)
+      if (リトライ回数を超えた) then (YES) 
+        :エラーメッセージ;
+        stop
+      endif
+      :Ogawayamaへメッセージの初期化(Init)する;
+    endwhile
+    while (成功?)
+      if (リトライ回数を超えた) then (YES) 
+        :エラーメッセージ;
+        stop
+      endif
+      :Ogawayamaへメッセージを送信する;
+    endwhile
+  }
+  :結果を返す;
+stop
+@enduml
+
+' =========================================================
+' Drop role message send failed. 
+' =========================================================
+@startuml dropRolePt4
+start
+  :削除するRoleデータを取得する。;
+  :DROP Role(Standard Features);
+  partition send_message() {
+    if(Ogawayamaへメッセージの初期化(Init)する) then (成功)
+      if (Ogawayamaへメッセージを送信する) then (成功)
+      else (失敗)
+        :エラーメッセージ;
+      endif
+    else (失敗)
+      :エラーメッセージ;
+    endif
+  }
+  :結果を返す;
+stop
+@enduml
+
+' =========================================================
+' Drop role message send failed. 
+' =========================================================
+@startuml dropRolePt5
+start
+  :削除するRoleデータを取得する。;
+  partition send_message() {
+    if(Ogawayamaへメッセージの初期化(Init)する) then (成功)
+      if (Ogawayamaへメッセージを送信する) then (成功)
+      else (失敗)
+        :エラーメッセージ;
+      endif
+    else (失敗)
+      :エラーメッセージ;
+    endif
+  }
+  if(send_messageの結果) then (成功)
+    :DROP Role(Standard Features);
+    partition send_message() {
+      if(Ogawayamaへメッセージの初期化(Init)する) then (成功)
+        if (Ogawayamaへメッセージを送信する) then (成功)
+        else (失敗)
+          :エラーメッセージ;
+        endif
+      else (失敗)
+        :エラーメッセージ;
+      endif
+    }
+  endif 
+  :結果を返す;
+stop
+@enduml
+
+' =========================================================
+' Drop role message send failed. 
+' =========================================================
+@startuml dropRolePt2
+start
+  :削除するRoleデータを取得する。;
+  partition send_message() {
+    if(Ogawayamaへメッセージの初期化(Init)する) then (成功)
+      if (Ogawayamaへメッセージを送信する) then (成功)
+      else (失敗)
+        :エラーメッセージ;
+      endif
+    else (失敗)
+      :エラーメッセージ;
+    endif
+  }
+  if(send_messageの結果) then (成功)
+    :DROP Role(Standard Features);
+  else (失敗)
+  endif
+  :結果を返す;
+stop
+@enduml
