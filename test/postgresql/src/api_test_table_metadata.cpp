@@ -506,7 +506,13 @@ TEST_F(ApiTestTableMetadata, update_table_metadata) {
     column.put(Column::COLUMN_NUMBER, 2);
     column.put<ObjectIdType>(Column::DATA_TYPE_ID, 13);
     column.put<bool>(Column::VARYING, false);
-    column.put(Column::DATA_LENGTH, 32);
+    {
+      ptree elements;
+      ptree element;
+      element.put("", 32);
+      elements.push_back(std::make_pair("", element));
+      column.add_child(Column::DATA_LENGTH, elements);
+    }
     column.put<bool>(Column::IS_NOT_NULL, false);
     column.put(Column::DEFAULT_EXPR, "default-value");
     columns.push_back(std::make_pair("", column));

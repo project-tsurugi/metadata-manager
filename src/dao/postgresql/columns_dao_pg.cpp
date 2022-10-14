@@ -32,6 +32,7 @@
 #include "manager/metadata/dao/postgresql/common_pg.h"
 #include "manager/metadata/dao/postgresql/dbc_utils_pg.h"
 #include "manager/metadata/helper/logging_helper.h"
+#include "manager/metadata/helper/ptree_helper.h"
 
 // =============================================================================
 namespace {
@@ -296,24 +297,30 @@ ErrorCode ColumnsDAO::insert_column_metadata(
 
   // data_length
   auto o_data_length = columns_metadata.get_child_optional(Column::DATA_LENGTH);
+  std::string data_length_json;
+  if (o_data_length) {
+    ptree pt_data_length;
 
-  std::string s_data_length;
-  if (!o_data_length) {
-    param_values.emplace_back(nullptr);
-  } else {
-    const ptree& p_data_length = o_data_length.value();
-
-    if (p_data_length.empty()) {
-      param_values.emplace_back(p_data_length.data().c_str());
-    } else {
-      // Converts a property_tree to a JSON string.
-      error = Utility::ptree_to_json(p_data_length, s_data_length);
-      if (error != ErrorCode::OK) {
-        return error;
+    if (o_data_length.value().empty()) {
+      // Attempt to obtain by numeric.
+      auto optional_number =
+          columns_metadata.get_optional<int64_t>(Column::DATA_LENGTH);
+      if (optional_number) {
+        pt_data_length =
+            ptree_helper::make_array_ptree({optional_number.value()});
       }
-      param_values.emplace_back(s_data_length.c_str());
+    } else {
+      pt_data_length = o_data_length.value();
+    }
+    // Converts a property_tree to a JSON string.
+    error = Utility::ptree_to_json(pt_data_length, data_length_json);
+    if (error != ErrorCode::OK) {
+      return error;
     }
   }
+  param_values.emplace_back((!data_length_json.empty()
+                                 ? data_length_json.c_str()
+                                 : EMPTY_STRING_JSON));
 
   // varying
   auto varying = columns_metadata.get_optional<std::string>(Column::VARYING);
