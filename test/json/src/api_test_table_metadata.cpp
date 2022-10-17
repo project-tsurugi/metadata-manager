@@ -317,6 +317,58 @@ TEST_F(ApiTestTableMetadata, add_get_table_metadata_by_table_id) {
 /**
  * @brief happy test for all table metadata getting.
  */
+TEST_F(ApiTestTableMetadata, get_all_table_struct) {
+  constexpr int test_table_count      = 5;
+  std::string table_name_prefix       = "Table-ApiTestTableMetadata-GetAll-";
+  std::vector<ObjectIdType> table_ids = {};
+
+  // prepare test data for adding table metadata.
+  UTTableMetadata testdata_table_metadata =
+      *(global->testdata_table_metadata.get());
+  ptree expected_table = testdata_table_metadata.tables;
+
+  // add table metadata.
+  for (int count = 1; count <= test_table_count; count++) {
+    std::string table_name = table_name_prefix + std::to_string(count);
+    ObjectIdType table_id;
+    TableMetadataHelper::add_table(table_name, &table_id);
+    table_ids.emplace_back(table_id);
+  }
+
+  // gets all table metadata.
+  auto tables = manager::metadata::get_tables_ptr(GlobalTestEnvironment::TEST_DB);
+  ErrorCode error = tables->init();
+  EXPECT_EQ(ErrorCode::OK, error);
+
+  std::vector<std::shared_ptr<manager::metadata::Object>> container = {};
+  error = tables->get_all(container);
+  EXPECT_EQ(ErrorCode::OK, error);
+  ASSERT_EQ(test_table_count, container.size());
+
+  UTUtils::print("-- get all table metadata --");
+  for (int count = 1; count <= test_table_count; count++) {
+    std::shared_ptr<Object> table_metadata = container[count - 1];
+    UTUtils::print(UTUtils::get_tree_string(table_metadata->convert_to_ptree()));
+
+    std::string table_name = table_name_prefix + std::to_string(count);
+    expected_table.put(Tables::ID, table_ids[count - 1]);
+    expected_table.put(Tables::NAME, table_name);
+
+    // verifies that the returned table metadata is expected one.
+    TableMetadataHelper::check_table_metadata_expected(expected_table,
+                                                       table_metadata->convert_to_ptree());
+  }
+
+  // cleanup
+  for (ObjectIdType table_id : table_ids) {
+    error = tables->remove(table_id);
+    EXPECT_EQ(ErrorCode::OK, error);
+  }
+}
+
+/**
+ * @brief happy test for all table metadata getting.
+ */
 TEST_F(ApiTestTableMetadata, get_all_table_metadata) {
   constexpr int test_table_count      = 5;
   std::string table_name_prefix       = "Table-ApiTestTableMetadata-GetAll-";

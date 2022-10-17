@@ -131,4 +131,12 @@ ErrorCode Roles::get(std::string_view object_name,
   return error;
 }
 
+/**
+ *  @brief
+ */
+std::shared_ptr<Object> Roles::create_object() const {
+  // ToDo: implements.
+  return nullptr;
+}
+
 }  // namespace manager::metadata

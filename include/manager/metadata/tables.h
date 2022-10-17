@@ -303,6 +303,8 @@ class Tables : public Metadata {
                                        const char* permission,
                                        bool& check_result) const;
 
+  std::shared_ptr<Object> create_object() const override;
+
  private:
   manager::metadata::ErrorCode param_check_metadata_add(
       const boost::property_tree::ptree& object) const;

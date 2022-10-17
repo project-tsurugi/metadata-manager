@@ -55,6 +55,8 @@ class Indexes : public Metadata {
   ErrorCode remove(std::string_view object_name,
                    ObjectId* object_id) const override;
 
+  std::shared_ptr<Object> create_object() const override;
+  
  private:
   std::unique_ptr<manager::metadata::db::MetadataProvider> provider_ = nullptr;
 };

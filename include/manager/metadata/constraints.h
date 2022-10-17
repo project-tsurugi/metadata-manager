@@ -18,6 +18,8 @@
 
 #include <string>
 #include <vector>
+#include <memory>
+#include <boost/property_tree/ptree.hpp>
 
 #include "manager/metadata/metadata.h"
 
@@ -89,6 +91,7 @@ class Constraints : public Metadata {
 
   Constraints(const Constraints&)            = delete;
   Constraints& operator=(const Constraints&) = delete;
+  virtual ~Constraints() {}
 
   ErrorCode init() const override;
 
@@ -113,11 +116,7 @@ class Constraints : public Metadata {
     return ErrorCode::UNKNOWN;
   }
 
-  ErrorCode add(const manager::metadata::Constraint& constraint) const;
-  ErrorCode add(const manager::metadata::Constraint& constraint, ObjectId* object_id) const;
-
-  ErrorCode get(const ObjectId object_id, manager::metadata::Constraint& constraint) const;
-  ErrorCode get_all(std::vector<manager::metadata::Constraint>& container) const;
+  std::shared_ptr<Object> create_object() const override;
 
  private:
   manager::metadata::ErrorCode param_check_metadata_add(

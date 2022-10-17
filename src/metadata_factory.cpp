@@ -30,4 +30,32 @@ namespace manager::metadata {
     return std::make_unique<Indexes>(database);
   }
 
+  /**
+   * @brief
+   */
+  std::unique_ptr<Metadata> get_constraint_metadata(std::string_view database) {
+    return std::make_unique<Constraints>(database);
+  }
+
+  /**
+   * @brief
+   */
+  std::unique_ptr<Metadata> get_tables_ptr(std::string_view database) {
+    return std::make_unique<Tables>(database);
+  }
+
+  /**
+   * @brief
+   */
+  std::unique_ptr<Metadata> get_indexes_ptr(std::string_view database) {
+    return std::make_unique<Indexes>(database);
+  }
+
+  /**
+   * @brief
+   */
+  std::unique_ptr<Metadata> get_constraints_ptr(std::string_view database) {
+    return std::make_unique<Constraints>(database);
+  }
+
 } // namespace manager::metadata

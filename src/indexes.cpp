@@ -255,4 +255,11 @@ ErrorCode Indexes::remove(std::string_view object_name,
   return error;
 }
 
+/**
+ *  @brief
+ */
+std::shared_ptr<Object> Indexes::create_object() const {
+  return std::make_shared<Index>();
+}
+
 } // namespace manager::metadata

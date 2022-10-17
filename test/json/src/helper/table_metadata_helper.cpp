@@ -72,7 +72,11 @@ void TableMetadataHelper::generate_table_metadata(
     bool is_null = true;
     UTColumnMetadata column1{
         col_names[0], ordinal_positions[0],
-        static_cast<ObjectIdType>(DataTypes::DataTypesId::FLOAT32), !is_null};
+        static_cast<ObjectIdType>(DataTypes::DataTypesId::FLOAT32), 
+        !is_null};
+    column1.varying = true;
+    column1.default_expr = "default";
+    column1.data_length  = {1};
 
     // second column metadata
     UTColumnMetadata column2{
@@ -85,16 +89,16 @@ void TableMetadataHelper::generate_table_metadata(
     column2.p_data_length.push_back(std::make_pair("", data_length));
     column2.data_length.emplace_back(8);
     column2.data_length.emplace_back(2);
-
-    column2.varying = true;
+    column2.varying = false;
+    column2.default_expr = "default2";
 
     // third column metadata
     UTColumnMetadata column3{
         col_names[2], ordinal_positions[2],
         static_cast<ObjectIdType>(DataTypes::DataTypesId::CHAR), is_null};
-    column3.default_expr = "default";
+    column3.default_expr = "default3";
     column3.data_length  = {1};
-    column3.varying      = false;
+    column3.varying = false;
 
     // set table metadata to three column metadata
     testdata_table_metadata->columns.emplace_back(column1);

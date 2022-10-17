@@ -37,7 +37,7 @@ using boost::property_tree::ptree;
  */
 boost::property_tree::ptree Index::convert_to_ptree() const
 {
-  auto pt = ClassObject::convert_to_ptree();
+  auto pt = this->base_convert_to_ptree();
   pt.put(OWNER_ID, this->owner_id);
   pt.put(TABLE_ID, this->table_id);
   pt.put(ACCESS_METHOD, this->access_method);
@@ -63,7 +63,7 @@ boost::property_tree::ptree Index::convert_to_ptree() const
  */
 void Index::convert_from_ptree(const boost::property_tree::ptree& pt)
 {
-  ClassObject::convert_from_ptree(pt);
+  this->base_convert_from_ptree(pt);
   this->table_id = 
       pt.get_optional<ObjectId>(TABLE_ID).value_or(INVALID_OBJECT_ID);
   this->access_method  = 

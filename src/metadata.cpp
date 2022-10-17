@@ -15,6 +15,7 @@
  */
 #include "manager/metadata/metadata.h"
 
+#include <memory>
 #include "manager/metadata/log/default_logger.h"
 #include "manager/metadata/log/log_controller.h"
 
@@ -32,7 +33,7 @@ using boost::property_tree::ptree;
  * @brief  Transform metadata from structure object to ptree object.
  * @return ptree object.
  */
-boost::property_tree::ptree Object::convert_to_ptree() const {
+boost::property_tree::ptree Object::base_convert_to_ptree() const {
   boost::property_tree::ptree pt;
   pt.put<int64_t>(FORMAT_VERSION, this->format_version);
   pt.put<int64_t>(GENERATION, this->generation);
@@ -48,7 +49,7 @@ boost::property_tree::ptree Object::convert_to_ptree() const {
  * @return  structure object of metadata.
  */
 void 
-Object::convert_from_ptree(const boost::property_tree::ptree& pt) {
+Object::base_convert_from_ptree(const boost::property_tree::ptree& pt) {
   this->format_version = 
       pt.get_optional<int64_t>(FORMAT_VERSION).value_or(INVALID_VALUE);
   this->generation = 
@@ -59,11 +60,12 @@ Object::convert_from_ptree(const boost::property_tree::ptree& pt) {
 
 // ==========================================================================
 // ClassObject struct methods.
-/** @brief  Convert metadata from structure object to ptree object.
+/** 
+ *  @brief  Convert metadata from structure object to ptree object.
  *  @return ptree object.
  */
-boost::property_tree::ptree ClassObject::convert_to_ptree() const {
-  auto pt = Object::convert_to_ptree();
+boost::property_tree::ptree ClassObject::base_convert_to_ptree() const {
+  auto pt = Object::base_convert_to_ptree();
   pt.put(DATABASE_NAME, this->database_name);
   pt.put(SCHEMA_NAME, this->schema_name);
   pt.put(NAMESPACE, namespace_name);
@@ -79,8 +81,8 @@ boost::property_tree::ptree ClassObject::convert_to_ptree() const {
  * @return  structure object of metadata.
  */
 void 
-ClassObject::convert_from_ptree(const boost::property_tree::ptree& pt) {
-  Object::convert_from_ptree(pt);
+ClassObject::base_convert_from_ptree(const boost::property_tree::ptree& pt) {
+  Object::base_convert_from_ptree(pt);
   this->database_name = 
       pt.get_optional<std::string>(DATABASE_NAME).value_or("");
   this->schema_name = pt.get_optional<std::string>(SCHEMA_NAME).value_or("");
@@ -89,6 +91,23 @@ ClassObject::convert_from_ptree(const boost::property_tree::ptree& pt) {
       pt.get_optional<ObjectId>(OWNER_ID).value_or(INVALID_OBJECT_ID);
   this->acl = pt.get_optional<std::string>(ACL).value_or("");
 };
+
+/** 
+ *  @brief  Convert metadata from structure object to ptree object.
+ *  @return ptree object.
+ */
+boost::property_tree::ptree ClassObject::convert_to_ptree() const {
+  return this->base_convert_to_ptree();
+}
+
+/**
+ * @brief   Convert metadata from ptree object to structure object.
+ * @param   ptree [in] ptree object of metdata.
+ * @return  structure object of metadata.
+ */
+void ClassObject::convert_from_ptree(const boost::property_tree::ptree& pt) {
+  this->base_convert_from_ptree(pt);
+}
 
 // ==========================================================================
 // Metadata class methods.
@@ -183,7 +202,7 @@ ErrorCode Metadata::add(const manager::metadata::Object& object) const
  * @retval ErrorCode::ID_NOT_FOUND if the table id does not exist.
  * @retval otherwise an error code.
  */
-ErrorCode Metadata::get(const ObjectIdType object_id,
+ErrorCode Metadata::get(const ObjectId object_id,
                       manager::metadata::Object& object) const
 {
   ptree pt;
@@ -225,7 +244,7 @@ ErrorCode Metadata::get(std::string_view object_name,
  * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode Metadata::get_all(
-    std::vector<manager::metadata::Object>& objects) const {
+    std::vector<std::shared_ptr<manager::metadata::Object>>& objects) const {
 
   std::vector<ptree> pts;
   ErrorCode error = this->get_all(pts);
@@ -234,8 +253,8 @@ ErrorCode Metadata::get_all(
   }
 
   for (const auto& pt : pts) {
-    Object object;
-    object.convert_from_ptree(pt);
+    auto object = this->create_object();
+    object->convert_from_ptree(pt);
     objects.emplace_back(object);
   }
 

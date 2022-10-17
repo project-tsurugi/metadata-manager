@@ -102,6 +102,8 @@ class Statistics : public Metadata {
   ErrorCode remove_by_column_name(const ObjectIdType table_id,
                                   std::string_view column_name) const;
 
+  std::shared_ptr<Object> create_object() const override;
+
  private:
   ErrorCode param_check_statistics_add(
       const boost::property_tree::ptree& object) const;

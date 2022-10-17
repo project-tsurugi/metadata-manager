@@ -34,14 +34,14 @@ class ConstraintMetadataHelper {
   static void generate_test_metadata(const ObjectId& table_id,
                        std::unique_ptr<UTConstraintMetadata>& constraint_metadata);
 
-  static void add(const Constraints* constraints,
+  static void add(const Metadata* constraints,
                   const boost::property_tree::ptree& constraint_metadata,
                   ObjectIdType* constraint_id = nullptr);
-  static void add(const Constraints* constraints,
+  static void add(const Metadata* constraints,
                   const Constraint& constraint_metadata,
                   ObjectIdType* constraint_id = nullptr);
 
-  static void remove(const Constraints* constraints, const ObjectIdType constraint_id);
+  static void remove(const Metadata* constraints, const ObjectIdType constraint_id);
 
   static void check_metadata_expected(const boost::property_tree::ptree& expected,
                              const boost::property_tree::ptree& actual);

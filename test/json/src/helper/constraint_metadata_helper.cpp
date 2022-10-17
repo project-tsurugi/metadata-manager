@@ -94,7 +94,7 @@ void ConstraintMetadataHelper::generate_test_metadata(
  *   new constraint metadata.
  * @return none.
  */
-void ConstraintMetadataHelper::add(const Constraints* constraints,
+void ConstraintMetadataHelper::add(const Metadata* constraints,
                                    const boost::property_tree::ptree& constraint_metadata,
                                    ObjectIdType* constraint_id) {
   UTUtils::print("-- add constraint metadata in ptree --");
@@ -122,7 +122,7 @@ void ConstraintMetadataHelper::add(const Constraints* constraints,
  *   new constraint metadata.
  * @return none.
  */
-void ConstraintMetadataHelper::add(const Constraints* constraints,
+void ConstraintMetadataHelper::add(const Metadata* constraints,
                                    const Constraint& constraint_metadata,
                                    ObjectIdType* constraint_id) {
   UTUtils::print("-- add constraint metadata in struct --");
@@ -148,7 +148,7 @@ void ConstraintMetadataHelper::add(const Constraints* constraints,
  * @param constraint_id  [in]  constraint id of remove constraint metadata.
  * @return none.
  */
-void ConstraintMetadataHelper::remove(const Constraints* constraints,
+void ConstraintMetadataHelper::remove(const Metadata* constraints,
                                       const ObjectIdType constraint_id) {
   UTUtils::print("-- remove constraint metadata --");
   UTUtils::print(" constraint_id: ", constraint_id);

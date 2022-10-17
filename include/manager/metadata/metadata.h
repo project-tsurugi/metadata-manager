@@ -18,6 +18,7 @@
 #include <string>
 #include <string_view>
 #include <vector>
+#include <memory>
 
 #include <boost/property_tree/ptree.hpp>
 
@@ -43,10 +44,12 @@ struct Object {
    * @brief Field name constant indicating the format version of the metadata.
    */
   static constexpr const char* FORMAT_VERSION = "formatVersion";
+  static constexpr int64_t DEFAULT_FORMAT_VERSION = 1;
   /**
    * @brief Field name constant indicating the generation of the metadata.
    */
   static constexpr const char* GENERATION = "generation";
+  static constexpr int64_t DEFAULT_GENERATION = 1;
   /**
    * @brief Field name constant indicating the object id of the metadata.
    */
@@ -62,14 +65,27 @@ struct Object {
   std::string name;        //!< object name.
 
   Object()
-      : format_version(1), generation(1), id(INVALID_OBJECT_ID), name("") {}
+      : format_version(DEFAULT_FORMAT_VERSION), 
+        generation(DEFAULT_GENERATION), 
+        id(INVALID_OBJECT_ID), 
+        name("") {}
 
-  /**
-   * @brief  Convert metadata from structure object to ptree object.
+  /** 
+   * @brief  Transform metadata from structure object to ptree object.
    * @return ptree object.
    */
-  virtual boost::property_tree::ptree convert_to_ptree() const;
-  virtual void convert_from_ptree(const boost::property_tree::ptree& pt);
+  virtual boost::property_tree::ptree convert_to_ptree() const = 0;
+
+  /**
+   * @brief   Transform metadata from ptree object to structure object.
+   * @param   pt [in] ptree object of metdata.
+   * @return  structure object of metadata.
+   */
+  virtual void convert_from_ptree(const boost::property_tree::ptree& pt) = 0;
+
+ protected:
+  virtual boost::property_tree::ptree base_convert_to_ptree() const;
+  virtual void base_convert_from_ptree(const boost::property_tree::ptree& pt);
 };
 
 /**
@@ -97,9 +113,9 @@ struct ClassObject : public Object {
         namespace_name(""),
         owner_id(INVALID_OBJECT_ID),
         acl("") {}
-  /** @brief  Convert metadata from structure object to ptree object.
-   *  @return ptree object.
-   */
+
+  virtual boost::property_tree::ptree base_convert_to_ptree() const override;
+  virtual void base_convert_from_ptree(const boost::property_tree::ptree& pt) override;
   boost::property_tree::ptree convert_to_ptree() const override;
   void convert_from_ptree(const boost::property_tree::ptree& pt) override;
   /**
@@ -291,7 +307,7 @@ class Metadata {
    * @retval ErrorCode::ID_NOT_FOUND if the table id does not exist.
    * @retval otherwise an error code.
    */
-  ErrorCode get(const ObjectIdType object_id,
+  ErrorCode get(const ObjectId object_id,
                 manager::metadata::Object& object) const;
 
   /**
@@ -305,17 +321,13 @@ class Metadata {
   ErrorCode get(std::string_view object_name,
                 manager::metadata::Object& object) const;
 
-  /**
-   * @brief Get all metadata object objects from the metadata table.
-   *   If no metadata object exists, return the container as empty.
-   * @param objects  [out] Container of metadata objects.
-   * @return ErrorCode::OK if success, otherwise an error code.
-   */
-  ErrorCode get_all(std::vector<manager::metadata::Object>& objects) const;
-
+  ErrorCode get_all(
+    std::vector<std::shared_ptr<manager::metadata::Object>>& objects) const;
 
   ErrorCode update(const manager::metadata::ObjectIdType object_id,
                    const manager::metadata::Object& object) const;
+
+  virtual std::shared_ptr<Object> create_object() const = 0;
 
  protected:
   static constexpr const char* const kDefaultComponent = "visitor";

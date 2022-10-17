@@ -121,6 +121,9 @@ class Roles : public Metadata {
                    [[maybe_unused]] ObjectIdType* object_id) const override {
     return ErrorCode::UNKNOWN;
   }
+
+  std::shared_ptr<Object> create_object() const override;
+
 };  // class Roles
 
 }  // namespace manager::metadata
