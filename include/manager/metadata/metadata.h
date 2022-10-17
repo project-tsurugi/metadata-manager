@@ -36,6 +36,8 @@ using ObjectIdType      = ObjectId;
 static constexpr const ObjectId INVALID_OBJECT_ID = -1;
 static constexpr const int64_t INVALID_VALUE      = -1;
 
+using MetadataContainer = std::vector<std::unique_ptr<manager::metadata::Object>>;
+
 /**
  * @brief This class manage common metadata of all metadata objects.
  */
