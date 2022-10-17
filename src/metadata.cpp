@@ -244,7 +244,7 @@ ErrorCode Metadata::get(std::string_view object_name,
  * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode Metadata::get_all(
-    std::vector<std::shared_ptr<manager::metadata::Object>>& objects) const {
+    manager::metadata::MetadataContainer& objects) const {
 
   std::vector<ptree> pts;
   ErrorCode error = this->get_all(pts);

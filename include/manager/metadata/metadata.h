@@ -88,7 +88,7 @@ struct Object {
   virtual void base_convert_from_ptree(const boost::property_tree::ptree& pt);
 };
 
-using MetadataContainer = std::vector<std::unique_ptr<manager::metadata::Object>>;
+using MetadataContainer = std::vector<std::shared_ptr<manager::metadata::Object>>;
 
 /**
  * @brief This class manage common metadata of class metadata objects.
@@ -323,8 +323,7 @@ class Metadata {
   ErrorCode get(std::string_view object_name,
                 manager::metadata::Object& object) const;
 
-  ErrorCode get_all(
-    std::vector<std::shared_ptr<manager::metadata::Object>>& objects) const;
+  ErrorCode get_all(manager::metadata::MetadataContainer& objects) const;
 
   ErrorCode update(const manager::metadata::ObjectIdType object_id,
                    const manager::metadata::Object& object) const;
