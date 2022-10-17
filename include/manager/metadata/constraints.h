@@ -69,7 +69,15 @@ struct Constraint : public Object {
     UNKNOWN = INVALID_VALUE,  //!< @brief Unknown Constraints.
   };
 
-  Constraint() {}
+  Constraint()
+      : Object(),
+        table_id(INVALID_OBJECT_ID),
+        type(ConstraintType::UNKNOWN),
+        columns({}),
+        columns_id({}),
+        index_id(INVALID_VALUE),
+        expression("") {}
+
   ObjectId table_id;                 //!< @brief Table id of the metadata.
   ConstraintType type;               //!< @brief Constraint TYPE of the metadata.
   std::vector<int64_t> columns;      //!< @brief List of column numbers subject to constraints.

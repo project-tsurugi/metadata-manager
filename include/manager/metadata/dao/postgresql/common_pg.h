@@ -36,6 +36,7 @@ using ResultUPtr = std::unique_ptr<PGresult, std::function<void(PGresult*)>>;
 
 static constexpr const char* const SCHEMA_NAME_PUBLIC = "public";
 static constexpr const char* const SCHEMA_NAME = "tsurugi_catalog";
+static constexpr const char* const EMPTY_STRING_JSON = "{}";
 
 class PgErrorCode {
  public:
