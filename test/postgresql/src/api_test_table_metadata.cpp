@@ -26,6 +26,7 @@
 #include "manager/metadata/error_code.h"
 #include "manager/metadata/roles.h"
 #include "manager/metadata/tables.h"
+#include "manager/metadata/metadata_factory.h"
 #include "test/global_test_environment.h"
 #include "test/helper/foreign_table_helper.h"
 #include "test/helper/role_metadata_helper.h"

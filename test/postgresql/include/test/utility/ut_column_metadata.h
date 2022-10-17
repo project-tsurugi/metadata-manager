@@ -39,11 +39,10 @@ class UTColumnMetadata {
 
   UTColumnMetadata() = delete;
   UTColumnMetadata(std::string name, std::int64_t column_number,
-                   std::int64_t data_type_id, bool varying, bool is_not_null)
+                   std::int64_t data_type_id, bool is_not_null)
       : name(name),
         column_number(column_number),
         data_type_id(data_type_id),
-        varying(varying),
         is_not_null(is_not_null) {}
 
   void show();

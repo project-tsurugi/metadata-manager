@@ -77,10 +77,8 @@ void UTTableMetadata::generate_ptree() {
 
     // add column varying to ptree
     // if UTTableMetadata varying is initialized
-    if (column.varying >= 0) {
-      ptree_column.put<bool>(Column::VARYING,
-                             static_cast<bool>(column.varying));
-    }
+    ptree_column.put<bool>(Column::VARYING,
+                            static_cast<bool>(column.varying));
 
     // add column default expression to ptree
     // if UTTableMetadata default expression is initialized
