@@ -12,5 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-add_subdirectory(extended)
-add_subdirectory(src)
+add_executable(tables_test
+  table_test.cpp)
+target_link_libraries(tables_test
+  api)
+target_include_directories(tables_test
+    PRIVATE ${PROJECT_SOURCE_DIR}/include)
+set_target_properties(tables_test
+  PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}")
