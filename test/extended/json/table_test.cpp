@@ -181,6 +181,14 @@ ErrorCode display_table_metadata_object(const ptree& table) {
       return error;
     }
 
+    // name
+    error =
+        check_object<std::string>(Column::NAME, true, column);
+    if (error != ErrorCode::OK) {
+      ERROR(error);
+      return error;
+    }
+
     // columnNumber
     error =
         check_object<uint64_t>(Column::COLUMN_NUMBER, true, column);
