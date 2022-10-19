@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "test/postgresql/helper/role_metadata_helper.h"
+#include "test/helper/postgresql/role_metadata_helper_pg.h"
 
 #include <gtest/gtest.h>
 
@@ -50,7 +50,7 @@ ObjectIdType RoleMetadataHelper::create_role(std::string_view role_name,
   // db connection.
   db_connection();
 
-  statement = boost::format("CREATE ROLE %s %s") % role_name % options;
+  statement     = boost::format("CREATE ROLE %s %s") % role_name % options;
   PGresult* res = PQexec(connection.get(), statement.str().c_str());
   PQclear(res);
 
@@ -73,7 +73,7 @@ void RoleMetadataHelper::drop_role(std::string_view role_name) {
 
   // remove dummy data for ROLE.
   boost::format statement = boost::format("DROP ROLE %s") % role_name;
-  PGresult* res = PQexec(connection.get(), statement.str().c_str());
+  PGresult* res           = PQexec(connection.get(), statement.str().c_str());
   PQclear(res);
 }
 
@@ -206,7 +206,7 @@ void RoleMetadataHelper::db_connection() {
   if (!DbcUtils::is_open(connection)) {
     // db connection.
     PGconn* pgconn = PQconnectdb(Config::get_connection_string().c_str());
-    connection = DbcUtils::make_connection_sptr(pgconn);
+    connection     = DbcUtils::make_connection_sptr(pgconn);
 
     ASSERT_TRUE(DbcUtils::is_open(connection));
   }

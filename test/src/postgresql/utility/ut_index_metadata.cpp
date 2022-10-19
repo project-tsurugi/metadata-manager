@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "test/postgresql/utility/ut_index_metadata.h"
+#include "test/metadata/postgresql/ut_index_metadata_pg.h"
 
 #include <utility>
 

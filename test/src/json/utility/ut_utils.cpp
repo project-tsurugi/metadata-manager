@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "test/json/utility/ut_utils.h"
+#include "test/common/json/ut_utils_json.h"
 
 #include <gtest/gtest.h>
 
@@ -25,7 +25,7 @@
 #include "manager/metadata/datatypes.h"
 #include "manager/metadata/metadata.h"
 #include "manager/metadata/tables.h"
-#include "test/json/global_test_environment.h"
+#include "test/common/json/global_test_environment_json.h"
 
 namespace manager::metadata::testing {
 

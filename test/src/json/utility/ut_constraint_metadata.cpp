@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "test/json/utility/ut_constraint_metadata.h"
+#include "test/metadata/json/ut_constraint_metadata_json.h"
 
 #include <utility>
 

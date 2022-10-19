@@ -13,30 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TEST_POSTGRESQL_INCLUDE_TEST_HELPER_ROLE_METADATA_HELPER_H_
-#define TEST_POSTGRESQL_INCLUDE_TEST_HELPER_ROLE_METADATA_HELPER_H_
+#ifndef TEST_INCLUDE_TEST_HELPER_POSTGRESQL_TABLE_STATISTICS_HELPER_PG_H_
+#define TEST_INCLUDE_TEST_HELPER_POSTGRESQL_TABLE_STATISTICS_HELPER_PG_H_
 
+#include <string>
 #include <string_view>
-
-#include <boost/property_tree/ptree.hpp>
-
-#include "manager/metadata/metadata.h"
+#include <tuple>
+#include <vector>
 
 namespace manager::metadata::testing {
 
-class RoleMetadataHelper {
+class TableStatisticsHelper {
  public:
-  static ObjectIdType create_role(std::string_view role_name,
-                                  std::string_view options);
-  static void drop_role(std::string_view role_name);
+  using BasicTestParameter = std::tuple<std::string, float, float>;
 
-  static void check_roles_expected(const boost::property_tree::ptree& actual,
-                                   const boost::property_tree::ptree& expect);
-
- private:
-  static void db_connection();
+  static std::vector<BasicTestParameter> make_test_patterns_for_basic_tests(
+      std::string_view test_number);
 };
 
 }  // namespace manager::metadata::testing
 
-#endif  // TEST_POSTGRESQL_INCLUDE_TEST_HELPER_ROLE_METADATA_HELPER_H_
+#endif  // TEST_INCLUDE_TEST_HELPER_POSTGRESQL_TABLE_STATISTICS_HELPER_PG_H_

@@ -26,7 +26,7 @@
 #include "manager/metadata/dao/postgresql/dbc_utils_pg.h"
 #include "manager/metadata/error_code.h"
 #include "manager/metadata/metadata.h"
-#include "test/postgresql/utility/ut_utils.h"
+#include "test/common/postgresql/ut_utils_pg.h"
 
 // extern "C" {
 // #include <libpq-fe.h>
@@ -313,7 +313,7 @@ TEST_P(DaoTestCommonStrToFloat, str_to_float) {
   auto params = GetParam();
 
   const char* input = std::get<0>(params);
-  float actual = -10;
+  float actual      = -10;
 
   ErrorCode error = DbcUtils::str_to_floating_point(input, actual);
   EXPECT_EQ(ErrorCode::OK, error);
@@ -332,7 +332,7 @@ TEST_P(DaoTestCommonStrToFloat, str_to_float) {
 TEST_P(DaoTestCommonStrToFloatException, str_to_float) {
   const char* input = GetParam();
 
-  float actual = -10;
+  float actual    = -10;
   ErrorCode error = DbcUtils::str_to_floating_point(input, actual);
 
   EXPECT_EQ(ErrorCode::INTERNAL_ERROR, error);
@@ -343,7 +343,7 @@ TEST_P(DaoTestCommonStrToFloatException, str_to_float) {
  * @brief Converts nullptr to floating point.
  */
 TEST_F(DaoTestCommonStrToFloatException, null_to_float) {
-  float actual = -10;
+  float actual    = -10;
   ErrorCode error = DbcUtils::str_to_floating_point(nullptr, actual);
 
   EXPECT_EQ(ErrorCode::INTERNAL_ERROR, error);
@@ -354,7 +354,7 @@ TEST_F(DaoTestCommonStrToFloatException, null_to_float) {
  * @brief Happy path test for converting string to uint64_t.
  */
 TEST_P(DaoTestCommonStrToUint64_t, str_to_integral) {
-  auto params = GetParam();
+  auto params       = GetParam();
   const char* input = std::get<0>(params);
 
   uint64_t actual = -10;
@@ -394,11 +394,11 @@ TEST_F(DaoTestCommonStrToUint64_tException, null_to_integral) {
  * @brief Happy path test for converting string to int64_t.
  */
 TEST_P(DaoTestCommonStrToInt64_t, str_to_integral) {
-  auto params = GetParam();
+  auto params       = GetParam();
   const char* input = std::get<0>(params);
 
   ObjectIdType actual = -10;
-  ErrorCode error = DbcUtils::str_to_integral(input, actual);
+  ErrorCode error     = DbcUtils::str_to_integral(input, actual);
 
   EXPECT_EQ(ErrorCode::OK, error);
 
@@ -413,7 +413,7 @@ TEST_P(DaoTestCommonStrToInt64_tException, str_to_integral) {
   const char* input = GetParam();
 
   ObjectIdType actual = -10;
-  ErrorCode error = DbcUtils::str_to_integral(input, actual);
+  ErrorCode error     = DbcUtils::str_to_integral(input, actual);
 
   EXPECT_EQ(ErrorCode::INTERNAL_ERROR, error);
   EXPECT_EQ(-10, actual);
@@ -424,7 +424,7 @@ TEST_P(DaoTestCommonStrToInt64_tException, str_to_integral) {
  */
 TEST_F(DaoTestCommonStrToInt64_tException, null_to_integral) {
   ObjectIdType actual = -10;
-  ErrorCode error = DbcUtils::str_to_integral(nullptr, actual);
+  ErrorCode error     = DbcUtils::str_to_integral(nullptr, actual);
 
   EXPECT_EQ(ErrorCode::INTERNAL_ERROR, error);
   EXPECT_EQ(-10, actual);

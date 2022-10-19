@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TEST_POSTGRESQL_INCLUDE_TEST_HELPER_COLUMN_STATISTICS_HELPER_H_
-#define TEST_POSTGRESQL_INCLUDE_TEST_HELPER_COLUMN_STATISTICS_HELPER_H_
+#ifndef TEST_INCLUDE_TEST_HELPER_POSTGRESQL_COLUMN_STATISTICS_HELPER_PG_H_
+#define TEST_INCLUDE_TEST_HELPER_POSTGRESQL_COLUMN_STATISTICS_HELPER_PG_H_
 
 #include <string>
 #include <string_view>
@@ -38,8 +38,8 @@ class ColumnStatisticsHelper {
 
   static std::vector<BasicTestParameter> make_test_patterns_for_basic_tests(
       std::string_view test_number);
-  static std::vector<UpdateTestParameter>
-  make_test_patterns_for_update_tests(std::string_view test_number);
+  static std::vector<UpdateTestParameter> make_test_patterns_for_update_tests(
+      std::string_view test_number);
 
   static void add_column_statistics(
       const ObjectIdType table_id,
@@ -48,10 +48,10 @@ class ColumnStatisticsHelper {
   static boost::property_tree::ptree generate_column_statistic();
 
  private:
-  static constexpr int NUMBER_OF_ITERATIONS = 10;
+  static constexpr int NUMBER_OF_ITERATIONS       = 10;
   static constexpr int NUMBER_OF_RANDOM_CHARACTER = 10;
-  static constexpr int UPPER_VALUE_100 = 100;
-  static constexpr int UPPER_VALUE_20000 = 20000;
+  static constexpr int UPPER_VALUE_100            = 100;
+  static constexpr int UPPER_VALUE_20000          = 20000;
   static constexpr char ALPHA_NUM[] =
       "0123456789"
       "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
@@ -64,4 +64,4 @@ class ColumnStatisticsHelper {
 
 }  // namespace manager::metadata::testing
 
-#endif  // TEST_POSTGRESQL_INCLUDE_TEST_HELPER_COLUMN_STATISTICS_HELPER_H_
+#endif  // TEST_INCLUDE_TEST_HELPER_POSTGRESQL_COLUMN_STATISTICS_HELPER_PG_H_

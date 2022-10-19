@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "test/postgresql/global_test_environment.h"
+#include "test/common/postgresql/global_test_environment_pg.h"
 
 #include <gtest/gtest.h>
 
@@ -21,8 +21,8 @@
 
 #include "manager/metadata/common/config.h"
 #include "manager/metadata/dao/postgresql/dbc_utils_pg.h"
-#include "test/postgresql/helper/column_statistics_helper.h"
-#include "test/postgresql/helper/table_metadata_helper.h"
+#include "test/helper/postgresql/column_statistics_helper_pg.h"
+#include "test/helper/postgresql/table_metadata_helper_pg.h"
 
 namespace manager::metadata::testing {
 
@@ -49,15 +49,14 @@ void GlobalTestEnvironment::SetUp() {
                          std::numeric_limits<ObjectIdType>::quiet_NaN()};
 
   // initialize non-existing ordinal positions.
-  column_number_not_exists = {
-      -1,
-      0,
-      INT64_MAX - 1,
-      INT64_MAX,
-      4,
-      std::numeric_limits<ObjectIdType>::infinity(),
-      -std::numeric_limits<ObjectIdType>::infinity(),
-      std::numeric_limits<ObjectIdType>::quiet_NaN()};
+  column_number_not_exists = {-1,
+                              0,
+                              INT64_MAX - 1,
+                              INT64_MAX,
+                              4,
+                              std::numeric_limits<ObjectIdType>::infinity(),
+                              -std::numeric_limits<ObjectIdType>::infinity(),
+                              std::numeric_limits<ObjectIdType>::quiet_NaN()};
 
   // check if a connection to the metadata repository is opened or not.
   ConnectionSPtr connection = DbcUtils::make_connection_sptr(

@@ -22,9 +22,9 @@
 #include <boost/property_tree/json_parser.hpp>
 
 #include "manager/metadata/tables.h"
-#include "test/postgresql/global_test_environment.h"
-#include "test/postgresql/helper/table_metadata_helper.h"
-#include "test/postgresql/utility/ut_utils.h"
+#include "test/common/postgresql/global_test_environment_pg.h"
+#include "test/common/postgresql/ut_utils_pg.h"
+#include "test/helper/postgresql/table_metadata_helper_pg.h"
 
 namespace manager::metadata::testing {
 
@@ -96,7 +96,7 @@ TEST_F(ApiTestTableMetadataExtra, add_get_remove_table_metadata_by_table_name) {
     TableMetadataHelper::add_table(table_metadata_expected, &ret_table_id);
 
     // get valid table metadata by table name.
-    auto tables = std::make_unique<Tables>(GlobalTestEnvironment::TEST_DB);
+    auto tables     = std::make_unique<Tables>(GlobalTestEnvironment::TEST_DB);
     ErrorCode error = tables->init();
     EXPECT_EQ(ErrorCode::OK, error);
 
@@ -143,7 +143,7 @@ TEST_F(ApiTestTableMetadataExtra,
     TableMetadataHelper::add_table(table_metadata_expected, &ret_table_id);
 
     // get valid table metadata by table id.
-    auto tables = std::make_unique<Tables>(GlobalTestEnvironment::TEST_DB);
+    auto tables     = std::make_unique<Tables>(GlobalTestEnvironment::TEST_DB);
     ErrorCode error = tables->init();
     EXPECT_EQ(ErrorCode::OK, error);
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2022 tsurugi project.
+ * Copyright 2020-2021 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,40 +13,45 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TEST_POSTGRESQL_INCLUDE_TEST_UTILITY_UT_TABLE_METADATA_H_
-#define TEST_POSTGRESQL_INCLUDE_TEST_UTILITY_UT_TABLE_METADATA_H_
+#ifndef TEST_INCLUDE_TEST_METADATA_JSON_UT_TABLE_METADATA_JSON_H_
+#define TEST_INCLUDE_TEST_METADATA_JSON_UT_TABLE_METADATA_JSON_H_
 
 #include <string>
 #include <vector>
 
 #include <boost/property_tree/ptree.hpp>
 
-#include "test/postgresql/utility/ut_column_metadata.h"
-#include "test/postgresql/utility/ut_constraint_metadata.h"
+#include "manager/metadata/tables.h"
+#include "test/metadata/json/ut_column_metadata_json.h"
+#include "test/metadata/json/ut_constraint_metadata_json.h"
 
 namespace manager::metadata::testing {
 
 class UTTableMetadata {
  public:
-  int32_t format_version = NOT_INITIALIZED;
-  int64_t generation     = NOT_INITIALIZED;
-  int64_t id             = NOT_INITIALIZED;
+  std::int32_t format_version = NOT_INITIALIZED;
+  std::int64_t generation     = NOT_INITIALIZED;
+  int64_t id                  = NOT_INITIALIZED;
   std::string name;
   std::string namespace_name;
-  int64_t tuples = NOT_INITIALIZED;
+  std::vector<int64_t> primary_keys;
+  float tuples = NOT_INITIALIZED;
+
   boost::property_tree::ptree tables;
   std::vector<UTColumnMetadata> columns;
   std::vector<UTConstraintMetadata> constraints;
+  manager::metadata::Table table;
 
   UTTableMetadata() = delete;
   explicit UTTableMetadata(std::string name) : name(name) {}
 
   void generate_ptree();
+  void generate_table();
 
  private:
-  static constexpr std::int64_t NOT_INITIALIZED = -1;
+  static constexpr int64_t NOT_INITIALIZED = -1;
 };
 
 }  // namespace manager::metadata::testing
 
-#endif  // TEST_POSTGRESQL_INCLUDE_TEST_UTILITY_UT_TABLE_METADATA_H_
+#endif  // TEST_INCLUDE_TEST_METADATA_JSON_UT_TABLE_METADATA_JSON_H_

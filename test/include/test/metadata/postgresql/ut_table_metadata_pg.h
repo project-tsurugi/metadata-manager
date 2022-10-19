@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 tsurugi project.
+ * Copyright 2020-2022 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,45 +13,40 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TEST_JSON_INCLUDE_TEST_UTILITY_UT_TABLE_METADATA_H_
-#define TEST_JSON_INCLUDE_TEST_UTILITY_UT_TABLE_METADATA_H_
+#ifndef TEST_INCLUDE_TEST_METADATA_POSTGRESQL_UT_TABLE_METADATA_PG_H_
+#define TEST_INCLUDE_TEST_METADATA_POSTGRESQL_UT_TABLE_METADATA_PG_H_
 
 #include <string>
 #include <vector>
 
 #include <boost/property_tree/ptree.hpp>
 
-#include "manager/metadata/tables.h"
-#include "test/json/utility/ut_column_metadata.h"
-#include "test/json/utility/ut_constraint_metadata.h"
+#include "test/metadata/postgresql/ut_column_metadata_pg.h"
+#include "test/metadata/postgresql/ut_constraint_metadata_pg.h"
 
 namespace manager::metadata::testing {
 
 class UTTableMetadata {
  public:
-  std::int32_t format_version = NOT_INITIALIZED;
-  std::int64_t generation     = NOT_INITIALIZED;
-  int64_t id                  = NOT_INITIALIZED;
+  int32_t format_version = NOT_INITIALIZED;
+  int64_t generation     = NOT_INITIALIZED;
+  int64_t id             = NOT_INITIALIZED;
   std::string name;
   std::string namespace_name;
-  std::vector<int64_t> primary_keys;
-  float tuples = NOT_INITIALIZED;
-
+  int64_t tuples = NOT_INITIALIZED;
   boost::property_tree::ptree tables;
   std::vector<UTColumnMetadata> columns;
   std::vector<UTConstraintMetadata> constraints;
-  manager::metadata::Table table;
 
   UTTableMetadata() = delete;
   explicit UTTableMetadata(std::string name) : name(name) {}
 
   void generate_ptree();
-  void generate_table();
 
  private:
-  static constexpr int64_t NOT_INITIALIZED = -1;
+  static constexpr std::int64_t NOT_INITIALIZED = -1;
 };
 
 }  // namespace manager::metadata::testing
 
-#endif  // TEST_JSON_INCLUDE_TEST_UTILITY_UT_TABLE_METADATA_H_
+#endif  // TEST_INCLUDE_TEST_METADATA_POSTGRESQL_UT_TABLE_METADATA_PG_H_

@@ -21,9 +21,9 @@
 #include <boost/foreach.hpp>
 
 #include "manager/metadata/tables.h"
-#include "test/postgresql/global_test_environment.h"
-#include "test/postgresql/helper/table_metadata_helper.h"
-#include "test/postgresql/utility/ut_utils.h"
+#include "test/common/postgresql/global_test_environment_pg.h"
+#include "test/common/postgresql/ut_utils_pg.h"
+#include "test/helper/postgresql/table_metadata_helper_pg.h"
 
 namespace manager::metadata::testing {
 

@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TEST_POSTGRESQL_INCLUDE_TEST_UTILITY_UT_CONSTRAINT_METADATA_H_
-#define TEST_POSTGRESQL_INCLUDE_TEST_UTILITY_UT_CONSTRAINT_METADATA_H_
+#ifndef TEST_INCLUDE_TEST_METADATA_JSON_UT_CONSTRAINT_METADATA_JSON_H_
+#define TEST_INCLUDE_TEST_METADATA_JSON_UT_CONSTRAINT_METADATA_JSON_H_
 
 #include <string>
 #include <vector>
@@ -34,7 +34,7 @@ class UTConstraintMetadata {
   int64_t columns  = NOT_INITIALIZED;     //!< @brief single value of columns
   boost::property_tree::ptree p_columns;  //!< @brief array of columns
   std::vector<int64_t> columns_list;
-  int64_t columns_id = NOT_INITIALIZED;      //!< @brief single value of columns_id
+  int64_t columns_id = NOT_INITIALIZED;  //!< @brief single value of columns_id
   boost::property_tree::ptree p_columns_id;  //!< @brief array of columns_id
   std::vector<int64_t> columns_id_list;
   int64_t index_id = NOT_INITIALIZED;
@@ -43,7 +43,8 @@ class UTConstraintMetadata {
   boost::property_tree::ptree constraints_metadata;
 
   UTConstraintMetadata() = delete;
-  explicit UTConstraintMetadata(std::string name, Constraint::ConstraintType type)
+  explicit UTConstraintMetadata(std::string name,
+                                Constraint::ConstraintType type)
       : name(name), type(static_cast<int64_t>(type)) {}
 
   void generate_ptree();
@@ -54,4 +55,4 @@ class UTConstraintMetadata {
 
 }  // namespace manager::metadata::testing
 
-#endif  // TEST_POSTGRESQL_INCLUDE_TEST_UTILITY_UT_CONSTRAINT_METADATA_H_
+#endif  // TEST_INCLUDE_TEST_METADATA_JSON_UT_CONSTRAINT_METADATA_JSON_H_

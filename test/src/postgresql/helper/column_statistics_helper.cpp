@@ -13,15 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "test/postgresql/helper/column_statistics_helper.h"
+#include "test/helper/postgresql/column_statistics_helper_pg.h"
 
 #include <gtest/gtest.h>
 
 #include <random>
 
 #include "manager/metadata/statistics.h"
-#include "test/postgresql/global_test_environment.h"
-#include "test/postgresql/utility/ut_utils.h"
+#include "test/common/postgresql/global_test_environment_pg.h"
+#include "test/common/postgresql/ut_utils_pg.h"
 
 namespace manager::metadata::testing {
 

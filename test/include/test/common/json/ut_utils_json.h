@@ -13,20 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TEST_POSTGRESQL_INCLUDE_TEST_UTILITY_UT_UTILS_H_
-#define TEST_POSTGRESQL_INCLUDE_TEST_UTILITY_UT_UTILS_H_
+#ifndef TEST_INCLUDE_TEST_COMMON_JSON_UT_UTILS_JSON_H_
+#define TEST_INCLUDE_TEST_COMMON_JSON_UT_UTILS_JSON_H_
 
 #include <iostream>
 #include <string>
 
 #include <boost/property_tree/ptree.hpp>
 
+#include "test/metadata/json/ut_column_metadata_json.h"
+#include "test/metadata/json/ut_table_metadata_json.h"
+
 namespace manager::metadata::testing {
 
 class UTUtils {
  public:
-  static void skip_if_connection_not_opened();
-  static void skip_if_connection_opened();
   static std::string get_tree_string(const boost::property_tree::ptree& pt);
   static std::string print_tree(const boost::property_tree::ptree& pt,
                                 int level);
@@ -62,4 +63,4 @@ class UTUtils {
 
 }  // namespace manager::metadata::testing
 
-#endif  // TEST_POSTGRESQL_INCLUDE_TEST_UTILITY_UT_UTILS_H_
+#endif  // TEST_INCLUDE_TEST_COMMON_JSON_UT_UTILS_JSON_H_

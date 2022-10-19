@@ -24,13 +24,13 @@
 #include "manager/metadata/common/config.h"
 #include "manager/metadata/constraints.h"
 #include "manager/metadata/error_code.h"
-#include "manager/metadata/tables.h"
 #include "manager/metadata/metadata_factory.h"
-#include "test/json/global_test_environment.h"
-#include "test/json/helper/constraint_metadata_helper.h"
-#include "test/json/helper/table_metadata_helper.h"
-#include "test/json/utility/ut_table_metadata.h"
-#include "test/json/utility/ut_utils.h"
+#include "manager/metadata/tables.h"
+#include "test/common/json/global_test_environment_json.h"
+#include "test/common/json/ut_utils_json.h"
+#include "test/helper/json/constraint_metadata_helper_json.h"
+#include "test/helper/json/table_metadata_helper_json.h"
+#include "test/metadata/json/ut_table_metadata_json.h"
 
 namespace {
 
@@ -45,12 +45,14 @@ using boost::property_tree::ptree;
 class ApiTestConstraintMetadata : public ::testing::Test {
   void SetUp() override {
     // Get table metadata for testing.
-    UTTableMetadata testdata_table_metadata = *(global->testdata_table_metadata.get());
+    UTTableMetadata testdata_table_metadata =
+        *(global->testdata_table_metadata.get());
     // Copy table metadata.
     ptree new_table = testdata_table_metadata.tables;
     // Change to a unique table name.
     std::string new_table_name = new_table.get<std::string>(Tables::NAME) +
-                                 "_ApiTestConstraintMetadata" + std::to_string(__LINE__);
+                                 "_ApiTestConstraintMetadata" +
+                                 std::to_string(__LINE__);
     new_table.put(Tables::NAME, new_table_name);
 
     // Add table metadata.
@@ -64,8 +66,8 @@ class ApiTestConstraintMetadata : public ::testing::Test {
 };
 
 /**
- * @brief Test that adds metadata for a new constraint and retrieves it using the constraint id as
- * the key with the ptree type.
+ * @brief Test that adds metadata for a new constraint and retrieves it using
+ * the constraint id as the key with the ptree type.
  * - add:
  *     patterns that obtain a constraint id.
  * - get:
@@ -77,19 +79,22 @@ TEST_F(ApiTestConstraintMetadata, add_get_constraint_metadata) {
   std::unique_ptr<UTConstraintMetadata> constraint_metadata;
 
   // generate metadata.
-  ConstraintMetadataHelper::generate_test_metadata(table_id, constraint_metadata);
+  ConstraintMetadataHelper::generate_test_metadata(table_id,
+                                                   constraint_metadata);
   ptree new_constraints = constraint_metadata->constraints_metadata;
   // set table id.
   new_constraints.put(Constraint::TABLE_ID, table_id);
 
   // generate constraint metadata manager.
-  auto constraints = std::make_unique<Constraints>(GlobalTestEnvironment::TEST_DB);
-  ErrorCode error  = constraints->init();
+  auto constraints =
+      std::make_unique<Constraints>(GlobalTestEnvironment::TEST_DB);
+  ErrorCode error = constraints->init();
   ASSERT_EQ(ErrorCode::OK, error);
 
   ObjectId ret_id_value = -1;
   // add constraint metadata.
-  ConstraintMetadataHelper::add(constraints.get(), new_constraints, &ret_id_value);
+  ConstraintMetadataHelper::add(constraints.get(), new_constraints,
+                                &ret_id_value);
   // set constraint id.
   new_constraints.put(Constraint::ID, ret_id_value);
 
@@ -103,8 +108,8 @@ TEST_F(ApiTestConstraintMetadata, add_get_constraint_metadata) {
     UTUtils::print(UTUtils::get_tree_string(constraint_metadata_inserted));
 
     // verifies that the returned constraint metadata is expected one.
-    ConstraintMetadataHelper::check_metadata_expected(new_constraints,
-                                                      constraint_metadata_inserted);
+    ConstraintMetadataHelper::check_metadata_expected(
+        new_constraints, constraint_metadata_inserted);
   }
 
   // remove constraint metadata by constraint id.
@@ -112,8 +117,8 @@ TEST_F(ApiTestConstraintMetadata, add_get_constraint_metadata) {
 }
 
 /**
- * @brief Test that adds metadata for a new constraint and retrieves it using the constraint id as
- * the key with the ptree type.
+ * @brief Test that adds metadata for a new constraint and retrieves it using
+ * the constraint id as the key with the ptree type.
  * - add:
  *     patterns that do not obtain a constraint id.
  * - get_all:
@@ -127,12 +132,14 @@ TEST_F(ApiTestConstraintMetadata, add_get_all_constraint_metadata) {
   auto base_constraint_count = ConstraintMetadataHelper::get_record_count();
 
   // generate constraint metadata manager.
-  auto constraints = std::make_unique<Constraints>(GlobalTestEnvironment::TEST_DB);
-  ErrorCode error  = constraints->init();
+  auto constraints =
+      std::make_unique<Constraints>(GlobalTestEnvironment::TEST_DB);
+  ErrorCode error = constraints->init();
   ASSERT_EQ(ErrorCode::OK, error);
 
   // generate metadata.
-  ConstraintMetadataHelper::generate_test_metadata(table_id, constraint_metadata);
+  ConstraintMetadataHelper::generate_test_metadata(table_id,
+                                                   constraint_metadata);
   ptree new_constraints = constraint_metadata->constraints_metadata;
   // set table id.
   new_constraints.put(Constraint::TABLE_ID, table_id);
@@ -141,7 +148,8 @@ TEST_F(ApiTestConstraintMetadata, add_get_all_constraint_metadata) {
   ObjectId constraint_ids[kTestConstraintCount];
   for (auto& constraint_id : constraint_ids) {
     constraint_id = 0;
-    ConstraintMetadataHelper::add(constraints.get(), new_constraints, &constraint_id);
+    ConstraintMetadataHelper::add(constraints.get(), new_constraints,
+                                  &constraint_id);
   }
 
   std::vector<boost::property_tree::ptree> container = {};
@@ -160,7 +168,8 @@ TEST_F(ApiTestConstraintMetadata, add_get_all_constraint_metadata) {
       // set constraint id.
       expected_constraints.put(Tables::ID, constraint_ids[index]);
       // verifies that the returned table metadata is expected one.
-      ConstraintMetadataHelper::check_metadata_expected(expected_constraints, actual_constraints);
+      ConstraintMetadataHelper::check_metadata_expected(expected_constraints,
+                                                        actual_constraints);
     }
   }
 
@@ -186,19 +195,22 @@ TEST_F(ApiTestConstraintMetadata, remove_constraint_metadata) {
   std::unique_ptr<UTConstraintMetadata> constraint_metadata;
 
   // generate metadata.
-  ConstraintMetadataHelper::generate_test_metadata(table_id, constraint_metadata);
+  ConstraintMetadataHelper::generate_test_metadata(table_id,
+                                                   constraint_metadata);
   ptree new_constraints = constraint_metadata->constraints_metadata;
   // set table id.
   new_constraints.put(Constraint::TABLE_ID, table_id);
 
   // generate constraint metadata manager.
-  auto constraints = std::make_unique<Constraints>(GlobalTestEnvironment::TEST_DB);
-  ErrorCode error  = constraints->init();
+  auto constraints =
+      std::make_unique<Constraints>(GlobalTestEnvironment::TEST_DB);
+  ErrorCode error = constraints->init();
   ASSERT_EQ(ErrorCode::OK, error);
 
   ObjectId ret_id_value = -1;
   // add constraint metadata.
-  ConstraintMetadataHelper::add(constraints.get(), new_constraints, &ret_id_value);
+  ConstraintMetadataHelper::add(constraints.get(), new_constraints,
+                                &ret_id_value);
 
   // remove constraint metadata by constraint id.
   ConstraintMetadataHelper::remove(constraints.get(), ret_id_value);
@@ -227,8 +239,9 @@ TEST_F(ApiTestConstraintMetadata, remove_constraint_metadata) {
  */
 TEST_F(ApiTestConstraintMetadata, all_invalid_parameter) {
   // generate constraint metadata manager.
-  auto constraints = std::make_unique<Constraints>(GlobalTestEnvironment::TEST_DB);
-  ErrorCode error  = constraints->init();
+  auto constraints =
+      std::make_unique<Constraints>(GlobalTestEnvironment::TEST_DB);
+  ErrorCode error = constraints->init();
   ASSERT_EQ(ErrorCode::OK, error);
 
   ObjectId table_id      = -1;
@@ -270,8 +283,9 @@ TEST_F(ApiTestConstraintMetadata, get_all_constraint_metadata_empty) {
   std::int64_t base_table_count = ConstraintMetadataHelper::get_record_count();
 
   // generate constraint metadata manager.
-  auto constraints = std::make_unique<Constraints>(GlobalTestEnvironment::TEST_DB);
-  ErrorCode error  = constraints->init();
+  auto constraints =
+      std::make_unique<Constraints>(GlobalTestEnvironment::TEST_DB);
+  ErrorCode error = constraints->init();
   EXPECT_EQ(ErrorCode::OK, error);
 
   std::vector<boost::property_tree::ptree> container = {};
@@ -289,7 +303,8 @@ TEST_F(ApiTestConstraintMetadata, add_get_remove_without_initialized) {
   std::unique_ptr<UTConstraintMetadata> constraint_metadata;
 
   // generate metadata.
-  ConstraintMetadataHelper::generate_test_metadata(table_id, constraint_metadata);
+  ConstraintMetadataHelper::generate_test_metadata(table_id,
+                                                   constraint_metadata);
   ptree new_constraints = constraint_metadata->constraints_metadata;
   // set table id.
   new_constraints.put(Constraint::TABLE_ID, table_id);
@@ -298,7 +313,8 @@ TEST_F(ApiTestConstraintMetadata, add_get_remove_without_initialized) {
   UTUtils::print("-- add constraint metadata --");
   {
     // generate constraint metadata manager.
-    auto constraints = std::make_unique<Constraints>(GlobalTestEnvironment::TEST_DB);
+    auto constraints =
+        std::make_unique<Constraints>(GlobalTestEnvironment::TEST_DB);
     // add constraint metadata.
     ErrorCode error = constraints->add(new_constraints, &object_id);
     EXPECT_EQ(ErrorCode::OK, error);
@@ -308,7 +324,8 @@ TEST_F(ApiTestConstraintMetadata, add_get_remove_without_initialized) {
   {
     ptree constraint_metadata_inserted;
     // generate constraint metadata manager.
-    auto constraints = std::make_unique<Constraints>(GlobalTestEnvironment::TEST_DB);
+    auto constraints =
+        std::make_unique<Constraints>(GlobalTestEnvironment::TEST_DB);
     // get constraint metadata by constraint id.
     ErrorCode error = constraints->get(object_id, constraint_metadata_inserted);
     EXPECT_EQ(ErrorCode::OK, error);
@@ -318,7 +335,8 @@ TEST_F(ApiTestConstraintMetadata, add_get_remove_without_initialized) {
   {
     std::vector<boost::property_tree::ptree> container = {};
     // generate constraint metadata manager.
-    auto constraints = std::make_unique<Constraints>(GlobalTestEnvironment::TEST_DB);
+    auto constraints =
+        std::make_unique<Constraints>(GlobalTestEnvironment::TEST_DB);
     // get constraint metadata by constraint id.
     ErrorCode error = constraints->get_all(container);
     EXPECT_EQ(ErrorCode::OK, error);
@@ -327,7 +345,8 @@ TEST_F(ApiTestConstraintMetadata, add_get_remove_without_initialized) {
   UTUtils::print("-- remove constraint metadata --");
   {
     // generate constraint metadata manager.
-    auto constraints = std::make_unique<Constraints>(GlobalTestEnvironment::TEST_DB);
+    auto constraints =
+        std::make_unique<Constraints>(GlobalTestEnvironment::TEST_DB);
     // remove constraint metadata by constraint id.
     ErrorCode error = constraints->remove(object_id);
     EXPECT_EQ(ErrorCode::OK, error);
@@ -339,8 +358,9 @@ TEST_F(ApiTestConstraintMetadata, add_get_remove_without_initialized) {
  */
 TEST_F(ApiTestConstraintMetadata, unsupported_apis) {
   // generate constraint metadata manager.
-  auto constraints = std::make_unique<Constraints>(GlobalTestEnvironment::TEST_DB);
-  ErrorCode error  = constraints->init();
+  auto constraints =
+      std::make_unique<Constraints>(GlobalTestEnvironment::TEST_DB);
+  ErrorCode error = constraints->init();
   EXPECT_EQ(ErrorCode::OK, error);
 
   std::string object_name = "dummy-name";
@@ -361,8 +381,8 @@ TEST_F(ApiTestConstraintMetadata, unsupported_apis) {
 }
 
 /**
- * @brief Test that adds metadata for a new constraint and retrieves it using the constraint id as
- * the key with the ptree type.
+ * @brief Test that adds metadata for a new constraint and retrieves it using
+ * the constraint id as the key with the ptree type.
  * - add:
  *     struct: patterns that obtain a constraint id.
  * - get:
@@ -375,20 +395,23 @@ TEST_F(ApiTestConstraintMetadata, add_get_constraint_metadata_object_ptree) {
   std::unique_ptr<UTConstraintMetadata> constraint_metadata;
 
   // generate metadata.
-  ConstraintMetadataHelper::generate_test_metadata(table_id, constraint_metadata);
+  ConstraintMetadataHelper::generate_test_metadata(table_id,
+                                                   constraint_metadata);
   Constraint new_constraints;
   new_constraints.convert_from_ptree(constraint_metadata->constraints_metadata);
   // set table id.
   new_constraints.table_id = table_id;
 
   // generate constraint metadata manager.
-  auto constraints = manager::metadata::get_constraints_ptr(GlobalTestEnvironment::TEST_DB);
-  ErrorCode error  = constraints->init();
+  auto constraints =
+      manager::metadata::get_constraints_ptr(GlobalTestEnvironment::TEST_DB);
+  ErrorCode error = constraints->init();
   ASSERT_EQ(ErrorCode::OK, error);
 
   ObjectId ret_id_value = -1;
   // add constraint metadata.
-  ConstraintMetadataHelper::add(constraints.get(), new_constraints, &ret_id_value);
+  ConstraintMetadataHelper::add(constraints.get(), new_constraints,
+                                &ret_id_value);
   // set constraint id.
   new_constraints.id = ret_id_value;
 
@@ -402,8 +425,8 @@ TEST_F(ApiTestConstraintMetadata, add_get_constraint_metadata_object_ptree) {
     UTUtils::print(UTUtils::get_tree_string(get_constraint_metadata));
 
     // verifies that the returned constraint metadata is expected one.
-    ConstraintMetadataHelper::check_metadata_expected(new_constraints.convert_to_ptree(),
-                                                      get_constraint_metadata);
+    ConstraintMetadataHelper::check_metadata_expected(
+        new_constraints.convert_to_ptree(), get_constraint_metadata);
   }
 
   UTUtils::print("-- get constraint metadata in object --");
@@ -413,11 +436,13 @@ TEST_F(ApiTestConstraintMetadata, add_get_constraint_metadata_object_ptree) {
     error = constraints->get(ret_id_value, get_constraint_metadata);
     EXPECT_EQ(ErrorCode::OK, error);
 
-    UTUtils::print(UTUtils::get_tree_string(get_constraint_metadata.convert_to_ptree()));
+    UTUtils::print(
+        UTUtils::get_tree_string(get_constraint_metadata.convert_to_ptree()));
 
     // verifies that the returned constraint metadata is expected one.
-    ConstraintMetadataHelper::check_metadata_expected(new_constraints.convert_to_ptree(),
-                                                      get_constraint_metadata.convert_to_ptree());
+    ConstraintMetadataHelper::check_metadata_expected(
+        new_constraints.convert_to_ptree(),
+        get_constraint_metadata.convert_to_ptree());
   }
 
   // remove constraint metadata by constraint id.
@@ -425,10 +450,10 @@ TEST_F(ApiTestConstraintMetadata, add_get_constraint_metadata_object_ptree) {
 }
 
 /**
- * @brief Test that adds metadata for a new constraint and retrieves it using the constraint id as
- * the key with the ptree type.
- * @brief Test that adds metadata for a new constraint and retrieves it using the constraint id as
- * the key with the ptree type.
+ * @brief Test that adds metadata for a new constraint and retrieves it using
+ * the constraint id as the key with the ptree type.
+ * @brief Test that adds metadata for a new constraint and retrieves it using
+ * the constraint id as the key with the ptree type.
  * - add:
  *     ptree: patterns that obtain a constraint id.
  * - get:
@@ -441,19 +466,22 @@ TEST_F(ApiTestConstraintMetadata, add_get_constraint_metadata_ptree_object) {
   std::unique_ptr<UTConstraintMetadata> constraint_metadata;
 
   // generate metadata.
-  ConstraintMetadataHelper::generate_test_metadata(table_id, constraint_metadata);
+  ConstraintMetadataHelper::generate_test_metadata(table_id,
+                                                   constraint_metadata);
   ptree new_constraints = constraint_metadata->constraints_metadata;
   // set table id.
   new_constraints.put(Constraint::TABLE_ID, table_id);
 
   // generate constraint metadata manager.
-  auto constraints = manager::metadata::get_constraints_ptr(GlobalTestEnvironment::TEST_DB);
-  ErrorCode error  = constraints->init();
+  auto constraints =
+      manager::metadata::get_constraints_ptr(GlobalTestEnvironment::TEST_DB);
+  ErrorCode error = constraints->init();
   ASSERT_EQ(ErrorCode::OK, error);
 
   ObjectId ret_id_value = -1;
   // add constraint metadata.
-  ConstraintMetadataHelper::add(constraints.get(), new_constraints, &ret_id_value);
+  ConstraintMetadataHelper::add(constraints.get(), new_constraints,
+                                &ret_id_value);
   // set constraint id.
   new_constraints.put(Constraint::ID, ret_id_value);
 
@@ -467,21 +495,23 @@ TEST_F(ApiTestConstraintMetadata, add_get_constraint_metadata_ptree_object) {
     UTUtils::print(UTUtils::get_tree_string(get_constraint_metadata));
 
     // verifies that the returned constraint metadata is expected one.
-    ConstraintMetadataHelper::check_metadata_expected(new_constraints, get_constraint_metadata);
+    ConstraintMetadataHelper::check_metadata_expected(new_constraints,
+                                                      get_constraint_metadata);
   }
 
   UTUtils::print("-- get constraint metadata in struct --");
   {
     Constraint get_constraint_metadata;
     // get constraint metadata by constraint id.
-    error = constraints->get(ret_id_value, get_constraint_metadata); 
+    error = constraints->get(ret_id_value, get_constraint_metadata);
     EXPECT_EQ(ErrorCode::OK, error);
 
-    UTUtils::print(UTUtils::get_tree_string(get_constraint_metadata.convert_to_ptree()));
+    UTUtils::print(
+        UTUtils::get_tree_string(get_constraint_metadata.convert_to_ptree()));
 
     // verifies that the returned constraint metadata is expected one.
-    ConstraintMetadataHelper::check_metadata_expected(new_constraints,
-                                                      get_constraint_metadata.convert_to_ptree());
+    ConstraintMetadataHelper::check_metadata_expected(
+        new_constraints, get_constraint_metadata.convert_to_ptree());
   }
 
   // remove constraint metadata by constraint id.

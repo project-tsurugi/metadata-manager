@@ -16,7 +16,7 @@
 #include <gtest/gtest.h>
 
 #include "manager/metadata/common/config.h"
-#include "test/json/utility/ut_utils.h"
+#include "test/common/json/ut_utils_json.h"
 
 namespace manager::metadata::testing {
 

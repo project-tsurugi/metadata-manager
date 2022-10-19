@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TEST_POSTGRESQL_INCLUDE_TEST_GLOBAL_TEST_ENVIRONMENT_H_
-#define TEST_POSTGRESQL_INCLUDE_TEST_GLOBAL_TEST_ENVIRONMENT_H_
+#ifndef TEST_INCLUDE_TEST_COMMON_POSTGRESQL_GLOBAL_TEST_ENVIRONMENT_PG_H_
+#define TEST_INCLUDE_TEST_COMMON_POSTGRESQL_GLOBAL_TEST_ENVIRONMENT_PG_H_
 
 #include <gtest/gtest.h>
 
@@ -25,7 +25,7 @@
 #include <boost/property_tree/ptree.hpp>
 
 #include "manager/metadata/metadata.h"
-#include "test/postgresql/utility/ut_table_metadata.h"
+#include "test/metadata/postgresql/ut_table_metadata_pg.h"
 
 namespace manager::metadata::testing {
 
@@ -96,4 +96,4 @@ extern GlobalTestEnvironment* const global;
 
 }  // namespace manager::metadata::testing
 
-#endif  // TEST_POSTGRESQL_INCLUDE_TEST_GLOBAL_TEST_ENVIRONMENT_H_
+#endif  // TEST_INCLUDE_TEST_COMMON_POSTGRESQL_GLOBAL_TEST_ENVIRONMENT_PG_H_

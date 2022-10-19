@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "test/json/utility/ut_table_metadata.h"
+#include "test/metadata/json/ut_table_metadata_json.h"
 
 #include <utility>
 
@@ -65,8 +65,7 @@ void UTTableMetadata::generate_ptree() {
     ptree_column.put(Column::COLUMN_NUMBER, column.column_number);
 
     // column data_type_id
-    ptree_column.put<ObjectIdType>(Column::DATA_TYPE_ID,
-                                   column.data_type_id);
+    ptree_column.put<ObjectIdType>(Column::DATA_TYPE_ID, column.data_type_id);
 
     // column is_not_null
     ptree_column.put<bool>(Column::IS_NOT_NULL, column.is_not_null);

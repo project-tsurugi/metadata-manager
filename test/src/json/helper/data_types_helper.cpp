@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "test/json/helper/data_types_helper.h"
+#include "test/helper/json/data_types_helper_json.h"
 
 #include <gtest/gtest.h>
 
@@ -21,7 +21,7 @@
 #include <vector>
 
 #include "manager/metadata/datatypes.h"
-#include "test/json/utility/ut_utils.h"
+#include "test/common/json/ut_utils_json.h"
 
 namespace manager::metadata::testing {
 
@@ -29,38 +29,38 @@ using boost::property_tree::ptree;
 
 // tsurugi data type name
 struct DataTypesName {
-  static constexpr char INT32[] = "INT32";
-  static constexpr char INT64[] = "INT64";
+  static constexpr char INT32[]   = "INT32";
+  static constexpr char INT64[]   = "INT64";
   static constexpr char FLOAT32[] = "FLOAT32";
   static constexpr char FLOAT64[] = "FLOAT64";
-  static constexpr char CHAR[] = "CHAR";
+  static constexpr char CHAR[]    = "CHAR";
   static constexpr char VARCHAR[] = "VARCHAR";
 };
 // PostgreSQL data type oid
 struct PgDataType {
-  static constexpr char INT32[] = "23";
-  static constexpr char INT64[] = "20";
+  static constexpr char INT32[]   = "23";
+  static constexpr char INT64[]   = "20";
   static constexpr char FLOAT32[] = "700";
   static constexpr char FLOAT64[] = "701";
-  static constexpr char CHAR[] = "1042";
+  static constexpr char CHAR[]    = "1042";
   static constexpr char VARCHAR[] = "1043";
 };
 // PostgreSQL data type name
 struct PgDataTypeName {
-  static constexpr char INT32[] = "integer";
-  static constexpr char INT64[] = "bigint";
+  static constexpr char INT32[]   = "integer";
+  static constexpr char INT64[]   = "bigint";
   static constexpr char FLOAT32[] = "real";
   static constexpr char FLOAT64[] = "double precision";
-  static constexpr char CHAR[] = "char";
+  static constexpr char CHAR[]    = "char";
   static constexpr char VARCHAR[] = "varchar";
 };
 // PostgreSQL internal qualified data type name
 struct PgDataTypeQualifiedName {
-  static constexpr char INT32[] = "int4";
-  static constexpr char INT64[] = "int8";
+  static constexpr char INT32[]   = "int4";
+  static constexpr char INT64[]   = "int8";
   static constexpr char FLOAT32[] = "float4";
   static constexpr char FLOAT64[] = "float8";
-  static constexpr char CHAR[] = "bpchar";
+  static constexpr char CHAR[]    = "bpchar";
   static constexpr char VARCHAR[] = "varchar";
 };
 

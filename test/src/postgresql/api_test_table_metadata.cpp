@@ -24,15 +24,15 @@
 
 #include "manager/metadata/common/config.h"
 #include "manager/metadata/error_code.h"
+#include "manager/metadata/metadata_factory.h"
 #include "manager/metadata/roles.h"
 #include "manager/metadata/tables.h"
-#include "manager/metadata/metadata_factory.h"
-#include "test/postgresql/global_test_environment.h"
-#include "test/postgresql/helper/foreign_table_helper.h"
-#include "test/postgresql/helper/role_metadata_helper.h"
-#include "test/postgresql/helper/table_metadata_helper.h"
-#include "test/postgresql/utility/ut_table_metadata.h"
-#include "test/postgresql/utility/ut_utils.h"
+#include "test/common/postgresql/global_test_environment_pg.h"
+#include "test/common/postgresql/ut_utils_pg.h"
+#include "test/helper/postgresql/foreign_table_helper_pg.h"
+#include "test/helper/postgresql/role_metadata_helper_pg.h"
+#include "test/helper/postgresql/table_metadata_helper_pg.h"
+#include "test/metadata/postgresql/ut_table_metadata_pg.h"
 
 namespace {
 

@@ -13,13 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "test/postgresql/utility/ut_utils.h"
+#include "test/common/postgresql/ut_utils_pg.h"
 
 #include <gtest/gtest.h>
 
 #include <iostream>
 
-#include "test/postgresql/global_test_environment.h"
+#include "test/common/postgresql/global_test_environment_pg.h"
 
 namespace manager::metadata::testing {
 

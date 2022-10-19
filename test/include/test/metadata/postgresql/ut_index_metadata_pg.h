@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TEST_JSON_INCLUDE_TEST_UTILITY_UT_INDEX_METADATA_H_
-#define TEST_JSON_INCLUDE_TEST_UTILITY_UT_INDEX_METADATA_H_
+#ifndef TEST_INCLUDE_TEST_METADATA_POSTGRESQL_UT_INDEX_METADATA_PG_H_
+#define TEST_INCLUDE_TEST_METADATA_POSTGRESQL_UT_INDEX_METADATA_PG_H_
 
 #include <string>
 #include <vector>
@@ -33,8 +33,9 @@ class UTIndexMetadata {
   int64_t owner_id;
   std::string acl;
   ObjectId table_id;
-  int64_t access_method;          //!< @brief refer to enumeration of Method.
-  int64_t number_of_key_columns;  //!< @brief exclude non-key (included) columns.
+  int64_t access_method;  //!< @brief refer to enumeration of Method.
+  int64_t
+      number_of_key_columns;  //!< @brief exclude non-key (included) columns.
   bool is_unique;
   bool is_primary;
   std::vector<int64_t> columns;
@@ -66,4 +67,4 @@ class UTIndexMetadata {
 
 }  // namespace manager::metadata::testing
 
-#endif  // TEST_JSON_INCLUDE_TEST_UTILITY_UT_INDEX_METADATA_H_
+#endif  // TEST_INCLUDE_TEST_METADATA_POSTGRESQL_UT_INDEX_METADATA_PG_H_

@@ -21,8 +21,8 @@
 #include <boost/format.hpp>
 
 #include "manager/metadata/roles.h"
-#include "test/json/global_test_environment.h"
-#include "test/json/utility/ut_utils.h"
+#include "test/common/json/global_test_environment_json.h"
+#include "test/common/json/ut_utils_json.h"
 
 namespace manager::metadata::testing {
 
@@ -37,7 +37,7 @@ TEST_F(ApiTestRolesMetadata, get_role) {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   auto roles = std::make_unique<Roles>(GlobalTestEnvironment::TEST_DB);
-  error = roles->init();
+  error      = roles->init();
   EXPECT_EQ(ErrorCode::NOT_SUPPORTED, error);
 
   ptree role_metadata;
@@ -60,7 +60,7 @@ TEST_F(ApiTestRolesMetadata, add_role_metadata) {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   auto roles = std::make_unique<Roles>(GlobalTestEnvironment::TEST_DB);
-  error = roles->init();
+  error      = roles->init();
   EXPECT_EQ(ErrorCode::NOT_SUPPORTED, error);
 
   ptree role_metadata;
@@ -69,7 +69,7 @@ TEST_F(ApiTestRolesMetadata, add_role_metadata) {
   EXPECT_EQ(ErrorCode::UNKNOWN, error);
 
   ObjectIdType retval_role_id = -1;
-  error = roles->add(role_metadata, &retval_role_id);
+  error                       = roles->add(role_metadata, &retval_role_id);
   EXPECT_EQ(ErrorCode::UNKNOWN, error);
   EXPECT_EQ(-1, retval_role_id);
 }
@@ -81,7 +81,7 @@ TEST_F(ApiTestRolesMetadata, get_all_role_metadata) {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   auto roles = std::make_unique<Roles>(GlobalTestEnvironment::TEST_DB);
-  error = roles->init();
+  error      = roles->init();
   EXPECT_EQ(ErrorCode::NOT_SUPPORTED, error);
 
   std::vector<boost::property_tree::ptree> container = {};
@@ -97,14 +97,14 @@ TEST_F(ApiTestRolesMetadata, remove_role_metadata) {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   auto roles = std::make_unique<Roles>(GlobalTestEnvironment::TEST_DB);
-  error = roles->init();
+  error      = roles->init();
   EXPECT_EQ(ErrorCode::NOT_SUPPORTED, error);
 
   error = roles->remove(99999);
   EXPECT_EQ(ErrorCode::UNKNOWN, error);
 
   ObjectIdType retval_role_id = -1;
-  error = roles->remove("role_name", &retval_role_id);
+  error                       = roles->remove("role_name", &retval_role_id);
   EXPECT_EQ(ErrorCode::UNKNOWN, error);
   EXPECT_EQ(-1, retval_role_id);
 }

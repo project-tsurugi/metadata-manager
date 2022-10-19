@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "test/postgresql/helper/foreign_table_helper.h"
+#include "test/helper/postgresql/foreign_table_helper_pg.h"
 
 #include <gtest/gtest.h>
 
@@ -89,9 +89,8 @@ void ForeignTableHelper::drop_table(std::string_view table_name) {
   db_connection();
 
   // remove dummy data for TABLE.
-  boost::format statement =
-      boost::format("DROP TABLE %s") % table_name;
-  PGresult* res = PQexec(connection.get(), statement.str().c_str());
+  boost::format statement = boost::format("DROP TABLE %s") % table_name;
+  PGresult* res           = PQexec(connection.get(), statement.str().c_str());
   PQclear(res);
 }
 
@@ -102,8 +101,8 @@ void ForeignTableHelper::drop_table(std::string_view table_name) {
  * @param (privileges)  [in]   privileges.
  */
 void ForeignTableHelper::grant_table(std::string_view table_name,
-                                              std::string_view role_name,
-                                              std::string_view privileges) {
+                                     std::string_view role_name,
+                                     std::string_view privileges) {
   boost::format statement;
   PGresult* res = nullptr;
 
@@ -136,8 +135,7 @@ ObjectIdType ForeignTableHelper::insert_foreign_table(
   boost::format statement =
       boost::format(
           "INSERT into pg_foreign_table VALUES"
-          " ((%s) + 1, 1"
-          " , '{schema_name=public,table_name=%s}')"
+          " ((%s) + 1, 1, '{schema_name=public,table_name=%s}')"
           " RETURNING ftrelid") %
       ft_statement_sub % table_name;
   PGresult* res = PQexec(connection.get(), statement.str().c_str());
@@ -170,7 +168,7 @@ void ForeignTableHelper::db_connection() {
   if (!DbcUtils::is_open(connection)) {
     // db connection.
     PGconn* pgconn = PQconnectdb(Config::get_connection_string().c_str());
-    connection = DbcUtils::make_connection_sptr(pgconn);
+    connection     = DbcUtils::make_connection_sptr(pgconn);
 
     ASSERT_TRUE(DbcUtils::is_open(connection));
   }

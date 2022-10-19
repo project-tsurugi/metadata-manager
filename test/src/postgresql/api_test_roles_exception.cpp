@@ -21,8 +21,8 @@
 #include <boost/property_tree/ptree.hpp>
 
 #include "manager/metadata/roles.h"
-#include "test/postgresql/global_test_environment.h"
-#include "test/postgresql/utility/ut_utils.h"
+#include "test/common/postgresql/global_test_environment_pg.h"
+#include "test/common/postgresql/ut_utils_pg.h"
 
 namespace manager::metadata::testing {
 
@@ -41,7 +41,7 @@ TEST_F(ApiTestRolesMetadataException, get_role_metadata) {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   auto roles = std::make_unique<Roles>(GlobalTestEnvironment::TEST_DB);
-  error = roles->init();
+  error      = roles->init();
   EXPECT_EQ(ErrorCode::OK, error);
 
   ptree role_metadata;

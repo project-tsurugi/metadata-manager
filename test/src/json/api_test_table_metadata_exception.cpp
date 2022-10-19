@@ -21,8 +21,8 @@
 #include <boost/property_tree/ptree.hpp>
 
 #include "manager/metadata/tables.h"
-#include "test/json/global_test_environment.h"
-#include "test/json/utility/ut_utils.h"
+#include "test/common/json/global_test_environment_json.h"
+#include "test/common/json/ut_utils_json.h"
 
 namespace manager::metadata::testing {
 
@@ -81,7 +81,7 @@ class ApiTestAddTableMetadataException
     // add invalid data type id
     BOOST_FOREACH (ptree::value_type& node,
                    new_table.get_child(Table::COLUMNS_NODE)) {
-      ptree& column = node.second;
+      ptree& column            = node.second;
       int invalid_data_type_id = -1;
       column.put(Column::DATA_TYPE_ID, invalid_data_type_id);
     }
@@ -141,7 +141,7 @@ TEST_F(ApiTestAddTableMetadataException, add_table_metadata) {
     UTUtils::print(UTUtils::get_tree_string(invalid_table));
 
     ObjectIdType ret_table_id = -1;
-    error = tables->add(invalid_table, &ret_table_id);
+    error                     = tables->add(invalid_table, &ret_table_id);
     EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);
     EXPECT_EQ(ret_table_id, -1);
   }
@@ -212,7 +212,7 @@ TEST_F(ApiTestAddTableMetadataException, update_table_metadata) {
     UTUtils::print(UTUtils::get_tree_string(invalid_table));
 
     ObjectIdType dummy_table_id = 1;
-    error = tables->update(dummy_table_id, invalid_table);
+    error                       = tables->update(dummy_table_id, invalid_table);
     EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);
   }
 }
@@ -244,7 +244,7 @@ TEST_P(ApiTestTableMetadataByTableNameException,
   EXPECT_EQ(ErrorCode::OK, error);
 
   ObjectIdType ret_table_id = -1;
-  error = tables->remove(GetParam().c_str(), &ret_table_id);
+  error                     = tables->remove(GetParam().c_str(), &ret_table_id);
   EXPECT_EQ(ErrorCode::NAME_NOT_FOUND, error);
   EXPECT_EQ(-1, ret_table_id);
 }

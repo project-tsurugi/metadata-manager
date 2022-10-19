@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "test/json/global_test_environment.h"
+#include "test/common/json/global_test_environment_json.h"
 
 #include <boost/format.hpp>
 
 #include "manager/metadata/common/config.h"
-#include "test/json/helper/table_metadata_helper.h"
+#include "test/helper/json/table_metadata_helper_json.h"
 
 namespace manager::metadata::testing {
 
@@ -27,9 +27,9 @@ void GlobalTestEnvironment::SetUp() {
   TableMetadataHelper::generate_table_metadata(testdata_table_metadata);
 
   // initialize json file.
-  boost::format filename =
-      boost::format("%s/%s.json") %
-      manager::metadata::Config::get_storage_dir_path() % "tables";
+  boost::format filename = boost::format("%s/%s.json") %
+                           manager::metadata::Config::get_storage_dir_path() %
+                           "tables";
   std::remove(filename.str().c_str());
 }
 

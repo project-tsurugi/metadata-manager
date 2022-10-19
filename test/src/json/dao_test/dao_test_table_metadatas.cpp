@@ -25,10 +25,10 @@
 #include "manager/metadata/dao/constraints_dao.h"
 #include "manager/metadata/dao/json/db_session_manager_json.h"
 #include "manager/metadata/dao/tables_dao.h"
-#include "test/json/global_test_environment.h"
-#include "test/json/helper/table_metadata_helper.h"
-#include "test/json/utility/ut_table_metadata.h"
-#include "test/json/utility/ut_utils.h"
+#include "test/common/json/global_test_environment_json.h"
+#include "test/common/json/ut_utils_json.h"
+#include "test/helper/json/table_metadata_helper_json.h"
+#include "test/metadata/json/ut_table_metadata_json.h"
 
 namespace manager::metadata::testing {
 

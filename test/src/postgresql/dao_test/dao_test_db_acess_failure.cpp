@@ -20,7 +20,7 @@
 #include "manager/metadata/dao/generic_dao.h"
 #include "manager/metadata/dao/postgresql/db_session_manager_pg.h"
 #include "manager/metadata/error_code.h"
-#include "test/postgresql/utility/ut_utils.h"
+#include "test/common/postgresql/ut_utils_pg.h"
 
 namespace manager::metadata::testing {
 

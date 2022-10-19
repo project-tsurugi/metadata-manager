@@ -19,7 +19,7 @@
 
 #include <boost/filesystem.hpp>
 
-#include "test/postgresql/global_test_environment.h"
+#include "test/common/postgresql/global_test_environment_pg.h"
 
 namespace manager::metadata::testing {
 

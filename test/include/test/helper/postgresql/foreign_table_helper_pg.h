@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TEST_POSTGRESQL_INCLUDE_TEST_HELPER_FOREIGN_TABLE_HELPER_H_
-#define TEST_POSTGRESQL_INCLUDE_TEST_HELPER_FOREIGN_TABLE_HELPER_H_
+#ifndef TEST_INCLUDE_TEST_HELPER_POSTGRESQL_FOREIGN_TABLE_HELPER_PG_H_
+#define TEST_INCLUDE_TEST_HELPER_POSTGRESQL_FOREIGN_TABLE_HELPER_PG_H_
 
 #include <string_view>
 
@@ -30,8 +30,8 @@ class ForeignTableHelper {
   static void drop_table(std::string_view table_name);
 
   static void grant_table(std::string_view table_name,
-                                   std::string_view role_name,
-                                   std::string_view privileges);
+                          std::string_view role_name,
+                          std::string_view privileges);
 
   static ObjectIdType insert_foreign_table(std::string_view table_name);
   static void delete_foreign_table(ObjectIdType foreign_table_id);
@@ -42,4 +42,4 @@ class ForeignTableHelper {
 
 }  // namespace manager::metadata::testing
 
-#endif  // TEST_POSTGRESQL_INCLUDE_TEST_HELPER_FOREIGN_TABLE_HELPER_H_
+#endif  // TEST_INCLUDE_TEST_HELPER_POSTGRESQL_FOREIGN_TABLE_HELPER_PG_H_

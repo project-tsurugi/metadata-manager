@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TEST_JSON_INCLUDE_TEST_HELPER_DATA_TYPES_HELPER_H_
-#define TEST_JSON_INCLUDE_TEST_HELPER_DATA_TYPES_HELPER_H_
+#ifndef TEST_INCLUDE_TEST_HELPER_JSON_DATA_TYPES_HELPER_JSON_H_
+#define TEST_INCLUDE_TEST_HELPER_JSON_DATA_TYPES_HELPER_JSON_H_
 
 #include <string>
 #include <string_view>
@@ -23,7 +23,7 @@
 
 #include <boost/property_tree/ptree.hpp>
 
-#include "test/json/utility/ut_table_metadata.h"
+#include "test/metadata/json/ut_table_metadata_json.h"
 
 namespace manager::metadata::testing {
 
@@ -45,4 +45,4 @@ class DataTypesHelper {
 
 }  // namespace manager::metadata::testing
 
-#endif  // TEST_JSON_INCLUDE_TEST_HELPER_DATA_TYPES_HELPER_H_
+#endif  // TEST_INCLUDE_TEST_HELPER_JSON_DATA_TYPES_HELPER_JSON_H_

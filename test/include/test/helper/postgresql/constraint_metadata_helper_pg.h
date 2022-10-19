@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TEST_POSTGRESQL_INCLUDE_TEST_HELPER_CONSTRAINT_METADATA_HELPER_H_
-#define TEST_POSTGRESQL_INCLUDE_TEST_HELPER_CONSTRAINT_METADATA_HELPER_H_
+#ifndef TEST_INCLUDE_TEST_HELPER_POSTGRESQL_CONSTRAINT_METADATA_HELPER_PG_H_
+#define TEST_INCLUDE_TEST_HELPER_POSTGRESQL_CONSTRAINT_METADATA_HELPER_PG_H_
 
 #include <map>
 #include <memory>
@@ -23,7 +23,7 @@
 #include <boost/property_tree/ptree.hpp>
 
 #include "manager/metadata/constraints.h"
-#include "test/postgresql/utility/ut_constraint_metadata.h"
+#include "test/metadata/postgresql/ut_constraint_metadata_pg.h"
 
 namespace manager::metadata::testing {
 
@@ -31,8 +31,9 @@ class ConstraintMetadataHelper {
  public:
   static std::int64_t get_record_count();
 
-  static void generate_test_metadata(const ObjectId& table_id,
-                       std::unique_ptr<UTConstraintMetadata>& constraint_metadata);
+  static void generate_test_metadata(
+      const ObjectId& table_id,
+      std::unique_ptr<UTConstraintMetadata>& constraint_metadata);
 
   static void add(const Metadata* constraints,
                   const boost::property_tree::ptree& constraint_metadata,
@@ -41,10 +42,12 @@ class ConstraintMetadataHelper {
                   const Constraint& constraint_metadata,
                   ObjectIdType* constraint_id = nullptr);
 
-  static void remove(const Metadata* constraints, const ObjectIdType constraint_id);
+  static void remove(const Metadata* constraints,
+                     const ObjectIdType constraint_id);
 
-  static void check_metadata_expected(const boost::property_tree::ptree& expected,
-                             const boost::property_tree::ptree& actual);
+  static void check_metadata_expected(
+      const boost::property_tree::ptree& expected,
+      const boost::property_tree::ptree& actual);
 
  private:
   static void check_child_expected(const boost::property_tree::ptree& expected,
@@ -52,9 +55,10 @@ class ConstraintMetadataHelper {
                                    const char* meta_name);
   template <typename T>
   static void check_expected(const boost::property_tree::ptree& expected,
-                             const boost::property_tree::ptree& actual, const char* meta_name);
+                             const boost::property_tree::ptree& actual,
+                             const char* meta_name);
 };
 
 }  // namespace manager::metadata::testing
 
-#endif  // TEST_POSTGRESQL_INCLUDE_TEST_HELPER_CONSTRAINT_METADATA_HELPER_H_
+#endif  // TEST_INCLUDE_TEST_HELPER_POSTGRESQL_CONSTRAINT_METADATA_HELPER_PG_H_

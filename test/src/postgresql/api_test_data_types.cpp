@@ -19,9 +19,9 @@
 #include <tuple>
 
 #include "manager/metadata/datatypes.h"
-#include "test/postgresql/global_test_environment.h"
-#include "test/postgresql/helper/data_types_helper.h"
-#include "test/postgresql/utility/ut_utils.h"
+#include "test/common/postgresql/global_test_environment_pg.h"
+#include "test/common/postgresql/ut_utils_pg.h"
+#include "test/helper/postgresql/data_types_helper_pg.h"
 
 namespace manager::metadata::testing {
 
@@ -87,8 +87,8 @@ TEST_P(ApiTestDataTypesByName, get_datatypes_by_name) {
 TEST_P(ApiTestDataTypesByKeyValue, get_datatypes_by_key_value) {
   auto datatypes = std::make_unique<DataTypes>(GlobalTestEnvironment::TEST_DB);
 
-  auto param = GetParam();
-  std::string key = std::get<0>(param);
+  auto param        = GetParam();
+  std::string key   = std::get<0>(param);
   std::string value = std::get<1>(param);
 
   ptree datatype;
@@ -128,7 +128,7 @@ TEST_P(ApiTestDataTypesException, get_non_existing_datatypes_by_name) {
 TEST_P(ApiTestDataTypesException, get_non_existing_datatypes_by_key_value) {
   auto datatypes = std::make_unique<DataTypes>(GlobalTestEnvironment::TEST_DB);
 
-  std::string key = std::get<0>(GetParam());
+  std::string key   = std::get<0>(GetParam());
   std::string value = std::get<1>(GetParam());
 
   ptree datatype;
@@ -160,7 +160,7 @@ TEST_F(ApiTestDataTypes, add_datatypes) {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   auto datatypes = std::make_unique<DataTypes>(GlobalTestEnvironment::TEST_DB);
-  error = datatypes->init();
+  error          = datatypes->init();
   EXPECT_EQ(ErrorCode::OK, error);
 
   ptree datatype_metadata;
@@ -181,7 +181,7 @@ TEST_F(ApiTestDataTypes, get_all_datatypes) {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   auto datatypes = std::make_unique<DataTypes>(GlobalTestEnvironment::TEST_DB);
-  error = datatypes->init();
+  error          = datatypes->init();
   EXPECT_EQ(ErrorCode::OK, error);
 
   std::vector<boost::property_tree::ptree> container = {};
@@ -197,7 +197,7 @@ TEST_F(ApiTestDataTypes, remove_datatypes) {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   auto datatypes = std::make_unique<DataTypes>(GlobalTestEnvironment::TEST_DB);
-  error = datatypes->init();
+  error          = datatypes->init();
   EXPECT_EQ(ErrorCode::OK, error);
 
   error = datatypes->remove(99999);

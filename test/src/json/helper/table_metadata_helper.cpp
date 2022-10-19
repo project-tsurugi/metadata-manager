@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "test/json/helper/table_metadata_helper.h"
+#include "test/helper/json/table_metadata_helper_json.h"
 
 #include <gtest/gtest.h>
 
@@ -28,8 +28,8 @@
 #include "manager/metadata/helper/ptree_helper.h"
 #include "manager/metadata/metadata_factory.h"
 #include "manager/metadata/tables.h"
-#include "test/json/global_test_environment.h"
-#include "test/json/utility/ut_utils.h"
+#include "test/common/json/global_test_environment_json.h"
+#include "test/common/json/ut_utils_json.h"
 
 namespace manager::metadata::testing {
 
@@ -72,9 +72,8 @@ void TableMetadataHelper::generate_table_metadata(
     bool is_null = true;
     UTColumnMetadata column1{
         col_names[0], ordinal_positions[0],
-        static_cast<ObjectIdType>(DataTypes::DataTypesId::FLOAT32), 
-        !is_null};
-    column1.varying = true;
+        static_cast<ObjectIdType>(DataTypes::DataTypesId::FLOAT32), !is_null};
+    column1.varying      = true;
     column1.default_expr = "default";
     column1.data_length  = {1};
 
@@ -89,7 +88,7 @@ void TableMetadataHelper::generate_table_metadata(
     column2.p_data_length.push_back(std::make_pair("", data_length));
     column2.data_length.emplace_back(8);
     column2.data_length.emplace_back(2);
-    column2.varying = false;
+    column2.varying      = false;
     column2.default_expr = "default2";
 
     // third column metadata
@@ -98,7 +97,7 @@ void TableMetadataHelper::generate_table_metadata(
         static_cast<ObjectIdType>(DataTypes::DataTypesId::CHAR), is_null};
     column3.default_expr = "default3";
     column3.data_length  = {1};
-    column3.varying = false;
+    column3.varying      = false;
 
     // set table metadata to three column metadata
     testdata_table_metadata->columns.emplace_back(column1);
@@ -292,8 +291,7 @@ void TableMetadataHelper::check_table_metadata_expected(
             actual.get<FormatVersionType>(Table::FORMAT_VERSION));
 
   // generation
-  EXPECT_EQ(expected.generation,
-            actual.get<GenerationType>(Table::GENERATION));
+  EXPECT_EQ(expected.generation, actual.get<GenerationType>(Table::GENERATION));
 
   // table name
   EXPECT_EQ(expected.name, actual.get<std::string>(Table::NAME));
@@ -638,8 +636,7 @@ void TableMetadataHelper::check_table_metadata_expected(
         check_child_expected(column_expected, column_actual,
                              Column::DATA_LENGTH);
         // column varying
-        check_expected<bool>(column_expected, column_actual,
-                             Column::VARYING);
+        check_expected<bool>(column_expected, column_actual, Column::VARYING);
         // is not null
         check_expected<bool>(column_expected, column_actual,
                              Column::IS_NOT_NULL);

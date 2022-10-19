@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "test/postgresql/helper/table_metadata_helper.h"
+#include "test/helper/postgresql/table_metadata_helper_pg.h"
 
 #include <gtest/gtest.h>
 #include <libpq-fe.h>
@@ -29,9 +29,8 @@
 #include "manager/metadata/dao/postgresql/tables_dao_pg.h"
 #include "manager/metadata/datatypes.h"
 #include "manager/metadata/helper/ptree_helper.h"
-#include "test/postgresql/global_test_environment.h"
-#include "test/postgresql/utility/ut_table_metadata.h"
-#include "test/postgresql/utility/ut_utils.h"
+#include "test/common/postgresql/global_test_environment_pg.h"
+#include "test/common/postgresql/ut_utils_pg.h"
 
 namespace manager::metadata::testing {
 

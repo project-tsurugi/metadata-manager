@@ -25,9 +25,9 @@
 #include "manager/metadata/error_code.h"
 #include "manager/metadata/metadata.h"
 #include "manager/metadata/tables.h"
-#include "test/json/global_test_environment.h"
-#include "test/json/helper/table_metadata_helper.h"
-#include "test/json/utility/ut_utils.h"
+#include "test/common/json/global_test_environment_json.h"
+#include "test/common/json/ut_utils_json.h"
+#include "test/helper/json/table_metadata_helper_json.h"
 
 namespace manager::metadata::testing {
 
@@ -66,7 +66,7 @@ TEST_F(ApiTestTableMetadataExtra, add_get_remove_table_metadata_by_table_name) {
     TableMetadataHelper::add_table(table_metadata_expected, &ret_table_id);
 
     // get valid table metadata by table name.
-    auto tables = std::make_unique<Tables>(GlobalTestEnvironment::TEST_DB);
+    auto tables     = std::make_unique<Tables>(GlobalTestEnvironment::TEST_DB);
     ErrorCode error = tables->init();
     EXPECT_EQ(ErrorCode::OK, error);
 
@@ -112,7 +112,7 @@ TEST_F(ApiTestTableMetadataExtra, add_get_remove_table_metadata_by_table_id) {
     TableMetadataHelper::add_table(table_metadata_expected, &ret_table_id);
 
     // get valid table metadata by table id.
-    auto tables = std::make_unique<Tables>(GlobalTestEnvironment::TEST_DB);
+    auto tables     = std::make_unique<Tables>(GlobalTestEnvironment::TEST_DB);
     ErrorCode error = tables->init();
     EXPECT_EQ(ErrorCode::OK, error);
 

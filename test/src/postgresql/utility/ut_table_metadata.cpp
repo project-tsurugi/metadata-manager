@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "test/postgresql/utility/ut_table_metadata.h"
+#include "test/metadata/postgresql/ut_table_metadata_pg.h"
 
 #include <utility>
 
@@ -77,8 +77,7 @@ void UTTableMetadata::generate_ptree() {
 
     // add column varying to ptree
     // if UTTableMetadata varying is initialized
-    ptree_column.put<bool>(Column::VARYING,
-                            static_cast<bool>(column.varying));
+    ptree_column.put<bool>(Column::VARYING, static_cast<bool>(column.varying));
 
     // add column default expression to ptree
     // if UTTableMetadata default expression is initialized

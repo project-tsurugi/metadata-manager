@@ -21,9 +21,9 @@
 
 #include "manager/metadata/dao/postgresql/db_session_manager_pg.h"
 #include "manager/metadata/dao/roles_dao.h"
-#include "test/postgresql/global_test_environment.h"
-#include "test/postgresql/helper/role_metadata_helper.h"
-#include "test/postgresql/utility/ut_utils.h"
+#include "test/common/postgresql/global_test_environment_pg.h"
+#include "test/common/postgresql/ut_utils_pg.h"
+#include "test/helper/postgresql/role_metadata_helper_pg.h"
 
 namespace {
 
@@ -67,16 +67,16 @@ TEST_F(DaoTestRolesMetadata, select_role_metadata) {
   expect_metadata.put(Roles::FORMAT_VERSION, Roles::format_version());
   expect_metadata.put(Roles::GENERATION, Roles::generation());
   expect_metadata.put(Roles::ROLE_ROLNAME, role_name);
-  expect_metadata.put(Roles::ROLE_ROLSUPER, "true");        // true
+  expect_metadata.put(Roles::ROLE_ROLSUPER, "true");         // true
   expect_metadata.put(Roles::ROLE_ROLINHERIT, "false");      // false
   expect_metadata.put(Roles::ROLE_ROLCREATEROLE, "false");   // false
   expect_metadata.put(Roles::ROLE_ROLCREATEDB, "false");     // false
-  expect_metadata.put(Roles::ROLE_ROLCANLOGIN, "true");     // true
+  expect_metadata.put(Roles::ROLE_ROLCANLOGIN, "true");      // true
   expect_metadata.put(Roles::ROLE_ROLREPLICATION, "false");  // false
-  expect_metadata.put(Roles::ROLE_ROLBYPASSRLS, "true");    // true
-  expect_metadata.put(Roles::ROLE_ROLCONNLIMIT, "-1");   // -1
-  expect_metadata.put(Roles::ROLE_ROLPASSWORD, "");      // empty
-  expect_metadata.put(Roles::ROLE_ROLVALIDUNTIL, "");    // empty
+  expect_metadata.put(Roles::ROLE_ROLBYPASSRLS, "true");     // true
+  expect_metadata.put(Roles::ROLE_ROLCONNLIMIT, "-1");       // -1
+  expect_metadata.put(Roles::ROLE_ROLPASSWORD, "");          // empty
+  expect_metadata.put(Roles::ROLE_ROLVALIDUNTIL, "");        // empty
 
   // Test getting by role name.
   error =

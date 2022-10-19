@@ -21,8 +21,8 @@
 #include <boost/format.hpp>
 
 #include "manager/metadata/tables.h"
-#include "test/json/global_test_environment.h"
-#include "test/json/utility/ut_utils.h"
+#include "test/common/json/global_test_environment_json.h"
+#include "test/common/json/ut_utils_json.h"
 
 namespace manager::metadata::testing {
 
@@ -32,7 +32,7 @@ class ApiTestTablePrivileges : public ::testing::Test {};
  * @brief Unsupported test in JSON version.
  */
 TEST_F(ApiTestTablePrivileges, confirm_permission_in_acls) {
-  ErrorCode error = ErrorCode::UNKNOWN;
+  ErrorCode error     = ErrorCode::UNKNOWN;
   bool res_permission = false;
 
   auto tables = std::make_unique<Tables>(GlobalTestEnvironment::TEST_DB);

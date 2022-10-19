@@ -23,11 +23,11 @@
 #include "manager/metadata/common/config.h"
 #include "manager/metadata/dao/postgresql/dbc_utils_pg.h"
 #include "manager/metadata/tables.h"
-#include "test/postgresql/global_test_environment.h"
-#include "test/postgresql/helper/foreign_table_helper.h"
-#include "test/postgresql/helper/role_metadata_helper.h"
-#include "test/postgresql/helper/table_metadata_helper.h"
-#include "test/postgresql/utility/ut_utils.h"
+#include "test/common/postgresql/global_test_environment_pg.h"
+#include "test/common/postgresql/ut_utils_pg.h"
+#include "test/helper/postgresql/foreign_table_helper_pg.h"
+#include "test/helper/postgresql/role_metadata_helper_pg.h"
+#include "test/helper/postgresql/table_metadata_helper_pg.h"
 
 namespace {
 
@@ -41,9 +41,9 @@ constexpr std::string_view foreign_table_name_none =
 
 std::shared_ptr<PGconn> connection;
 std::unique_ptr<manager::metadata::Tables> tables;
-Oid role_id = 0;
-Oid table_id_ro = 0;
-Oid table_id_rw = 0;
+Oid role_id             = 0;
+Oid table_id_ro         = 0;
+Oid table_id_rw         = 0;
 Oid foreign_table_id_ro = 0;
 Oid foreign_table_id_rw = 0;
 
@@ -239,10 +239,10 @@ TEST_P(ApiTestTablePrivilegesSingle, confirm_tables_permission) {
 
   for (auto param : params) {
     const char* permission = std::get<0>(param);
-    bool expected = std::get<1>(param);
+    bool expected          = std::get<1>(param);
 
     ErrorCode error = ErrorCode::UNKNOWN;
-    bool actual = false;
+    bool actual     = false;
 
     UTUtils::print("  Test pattern: [", permission, "]");
 
@@ -266,10 +266,10 @@ TEST_P(ApiTestTablePrivilegesMultiple, confirm_tables_permission) {
 
   for (auto param : params) {
     const char* permission = std::get<0>(param);
-    bool expected = std::get<1>(param);
+    bool expected          = std::get<1>(param);
 
     ErrorCode error = ErrorCode::UNKNOWN;
-    bool actual = false;
+    bool actual     = false;
 
     UTUtils::print("  Test pattern: [", permission, "]");
 
@@ -299,7 +299,7 @@ TEST_F(ApiTestForeignTable, get_table_metadata) {
   UTUtils::print(UTUtils::get_tree_string(object));
 
   auto res_role_id = object.get_optional<Oid>(Table::OWNER_ROLE_ID);
-  auto res_acl = object.get_child(Table::ACL);
+  auto res_acl     = object.get_child(Table::ACL);
   EXPECT_GT(res_role_id.value(), 0);
   EXPECT_GT(res_acl.size(), 0);
 }
@@ -308,7 +308,7 @@ TEST_F(ApiTestForeignTable, get_table_metadata) {
  * @brief test for the case where table metadata does not exists.
  */
 TEST_F(ApiTestForeignTableNotExists, table_metadata_does_not_exist) {
-  ErrorCode error = ErrorCode::UNKNOWN;
+  ErrorCode error     = ErrorCode::UNKNOWN;
   bool res_permission = false;
 
   UTUtils::print("-- confirm permission by role id --");
@@ -324,7 +324,7 @@ TEST_F(ApiTestForeignTableNotExists, table_metadata_does_not_exist) {
  * @brief test for the case where foreign table does not exists.
  */
 TEST_F(ApiTestForeignTableNotExists, foreign_table_does_not_exist) {
-  ErrorCode error = ErrorCode::UNKNOWN;
+  ErrorCode error     = ErrorCode::UNKNOWN;
   bool res_permission = false;
 
   // add read-write table metadata.
@@ -346,7 +346,7 @@ TEST_F(ApiTestForeignTableNotExists, foreign_table_does_not_exist) {
  * @brief test for the case where role id or name does not exists.
  */
 TEST_F(ApiTestForeignTableNotExists, role_does_not_exist) {
-  ErrorCode error = ErrorCode::UNKNOWN;
+  ErrorCode error     = ErrorCode::UNKNOWN;
   bool res_permission = false;
 
   // add read-write table metadata.
@@ -391,7 +391,7 @@ TEST_P(ApiTestTablePrivilegesInvalid, confirm_tables_permission) {
 
   for (auto permission : params) {
     ErrorCode error = ErrorCode::UNKNOWN;
-    bool actual = false;
+    bool actual     = false;
 
     UTUtils::print("  Test pattern: [", permission, "]");
 

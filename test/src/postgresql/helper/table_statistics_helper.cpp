@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "test/postgresql/helper/table_statistics_helper.h"
+#include "test/helper/postgresql/table_statistics_helper_pg.h"
 
 #include <gtest/gtest.h>
 
@@ -21,15 +21,16 @@
 
 namespace manager::metadata::testing {
 
-std::vector<int64_t> reltuples_list = {-1,
-                                     0,
-                                     1,
-                                     100000000,
-                                     std::numeric_limits<int64_t>::infinity(),
-                                     -std::numeric_limits<int64_t>::infinity(),
-                                     std::numeric_limits<int64_t>::quiet_NaN(),
-                                     INT64_MAX,
-                                     INT64_MIN};
+std::vector<int64_t> reltuples_list = {
+    -1,
+    0,
+    1,
+    100000000,
+    std::numeric_limits<int64_t>::infinity(),
+    -std::numeric_limits<int64_t>::infinity(),
+    std::numeric_limits<int64_t>::quiet_NaN(),
+    INT64_MAX,
+    INT64_MIN};
 
 /**
  * @brief Create a test pattern for the basic test.

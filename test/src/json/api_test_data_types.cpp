@@ -22,9 +22,9 @@
 #include <boost/property_tree/ptree.hpp>
 
 #include "manager/metadata/datatypes.h"
-#include "test/json/global_test_environment.h"
-#include "test/json/helper/data_types_helper.h"
-#include "test/json/utility/ut_utils.h"
+#include "test/common/json/global_test_environment_json.h"
+#include "test/common/json/ut_utils_json.h"
+#include "test/helper/json/data_types_helper_json.h"
 
 namespace manager::metadata::testing {
 
@@ -32,8 +32,7 @@ using boost::property_tree::ptree;
 
 class ApiTestDataTypes : public ::testing::Test {};
 class ApiTestDataTypesByKeyValue
-    : public ::testing::TestWithParam<DataTypesHelper::BasicTestParameter> {
-};
+    : public ::testing::TestWithParam<DataTypesHelper::BasicTestParameter> {};
 class ApiTestDataTypesByName : public ::testing::TestWithParam<std::string> {};
 class ApiTestDataTypesException
     : public ::testing::TestWithParam<std::tuple<std::string, std::string>> {};
@@ -82,8 +81,8 @@ TEST_P(ApiTestDataTypesByName, get_datatypes_by_name) {
 TEST_P(ApiTestDataTypesByKeyValue, get_datatypes_by_key_value) {
   auto datatypes = std::make_unique<DataTypes>(GlobalTestEnvironment::TEST_DB);
 
-  auto param = GetParam();
-  std::string key = std::get<0>(param);
+  auto param        = GetParam();
+  std::string key   = std::get<0>(param);
   std::string value = std::get<1>(param);
 
   ptree datatype;
@@ -123,7 +122,7 @@ TEST_P(ApiTestDataTypesException, get_non_existing_datatypes_by_name) {
 TEST_P(ApiTestDataTypesException, get_non_existing_datatypes_by_key_value) {
   auto datatypes = std::make_unique<DataTypes>(GlobalTestEnvironment::TEST_DB);
 
-  std::string key = std::get<0>(GetParam());
+  std::string key   = std::get<0>(GetParam());
   std::string value = std::get<1>(GetParam());
 
   ptree datatype;
@@ -151,7 +150,7 @@ TEST_F(ApiTestDataTypes, add_datatypes) {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   auto datatypes = std::make_unique<DataTypes>(GlobalTestEnvironment::TEST_DB);
-  error = datatypes->init();
+  error          = datatypes->init();
   EXPECT_EQ(ErrorCode::OK, error);
 
   ptree datatype_metadata;
@@ -172,7 +171,7 @@ TEST_F(ApiTestDataTypes, get_all_datatypes) {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   auto datatypes = std::make_unique<DataTypes>(GlobalTestEnvironment::TEST_DB);
-  error = datatypes->init();
+  error          = datatypes->init();
   EXPECT_EQ(ErrorCode::OK, error);
 
   std::vector<boost::property_tree::ptree> container = {};
@@ -188,7 +187,7 @@ TEST_F(ApiTestDataTypes, remove_datatypes) {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   auto datatypes = std::make_unique<DataTypes>(GlobalTestEnvironment::TEST_DB);
-  error = datatypes->init();
+  error          = datatypes->init();
   EXPECT_EQ(ErrorCode::OK, error);
 
   error = datatypes->remove(99999);

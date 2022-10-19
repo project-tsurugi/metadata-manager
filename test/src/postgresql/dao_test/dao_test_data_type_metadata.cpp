@@ -26,9 +26,9 @@
 #include "manager/metadata/dao/generic_dao.h"
 #include "manager/metadata/dao/postgresql/db_session_manager_pg.h"
 #include "manager/metadata/error_code.h"
-#include "test/postgresql/global_test_environment.h"
-#include "test/postgresql/helper/data_types_helper.h"
-#include "test/postgresql/utility/ut_utils.h"
+#include "test/common/postgresql/global_test_environment_pg.h"
+#include "test/common/postgresql/ut_utils_pg.h"
+#include "test/helper/postgresql/data_types_helper_pg.h"
 
 namespace manager::metadata::testing {
 
@@ -48,8 +48,8 @@ INSTANTIATE_TEST_CASE_P(
  * key/value pair.
  */
 TEST_P(DaoTestDataTypesByKeyValue, get_datatypes_by_key_value) {
-  auto param = GetParam();
-  std::string key = std::get<0>(param);
+  auto param        = GetParam();
+  std::string key   = std::get<0>(param);
   std::string value = std::get<1>(param);
 
   std::shared_ptr<db::GenericDAO> d_gdao = nullptr;
@@ -88,7 +88,7 @@ TEST_F(DaoTestDataTypesByKeyValue, get_non_existing_datatypes_by_key_value) {
   std::shared_ptr<db::DataTypesDAO> ddao =
       std::static_pointer_cast<db::DataTypesDAO>(d_gdao);
 
-  std::string key = "invalid_key";
+  std::string key   = "invalid_key";
   std::string value = "INT32";
 
   boost::property_tree::ptree datatype;

@@ -13,13 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "test/json/helper/constraint_metadata_helper.h"
+#include "test/helper/json/constraint_metadata_helper_json.h"
 
 #include <gtest/gtest.h>
 
 #include "manager/metadata/dao/json/constraints_dao_json.h"
-#include "test/json/global_test_environment.h"
-#include "test/json/utility/ut_utils.h"
+#include "test/common/json/global_test_environment_json.h"
+#include "test/common/json/ut_utils_json.h"
 
 namespace manager::metadata::testing {
 

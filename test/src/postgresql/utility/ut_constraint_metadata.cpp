@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "test/postgresql/utility/ut_constraint_metadata.h"
+#include "test/metadata/postgresql/ut_constraint_metadata_pg.h"
 
 #include <utility>
 
@@ -24,7 +24,8 @@ namespace manager::metadata::testing {
 using boost::property_tree::ptree;
 
 /**
- * @brief Generate ptree type constrain metadata from UTConstraintMetadata fields.
+ * @brief Generate ptree type constrain metadata from UTConstraintMetadata
+ * fields.
  * @return none.
  */
 void UTConstraintMetadata::generate_ptree() {

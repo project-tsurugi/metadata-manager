@@ -21,9 +21,9 @@
 
 #include "manager/metadata/dao/datatypes_dao.h"
 #include "manager/metadata/dao/json/db_session_manager_json.h"
-#include "test/json/helper/data_types_helper.h"
-#include "test/json/global_test_environment.h"
-#include "test/json/utility/ut_utils.h"
+#include "test/common/json/global_test_environment_json.h"
+#include "test/common/json/ut_utils_json.h"
+#include "test/helper/json/data_types_helper_json.h"
 
 namespace manager::metadata::testing {
 
@@ -43,8 +43,8 @@ class DaoTestDataTypesByKeyValue
  * key/value pair.
  */
 TEST_P(DaoTestDataTypesByKeyValue, get_datatypes_by_key_value) {
-  auto param = GetParam();
-  std::string key = std::get<0>(param);
+  auto param        = GetParam();
+  std::string key   = std::get<0>(param);
   std::string value = std::get<1>(param);
 
   std::shared_ptr<GenericDAO> d_gdao = nullptr;
@@ -83,7 +83,7 @@ TEST_F(DaoTestDataTypesByKeyValue, get_non_existing_datatypes_by_key_value) {
   std::shared_ptr<DataTypesDAO> ddao =
       std::static_pointer_cast<DataTypesDAO>(d_gdao);
 
-  std::string key = "invalid_key";
+  std::string key   = "invalid_key";
   std::string value = "INT32";
 
   ptree datatype;

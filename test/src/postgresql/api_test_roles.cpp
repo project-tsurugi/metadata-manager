@@ -23,9 +23,9 @@
 #include "manager/metadata/common/config.h"
 #include "manager/metadata/dao/postgresql/dbc_utils_pg.h"
 #include "manager/metadata/roles.h"
-#include "test/postgresql/global_test_environment.h"
-#include "test/postgresql/helper/role_metadata_helper.h"
-#include "test/postgresql/utility/ut_utils.h"
+#include "test/common/postgresql/global_test_environment_pg.h"
+#include "test/common/postgresql/ut_utils_pg.h"
+#include "test/helper/postgresql/role_metadata_helper_pg.h"
 
 namespace {
 
@@ -54,7 +54,7 @@ TEST_F(ApiTestRolesMetadata, get_role) {
       "NOINHERIT CREATEROLE CREATEDB REPLICATION CONNECTION LIMIT 10");
 
   auto roles = std::make_unique<Roles>(GlobalTestEnvironment::TEST_DB);
-  error = roles->init();
+  error      = roles->init();
   EXPECT_EQ(ErrorCode::OK, error);
 
   ptree role_metadata;
@@ -62,16 +62,16 @@ TEST_F(ApiTestRolesMetadata, get_role) {
   expect_metadata.put(Roles::FORMAT_VERSION, Roles::format_version());
   expect_metadata.put(Roles::GENERATION, Roles::generation());
   expect_metadata.put(Roles::ROLE_ROLNAME, role_name);
-  expect_metadata.put(Roles::ROLE_ROLSUPER, "false");        // false
-  expect_metadata.put(Roles::ROLE_ROLINHERIT, "false");      // false
+  expect_metadata.put(Roles::ROLE_ROLSUPER, "false");       // false
+  expect_metadata.put(Roles::ROLE_ROLINHERIT, "false");     // false
   expect_metadata.put(Roles::ROLE_ROLCREATEROLE, "true");   // true
   expect_metadata.put(Roles::ROLE_ROLCREATEDB, "true");     // true
-  expect_metadata.put(Roles::ROLE_ROLCANLOGIN, "false");     // false
+  expect_metadata.put(Roles::ROLE_ROLCANLOGIN, "false");    // false
   expect_metadata.put(Roles::ROLE_ROLREPLICATION, "true");  // true
-  expect_metadata.put(Roles::ROLE_ROLBYPASSRLS, "false");    // false
-  expect_metadata.put(Roles::ROLE_ROLCONNLIMIT, "10");   // 10
-  expect_metadata.put(Roles::ROLE_ROLPASSWORD, "");      // empty
-  expect_metadata.put(Roles::ROLE_ROLVALIDUNTIL, "");    // empty
+  expect_metadata.put(Roles::ROLE_ROLBYPASSRLS, "false");   // false
+  expect_metadata.put(Roles::ROLE_ROLCONNLIMIT, "10");      // 10
+  expect_metadata.put(Roles::ROLE_ROLPASSWORD, "");         // empty
+  expect_metadata.put(Roles::ROLE_ROLVALIDUNTIL, "");       // empty
 
   // test getting by role id.
   error = roles->get(role_id, role_metadata);
@@ -107,7 +107,7 @@ TEST_F(ApiTestRolesMetadata, role_does_not_exist) {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   auto roles = std::make_unique<Roles>(GlobalTestEnvironment::TEST_DB);
-  error = roles->init();
+  error      = roles->init();
   EXPECT_EQ(ErrorCode::OK, error);
 
   ptree role_metadata;
@@ -146,7 +146,7 @@ TEST_F(ApiTestRolesMetadata, add_role_metadata) {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   auto roles = std::make_unique<Roles>(GlobalTestEnvironment::TEST_DB);
-  error = roles->init();
+  error      = roles->init();
   EXPECT_EQ(ErrorCode::OK, error);
 
   ptree role_metadata;
@@ -155,7 +155,7 @@ TEST_F(ApiTestRolesMetadata, add_role_metadata) {
   EXPECT_EQ(ErrorCode::UNKNOWN, error);
 
   ObjectIdType retval_role_id = -1;
-  error = roles->add(role_metadata, &retval_role_id);
+  error                       = roles->add(role_metadata, &retval_role_id);
   EXPECT_EQ(ErrorCode::UNKNOWN, error);
   EXPECT_EQ(-1, retval_role_id);
 }
@@ -167,7 +167,7 @@ TEST_F(ApiTestRolesMetadata, get_all_role_metadata) {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   auto roles = std::make_unique<Roles>(GlobalTestEnvironment::TEST_DB);
-  error = roles->init();
+  error      = roles->init();
   EXPECT_EQ(ErrorCode::OK, error);
 
   std::vector<boost::property_tree::ptree> container = {};
@@ -183,14 +183,14 @@ TEST_F(ApiTestRolesMetadata, remove_role_metadata) {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   auto roles = std::make_unique<Roles>(GlobalTestEnvironment::TEST_DB);
-  error = roles->init();
+  error      = roles->init();
   EXPECT_EQ(ErrorCode::OK, error);
 
   error = roles->remove(99999);
   EXPECT_EQ(ErrorCode::UNKNOWN, error);
 
   ObjectIdType retval_role_id = -1;
-  error = roles->remove("role_name", &retval_role_id);
+  error                       = roles->remove("role_name", &retval_role_id);
   EXPECT_EQ(ErrorCode::UNKNOWN, error);
   EXPECT_EQ(-1, retval_role_id);
 }

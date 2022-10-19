@@ -1,10 +1,10 @@
-if [ $# -ne 1 -o ! -f $1 ]; then
+if [ $# -ne 1 -o ! -f "$1" ]; then
   printf "Usage: %s <result file path>\n" "$(basename $0)"
   exit 1
 fi
 
 set_environment() {
-  CURRENT=$(cd $(dirname $0); pwd)
+  SCRIPT_DIR=$(cd $(dirname $0); pwd)
   METADATA_DIR=${TSURUGI_METADATA_DIR}
   if [ -z "$METADATA_DIR" ]; then
     METADATA_DIR=~/.local/tsurugi/metadata
@@ -13,9 +13,9 @@ set_environment() {
   ACTUAL_OID_PATH=$METADATA_DIR/oid
   ACTUAL_TABLES_PATH=$METADATA_DIR/tables.json
   ACTUAL_RESULT=${1}
-  EXPECTED_OID_PATH=$CURRENT/oid
-  EXPECTED_TABLES_PATH=$CURRENT/tables.json
-  EXPECTED_RESULT=$CURRENT/result.txt
+  EXPECTED_OID_PATH=$SCRIPT_DIR/oid
+  EXPECTED_TABLES_PATH=$SCRIPT_DIR/tables.json
+  EXPECTED_RESULT=$SCRIPT_DIR/result.txt
 }
 
 diff_check() {

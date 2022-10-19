@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TEST_POSTGRESQL_INCLUDE_TEST_UTILITY_UT_COLUMN_METADATA_H_
-#define TEST_POSTGRESQL_INCLUDE_TEST_UTILITY_UT_COLUMN_METADATA_H_
+#ifndef TEST_INCLUDE_TEST_METADATA_POSTGRESQL_UT_COLUMN_METADATA_PG_H_
+#define TEST_INCLUDE_TEST_METADATA_POSTGRESQL_UT_COLUMN_METADATA_PG_H_
 
 #include <string>
 #include <string_view>
@@ -26,11 +26,11 @@ namespace manager::metadata::testing {
 
 class UTColumnMetadata {
  public:
-  std::int64_t id = NOT_INITIALIZED;
+  std::int64_t id       = NOT_INITIALIZED;
   std::int64_t table_id = NOT_INITIALIZED;
   std::string name;
   std::int64_t column_number = NOT_INITIALIZED;
-  std::int64_t data_type_id = NOT_INITIALIZED;
+  std::int64_t data_type_id  = NOT_INITIALIZED;
   boost::property_tree::ptree p_data_length;  //!< @brief array of data length
   std::vector<int64_t> data_length;
   bool varying;
@@ -53,4 +53,4 @@ class UTColumnMetadata {
 
 }  // namespace manager::metadata::testing
 
-#endif  // TEST_POSTGRESQL_INCLUDE_TEST_UTILITY_UT_COLUMN_METADATA_H_
+#endif  // TEST_INCLUDE_TEST_METADATA_POSTGRESQL_UT_COLUMN_METADATA_PG_H_

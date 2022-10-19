@@ -13,13 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "test/json/helper/index_metadata_helper.h"
+#include "test/helper/json/index_metadata_helper_json.h"
 
 #include <gtest/gtest.h>
 
 #include "manager/metadata/dao/json/index_dao_json.h"
-#include "test/json/global_test_environment.h"
-#include "test/json/utility/ut_utils.h"
+#include "test/common/json/global_test_environment_json.h"
+#include "test/common/json/ut_utils_json.h"
 
 namespace manager::metadata::testing {
 
@@ -57,8 +57,9 @@ std::int64_t IndexMetadataHelper::get_record_count() {
  * @param table_id        [in]  table id.
  * @param index_metadata  [out] index metadata used as test data.
  */
-void IndexMetadataHelper::generate_test_metadata(const ObjectId& table_id,
-                                                 std::unique_ptr<UTIndexMetadata>& index_metadata) {
+void IndexMetadataHelper::generate_test_metadata(
+    const ObjectId& table_id,
+    std::unique_ptr<UTIndexMetadata>& index_metadata) {
   // generate unique index name.
   std::string index_name = "index_name" + std::to_string(time(NULL));
 
@@ -80,7 +81,8 @@ void IndexMetadataHelper::generate_test_metadata(const ObjectId& table_id,
   index_metadata->table_id = table_id;
 
   // generate access_method.
-  index_metadata->access_method = static_cast<int64_t>(Index::AccessMethod::DEFAULT);
+  index_metadata->access_method =
+      static_cast<int64_t>(Index::AccessMethod::DEFAULT);
 
   // generate number_of_key_columns.
   index_metadata->number_of_key_columns = 1;
@@ -100,8 +102,10 @@ void IndexMetadataHelper::generate_test_metadata(const ObjectId& table_id,
   index_metadata->columns_id.push_back(2002);
 
   // generate options.
-  index_metadata->options.push_back(static_cast<int64_t>(Index::Direction::ASC_NULLS_LAST));
-  index_metadata->options.push_back(static_cast<int64_t>(Index::Direction::DESC_NULLS_FIRST));
+  index_metadata->options.push_back(
+      static_cast<int64_t>(Index::Direction::ASC_NULLS_LAST));
+  index_metadata->options.push_back(
+      static_cast<int64_t>(Index::Direction::DESC_NULLS_FIRST));
 
   // generate ptree from UTTableMetadata fields.
   index_metadata->generate_ptree();
@@ -163,10 +167,12 @@ void IndexMetadataHelper::add(const Metadata* indexes,
  *   new index metadata.
  * @return none.
  */
-void IndexMetadataHelper::add(const Metadata* indexes, const Index& index_metadata,
+void IndexMetadataHelper::add(const Metadata* indexes,
+                              const Index& index_metadata,
                               ObjectIdType* index_id) {
   UTUtils::print("-- add index metadata in struct --");
-  UTUtils::print(" " + UTUtils::get_tree_string(index_metadata.convert_to_ptree()));
+  UTUtils::print(" " +
+                 UTUtils::get_tree_string(index_metadata.convert_to_ptree()));
 
   ObjectIdType ret_id_value = INVALID_VALUE;
   // add index metadata.
@@ -188,7 +194,8 @@ void IndexMetadataHelper::add(const Metadata* indexes, const Index& index_metada
  * @param index_id  [in]  index id of remove index metadata.
  * @return none.
  */
-void IndexMetadataHelper::remove(const Indexes* indexes, const ObjectIdType index_id) {
+void IndexMetadataHelper::remove(const Indexes* indexes,
+                                 const ObjectIdType index_id) {
   UTUtils::print("-- remove index metadata --");
   UTUtils::print(" index_id: ", index_id);
 
@@ -197,7 +204,8 @@ void IndexMetadataHelper::remove(const Indexes* indexes, const ObjectIdType inde
   ASSERT_EQ(ErrorCode::OK, error);
 }
 
-void IndexMetadataHelper::remove(const Metadata* indexes, const ObjectIdType index_id) {
+void IndexMetadataHelper::remove(const Metadata* indexes,
+                                 const ObjectIdType index_id) {
   UTUtils::print("-- remove index metadata --");
   UTUtils::print(" index_id: ", index_id);
 
@@ -213,7 +221,8 @@ void IndexMetadataHelper::remove(const Metadata* indexes, const ObjectIdType ind
  * @param removed_id [in]  (optional) Index ID of the removed index metadata.
  * @return none.
  */
-void IndexMetadataHelper::remove(const Metadata* indexes, std::string_view index_name,
+void IndexMetadataHelper::remove(const Metadata* indexes,
+                                 std::string_view index_name,
                                  ObjectIdType* removed_id) {
   UTUtils::print("-- remove index metadata --");
   UTUtils::print(" index_name: ", index_name);
@@ -237,8 +246,9 @@ void IndexMetadataHelper::remove(const Metadata* indexes, std::string_view index
  * @param actual    [in]  actual index metadata.
  * @return none.
  */
-void IndexMetadataHelper::check_metadata_expected(const boost::property_tree::ptree& expected,
-                                                  const boost::property_tree::ptree& actual) {
+void IndexMetadataHelper::check_metadata_expected(
+    const boost::property_tree::ptree& expected,
+    const boost::property_tree::ptree& actual) {
   // index metadata id
   auto id_actual = actual.get_optional<ObjectIdType>(Index::ID);
   if (id_actual) {
@@ -284,9 +294,9 @@ void IndexMetadataHelper::check_metadata_expected(const boost::property_tree::pt
  * @param meta_name  [in]  name of metadata table.
  * @return none.
  */
-void IndexMetadataHelper::check_child_expected(const boost::property_tree::ptree& expected,
-                                               const boost::property_tree::ptree& actual,
-                                               const char* meta_name) {
+void IndexMetadataHelper::check_child_expected(
+    const boost::property_tree::ptree& expected,
+    const boost::property_tree::ptree& actual, const char* meta_name) {
   auto o_expected = expected.get_child_optional(meta_name);
   auto o_actual   = actual.get_child_optional(meta_name);
 
@@ -295,8 +305,10 @@ void IndexMetadataHelper::check_child_expected(const boost::property_tree::ptree
     auto actual_value   = UTUtils::get_tree_string(o_actual.value());
     EXPECT_EQ_T(expected_value, actual_value, meta_name);
   } else {
-    auto expected_value = (o_expected ? UTUtils::get_tree_string(o_expected.value()) : "<null>");
-    auto actual_value   = (o_actual ? UTUtils::get_tree_string(o_actual.value()) : "<null>");
+    auto expected_value =
+        (o_expected ? UTUtils::get_tree_string(o_expected.value()) : "<null>");
+    auto actual_value =
+        (o_actual ? UTUtils::get_tree_string(o_actual.value()) : "<null>");
     EXPECT_EQ_T(expected_value, actual_value, meta_name);
   }
 }
@@ -309,17 +321,19 @@ void IndexMetadataHelper::check_child_expected(const boost::property_tree::ptree
  * @return none.
  */
 template <typename T>
-void IndexMetadataHelper::check_expected(const boost::property_tree::ptree& expected,
-                                         const boost::property_tree::ptree& actual,
-                                         const char* meta_name) {
+void IndexMetadataHelper::check_expected(
+    const boost::property_tree::ptree& expected,
+    const boost::property_tree::ptree& actual, const char* meta_name) {
   auto expected_value = expected.get_optional<T>(meta_name);
   auto actual_value   = actual.get_optional<T>(meta_name);
 
   if (expected_value && actual_value) {
     EXPECT_EQ_T(expected_value.value(), actual_value.value(), meta_name);
   } else {
-    auto expected_value = expected.get_optional<std::string>(meta_name).value_or("<null>");
-    auto actual_value = actual.get_optional<std::string>(meta_name).value_or("<null>");
+    auto expected_value =
+        expected.get_optional<std::string>(meta_name).value_or("<null>");
+    auto actual_value =
+        actual.get_optional<std::string>(meta_name).value_or("<null>");
     EXPECT_EQ_T(expected_value, actual_value, meta_name);
   }
 }

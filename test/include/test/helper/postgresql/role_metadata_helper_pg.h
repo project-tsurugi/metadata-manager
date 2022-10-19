@@ -13,34 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TEST_POSTGRESQL_INCLUDE_TEST_HELPER_DATA_TYPES_HELPER_H_
-#define TEST_POSTGRESQL_INCLUDE_TEST_HELPER_DATA_TYPES_HELPER_H_
+#ifndef TEST_INCLUDE_TEST_HELPER_POSTGRESQL_ROLE_METADATA_HELPER_PG_H_
+#define TEST_INCLUDE_TEST_HELPER_POSTGRESQL_ROLE_METADATA_HELPER_PG_H_
 
-#include <string>
 #include <string_view>
-#include <tuple>
-#include <vector>
 
 #include <boost/property_tree/ptree.hpp>
 
+#include "manager/metadata/metadata.h"
+
 namespace manager::metadata::testing {
 
-class DataTypesHelper {
+class RoleMetadataHelper {
  public:
-  using BasicTestParameter = std::tuple<std::string, std::string>;
+  static ObjectIdType create_role(std::string_view role_name,
+                                  std::string_view options);
+  static void drop_role(std::string_view role_name);
 
-  static std::vector<BasicTestParameter> make_datatypes_tuple();
-  static std::vector<std::string> make_datatype_names();
-
-  static void check_datatype_metadata_expected(
-      const boost::property_tree::ptree& datatype);
+  static void check_roles_expected(const boost::property_tree::ptree& actual,
+                                   const boost::property_tree::ptree& expect);
 
  private:
-  static void make_datatypes_tuple(std::string_view key,
-                                   const std::vector<std::string> values,
-                                   std::vector<BasicTestParameter>& v);
+  static void db_connection();
 };
 
 }  // namespace manager::metadata::testing
 
-#endif  // TEST_POSTGRESQL_INCLUDE_TEST_HELPER_DATA_TYPES_HELPER_H_
+#endif  // TEST_INCLUDE_TEST_HELPER_POSTGRESQL_ROLE_METADATA_HELPER_PG_H_

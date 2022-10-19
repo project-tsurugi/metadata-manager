@@ -13,15 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TEST_JSON_INCLUDE_TEST_GLOBAL_TEST_ENVIRONMENT_H_
-#define TEST_JSON_INCLUDE_TEST_GLOBAL_TEST_ENVIRONMENT_H_
+#ifndef TEST_INCLUDE_TEST_COMMON_JSON_GLOBAL_TEST_ENVIRONMENT_JSON_H_
+#define TEST_INCLUDE_TEST_COMMON_JSON_GLOBAL_TEST_ENVIRONMENT_JSON_H_
 
 #include <gtest/gtest.h>
 
 #include <memory>
 #include <string>
 
-#include "test/json/utility/ut_table_metadata.h"
+#include "test/metadata/json/ut_table_metadata_json.h"
 
 namespace manager::metadata::testing {
 
@@ -77,4 +77,4 @@ extern GlobalTestEnvironment* const global;
 
 }  // namespace manager::metadata::testing
 
-#endif  // TEST_JSON_INCLUDE_TEST_GLOBAL_TEST_ENVIRONMENT_H_
+#endif  // TEST_INCLUDE_TEST_COMMON_JSON_GLOBAL_TEST_ENVIRONMENT_JSON_H_
