@@ -23,11 +23,11 @@
 #include "manager/metadata/common/config.h"
 #include "manager/metadata/dao/postgresql/dbc_utils_pg.h"
 #include "manager/metadata/tables.h"
-#include "test/common/postgresql/global_test_environment_pg.h"
-#include "test/common/postgresql/ut_utils_pg.h"
+#include "test/common/ut_utils.h"
+#include "test/environment/global_test_environment.h"
 #include "test/helper/postgresql/foreign_table_helper_pg.h"
 #include "test/helper/postgresql/role_metadata_helper_pg.h"
-#include "test/helper/postgresql/table_metadata_helper_pg.h"
+#include "test/helper/table_metadata_helper.h"
 
 namespace {
 

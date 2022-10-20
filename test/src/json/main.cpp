@@ -19,7 +19,7 @@
 
 #include <boost/filesystem.hpp>
 
-#include "test/common/json/global_test_environment_json.h"
+#include "test/environment/global_test_environment.h"
 
 namespace manager::metadata::testing {
 

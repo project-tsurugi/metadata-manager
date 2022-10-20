@@ -23,10 +23,10 @@
 #include "manager/metadata/common/message.h"
 #include "manager/metadata/dao/postgresql/db_session_manager_pg.h"
 #include "manager/metadata/dao/statistics_dao.h"
-#include "test/common/postgresql/global_test_environment_pg.h"
-#include "test/helper/postgresql/column_statistics_helper_pg.h"
-#include "test/helper/postgresql/table_metadata_helper_pg.h"
-#include "test/common/postgresql/ut_utils_pg.h"
+#include "test/common/ut_utils.h"
+#include "test/environment/global_test_environment.h"
+#include "test/helper/column_statistics_helper.h"
+#include "test/helper/table_metadata_helper.h"
 
 namespace manager::metadata::testing {
 
@@ -226,8 +226,7 @@ ErrorCode DaoTestColumnStatistics::get_one_column_statistic(
 
   if (error == ErrorCode::OK) {
     auto optional_ordinal_position =
-        column_statistic.get_optional<std::int64_t>(
-            Statistics::COLUMN_NUMBER);
+        column_statistic.get_optional<std::int64_t>(Statistics::COLUMN_NUMBER);
     EXPECT_TRUE(optional_ordinal_position);
 
     auto optional_column_statistic =
@@ -284,8 +283,8 @@ ErrorCode DaoTestColumnStatistics::get_all_column_statistics(
          ordinal_position++) {
       ptree c_cs_returned = column_statistics[ordinal_position - 1];
 
-      auto optional_ordinal_position = c_cs_returned.get_optional<std::int64_t>(
-          Statistics::COLUMN_NUMBER);
+      auto optional_ordinal_position =
+          c_cs_returned.get_optional<std::int64_t>(Statistics::COLUMN_NUMBER);
       EXPECT_TRUE(optional_ordinal_position);
 
       auto optional_column_statistic =
@@ -966,7 +965,7 @@ TEST_F(DaoTestColumnStatisticsAllAPIException,
 
   UTTableMetadata* testdata_table_metadata =
       global->testdata_table_metadata.get();
-  std::string table_name = testdata_table_metadata->name + "_empty";
+  std::string table_name     = testdata_table_metadata->name + "_empty";
   std::string statistic_name = "statistic-name";
 
   ObjectIdType ret_table_id;
@@ -990,9 +989,8 @@ TEST_F(DaoTestColumnStatisticsAllAPIException,
   ObjectIdType ret_statistic_id;
 
   error = sdao->upsert_column_statistic(
-      ret_table_id, Statistics::COLUMN_NUMBER,
-      std::to_string(ordinal_position), &statistic_name, column_statistic,
-      ret_statistic_id);
+      ret_table_id, Statistics::COLUMN_NUMBER, std::to_string(ordinal_position),
+      &statistic_name, column_statistic, ret_statistic_id);
 
   EXPECT_EQ(ErrorCode::OK, error);
   EXPECT_GT(ret_statistic_id, 0);

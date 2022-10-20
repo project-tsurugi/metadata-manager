@@ -24,10 +24,10 @@
 #include "manager/metadata/metadata_factory.h"
 #include "manager/metadata/tables.h"
 
-#include "test/json/global_test_environment.h"
-#include "test/json/helper/table_metadata_helper.h"
-#include "test/json/utility/ut_table_metadata.h"
-#include "test/json/utility/ut_utils.h"
+#include "test/common/ut_utils.h"
+#include "test/environment/global_test_environment.h"
+#include "test/helper/table_metadata_helper.h"
+#include "test/metadata/ut_table_metadata.h"
 
 namespace manager::metadata::testing {
 

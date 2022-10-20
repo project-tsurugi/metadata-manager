@@ -4,6 +4,7 @@
             "formatVersion": "1",
             "generation": "1",
             "name": "no_key_of_pkey",
+            "numberOfTuples": 1,
             "columns": [
                 {
                     "columnNumber": "1",
@@ -26,6 +27,7 @@
             "formatVersion": "1",
             "generation": "1",
             "name": "empty_array_of_pkey",
+            "numberOfTuples": 0,
             "columns": [
                 {
                     "columnNumber": "1",
@@ -67,6 +69,7 @@
             "formatVersion": "1",
             "generation": "1",
             "name": "no_column",
+            "numberOfTuples": 0,
             "columns": [],
             "constraints": []
         },
@@ -74,6 +77,7 @@
             "formatVersion": "1",
             "generation": "1",
             "name": "one_column",
+            "numberOfTuples": 0,
             "columns": [
                 {
                     "columnNumber": "4",
@@ -96,6 +100,7 @@
             "formatVersion": "1",
             "generation": "1",
             "name": "two_column",
+            "numberOfTuples": 0,
             "columns": [
                 {
                     "columnNumber": "4",
@@ -133,6 +138,7 @@
             "formatVersion": "1",
             "generation": "1",
             "name": "japanese_column_name",
+            "numberOfTuples": 0,
             "columns": [
                 {
                     "columnNumber": "1",
@@ -155,6 +161,7 @@
             "formatVersion": "1",
             "generation": "1",
             "name": "one_english_column_name",
+            "numberOfTuples": 0,
             "columns": [
                 {
                     "columnNumber": "1",
@@ -177,6 +184,7 @@
             "formatVersion": "1",
             "generation": "1",
             "name": "customer",
+            "numberOfTuples": 0,
             "columns": [
                 {
                     "columnNumber": "1",
@@ -350,6 +358,7 @@
             "formatVersion": "1",
             "generation": "1",
             "name": "integer1",
+            "numberOfTuples": 0,
             "columns": [
                 {
                     "columnNumber": "1",
@@ -372,6 +381,7 @@
             "formatVersion": "1",
             "generation": "1",
             "name": "bigint1",
+            "numberOfTuples": 0,
             "columns": [
                 {
                     "columnNumber": "1",
@@ -407,6 +417,7 @@
             "formatVersion": "1",
             "generation": "1",
             "name": "real1",
+            "numberOfTuples": 0,
             "columns": [
                 {
                     "columnNumber": "1",
@@ -421,6 +432,7 @@
             "formatVersion": "1",
             "generation": "1",
             "name": "double1",
+            "numberOfTuples": 0,
             "columns": [
                 {
                     "columnNumber": "1",
@@ -435,6 +447,7 @@
             "formatVersion": "1",
             "generation": "1",
             "name": "char_length_10",
+            "numberOfTuples": 0,
             "columns": [
                 {
                     "columnNumber": "1",
@@ -451,6 +464,7 @@
             "formatVersion": "1",
             "generation": "1",
             "name": "varchar_length_10",
+            "numberOfTuples": 0,
             "columns": [
                 {
                     "columnNumber": "1",

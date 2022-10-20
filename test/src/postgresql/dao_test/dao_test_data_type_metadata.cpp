@@ -26,9 +26,9 @@
 #include "manager/metadata/dao/generic_dao.h"
 #include "manager/metadata/dao/postgresql/db_session_manager_pg.h"
 #include "manager/metadata/error_code.h"
-#include "test/common/postgresql/global_test_environment_pg.h"
-#include "test/common/postgresql/ut_utils_pg.h"
-#include "test/helper/postgresql/data_types_helper_pg.h"
+#include "test/common/ut_utils.h"
+#include "test/environment/global_test_environment.h"
+#include "test/helper/data_types_helper.h"
 
 namespace manager::metadata::testing {
 

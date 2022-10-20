@@ -26,11 +26,11 @@
 #include "manager/metadata/error_code.h"
 #include "manager/metadata/metadata_factory.h"
 #include "manager/metadata/tables.h"
-#include "test/common/json/global_test_environment_json.h"
-#include "test/common/json/ut_utils_json.h"
-#include "test/helper/json/constraint_metadata_helper_json.h"
-#include "test/helper/json/table_metadata_helper_json.h"
-#include "test/metadata/json/ut_table_metadata_json.h"
+#include "test/common/ut_utils.h"
+#include "test/environment/global_test_environment.h"
+#include "test/helper/constraint_metadata_helper.h"
+#include "test/helper/table_metadata_helper.h"
+#include "test/metadata/ut_table_metadata.h"
 
 namespace {
 

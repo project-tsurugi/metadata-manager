@@ -28,9 +28,9 @@
 #include "manager/metadata/roles.h"
 #include "manager/metadata/statistics.h"
 #include "manager/metadata/tables.h"
-#include "test/common/postgresql/global_test_environment_pg.h"
-#include "test/common/postgresql/ut_utils_pg.h"
-#include "test/helper/postgresql/column_statistics_helper_pg.h"
+#include "test/common/ut_utils.h"
+#include "test/environment/global_test_environment.h"
+#include "test/helper/column_statistics_helper.h"
 
 namespace manager::metadata::testing {
 

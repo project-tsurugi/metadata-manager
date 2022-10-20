@@ -21,9 +21,9 @@
 
 #include "manager/metadata/dao/datatypes_dao.h"
 #include "manager/metadata/dao/json/db_session_manager_json.h"
-#include "test/common/json/global_test_environment_json.h"
-#include "test/common/json/ut_utils_json.h"
-#include "test/helper/json/data_types_helper_json.h"
+#include "test/common/ut_utils.h"
+#include "test/environment/global_test_environment.h"
+#include "test/helper/data_types_helper.h"
 
 namespace manager::metadata::testing {
 

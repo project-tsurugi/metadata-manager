@@ -26,7 +26,7 @@
 #include "manager/metadata/dao/postgresql/dbc_utils_pg.h"
 #include "manager/metadata/error_code.h"
 #include "manager/metadata/metadata.h"
-#include "test/common/postgresql/ut_utils_pg.h"
+#include "test/common/ut_utils.h"
 
 // extern "C" {
 // #include <libpq-fe.h>

@@ -21,8 +21,8 @@
 #include <boost/format.hpp>
 
 #include "manager/metadata/tables.h"
-#include "test/common/json/global_test_environment_json.h"
-#include "test/common/json/ut_utils_json.h"
+#include "test/common/ut_utils.h"
+#include "test/environment/global_test_environment.h"
 
 namespace manager::metadata::testing {
 

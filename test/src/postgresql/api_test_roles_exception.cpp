@@ -21,8 +21,8 @@
 #include <boost/property_tree/ptree.hpp>
 
 #include "manager/metadata/roles.h"
-#include "test/common/postgresql/global_test_environment_pg.h"
-#include "test/common/postgresql/ut_utils_pg.h"
+#include "test/common/ut_utils.h"
+#include "test/environment/global_test_environment.h"
 
 namespace manager::metadata::testing {
 

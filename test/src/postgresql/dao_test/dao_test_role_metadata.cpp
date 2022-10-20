@@ -21,8 +21,8 @@
 
 #include "manager/metadata/dao/postgresql/db_session_manager_pg.h"
 #include "manager/metadata/dao/roles_dao.h"
-#include "test/common/postgresql/global_test_environment_pg.h"
-#include "test/common/postgresql/ut_utils_pg.h"
+#include "test/common/ut_utils.h"
+#include "test/environment/global_test_environment.h"
 #include "test/helper/postgresql/role_metadata_helper_pg.h"
 
 namespace {

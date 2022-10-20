@@ -22,9 +22,9 @@
 #include <boost/property_tree/json_parser.hpp>
 
 #include "manager/metadata/tables.h"
-#include "test/common/postgresql/global_test_environment_pg.h"
-#include "test/common/postgresql/ut_utils_pg.h"
-#include "test/helper/postgresql/table_metadata_helper_pg.h"
+#include "test/common/ut_utils.h"
+#include "test/environment/global_test_environment.h"
+#include "test/helper/table_metadata_helper.h"
 
 namespace manager::metadata::testing {
 
@@ -39,50 +39,17 @@ class ApiTestTableMetadataExtra
     } else {
       // If metadata repository is opened,
       // make valid table metadata used as test data.
-      table_metadata = make_valid_table_metadata();
+      table_metadata_ = TableMetadataHelper::make_valid_table_metadata();
 
       // If valid test data could not be made, skip this test.
-      if (table_metadata.empty()) {
+      if (table_metadata_.empty()) {
         GTEST_SKIP_("could not read a json file with table metadata.");
       }
     }
   }
 
-  /**
-   * @brief Make valid table metadata used as test data,
-   * by reading a json file with table metadata.
-   */
-  std::vector<boost::property_tree::ptree> make_valid_table_metadata() {
-    std::vector<ptree> test_data_table_metadata;
-
-    ptree pt;
-    try {
-      // read a json file with table metadata used as test data.
-      read_json(global->get_json_schema_file_name(), pt);
-    } catch (boost::property_tree::json_parser_error& e) {
-      UTUtils::print("could not read a json file with table metadata.",
-                     e.what());
-      return test_data_table_metadata;
-    } catch (...) {
-      UTUtils::print("could not read a json file with table metadata.");
-      return test_data_table_metadata;
-    }
-
-    // Make valid table metadata used as test data.
-    boost::optional<ptree&> o_tables = pt.get_child_optional("tables");
-    if (o_tables) {
-      ptree& tables = o_tables.value();
-      BOOST_FOREACH (const ptree::value_type& node, tables) {
-        ptree table = node.second;
-        test_data_table_metadata.emplace_back(table);
-      }
-    }
-
-    return test_data_table_metadata;
-  }
-
  protected:
-  std::vector<boost::property_tree::ptree> table_metadata;
+  std::vector<boost::property_tree::ptree> table_metadata_;
 };
 
 /**
@@ -90,7 +57,7 @@ class ApiTestTableMetadataExtra
  */
 TEST_F(ApiTestTableMetadataExtra, add_get_remove_table_metadata_by_table_name) {
   // variable "table_metadata" is test data set.
-  for (auto table_metadata_expected : table_metadata) {
+  for (auto table_metadata_expected : table_metadata_) {
     // add valid table metadata.
     ObjectIdType ret_table_id = -1;
     TableMetadataHelper::add_table(table_metadata_expected, &ret_table_id);
@@ -137,7 +104,7 @@ TEST_F(ApiTestTableMetadataExtra, add_get_remove_table_metadata_by_table_name) {
 TEST_F(ApiTestTableMetadataExtra,
        add_get_update_remove_table_metadata_by_table_id) {
   // variable "table_metadata" is test data set.
-  for (auto table_metadata_expected : table_metadata) {
+  for (auto table_metadata_expected : table_metadata_) {
     // add valid table metadata.
     ObjectIdType ret_table_id = -1;
     TableMetadataHelper::add_table(table_metadata_expected, &ret_table_id);
