@@ -239,25 +239,36 @@ ErrorCode Metadata::get(std::string_view object_name,
 /**
  * @brief
  */
-  ErrorCode Metadata::next(boost::property_tree::ptree& object) {   
-    ErrorCode error = ErrorCode::UNKNOWN;
-    if (objects_.empty()) {
-      error = this->get_all(objects_);
-      if (error != ErrorCode::OK) {
-        return error;
-      }
-      cursor_ = 0;
-    }
+ErrorCode Metadata::get_all() {
+  objects_.clear();
+  ErrorCode error = this->get_all(objects_);
+  cursor_ = 0;
 
-    if (objects_.size() > cursor_) {
-      object = objects_[cursor_];
-      cursor_++;
-    } else {
-      return ErrorCode::END_OF_ROW;
-    }
+  return error;
+}
 
-    return ErrorCode::OK;
+/**
+ * @brief
+ */
+ErrorCode Metadata::next(boost::property_tree::ptree& object) {   
+  ErrorCode error = ErrorCode::UNKNOWN;
+  if (objects_.empty()) {
+    error = this->get_all(objects_);
+    if (error != ErrorCode::OK) {
+      return error;
+    }
+    cursor_ = 0;
   }
+
+  if (objects_.size() > cursor_) {
+    object = objects_[cursor_];
+    cursor_++;
+  } else {
+    return ErrorCode::END_OF_ROW;
+  }
+
+  return ErrorCode::OK;
+}
 
 /**
  * @brief

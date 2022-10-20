@@ -317,7 +317,7 @@ TEST_F(ApiTestTableMetadata, add_get_table_metadata_by_table_id) {
 /**
  * @brief happy test for all table metadata getting.
  */
-TEST_F(ApiTestTableMetadata, get_all_table_struct) {
+TEST_F(ApiTestTableMetadata, get_all_table_next) {
   constexpr int test_table_count      = 5;
   std::string table_name_prefix       = "Table-ApiTestTableMetadata-GetAll-";
   std::vector<ObjectIdType> table_ids = {};
@@ -342,7 +342,6 @@ TEST_F(ApiTestTableMetadata, get_all_table_struct) {
   EXPECT_EQ(ErrorCode::OK, error);
 
   int64_t actual_count = 0;
-#if 0  
   ptree pt;
   while ((error = tables->next(pt)) == ErrorCode::OK) {
     UTUtils::print("-- get all table metadata --");
@@ -359,8 +358,8 @@ TEST_F(ApiTestTableMetadata, get_all_table_struct) {
   }
   ASSERT_EQ(test_table_count, actual_count);
 
+  tables->get_all();
   actual_count = 0;
-#endif
   Table table;
   while ((error = tables->next(table)) == ErrorCode::OK) {
     UTUtils::print("-- get all table metadata --");

@@ -327,6 +327,7 @@ class Metadata {
   ErrorCode update(const manager::metadata::ObjectIdType object_id,
                    const manager::metadata::Object& object) const;
 
+  ErrorCode get_all();
   ErrorCode next(boost::property_tree::ptree& object);
   ErrorCode next(manager::metadata::Object& object);
 
