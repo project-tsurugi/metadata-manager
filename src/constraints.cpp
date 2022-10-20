@@ -281,13 +281,6 @@ ErrorCode Constraints::remove(const ObjectId object_id) const {
   return error;
 }
 
-/**
- *  @brief
- */
-std::shared_ptr<Object> Constraints::create_object() const {
-  return std::make_shared<Constraint>();
-}
-
 /* =============================================================================
  * Private method area
  */

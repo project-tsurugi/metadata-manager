@@ -227,11 +227,4 @@ ErrorCode DataTypes::get(std::string_view object_key,
   return error;
 }
 
-/**
- *  @brief
- */
-std::shared_ptr<Object> DataTypes::create_object() const {
-  return std::make_shared<DataType>();
-}
-
 }  // namespace manager::metadata

@@ -608,14 +608,6 @@ ErrorCode Statistics::remove_by_column_name(
   return error;
 }
 
-/**
- *  @brief
- */
-std::shared_ptr<Object> Statistics::create_object() const {
-  // ToDo: implements.
-  return nullptr;
-}
-
 /* =============================================================================
  * Private method area
  */

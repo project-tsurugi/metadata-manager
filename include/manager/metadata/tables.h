@@ -21,6 +21,7 @@
 #include <vector>
 
 #include <boost/property_tree/ptree.hpp>
+#include <boost/iterator_adaptors.hpp>
 
 #include "manager/metadata/constraints.h"
 #include "manager/metadata/error_code.h"
@@ -103,8 +104,9 @@ struct Column : public Object {
         data_length({}),
         varying(false),
         is_not_null(false) {}
-  boost::property_tree::ptree convert_to_ptree() const override;
-  void convert_from_ptree(const boost::property_tree::ptree& ptree) override;
+  virtual boost::property_tree::ptree convert_to_ptree() const override;
+  virtual void convert_from_ptree(
+      const boost::property_tree::ptree& ptree) override;
 };
 
 /**
@@ -159,8 +161,10 @@ struct Table : public ClassObject {
   static constexpr const char* const TABLE_ACL_NODE = "tables";
 
   Table() : ClassObject(), number_of_tuples(INVALID_VALUE) {}
-  boost::property_tree::ptree convert_to_ptree() const override;
-  void convert_from_ptree(const boost::property_tree::ptree& ptree) override;
+  Table(boost::property_tree::ptree pt);
+  virtual boost::property_tree::ptree convert_to_ptree() const override;
+  virtual void convert_from_ptree(
+      const boost::property_tree::ptree& ptree) override;
 };
 
 /**
@@ -302,8 +306,6 @@ class Tables : public Metadata {
   ErrorCode confirm_permission_in_acls(std::string_view object_name,
                                        const char* permission,
                                        bool& check_result) const;
-
-  std::shared_ptr<Object> create_object() const override;
 
  private:
   manager::metadata::ErrorCode param_check_metadata_add(

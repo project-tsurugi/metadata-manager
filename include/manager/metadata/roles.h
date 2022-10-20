@@ -122,8 +122,6 @@ class Roles : public Metadata {
     return ErrorCode::UNKNOWN;
   }
 
-  std::shared_ptr<Object> create_object() const override;
-
 };  // class Roles
 
 }  // namespace manager::metadata

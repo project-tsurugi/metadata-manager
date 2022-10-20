@@ -118,7 +118,7 @@ void ClassObject::convert_from_ptree(const boost::property_tree::ptree& pt) {
  *  @return none.
  */
 Metadata::Metadata(std::string_view database, std::string_view component)
-    : database_(database), component_(component) {
+    : database_(database), component_(component), cursor_(0) {
   if (!log::LogController::get_logger()) {
     // Register a default logger.
     log::LogController::set_logger(std::make_shared<log::DefaultLogger>());
@@ -236,29 +236,40 @@ ErrorCode Metadata::get(std::string_view object_name,
   return error;
 }
 
+/**
+ * @brief
+ */
+  ErrorCode Metadata::next(boost::property_tree::ptree& object) {   
+    ErrorCode error = ErrorCode::UNKNOWN;
+    if (objects_.empty()) {
+      error = this->get_all(objects_);
+      if (error != ErrorCode::OK) {
+        return error;
+      }
+      cursor_ = 0;
+    }
+
+    if (objects_.size() > cursor_) {
+      object = objects_[cursor_];
+      cursor_++;
+    } else {
+      return ErrorCode::END_OF_ROW;
+    }
+
+    return ErrorCode::OK;
+  }
 
 /**
- * @brief Get all metadata object objects from the metadata table.
- *   If no metadata object existst, return the container as empty.
- * @param objects  [out] Container of metadata objects.
- * @return ErrorCode::OK if success, otherwise an error code.
+ * @brief
  */
-ErrorCode Metadata::get_all(
-    manager::metadata::MetadataContainer& objects) const {
+ErrorCode Metadata::next(manager::metadata::Object& object) {
+    ptree pt;
+    ErrorCode error = this->next(pt);
+    if (error == ErrorCode::OK) {
+      object.convert_from_ptree(pt);
+    }
 
-  std::vector<ptree> pts;
-  ErrorCode error = this->get_all(pts);
-  if (error != ErrorCode::OK) {
     return error;
-  }
-
-  for (const auto& pt : pts) {
-    auto object = this->create_object();
-    object->convert_from_ptree(pt);
-    objects.emplace_back(object);
-  }
-
-  return error;  
 }
 
 /**

@@ -123,8 +123,6 @@ class DataTypes : public Metadata {
     return ErrorCode::UNKNOWN;
   }
 
-  std::shared_ptr<Object> create_object() const override;
-
 };  // class DataTypes
 
 }  // namespace manager::metadata

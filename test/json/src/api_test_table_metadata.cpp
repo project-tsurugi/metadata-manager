@@ -337,27 +337,45 @@ TEST_F(ApiTestTableMetadata, get_all_table_struct) {
 
   // gets all table metadata.
   auto tables = manager::metadata::get_tables_ptr(GlobalTestEnvironment::TEST_DB);
+//  auto tables = std::make_unique<manager::metadata::Tables>(GlobalTestEnvironment::TEST_DB);
   ErrorCode error = tables->init();
   EXPECT_EQ(ErrorCode::OK, error);
 
-  std::vector<std::shared_ptr<manager::metadata::Object>> container = {};
-  error = tables->get_all(container);
-  EXPECT_EQ(ErrorCode::OK, error);
-  ASSERT_EQ(test_table_count, container.size());
+  int64_t actual_count = 0;
+#if 0  
+  ptree pt;
+  while ((error = tables->next(pt)) == ErrorCode::OK) {
+    UTUtils::print("-- get all table metadata --");
+    UTUtils::print(UTUtils::get_tree_string(pt));
 
-  UTUtils::print("-- get all table metadata --");
-  for (int count = 1; count <= test_table_count; count++) {
-    std::shared_ptr<Object> table_metadata = container[count - 1];
-    UTUtils::print(UTUtils::get_tree_string(table_metadata->convert_to_ptree()));
-
-    std::string table_name = table_name_prefix + std::to_string(count);
-    expected_table.put(Tables::ID, table_ids[count - 1]);
+    std::string table_name = table_name_prefix + std::to_string(actual_count + 1);
+    expected_table.put(Tables::ID, table_ids[actual_count]);
     expected_table.put(Tables::NAME, table_name);
 
     // verifies that the returned table metadata is expected one.
     TableMetadataHelper::check_table_metadata_expected(expected_table,
-                                                       table_metadata->convert_to_ptree());
+                                                       pt);
+    ++actual_count;
   }
+  ASSERT_EQ(test_table_count, actual_count);
+
+  actual_count = 0;
+#endif
+  Table table;
+  while ((error = tables->next(table)) == ErrorCode::OK) {
+    UTUtils::print("-- get all table metadata --");
+    UTUtils::print(UTUtils::get_tree_string(table.convert_to_ptree()));
+
+    std::string table_name = table_name_prefix + std::to_string(actual_count + 1);
+    expected_table.put(Tables::ID, table_ids[actual_count]);
+    expected_table.put(Tables::NAME, table_name);
+
+    // verifies that the returned table metadata is expected one.
+    TableMetadataHelper::check_table_metadata_expected(expected_table,
+                                                       table.convert_to_ptree());
+    ++actual_count;
+  }
+  ASSERT_EQ(test_table_count, actual_count);
 
   // cleanup
   for (ObjectIdType table_id : table_ids) {

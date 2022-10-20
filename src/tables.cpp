@@ -99,7 +99,7 @@ void Column::convert_from_ptree(const boost::property_tree::ptree& pt) {
  * @return ptree object.
  */
 boost::property_tree::ptree Table::convert_to_ptree() const {
-  ptree pt = ClassObject::base_convert_to_ptree();
+  ptree pt = this->base_convert_to_ptree();
   pt.put<int64_t>(Table::NUMBER_OF_TUPLES, this->number_of_tuples);
 
   // columns metadata
@@ -127,20 +127,22 @@ boost::property_tree::ptree Table::convert_to_ptree() const {
  * @return  structure object of metadata.
  */
 void Table::convert_from_ptree(const boost::property_tree::ptree& pt) {
-  ClassObject::base_convert_from_ptree(pt);
+  this->base_convert_from_ptree(pt);
 
   auto number_of_tuples  = pt.get_optional<int64_t>(Table::NUMBER_OF_TUPLES);
   this->number_of_tuples = number_of_tuples.get_value_or(INVALID_VALUE);
 
   // columns metadata
+  this->columns.clear();
   BOOST_FOREACH (const auto& node, pt.get_child(Table::COLUMNS_NODE)) {
     const ptree& ptree_column = node.second;
     Column column;
     column.convert_from_ptree(ptree_column);
-    columns.emplace_back(column);
+    this->columns.emplace_back(column);
   }
 
   // constraints metadata
+  this->constraints.clear();
   BOOST_FOREACH (const auto& node, pt.get_child(Table::CONSTRAINTS_NODE)) {
     const ptree& ptree_constraint = node.second;
 
@@ -867,13 +869,6 @@ ErrorCode Tables::param_check_statistic_update(
   }
 
   return error;
-}
-
-/**
- *  @brief
- */
-std::shared_ptr<Object> Tables::create_object() const {
-  return std::make_shared<Table>();
 }
 
 }  // namespace manager::metadata

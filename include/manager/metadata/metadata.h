@@ -21,6 +21,7 @@
 #include <memory>
 
 #include <boost/property_tree/ptree.hpp>
+#include <boost/iterator_adaptors.hpp>
 
 #include "manager/metadata/error_code.h"
 
@@ -88,8 +89,6 @@ struct Object {
   virtual void base_convert_from_ptree(const boost::property_tree::ptree& pt);
 };
 
-using MetadataContainer = std::vector<std::shared_ptr<manager::metadata::Object>>;
-
 /**
  * @brief This class manage common metadata of class metadata objects.
  * @note  Class  metadata objects are such as table objects.
@@ -117,9 +116,11 @@ struct ClassObject : public Object {
         acl("") {}
 
   virtual boost::property_tree::ptree base_convert_to_ptree() const override;
-  virtual void base_convert_from_ptree(const boost::property_tree::ptree& pt) override;
-  boost::property_tree::ptree convert_to_ptree() const override;
-  void convert_from_ptree(const boost::property_tree::ptree& pt) override;
+  virtual void base_convert_from_ptree(
+      const boost::property_tree::ptree& pt) override;
+  virtual boost::property_tree::ptree convert_to_ptree() const override;
+  virtual void convert_from_ptree(
+      const boost::property_tree::ptree& pt) override;
   /**
    * @brief Obtain a full qualified object name.
    * e.g. database.schema.table
@@ -323,12 +324,11 @@ class Metadata {
   ErrorCode get(std::string_view object_name,
                 manager::metadata::Object& object) const;
 
-  ErrorCode get_all(manager::metadata::MetadataContainer& objects) const;
-
   ErrorCode update(const manager::metadata::ObjectIdType object_id,
                    const manager::metadata::Object& object) const;
 
-  virtual std::shared_ptr<Object> create_object() const = 0;
+  ErrorCode next(boost::property_tree::ptree& object);
+  ErrorCode next(manager::metadata::Object& object);
 
  protected:
   static constexpr const char* const kDefaultComponent = "visitor";
@@ -340,6 +340,8 @@ class Metadata {
 
   std::string database_;
   std::string component_;
+  std::vector<boost::property_tree::ptree> objects_;
+  int64_t cursor_;
 };
 
 }  // namespace manager::metadata
