@@ -74,6 +74,26 @@ boost::property_tree::ptree Constraint::convert_to_ptree() const {
   // constraint expression.
   metadata.put(EXPRESSION, this->expression);
 
+  // referenced table name.
+  metadata.put(PK_TABLE, this->pk_table);
+
+  // referenced column numbers.
+  ptree pk_columns_node = ptree_helper::make_array_ptree(this->pk_columns);
+  metadata.add_child(PK_COLUMNS, pk_columns_node);
+
+  // referenced column IDs.
+  ptree pk_columns_id_node = ptree_helper::make_array_ptree(this->pk_columns_id);
+  metadata.add_child(PK_COLUMNS_ID, pk_columns_id_node);
+
+  // referenced rows match type.
+  metadata.put(FK_MATCH_TYPE, static_cast<int32_t>(this->fk_match_type));
+
+  // referenced row delete action.
+  metadata.put(FK_DELETE_ACTION, static_cast<int32_t>(this->fk_delete_action));
+
+  // referenced row update action.
+  metadata.put(FK_UPDATE_ACTION, static_cast<int32_t>(this->fk_update_action));
+
   return metadata;
 }
 
@@ -105,6 +125,27 @@ void Constraint::convert_from_ptree(const boost::property_tree::ptree& ptree) {
 
   // constraint expression.
   this->expression = ptree.get_optional<std::string>(EXPRESSION).value_or("");
+
+  // referenced table name.
+  this->pk_table = ptree.get_optional<std::string>(PK_TABLE).value_or("");
+
+  // referenced column numbers.
+  this->pk_columns = ptree_helper::make_vector_int(ptree, PK_COLUMNS);
+
+  // referenced column IDs.
+  this->pk_columns_id = ptree_helper::make_vector_int(ptree, PK_COLUMNS_ID);
+
+  // referenced rows match type.
+  this->fk_match_type = static_cast<MatchType>(
+      ptree.get_optional<int32_t>(FK_MATCH_TYPE).value_or(-1));
+
+  // referenced row delete action.
+  this->fk_delete_action = static_cast<ActionType>(
+      ptree.get_optional<int32_t>(FK_DELETE_ACTION).value_or(-1));
+
+  // referenced row update action.
+  this->fk_update_action = static_cast<ActionType>(
+      ptree.get_optional<int32_t>(FK_UPDATE_ACTION).value_or(-1));
 }
 
 // ==========================================================================
