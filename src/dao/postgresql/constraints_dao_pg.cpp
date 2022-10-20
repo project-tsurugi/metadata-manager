@@ -423,7 +423,7 @@ ErrorCode ConstraintsDAO::insert_constraint_metadata(
             ptree_helper::make_array_ptree({optional_number.value()});
       }
     } else {
-      pt_pk_columns_id = pk_o_columns_id.value();
+      pt_pk_columns_id = o_pk_columns_id.value();
     }
 
     // Converts a property_tree to a JSON string.
