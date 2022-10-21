@@ -27,7 +27,7 @@
 #include "manager/metadata/helper/ptree_helper.h"
 #include "manager/metadata/metadata_factory.h"
 #include "manager/metadata/tables.h"
-#include "test/environment/global_test_environment.h"
+#include "test/common/global_test_environment.h"
 #include "test/common/ut_utils.h"
 
 namespace manager::metadata::testing {

@@ -19,7 +19,7 @@
 
 #include <iostream>
 
-#include "test/environment/global_test_environment.h"
+#include "test/common/global_test_environment.h"
 
 namespace manager::metadata::testing {
 

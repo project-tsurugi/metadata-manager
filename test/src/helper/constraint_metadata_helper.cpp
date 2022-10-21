@@ -18,7 +18,7 @@
 #include <gtest/gtest.h>
 
 #include "manager/metadata/constraints.h"
-#include "test/environment/global_test_environment.h"
+#include "test/common/global_test_environment.h"
 #include "test/common/ut_utils.h"
 
 namespace manager::metadata::testing {
@@ -35,10 +35,11 @@ using boost::property_tree::ptree;
  */
 std::int64_t ConstraintMetadataHelper::get_record_count() {
   // generate constraint metadata manager.
-  auto constraints = std::make_unique<Constraints>(GlobalTestEnvironment::TEST_DB);
+  auto constraints =
+      std::make_unique<Constraints>(GlobalTestEnvironment::TEST_DB);
 
   // initialize constraint metadata manager.
-  ErrorCode error  = constraints->init();
+  ErrorCode error = constraints->init();
 
   std::vector<ptree> container = {};
   if (error == ErrorCode::OK) {
@@ -55,11 +56,13 @@ std::int64_t ConstraintMetadataHelper::get_record_count() {
  * @param constraint_metadata  [out] constraint metadata used as test data.
  */
 void ConstraintMetadataHelper::generate_test_metadata(
-    const ObjectId& table_id, std::unique_ptr<UTConstraintMetadata>& constraint_metadata) {
+    const ObjectId& table_id,
+    std::unique_ptr<UTConstraintMetadata>& constraint_metadata) {
   // generate unique table name.
   std::string constraint_name = "constraint_name" + std::to_string(time(NULL));
 
-  constraint_metadata = std::make_unique<UTConstraintMetadata>(constraint_name, Constraint::ConstraintType::UNIQUE);
+  constraint_metadata = std::make_unique<UTConstraintMetadata>(
+      constraint_name, Constraint::ConstraintType::UNIQUE);
 
   // generate table_id.
   constraint_metadata->table_id = table_id;
@@ -86,13 +89,14 @@ void ConstraintMetadataHelper::generate_test_metadata(
  * @brief Add one new constraint metadata to constraint metadata table.
  * @param constraints          [in]  constraints metadata manager object.
  * @param constraint_metadata  [in]  new constraint metadata.
- * @param constraint_id        [out] (optional) constraint id returned from the api to add
- *   new constraint metadata.
+ * @param constraint_id        [out] (optional) constraint id returned from the
+ * api to add new constraint metadata.
  * @return none.
  */
-void ConstraintMetadataHelper::add(const Metadata* constraints,
-                                   const boost::property_tree::ptree& constraint_metadata,
-                                   ObjectIdType* constraint_id) {
+void ConstraintMetadataHelper::add(
+    const Metadata* constraints,
+    const boost::property_tree::ptree& constraint_metadata,
+    ObjectIdType* constraint_id) {
   UTUtils::print("-- add constraint metadata in ptree --");
   UTUtils::print(" " + UTUtils::get_tree_string(constraint_metadata));
 
@@ -114,15 +118,16 @@ void ConstraintMetadataHelper::add(const Metadata* constraints,
  * @brief Add one new constraint metadata to constraint metadata table.
  * @param constraints          [in]  constraints metadata manager object.
  * @param constraint_metadata  [in]  new constraint metadata.
- * @param constraint_id        [out] (optional) constraint id returned from the api to add
- *   new constraint metadata.
+ * @param constraint_id        [out] (optional) constraint id returned from the
+ * api to add new constraint metadata.
  * @return none.
  */
 void ConstraintMetadataHelper::add(const Metadata* constraints,
                                    const Constraint& constraint_metadata,
                                    ObjectIdType* constraint_id) {
   UTUtils::print("-- add constraint metadata in struct --");
-  UTUtils::print(" " + UTUtils::get_tree_string(constraint_metadata.convert_to_ptree()));
+  UTUtils::print(
+      " " + UTUtils::get_tree_string(constraint_metadata.convert_to_ptree()));
 
   ObjectIdType ret_id_value = INVALID_VALUE;
   // add table metadata.
@@ -160,8 +165,9 @@ void ConstraintMetadataHelper::remove(const Metadata* constraints,
  * @param (actual)    [in]  actual table metadata.
  * @return none.
  */
-void ConstraintMetadataHelper::check_metadata_expected(const boost::property_tree::ptree& expected,
-                                                       const boost::property_tree::ptree& actual) {
+void ConstraintMetadataHelper::check_metadata_expected(
+    const boost::property_tree::ptree& expected,
+    const boost::property_tree::ptree& actual) {
   // constraint metadata id
   auto id_actual = actual.get<ObjectIdType>(Constraint::ID);
   EXPECT_GT(id_actual, static_cast<ObjectIdType>(0));
@@ -189,9 +195,9 @@ void ConstraintMetadataHelper::check_metadata_expected(const boost::property_tre
  * @param (meta_name)  [in]  name of metadata table.
  * @return none.
  */
-void ConstraintMetadataHelper::check_child_expected(const boost::property_tree::ptree& expected,
-                                                    const boost::property_tree::ptree& actual,
-                                                    const char* meta_name) {
+void ConstraintMetadataHelper::check_child_expected(
+    const boost::property_tree::ptree& expected,
+    const boost::property_tree::ptree& actual, const char* meta_name) {
   auto o_expected = expected.get_child_optional(meta_name);
   auto o_actual   = actual.get_child_optional(meta_name);
 
@@ -200,11 +206,14 @@ void ConstraintMetadataHelper::check_child_expected(const boost::property_tree::
     auto actual_value   = UTUtils::get_tree_string(o_actual.value());
     EXPECT_EQ_T(expected_value, actual_value, meta_name);
   } else if (o_expected) {
-    EXPECT_EQ_T(o_expected.value().empty(), !o_actual.is_initialized(), meta_name);
+    EXPECT_EQ_T(o_expected.value().empty(), !o_actual.is_initialized(),
+                meta_name);
   } else if (o_actual) {
-    EXPECT_EQ_T(!o_expected.is_initialized(), o_actual.value().empty(), meta_name);
+    EXPECT_EQ_T(!o_expected.is_initialized(), o_actual.value().empty(),
+                meta_name);
   } else {
-    EXPECT_EQ_T(o_expected.is_initialized(), o_actual.is_initialized(), meta_name);
+    EXPECT_EQ_T(o_expected.is_initialized(), o_actual.is_initialized(),
+                meta_name);
   }
 }
 
@@ -216,9 +225,9 @@ void ConstraintMetadataHelper::check_child_expected(const boost::property_tree::
  * @return none.
  */
 template <typename T>
-void ConstraintMetadataHelper::check_expected(const boost::property_tree::ptree& expected,
-                                              const boost::property_tree::ptree& actual,
-                                              const char* meta_name) {
+void ConstraintMetadataHelper::check_expected(
+    const boost::property_tree::ptree& expected,
+    const boost::property_tree::ptree& actual, const char* meta_name) {
   auto value_expected = expected.get_optional<T>(meta_name);
   auto value_actual   = actual.get_optional<T>(meta_name);
 
@@ -227,12 +236,15 @@ void ConstraintMetadataHelper::check_expected(const boost::property_tree::ptree&
   } else {
     if (value_expected) {
       const auto& value_expected = expected.get<std::string>(meta_name);
-      EXPECT_EQ_T(value_expected.empty(), !value_actual.is_initialized(), meta_name);
+      EXPECT_EQ_T(value_expected.empty(), !value_actual.is_initialized(),
+                  meta_name);
     } else if (value_actual) {
       const auto& value_actual = actual.get<std::string>(meta_name);
-      EXPECT_EQ_T(!value_expected.is_initialized(), value_actual.empty(), meta_name);
+      EXPECT_EQ_T(!value_expected.is_initialized(), value_actual.empty(),
+                  meta_name);
     } else {
-      EXPECT_EQ_T(value_expected.is_initialized(), value_actual.is_initialized(), meta_name);
+      EXPECT_EQ_T(value_expected.is_initialized(),
+                  value_actual.is_initialized(), meta_name);
     }
   }
 }

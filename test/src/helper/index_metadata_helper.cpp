@@ -18,7 +18,7 @@
 #include <gtest/gtest.h>
 
 #include "manager/metadata/indexes.h"
-#include "test/environment/global_test_environment.h"
+#include "test/common/global_test_environment.h"
 #include "test/common/ut_utils.h"
 
 namespace manager::metadata::testing {

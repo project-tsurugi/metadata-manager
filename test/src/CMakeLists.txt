@@ -27,12 +27,13 @@ set_compile_options(metadata_test)
 if (DATA_STORAGE_JSON)
   target_include_directories(metadata_test
     PRIVATE ${PROJECT_SOURCE_DIR}/include
+    PRIVATE ${JWT-CPP_INCLUDE_DIR}
     PRIVATE ../include)
   target_link_libraries(metadata_test
     PRIVATE
       gtest_main
+      crypto
       api)
-  set(schema_dir "${CMAKE_CURRENT_SOURCE_DIR}/json/schema")
 else()
   set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -L${PG_LIB_DIR}")
   target_include_directories(metadata_test
@@ -46,7 +47,6 @@ else()
       api
       crypto
       pq)
-  set(schema_dir "${CMAKE_CURRENT_SOURCE_DIR}/postgresql/schema")
 endif()
 
-add_test(NAME test COMMAND metadata_test "${schema_dir}/tables.json")
+add_test(NAME test COMMAND metadata_test "${PROJECT_SOURCE_DIR}/test/schema/tables.json")

@@ -20,8 +20,8 @@
 #include <random>
 
 #include "manager/metadata/statistics.h"
+#include "test/common/global_test_environment.h"
 #include "test/common/ut_utils.h"
-#include "test/environment/global_test_environment.h"
 
 namespace manager::metadata::testing {
 
