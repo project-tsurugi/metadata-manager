@@ -76,7 +76,7 @@ TEST_F(ApiTestTableMetadata, add_get_table_metadata_by_table_name3) {
   UTUtils::print(UTUtils::get_tree_string(table_metadata_inserted));
 
   // verifies that the returned table metadata is expected one.
-  TableMetadataHelper::check_table_metadata_expected(new_table,
+  TableMetadataHelper::check_table_metadata_expected(new_table.convert_to_ptree(),
                                                      table_metadata_inserted);
   // cleanup
   tables->remove(new_table_name.c_str(), nullptr);
@@ -124,7 +124,7 @@ TEST_F(ApiTestTableMetadata, add_get_table_metadata_by_table_name2) {
 
   // verifies that the returned table metadata is expected one.
   TableMetadataHelper::check_table_metadata_expected(new_table,
-                                                     table_metadata_inserted);
+                                                     table_metadata_inserted.convert_to_ptree());
   // cleanup
   tables->remove(new_table_name.c_str(), nullptr);
 }
@@ -344,7 +344,7 @@ TEST_F(ApiTestTableMetadata, get_all_table_next) {
   int64_t actual_count = 0;
   ptree pt;
   while ((error = tables->next(pt)) == ErrorCode::OK) {
-    UTUtils::print("-- get all table metadata --");
+    UTUtils::print("-- get all table metadata by next ptree--");
     UTUtils::print(UTUtils::get_tree_string(pt));
 
     std::string table_name = table_name_prefix + std::to_string(actual_count + 1);
@@ -362,7 +362,7 @@ TEST_F(ApiTestTableMetadata, get_all_table_next) {
   actual_count = 0;
   Table table;
   while ((error = tables->next(table)) == ErrorCode::OK) {
-    UTUtils::print("-- get all table metadata --");
+    UTUtils::print("-- get all table metadata by next struct--");
     UTUtils::print(UTUtils::get_tree_string(table.convert_to_ptree()));
 
     std::string table_name = table_name_prefix + std::to_string(actual_count + 1);
@@ -375,6 +375,21 @@ TEST_F(ApiTestTableMetadata, get_all_table_next) {
     ++actual_count;
   }
   ASSERT_EQ(test_table_count, actual_count);
+
+  actual_count = 0;
+  for (auto ite = tables->iterator(); ite->next(table) != ErrorCode::OK;) {
+    UTUtils::print("-- get all table metadata by iterator --");
+    UTUtils::print(UTUtils::get_tree_string(table.convert_to_ptree()));
+
+    std::string table_name = table_name_prefix + std::to_string(actual_count + 1);
+    expected_table.put(Tables::ID, table_ids[actual_count]);
+    expected_table.put(Tables::NAME, table_name);
+
+    // verifies that the returned table metadata is expected one.
+    TableMetadataHelper::check_table_metadata_expected(expected_table,
+                                                       table.convert_to_ptree());
+    ++actual_count;
+  }
 
   // cleanup
   for (ObjectIdType table_id : table_ids) {

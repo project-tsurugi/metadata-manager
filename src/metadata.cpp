@@ -263,11 +263,13 @@ ErrorCode Metadata::next(boost::property_tree::ptree& object) {
   if (objects_.size() > cursor_) {
     object = objects_[cursor_];
     cursor_++;
+    error = ErrorCode::OK;
   } else {
-    return ErrorCode::END_OF_ROW;
+    cursor_ = 0;
+    error =  ErrorCode::END_OF_ROW;
   }
 
-  return ErrorCode::OK;
+  return error;
 }
 
 /**
@@ -294,6 +296,36 @@ ErrorCode Metadata::update(const manager::metadata::ObjectIdType object_id,
 
   ptree pt = object.convert_to_ptree();
   return this->update(object_id, pt);
+}
+
+/**
+ * @brief
+ */
+std::unique_ptr<Iterator> Metadata::iterator() {
+  return std::make_unique<MetadataIterator>(this);
+}
+
+// ==========================================================================
+// MetadataIterator class methods.
+
+bool MetadataIterator::has_next() const {
+  return (metadata_->size() > cursor_) ? true : false;
+}
+
+/**
+ * @brief
+ */
+ErrorCode MetadataIterator::next(Object& obj) {
+  ErrorCode error = ErrorCode::UNKNOWN;
+  if (metadata_->size() > cursor_) {
+    metadata_->get(cursor_, obj);
+    cursor_++;
+    error = ErrorCode::OK;
+  } else {
+    error =  ErrorCode::END_OF_ROW;
+  }
+
+  return error;
 }
 
 }  // namespace manager::metadata

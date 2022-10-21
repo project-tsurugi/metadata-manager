@@ -70,7 +70,6 @@ struct Object {
         generation(DEFAULT_GENERATION), 
         id(INVALID_OBJECT_ID), 
         name("") {}
-
   /** 
    * @brief  Transform metadata from structure object to ptree object.
    * @return ptree object.
@@ -129,6 +128,13 @@ struct ClassObject : public Object {
   std::string full_qualified_name() {
     return database_name + '.' + schema_name + '.' + this->name;
   }
+};
+
+class Iterator {
+ public:
+  virtual ~Iterator() {}
+  virtual bool has_next() const = 0;
+  virtual ErrorCode next(Object& obj) = 0;
 };
 
 /**
@@ -330,6 +336,13 @@ class Metadata {
   ErrorCode get_all();
   ErrorCode next(boost::property_tree::ptree& object);
   ErrorCode next(manager::metadata::Object& object);
+  
+  // for iterator
+  std::unique_ptr<Iterator> iterator();
+  size_t size() const { return objects_.size(); }
+  void get(const size_t index, Object& obj) const {
+    return obj.convert_from_ptree(objects_[index]);
+  }
 
  protected:
   static constexpr const char* const kDefaultComponent = "visitor";
@@ -343,6 +356,16 @@ class Metadata {
   std::string component_;
   std::vector<boost::property_tree::ptree> objects_;
   int64_t cursor_;
+};
+
+class MetadataIterator : public Iterator {
+ public:
+  MetadataIterator(const Metadata* metadata) : metadata_(metadata), cursor_(0) {}
+  virtual bool has_next() const override;
+  virtual ErrorCode next(Object& obj) override;
+ private:
+  const Metadata* metadata_;
+  size_t cursor_;
 };
 
 }  // namespace manager::metadata
