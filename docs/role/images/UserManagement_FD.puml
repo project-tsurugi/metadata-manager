@@ -1,0 +1,93 @@
+' =========================================================
+' 全体シーケンス概要
+' =========================================================
+@startuml entire_seq
+hide footbox
+
+control PostgreSQL as pg
+control "frontend(alt-utility)" as frontend
+control "manager(message-broker)" as msgbroker
+control "metadata-manager" as metadata
+
+control "ogawayama" as stub
+
+activate pg
+  pg -> frontend : hook DDL command
+  activate frontend
+    frontend -> pg : DDL command
+    activate pg
+      alt option
+    return
+    frontend -> msgbroker : message(DDL command)
+    activate msgbroker
+      msgbroker -> stub : send_message(DDL command)
+      activate stub
+        alt option
+        stub -> stub
+        activate stub
+          stub -> metadata : get/update/remove
+          activate metadata
+            alt option
+            metadata -> pg : DDL command
+            activate pg
+              alt option
+            return : DDL command result
+          return
+        return
+      return 
+    return
+  return
+deactivate pg
+@enduml
+
+
+' ===============================================
+' CREATE ROLE
+' ===============================================
+@startuml role
+actor admin
+
+package PostgreSQL {
+  database "pg_authid(role)" as pg_authid
+  component frontend
+  component manager
+}
+
+package OLTP {
+  component ogawayama
+}
+
+admin --> frontend : CREATE ROLE
+frontend --> pg_authid : Update metadata of role
+pg_authid --> manager
+manager --> ogawayama : metadata
+frontend --> ogawayama : message(CREATE ROLE)
+
+@enduml
+
+' ===============================================
+' GRANT/REVOKE ON OLTP TABLE
+' ===============================================
+@startuml grant_revoke
+actor admin
+
+package PostgreSQL {
+  component frontend
+  component manager
+  database "pg_class\n(t_table(ext))" as pg_class
+  database metadata
+
+  frontend -> pg_class  : Update access\nprivileges of the table
+  pg_class --> manager : JOIN metadata
+  metadata --> manager
+}
+
+package OLTP {
+  component ogawayama
+  entity "t_table" as t_table
+}
+
+admin --> frontend : GRANT/REVOKE privileges ON t_table
+manager --> ogawayama : metadata
+frontend ---> ogawayama : message(GRANT/REVOKE)
+@enduml
