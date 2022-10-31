@@ -24,7 +24,8 @@ namespace manager::metadata::testing {
 
 void TestEnvironmentJson::SetUp() {
   // generate table metadata as test data.
-  TableMetadataHelper::generate_table_metadata(testdata_table_metadata);
+  testdata_table_metadata = std::make_unique<UTTableMetadata>("");
+  testdata_table_metadata->generate_test_metadata();
 
   // initialize json file.
   boost::format filename = boost::format("%s/%s.json") %

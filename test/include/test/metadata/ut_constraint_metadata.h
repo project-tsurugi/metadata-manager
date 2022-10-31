@@ -16,41 +16,47 @@
 #ifndef TEST_INCLUDE_TEST_METADATA_UT_CONSTRAINT_METADATA_H_
 #define TEST_INCLUDE_TEST_METADATA_UT_CONSTRAINT_METADATA_H_
 
+#include <memory>
 #include <string>
-#include <vector>
 
 #include <boost/property_tree/ptree.hpp>
 
 #include "manager/metadata/constraints.h"
+#include "test/metadata/ut_metadata.h"
 
 namespace manager::metadata::testing {
 
-class UTConstraintMetadata {
+class UTConstraintMetadata : public UtMetadata {
  public:
-  int64_t id = NOT_INITIALIZED;
-  std::string name;
-  int64_t table_id = NOT_INITIALIZED;
-  int64_t type     = NOT_INITIALIZED;
-  int64_t columns  = NOT_INITIALIZED;     //!< @brief single value of columns
-  boost::property_tree::ptree p_columns;  //!< @brief array of columns
-  std::vector<int64_t> columns_list;
-  int64_t columns_id = NOT_INITIALIZED;  //!< @brief single value of columns_id
-  boost::property_tree::ptree p_columns_id;  //!< @brief array of columns_id
-  std::vector<int64_t> columns_id_list;
-  int64_t index_id = NOT_INITIALIZED;
-  std::string expression;
+  explicit UTConstraintMetadata(const Constraint& metadata)
+      : metadata_ptree_(metadata.convert_to_ptree()),
+        metadata_struct_(metadata) {}
+  explicit UTConstraintMetadata(const boost::property_tree::ptree& metadata)
+      : metadata_ptree_(metadata) {
+    metadata_struct_.convert_from_ptree(metadata_ptree_);
+  }
+  explicit UTConstraintMetadata(ObjectId table_id = NOT_INITIALIZED)
+      : table_id_(table_id) {}
 
-  boost::property_tree::ptree constraints_metadata;
+  void generate_test_metadata() override;
 
-  UTConstraintMetadata() = delete;
-  explicit UTConstraintMetadata(std::string name,
-                                Constraint::ConstraintType type)
-      : name(name), type(static_cast<int64_t>(type)) {}
+  const manager::metadata::Constraint* get_metadata_struct() const override {
+    return &metadata_struct_;
+  }
+  boost::property_tree::ptree get_metadata_ptree() const override {
+    return metadata_ptree_;
+  }
 
-  void generate_ptree();
+  void check_metadata_expected(const boost::property_tree::ptree& expected,
+                               const boost::property_tree::ptree& actual,
+                               const char* file,
+                               const int64_t line) const override;
 
  private:
-  static constexpr int64_t NOT_INITIALIZED = -1;
+  boost::property_tree::ptree metadata_ptree_;
+  manager::metadata::Constraint metadata_struct_;
+
+  ObjectId table_id_ = NOT_INITIALIZED;
 };
 
 }  // namespace manager::metadata::testing

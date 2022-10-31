@@ -47,7 +47,7 @@ class ApiTestTableMetadataExtra
   }
 
  protected:
-  std::vector<boost::property_tree::ptree> table_metadata_;
+  std::vector<UTTableMetadata> table_metadata_;
 };
 
 /**
@@ -55,10 +55,12 @@ class ApiTestTableMetadataExtra
  */
 TEST_F(ApiTestTableMetadataExtra, add_get_remove_table_metadata_by_table_name) {
   // variable "table_metadata" is test data set.
-  for (auto table_metadata_expected : table_metadata_) {
+  for (auto table_metadata : table_metadata_) {
+    auto table_expected = table_metadata.get_metadata_ptree();
+
     // add valid table metadata.
     ObjectIdType ret_table_id = -1;
-    TableMetadataHelper::add_table(table_metadata_expected, &ret_table_id);
+    TableMetadataHelper::add_table(table_expected, &ret_table_id);
 
     // get valid table metadata by table name.
     auto tables     = std::make_unique<Tables>(GlobalTestEnvironment::TEST_DB);
@@ -66,8 +68,7 @@ TEST_F(ApiTestTableMetadataExtra, add_get_remove_table_metadata_by_table_name) {
     EXPECT_EQ(ErrorCode::OK, error);
 
     ptree table_metadata_inserted;
-    std::string table_name =
-        table_metadata_expected.get<std::string>(Table::NAME);
+    std::string table_name = table_expected.get<std::string>(Table::NAME);
 
     error = tables->get(table_name, table_metadata_inserted);
     EXPECT_EQ(ErrorCode::OK, error);
@@ -76,9 +77,9 @@ TEST_F(ApiTestTableMetadataExtra, add_get_remove_table_metadata_by_table_name) {
     UTUtils::print(UTUtils::get_tree_string(table_metadata_inserted));
 
     // verifies that the returned table metadata is expected one.
-    table_metadata_expected.put(Table::ID, ret_table_id);
-    TableMetadataHelper::check_table_metadata_expected(table_metadata_expected,
-                                                       table_metadata_inserted);
+    table_expected.put(Table::ID, ret_table_id);
+    table_metadata.CHECK_METADATA_EXPECTED(table_expected,
+                                           table_metadata_inserted);
 
     // remove valid table metadata by table name.
     ObjectIdType table_id_removed;
@@ -102,10 +103,12 @@ TEST_F(ApiTestTableMetadataExtra, add_get_remove_table_metadata_by_table_name) {
 TEST_F(ApiTestTableMetadataExtra,
        add_get_update_remove_table_metadata_by_table_id) {
   // variable "table_metadata" is test data set.
-  for (auto table_metadata_expected : table_metadata_) {
+  for (auto table_metadata : table_metadata_) {
+    auto table_expected = table_metadata.get_metadata_ptree();
+
     // add valid table metadata.
     ObjectIdType ret_table_id = -1;
-    TableMetadataHelper::add_table(table_metadata_expected, &ret_table_id);
+    TableMetadataHelper::add_table(table_expected, &ret_table_id);
 
     // get valid table metadata by table id.
     auto tables     = std::make_unique<Tables>(GlobalTestEnvironment::TEST_DB);
@@ -120,18 +123,17 @@ TEST_F(ApiTestTableMetadataExtra,
     UTUtils::print(UTUtils::get_tree_string(table_metadata_inserted));
 
     // verifies that the returned table metadata is expected one.
-    table_metadata_expected.put(Table::ID, ret_table_id);
-    TableMetadataHelper::check_table_metadata_expected(table_metadata_expected,
-                                                       table_metadata_inserted);
+    table_expected.put(Table::ID, ret_table_id);
+    table_metadata.CHECK_METADATA_EXPECTED(table_expected,
+                                           table_metadata_inserted);
 
     // update valid table metadata.
-    table_metadata_expected = table_metadata_inserted;
+    table_expected = table_metadata_inserted;
     std::string table_name =
-        table_metadata_inserted.get_optional<std::string>(Table::NAME)
-            .value() +
+        table_metadata_inserted.get_optional<std::string>(Table::NAME).value() +
         "-update";
-    table_metadata_expected.put(Table::NAME, table_name);
-    error = tables->update(ret_table_id, table_metadata_expected);
+    table_expected.put(Table::NAME, table_name);
+    error = tables->update(ret_table_id, table_expected);
 
     // get valid table metadata by table id.
     ptree table_metadata_updated;
@@ -142,8 +144,8 @@ TEST_F(ApiTestTableMetadataExtra,
     UTUtils::print(UTUtils::get_tree_string(table_metadata_updated));
 
     // verifies that the returned table metadata is expected one.
-    TableMetadataHelper::check_table_metadata_expected(table_metadata_expected,
-                                                       table_metadata_updated);
+    table_metadata.CHECK_METADATA_EXPECTED(table_expected,
+                                           table_metadata_updated);
 
     // remove valid table metadata by table id.
     error = tables->remove(ret_table_id);

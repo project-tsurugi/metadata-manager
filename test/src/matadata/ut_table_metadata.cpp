@@ -17,6 +17,9 @@
 
 #include <utility>
 
+#include <boost/foreach.hpp>
+
+#include "manager/metadata/datatypes.h"
 #include "manager/metadata/helper/ptree_helper.h"
 #include "manager/metadata/tables.h"
 
@@ -29,148 +32,244 @@ using boost::property_tree::ptree;
  * from UTTableMetadata fields.
  * @return none.
  */
-void UTTableMetadata::generate_ptree() {
-  // format_version
-  if (format_version != NOT_INITIALIZED) {
-    tables.put(Table::FORMAT_VERSION, format_version);
+void UTTableMetadata::generate_test_metadata() {
+  // Generate unique table name.
+  std::string table_name =
+      (table_name_.empty() ? "table_name_" + UTUtils::generate_narrow_uid()
+                           : table_name_);
+
+  metadata_struct_.format_version   = INVALID_VALUE;
+  metadata_struct_.generation       = INVALID_VALUE;
+  metadata_struct_.id               = INVALID_OBJECT_ID;
+  metadata_struct_.name             = table_name;
+  metadata_struct_.namespace_name   = "";
+  metadata_struct_.number_of_tuples = INVALID_VALUE;
+
+  manager::metadata::Column column;
+  metadata_struct_.columns.clear();
+  {
+    column.id            = INVALID_OBJECT_ID;
+    column.name          = "column_name_1_" + UTUtils::generate_narrow_uid();
+    column.table_id      = INVALID_OBJECT_ID;
+    column.column_number = 1;
+    column.data_type_id  = static_cast<int64_t>(DataTypes::DataTypesId::INT64);
+    column.data_length   = {};
+    column.varying       = false;
+    column.is_not_null   = true;
+    column.default_expression = "auto number";
+    metadata_struct_.columns.push_back(column);
+
+    column.id            = INVALID_OBJECT_ID;
+    column.name          = "column_name_2_" + UTUtils::generate_narrow_uid();
+    column.table_id      = INVALID_OBJECT_ID;
+    column.column_number = 2;
+    column.data_type_id = static_cast<int64_t>(DataTypes::DataTypesId::VARCHAR);
+    column.data_length  = {64};
+    column.varying      = true;
+    column.is_not_null  = false;
+    column.default_expression = "";
+    metadata_struct_.columns.push_back(column);
+
+    column.id            = INVALID_OBJECT_ID;
+    column.name          = "column_name_3_" + UTUtils::generate_narrow_uid();
+    column.table_id      = INVALID_OBJECT_ID;
+    column.column_number = 3;
+    column.data_type_id  = static_cast<int64_t>(DataTypes::DataTypesId::CHAR);
+    column.data_length   = {5};
+    column.varying       = false;
+    column.is_not_null   = false;
+    column.default_expression = "";
+    metadata_struct_.columns.push_back(column);
   }
-
-  // generation
-  if (generation != NOT_INITIALIZED) {
-    tables.put(Table::GENERATION, generation);
-  }
-
-  // name
-  tables.put(Table::NAME, name);
-
-  // namespace
-  if (!namespace_name.empty()) {
-    tables.put(Table::NAMESPACE, namespace_name);
-  }
-
-  // tuples
-  if (tuples != NOT_INITIALIZED) {
-    tables.put(Table::NUMBER_OF_TUPLES, tuples);
-  }
-
-  // columns
-  ptree ptree_columns;
-  for (UTColumnMetadata column : columns) {
-    ptree ptree_column;
-
-    // column name
-    ptree_column.put(Column::NAME, column.name);
-
-    // column column_number
-    ptree_column.put(Column::COLUMN_NUMBER, column.column_number);
-
-    // column data_type_id
-    ptree_column.put<ObjectIdType>(Column::DATA_TYPE_ID, column.data_type_id);
-
-    // column is_not_null
-    ptree_column.put<bool>(Column::IS_NOT_NULL, column.is_not_null);
-
-    // add column data length array to ptree
-    // if UTTableMetadata data length array is initialized
-    if (!column.p_data_length.empty()) {
-      ptree_column.add_child(Column::DATA_LENGTH, column.p_data_length);
-    }
-
-    // add column varying to ptree
-    // if UTTableMetadata varying is initialized
-    ptree_column.put<bool>(Column::VARYING, column.varying);
-
-    // add column default expression to ptree
-    // if UTTableMetadata default expression is initialized
-    if (!column.default_expr.empty()) {
-      ptree_column.put(Column::DEFAULT_EXPR, column.default_expr);
-    }
-
-    ptree_columns.push_back(std::make_pair("", ptree_column));
-  }
-  tables.add_child(Table::COLUMNS_NODE, ptree_columns);
 
   // constraints
-  ptree ptree_constraints;
-  for (UTConstraintMetadata constraint : constraints) {
-    ptree ptree_constraint;
+  manager::metadata::Constraint constraint;
+  metadata_struct_.constraints.clear();
+  {
+    constraint.id       = INVALID_OBJECT_ID;
+    constraint.name     = "constraint_name_1_" + UTUtils::generate_narrow_uid();
+    constraint.table_id = INVALID_OBJECT_ID;
+    constraint.type     = Constraint::ConstraintType::PRIMARY_KEY;
+    constraint.columns  = {1};
+    constraint.columns_id = {1001};
+    constraint.index_id   = 1;
+    constraint.expression = "";
+    metadata_struct_.constraints.push_back(constraint);
 
-    // constraint name
-    ptree_constraint.put(Constraint::NAME, constraint.name);
-
-    // constraint type
-    ptree_constraint.put(Constraint::TYPE, constraint.type);
-
-    // constraint columns
-    if (constraint.columns >= 0) {
-      ptree_constraint.put(Constraint::COLUMNS, constraint.columns);
-    }
-    if (!constraint.p_columns.empty()) {
-      ptree_constraint.add_child(Constraint::COLUMNS, constraint.p_columns);
-    }
-
-    // constraint columns id
-    if (constraint.columns_id >= 0) {
-      ptree_constraint.put(Constraint::COLUMNS_ID, constraint.columns_id);
-    }
-    if (!constraint.p_columns_id.empty()) {
-      ptree_constraint.add_child(Constraint::COLUMNS_ID,
-                                 constraint.p_columns_id);
-    }
-
-    // constraint type
-    ptree_constraint.put(Constraint::INDEX_ID, constraint.index_id);
-
-    // constraint type
-    ptree_constraint.put(Constraint::EXPRESSION, constraint.expression);
-
-    ptree_constraints.push_back(std::make_pair("", ptree_constraint));
+    constraint.id       = INVALID_OBJECT_ID;
+    constraint.name     = "constraint_name_2_" + UTUtils::generate_narrow_uid();
+    constraint.table_id = INVALID_OBJECT_ID;
+    constraint.type     = Constraint::ConstraintType::UNIQUE;
+    constraint.columns  = {1, 2};
+    constraint.columns_id = {1001, 1002};
+    constraint.index_id   = 2;
+    constraint.expression = "";
+    metadata_struct_.constraints.push_back(constraint);
   }
-  tables.add_child(Table::CONSTRAINTS_NODE, ptree_constraints);
+  metadata_ptree_ = metadata_struct_.convert_to_ptree();
 }
 
 /**
- * @brief Generate table metadata
- * from UTTableMetadata fields.
+ * @brief Verifies that the actual table metadata equals expected one.
+ * @param expected  [in]  expected table metadata.
+ * @param actual    [in]  actual table metadata.
+ * @param file      [in]  file name of the caller.
+ * @param line      [in]  line number of the caller.
  * @return none.
  */
-void UTTableMetadata::generate_table() {
-  table.format_version   = 1;
-  table.generation       = 1;
-  table.id               = id;
-  table.namespace_name   = namespace_name;
-  table.name             = name;
-  table.number_of_tuples = tuples;
+void UTTableMetadata::check_metadata_expected(
+    const boost::property_tree::ptree& expected,
+    const boost::property_tree::ptree& actual, const char* file,
+    const int64_t line) const {
+  Table expected_struct;
+  Table actual_struct;
 
-  // columns metadata
-  for (const auto& column_meta : columns) {
-    Column column;
-    column.id                 = column_meta.id;
-    column.name               = column_meta.name;
-    column.column_number      = column_meta.column_number;
-    column.data_type_id       = column_meta.data_type_id;
-    column.data_length        = column_meta.data_length;
-    column.is_not_null        = column_meta.is_not_null;
-    column.varying            = column_meta.varying;
-    column.default_expression = column_meta.default_expr;
+  expected_struct.convert_from_ptree(expected);
+  actual_struct.convert_from_ptree(actual);
 
-    table.columns.emplace_back(column);
+  this->check_metadata_expected(expected_struct, actual_struct, file, line);
+}
+
+/**
+ * @brief Verifies that the actual table metadata equals expected one.
+ * @param expected  [in]  expected table metadata.
+ * @param actual    [in]  actual table metadata.
+ * @param file      [in]  file name of the caller.
+ * @param line      [in]  line number of the caller.
+ * @return none.
+ */
+void UTTableMetadata::check_metadata_expected(
+    const manager::metadata::Table& expected,
+    const boost::property_tree::ptree& actual, const char* file,
+    const int64_t line) const {
+  Table actual_struct;
+  actual_struct.convert_from_ptree(actual);
+
+  this->check_metadata_expected(expected, actual_struct, file, line);
+}
+
+/**
+ * @brief Verifies that the actual table metadata equals expected one.
+ * @param expected  [in]  expected table metadata.
+ * @param actual    [in]  actual table metadata.
+ * @param file      [in]  file name of the caller.
+ * @param line      [in]  line number of the caller.
+ * @return none.
+ */
+void UTTableMetadata::check_metadata_expected(
+    const boost::property_tree::ptree& expected,
+    const manager::metadata::Table& actual, const char* file,
+    const int64_t line) const {
+  Table actual_struct;
+  Table expected_struct;
+  expected_struct.convert_from_ptree(expected);
+
+  this->check_metadata_expected(expected_struct, actual, file, line);
+}
+
+/**
+ * @brief Verifies that the actual table metadata equals expected one.
+ * @param expected  [in]  expected table metadata.
+ * @param actual    [in]  actual table metadata.
+ * @param file      [in]  file name of the caller.
+ * @param line      [in]  line number of the caller.
+ * @return none.
+ */
+void UTTableMetadata::check_metadata_expected(
+    const manager::metadata::Table& expected,
+    const manager::metadata::Table& actual, const char* file,
+    const int64_t line) const {
+  // format version
+  check_expected<int32_t>(Tables::format_version(), actual.format_version,
+                          Table::FORMAT_VERSION, file, line);
+  // generation
+  check_expected(Tables::generation(), actual.generation, Table::GENERATION,
+                 file, line);
+  // table name
+  check_expected(expected.name, actual.name, Table::NAME, file, line);
+  // table id
+  check_expected(expected.id, actual.id, Table::ID, file, line);
+  // namespace
+  check_expected(expected.namespace_name, actual.namespace_name,
+                 Table::NAMESPACE, file, line);
+  // number of tuples
+  check_expected(expected.number_of_tuples, actual.number_of_tuples,
+                 Table::NUMBER_OF_TUPLES, file, line);
+
+  // column metadata
+  check_expected(expected.columns.size(), actual.columns.size(),
+                 Table::COLUMNS_NODE, file, line);
+  if (!::testing::Test::HasFailure()) {
+    for (size_t idx = 0; idx < expected.columns.size(); ++idx) {
+      auto& column_expected = expected.columns[idx];
+      auto& column_actual   = actual.columns[idx];
+
+      // object id
+      EXPECT_GT(column_actual.id, static_cast<ObjectId>(0));
+      // table id
+      check_expected(expected.id, column_actual.table_id, Column::TABLE_ID,
+                     file, line);
+      // name
+      check_expected(column_expected.name, column_actual.name, Column::NAME,
+                     file, line);
+      // number
+      check_expected(column_expected.column_number, column_actual.column_number,
+                     Column::COLUMN_NUMBER, file, line);
+      // data type id
+      check_expected(column_expected.data_type_id, column_actual.data_type_id,
+                     Column::DATA_TYPE_ID, file, line);
+      // column data length
+      check_child_expected(column_expected.data_length,
+                           column_actual.data_length, Column::DATA_LENGTH, file,
+                           line);
+      // column varying
+      check_expected(column_expected.varying, column_actual.varying,
+                     Column::VARYING, file, line);
+      // is not null
+      check_expected(column_expected.is_not_null, column_actual.is_not_null,
+                     Column::IS_NOT_NULL, file, line);
+      // default expression
+      check_expected(column_expected.default_expression,
+                     column_actual.default_expression, Column::DEFAULT_EXPR,
+                     file, line);
+    }
   }
 
-  // constraints metadata
-  for (const auto& constraint_meta : constraints) {
-    Constraint constraint;
-    constraint.id       = constraint_meta.id;
-    constraint.name     = constraint_meta.name;
-    constraint.table_id = constraint_meta.table_id;
-    constraint.type =
-        static_cast<Constraint::ConstraintType>(constraint_meta.type);
-    constraint.columns    = constraint_meta.columns_list;
-    constraint.columns_id = constraint_meta.columns_id_list;
-    constraint.index_id   = constraint_meta.index_id;
-    constraint.expression = constraint_meta.expression;
+  // constraint metadata
+  check_expected(expected.constraints.size(), actual.constraints.size(),
+                 Table::CONSTRAINTS_NODE, file, line);
+  if (!::testing::Test::HasFailure()) {
+    for (size_t idx = 0; idx < expected.constraints.size(); ++idx) {
+      auto& constraint_expected = expected.constraints[idx];
+      auto& constraint_actual   = actual.constraints[idx];
 
-    table.constraints.emplace_back(constraint);
+      // object id
+      EXPECT_GT(constraint_actual.id, static_cast<ObjectIdType>(0));
+      // table id
+      check_expected(expected.id, constraint_actual.table_id,
+                     Constraint::TABLE_ID, file, line);
+      // name
+      check_expected(constraint_expected.name, constraint_actual.name,
+                     Constraint::NAME, file, line);
+      // type
+      check_expected(constraint_expected.type, constraint_actual.type,
+                     Constraint::TYPE, file, line);
+      // column numbers
+      check_child_expected(constraint_expected.columns,
+                           constraint_actual.columns, Constraint::COLUMNS, file,
+                           line);
+      // column IDs
+      check_child_expected(constraint_expected.columns_id,
+                           constraint_actual.columns_id, Constraint::COLUMNS_ID,
+                           file, line);
+      // index id
+      check_expected(constraint_expected.index_id, constraint_actual.index_id,
+                     Constraint::INDEX_ID, file, line);
+      // expression
+      check_expected(constraint_expected.expression,
+                     constraint_actual.expression, Constraint::EXPRESSION, file,
+                     line);
+    }
   }
 }
 

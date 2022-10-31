@@ -51,12 +51,12 @@ class ApiTestAddTableMetadataException
     invalid_table_metadata.emplace_back(empty_table);
 
     // remove table name
-    ptree new_table = global->testdata_table_metadata->tables;
+    ptree new_table = global->testdata_table_metadata->get_metadata_ptree();
     new_table.erase(Table::NAME);
     invalid_table_metadata.emplace_back(new_table);
 
     // remove all column name
-    new_table = global->testdata_table_metadata->tables;
+    new_table = global->testdata_table_metadata->get_metadata_ptree();
     BOOST_FOREACH (ptree::value_type& node,
                    new_table.get_child(Table::COLUMNS_NODE)) {
       ptree& column = node.second;
@@ -65,7 +65,7 @@ class ApiTestAddTableMetadataException
     invalid_table_metadata.emplace_back(new_table);
 
     // remove all column number
-    new_table = global->testdata_table_metadata->tables;
+    new_table = global->testdata_table_metadata->get_metadata_ptree();
     BOOST_FOREACH (ptree::value_type& node,
                    new_table.get_child(Table::COLUMNS_NODE)) {
       ptree& column = node.second;
@@ -74,7 +74,7 @@ class ApiTestAddTableMetadataException
     invalid_table_metadata.emplace_back(new_table);
 
     // remove all data type id
-    new_table = global->testdata_table_metadata->tables;
+    new_table = global->testdata_table_metadata->get_metadata_ptree();
     BOOST_FOREACH (ptree::value_type& node,
                    new_table.get_child(Table::COLUMNS_NODE)) {
       ptree& column = node.second;
@@ -92,7 +92,7 @@ class ApiTestAddTableMetadataException
     invalid_table_metadata.emplace_back(new_table);
 
     // remove all not null constraint
-    new_table = global->testdata_table_metadata->tables;
+    new_table = global->testdata_table_metadata->get_metadata_ptree();
     BOOST_FOREACH (ptree::value_type& node,
                    new_table.get_child(Table::COLUMNS_NODE)) {
       ptree& column = node.second;
@@ -212,12 +212,14 @@ TEST_P(ApiTestTableMetadataByTableIdException,
   UTTableMetadata testdata_table_metadata =
       *(global->testdata_table_metadata.get());
 
+    UTUtils::print(UTUtils::get_tree_string(testdata_table_metadata.get_metadata_ptree()));
+
   auto tables = std::make_unique<Tables>(GlobalTestEnvironment::TEST_DB);
 
   ErrorCode error = tables->init();
   EXPECT_EQ(ErrorCode::OK, error);
 
-  error = tables->update(GetParam(), testdata_table_metadata.tables);
+  error = tables->update(GetParam(), testdata_table_metadata.get_metadata_ptree());
   EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
 }
 

@@ -41,10 +41,11 @@ class ApiTestIndexMetadata : public ::testing::Test {
     UTTableMetadata testdata_table_metadata =
         *(global->testdata_table_metadata.get());
     // Copy table metadata.
-    ptree new_metadata = testdata_table_metadata.tables;
+    ptree new_metadata = testdata_table_metadata.get_metadata_ptree();
     // Change to a unique table name.
-    std::string table_name = new_metadata.get<std::string>(Tables::NAME) +
-                             "_ApiTestIndexMetadata" + std::to_string(__LINE__);
+    std::string table_name = "ApiTestIndexMetadata_" +
+                             UTUtils::generate_narrow_uid() + "_" +
+                             std::to_string(__LINE__);
     new_metadata.put(Tables::NAME, table_name);
 
     // Add table metadata.
