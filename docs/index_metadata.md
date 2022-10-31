@@ -16,7 +16,7 @@
 
 ### メソッド
 
-* get_index_metadata()
+* get_indexes_ptr()
 * add()
 * get()
 * update()
@@ -55,15 +55,8 @@
 
   | 値 | エイリアス | 説明 | 備考 |
   |---|---|---|---|
-  | 0 | AccessMethod::MASS_TREE           | mass-tree | - |
-  | 1 | AccessMethod::MASS_TREE_LSM_TREE  | mass-tree＋LSM-tree | Tsurugiでは非サポート |
-  | 2 | AccessMethod::B_TREE              | b-tree | Tsurugiでは非サポート |
-  | 3 | AccessMethod::HASH                | hash | Tsurugiでは非サポート |
-  | 4 | AccessMethod::GIST                | GiST | Tsurugiでは非サポート |
-  | 5 | AccessMethod::SP_GIST             | SP-GiST | Tsurugiでは非サポート |
-  | 6 | AccessMethod::GIN                 | GIN | Tsurugiでは非サポート |
-  | 7 | AccessMethod::BRIN                | BRIN | Tsurugiでは非サポート |
-
+  | 0 | AccessMethod::DEFAULT    | デフォルト | - |
+  | 1 | AccessMethod::MASS_TREE  | mass-tree | - |
 
 ### ColumnOption
 

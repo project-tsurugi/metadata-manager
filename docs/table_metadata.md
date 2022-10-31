@@ -17,7 +17,7 @@
 
 ### メソッド
 
-* get_table_metadata()
+* get_tables_ptr()
 * add()
 * get()
 * update()

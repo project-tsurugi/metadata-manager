@@ -12,7 +12,6 @@
 using namespace manager::metadata;
 ```
 
-
 ### テーブルメタデータを統合メタデータ管理基盤に新規追加する
 
 1. テーブルメタデータオブジェクトを作成する
@@ -70,7 +69,7 @@ using namespace manager::metadata;
 
 ```c++
     ObjectId object_id = metadata::INVALID_OBJECT_ID;
-    auto tables = metadata::get_table_metadata("データベース名");
+    auto tables = metadata::get_tables_ptr("データベース名");
     if (tables->add(new_table, &object_id) != metadata::ErrorCode::OK) {
         エラー処理
     }
@@ -78,14 +77,14 @@ using namespace manager::metadata;
 
 ### 統合メタデータ管理基盤のテーブルメタデータからテーブルメタデータを読み込む
 
-1. 特定のテーブルメタデータオブジェクトを読み込む
+1. テーブルメタデータオブジェクトを読み込む
 1. すべてのテーブルメタデータオブジェクトを読み込む
 
-統合メタデータ管理基盤のテーブルメタデータから特定のテーブルメタデータを読み込む
+テーブル名を指定して、統合メタデータ管理基盤のテーブルメタデータからテーブルメタデータオブジェクトを読み込む
 
 ```c++
     boost::property_tree::ptree get_table;  // テーブルメタデータオブジェクト
-    auto tables = metadata::get_table_metadata("データベース名");
+    auto tables = metadata::get_tables_ptr("データベース名");
     if (tables->get("テーブル名", get_table) != metadata::ErrorCode::OK) {
         エラー処理
     }
@@ -96,7 +95,7 @@ using namespace manager::metadata;
 
 ```c++
     std::vector<boost::property_tree::ptree> table_elements;  // テーブルメタデータオブジェクトの配列
-    auto tables = metadata::get_table_metadata("データベース名");
+    auto tables = metadata::get_tables_ptr("データベース名");
     if (tables->get_all(table_elements) != metadata::ErrorCode::OK) {
         エラー処理
     }
@@ -106,16 +105,52 @@ using namespace manager::metadata;
     }
 ```
 
+### Primary Keyが設定されたカラム（メタデータオブジェクト）を特定する
+
+1. Primary Keyを有するテーブルメタデータオブジェクトを読み込む
+1. TypeにPRIMARY_KEYが設定された制約メタデータオブジェクトを検索する
+1. 制約メタデータオブジェクトからカラムメタデータオブジェクトを読み込む
+
+テーブル名を指定して、Primary Keyを有するテーブルメタデータオブジェクトを読み込む
+
+```c++
+    auto tables = metadata::get_tables_ptr("データベース名");
+    boost::property_tree::ptree table_primary;  // テーブルメタデータオブジェクト
+    if (tables->get("テーブル名", table_primary) != metadata::ErrorCode::OK) {
+        エラー処理
+    }
+```
+
+読み込んだテーブルメタデータオブジェクトから、TypeにPRIMARY_KEYが設定された制約メタデータオブジェクトを検索する
+
+```c++
+    BOOST_FOREACH (const auto& constraint_node, table_primary.get_child(metadata::Tables::CONSTRAINTS_NODE)) {
+        auto& constraint = constraint_node.second;
+        auto constraint_type = constraint.get_optional<int64_t>(metadata::Constraint::TYPE);
+        // TypeがPRIMARY_KEYか否か
+        if (static_cast<manager::metadata::Constraint::ConstraintType>(constraint_type.value()) ==
+                    metadata::Constraint::ConstraintType::PRIMARY_KEY) {
+            // Primary Keyが設定されたカラムメタデータオブジェクトのIDを読み込む
+            std::vector<ObjectId> pk_columns_id;
+            BOOST_FOREACH (const auto& column_id_node, constraint.get_child(metadata::Constraint::COLUMNS_ID)) {
+                auto& constraint_column_id = column_id_node.second;
+                auto column_id = constraint_column_id.get_value_optional<ObjectId>();
+                pk_columns_id.emplace_back(column_id.value());
+            }
+        }
+    }
+```
+
 ### 制約メタデータオブジェクトを追加（テーブルメタデータオブジェクトを更新）する
 
-1. 制約メタデータオブジェクトが属するテーブルメタデータオブジェクトを読み込む
+1. 制約メタデータオブジェクトを追加するテーブルメタデータオブジェクトを読み込む
 1. 制約メタデータオブジェクトをテーブルメタデータオブジェクトに追加する
 1. 統合メタデータ管理基盤のテーブルメタデータオブジェクトを更新する
 
-制約メタデータオブジェクトが属する統合メタデータ管理基盤のテーブルメタデータオブジェクトを読み込む
+テーブル名を指定して、制約メタデータオブジェクトが属するテーブルメタデータオブジェクトを読み込む
 
 ```c++
-    auto tables = metadata::get_table_metadata("データベース名");
+    auto tables = metadata::get_tables_ptr("データベース名");
     boost::property_tree::ptree update_table;  // テーブルメタデータオブジェクト
     if (tables->get("更新するテーブル名", update_table) != metadata::ErrorCode::OK) {
         エラー処理
@@ -140,10 +175,11 @@ using namespace manager::metadata;
      update_table.add_child(Tables::CONSTRAINTS_NODE, constraints);
 ```
 
-制約メタデータオブジェクトを追加した統合メタデータ管理基盤のテーブルメタデータオブジェクトを更新する
+制約メタデータオブジェクトを追加した統合メタデータ管理基盤のテーブルメタデータを更新する
 
 ```c++
     auto update_id = update_table.get_optional<ObjectIdType>(metadata::Table::ID);
+    // テーブルメタデータオブジェクトを更新する
     if (tables->update(update_id.get(), update_table) != metadata::ErrorCode::OK) {
         エラー処理
     }
@@ -152,26 +188,29 @@ using namespace manager::metadata;
 ### テーブルメタデータオブジェクトに属するインデックスメタデータを削除する
 
 1. すべてのインデックスメタデータオブジェクトを読み込む
-1. 削除対象のインデックスメタデータを特定して削除する
+1. 削除対象のインデックスメタデータをテーブルIDから特定して削除する
 
 統合メタデータ管理基盤のインデックスメタデータからすべてのインデックスメタデータオブジェクトを読み込む
 
 ```c++
     std::vector<boost::property_tree::ptree> index_elements;  // インデックスメタデータオブジェクトの配列
-    auto indexes = metadata::get_index_metadata("データベース名");
+    auto indexes = metadata::get_indexes_ptr("データベース名");
+    // すべてのインデックスメタデータオブジェクトを読み込む
     if (indexes->get_all(index_elements) != metadata::ErrorCode::OK) {
         エラー処理
     }
 ```
 
-すべてのインデックスメタデータオブジェクトの中から削除対象のインデックスメタデータを特定して削除する
+すべてのインデックスメタデータオブジェクトの中から削除対象のインデックスメタデータをテーブルIDから特定して削除する
 
 ```c++
     boost::property_tree::ptree remove_index; インデックスメタデータオブジェクト
     for (remove_index : index_elements) {
         auto remove_id = remove_index.get_optional<ObjectIdType>(Indexes::ID);
+        // テーブルIDが一致するインデックスメタデータオブジェクトを特定する
         if (table_id.get() == remove_id.get()) {
-            if (tables->remove(update_id.get()) != metadata::ErrorCode::OK) {
+            // インデックスメタデータオブジェクトを削除する
+            if (indexes->remove(remove_id.get()) != metadata::ErrorCode::OK) {
                 エラー処理
             }
         }        
