@@ -109,7 +109,7 @@ TEST_F(ApiTestTableMetadata, add_get_table_metadata_by_table_name2) {
   // get table metadata by table name.
   //  auto tables     =
   //  std::make_unique<Tables>(GlobalTestEnvironment::TEST_DB);
-  auto tables     = get_table_metadata(GlobalTestEnvironment::TEST_DB);
+  auto tables     = get_tables_ptr(GlobalTestEnvironment::TEST_DB);
   ErrorCode error = tables->init();
   EXPECT_EQ(ErrorCode::OK, error);
 
@@ -478,7 +478,7 @@ TEST_F(ApiTestTableMetadata, update_table_metadata) {
   new_table.add_child(Table::CONSTRAINTS_NODE, constraint_metadata);
 
   // Generation of Tables object.
-  auto tables = get_table_metadata(GlobalTestEnvironment::TEST_DB);
+  auto tables = get_tables_ptr(GlobalTestEnvironment::TEST_DB);
   error       = tables->init();
   if (error != ErrorCode::OK) {
     ASSERT_EQ(ErrorCode::OK, error);
@@ -622,7 +622,7 @@ TEST_F(ApiTestTableMetadata, remove_table_metadata_by_table_name) {
   TableMetadataHelper::add_table(new_table, &ret_table_id);
 
   // remove table metadata by table name.
-  auto tables     = get_table_metadata(GlobalTestEnvironment::TEST_DB);
+  auto tables     = get_tables_ptr(GlobalTestEnvironment::TEST_DB);
   ErrorCode error = tables->init();
   EXPECT_EQ(ErrorCode::OK, error);
 
@@ -658,7 +658,7 @@ TEST_F(ApiTestTableMetadata, remove_table_metadata_by_table_id) {
   TableMetadataHelper::add_table(new_table, &ret_table_id);
 
   // remove table metadata by table id.
-  auto tables     = get_table_metadata(GlobalTestEnvironment::TEST_DB);
+  auto tables     = get_tables_ptr(GlobalTestEnvironment::TEST_DB);
   ErrorCode error = tables->init();
   EXPECT_EQ(ErrorCode::OK, error);
 
@@ -690,7 +690,7 @@ TEST_F(ApiTestTableMetadata,
   new_table.put(Table::NAME, new_table_name);
 
   // add table metadata without initialized.
-  auto tables_add = get_table_metadata(GlobalTestEnvironment::TEST_DB);
+  auto tables_add = get_tables_ptr(GlobalTestEnvironment::TEST_DB);
 
   ObjectIdType ret_table_id = -1;
   ErrorCode error           = tables_add->add(new_table, &ret_table_id);
@@ -700,7 +700,7 @@ TEST_F(ApiTestTableMetadata,
   EXPECT_GT(ret_table_id, 0);
 
   // get table metadata by table id without initialized.
-  auto tables_get_by_id = get_table_metadata(GlobalTestEnvironment::TEST_DB);
+  auto tables_get_by_id = get_tables_ptr(GlobalTestEnvironment::TEST_DB);
 
   ptree table_metadata_inserted_by_id;
   error = tables_get_by_id->get(ret_table_id, table_metadata_inserted_by_id);
@@ -714,7 +714,7 @@ TEST_F(ApiTestTableMetadata,
       new_table, table_metadata_inserted_by_id);
 
   // get table metadata by table name without initialized.
-  auto tables_get_by_name = get_table_metadata(GlobalTestEnvironment::TEST_DB);
+  auto tables_get_by_name = get_tables_ptr(GlobalTestEnvironment::TEST_DB);
 
   ptree table_metadata_inserted_by_name;
   error =
@@ -731,7 +731,7 @@ TEST_F(ApiTestTableMetadata,
   // remove table metadata by table name without initialized.
   ObjectIdType table_id_to_remove = -1;
   auto tables_remove_by_name =
-      get_table_metadata(GlobalTestEnvironment::TEST_DB);
+      get_tables_ptr(GlobalTestEnvironment::TEST_DB);
   error = tables_remove_by_name->remove(new_table_name.c_str(),
                                         &table_id_to_remove);
   EXPECT_EQ(ErrorCode::OK, error);
@@ -742,7 +742,7 @@ TEST_F(ApiTestTableMetadata,
   new_table.put(Table::ID, ret_table_id);
 
   // remove table metadata by table id without initialized.
-  auto tables_remove_by_id = get_table_metadata(GlobalTestEnvironment::TEST_DB);
+  auto tables_remove_by_id = get_tables_ptr(GlobalTestEnvironment::TEST_DB);
   error                    = tables_remove_by_id->remove(ret_table_id);
   EXPECT_EQ(ErrorCode::OK, error);
 }
