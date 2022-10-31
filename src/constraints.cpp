@@ -58,7 +58,7 @@ boost::property_tree::ptree Constraint::convert_to_ptree() const {
   }
 
   // constraint type.
-  metadata.put(TYPE, static_cast<int32_t>(this->type));
+  metadata.put(TYPE, static_cast<int64_t>(this->type));
 
   // column numbers.
   ptree columns_node = ptree_helper::make_array_ptree(this->columns);
@@ -86,13 +86,13 @@ boost::property_tree::ptree Constraint::convert_to_ptree() const {
   metadata.add_child(PK_COLUMNS_ID, pk_columns_id_node);
 
   // referenced rows match type.
-  metadata.put(FK_MATCH_TYPE, static_cast<int32_t>(this->fk_match_type));
+  metadata.put(FK_MATCH_TYPE, static_cast<int64_t>(this->fk_match_type));
 
   // referenced row delete action.
-  metadata.put(FK_DELETE_ACTION, static_cast<int32_t>(this->fk_delete_action));
+  metadata.put(FK_DELETE_ACTION, static_cast<int64_t>(this->fk_delete_action));
 
   // referenced row update action.
-  metadata.put(FK_UPDATE_ACTION, static_cast<int32_t>(this->fk_update_action));
+  metadata.put(FK_UPDATE_ACTION, static_cast<int64_t>(this->fk_update_action));
 
   return metadata;
 }
@@ -111,7 +111,7 @@ void Constraint::convert_from_ptree(const boost::property_tree::ptree& ptree) {
 
   // constraint type.
   this->type = static_cast<ConstraintType>(
-      ptree.get_optional<int32_t>(TYPE).value_or(-1));
+      ptree.get_optional<int64_t>(TYPE).value_or(-1));
 
   // column numbers.
   this->columns = ptree_helper::make_vector_int(ptree, COLUMNS);
@@ -137,15 +137,15 @@ void Constraint::convert_from_ptree(const boost::property_tree::ptree& ptree) {
 
   // referenced rows match type.
   this->fk_match_type = static_cast<MatchType>(
-      ptree.get_optional<int32_t>(FK_MATCH_TYPE).value_or(-1));
+      ptree.get_optional<int64_t>(FK_MATCH_TYPE).value_or(-1));
 
   // referenced row delete action.
   this->fk_delete_action = static_cast<ActionType>(
-      ptree.get_optional<int32_t>(FK_DELETE_ACTION).value_or(-1));
+      ptree.get_optional<int64_t>(FK_DELETE_ACTION).value_or(-1));
 
   // referenced row update action.
   this->fk_update_action = static_cast<ActionType>(
-      ptree.get_optional<int32_t>(FK_UPDATE_ACTION).value_or(-1));
+      ptree.get_optional<int64_t>(FK_UPDATE_ACTION).value_or(-1));
 }
 
 // ==========================================================================

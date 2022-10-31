@@ -436,7 +436,7 @@ TEST_F(ApiTestTableMetadata, update_table_metadata) {
     constraint.put(Constraint::NAME, "unique constraint");
     // type
     constraint.put(Constraint::TYPE,
-                   static_cast<int32_t>(Constraint::ConstraintType::UNIQUE));
+                   static_cast<int64_t>(Constraint::ConstraintType::UNIQUE));
     // columns
     constraint.add_child(Constraint::COLUMNS, columns_num);
     // columns id
@@ -456,7 +456,7 @@ TEST_F(ApiTestTableMetadata, update_table_metadata) {
     constraint.put(Constraint::NAME, "check constraint");
     // type
     constraint.put(Constraint::TYPE,
-                   static_cast<int32_t>(Constraint::ConstraintType::CHECK));
+                   static_cast<int64_t>(Constraint::ConstraintType::CHECK));
     // columns
     columns_num_value.put("", 1);
     columns_num.push_back(std::make_pair("", columns_num_value));
@@ -572,7 +572,7 @@ TEST_F(ApiTestTableMetadata, update_table_metadata) {
     constraint.put(Constraint::NAME, "new unique constraint");
     // type
     constraint.put(Constraint::TYPE,
-                   static_cast<int32_t>(Constraint::ConstraintType::UNIQUE));
+                   static_cast<int64_t>(Constraint::ConstraintType::UNIQUE));
     // columns
     constraint.add_child(Constraint::COLUMNS, columns_num);
     // columns id

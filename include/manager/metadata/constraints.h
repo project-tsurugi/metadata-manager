@@ -81,7 +81,7 @@ struct Constraint : public Object {
   /**
    * @brief Represents the type of constraint.
    */
-  enum class ConstraintType {
+  enum class ConstraintType : int64_t {
     PRIMARY_KEY = 0,          //!< @brief Primary Key Constraints.
     UNIQUE,                   //!< @brief Uniqueness Constraints.
     CHECK,                    //!< @brief Check Constraints.
@@ -94,7 +94,7 @@ struct Constraint : public Object {
   /**
    * @brief Represents the match type for refrerenced rows.
    */
-  enum class MatchType {
+  enum class MatchType : int64_t {
     SIMPLE = 0,               //!< @brief MATCH SIMPLE.
     FULL,                     //!< @brief MATCH FULL.
     PARTIAL,                  //!< @brief MATCH PARTIAL.
@@ -104,7 +104,7 @@ struct Constraint : public Object {
   /**
    * @brief Represents the match type for refrerenced rows.
    */
-  enum class ActionType {
+  enum class ActionType : int64_t {
     NO_ACTION = 0,            //!< @brief NO ACTION.
     RESTRICT,                 //!< @brief RESTRICT.
     CASCADE,                  //!< @brief CASCADE.

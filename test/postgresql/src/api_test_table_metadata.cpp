@@ -566,7 +566,7 @@ TEST_F(ApiTestTableMetadata, update_table_metadata) {
     constraint.put(Constraint::NAME, "new unique constraint");
     // type
     constraint.put(Constraint::TYPE,
-                   static_cast<int32_t>(Constraint::ConstraintType::UNIQUE));
+                   static_cast<int64_t>(Constraint::ConstraintType::UNIQUE));
     // columns
     columns_num_value.put("", 9);
     columns_num.push_back(std::make_pair("", columns_num_value));
