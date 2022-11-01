@@ -86,10 +86,10 @@ INSTANTIATE_TEST_CASE_P(
 TEST_P(ApiTestColumnStatisticsAllAPIHappy, get_all_api_by_table_id) {
   auto param = GetParam();
 
-  UTTableMetadata* testdata_table_metadata =
-      global->testdata_table_metadata.get();
   std::string table_name_base =
-      testdata_table_metadata->name + std::get<0>(param) + "_";
+      TableMetadataHelper::make_table_name("ApiTestColumnStatistics",
+                                           std::get<0>(param), __LINE__) +
+      "_";
 
   // add table metadata.
   std::string table_name_1 = table_name_base + "1";
@@ -189,10 +189,10 @@ TEST_P(ApiTestColumnStatisticsAllAPIHappy, get_all_api_by_table_id) {
 TEST_P(ApiTestColumnStatisticsAllAPIHappy, get_all_api) {
   auto param = GetParam();
 
-  UTTableMetadata* testdata_table_metadata =
-      global->testdata_table_metadata.get();
   std::string table_name_base =
-      testdata_table_metadata->name + std::get<0>(param) + "_";
+      TableMetadataHelper::make_table_name("ApiTestColumnStatistics",
+                                           std::get<0>(param), __LINE__) +
+      "_";
 
   // add table metadata.
   std::string table_name_1 = table_name_base + "1";
@@ -319,9 +319,8 @@ TEST_P(ApiTestColumnStatisticsAllAPIHappy, get_all_api) {
 TEST_P(ApiTestColumnStatisticsAllAPIHappy, get_remove_api_by_statistic_id) {
   auto param = GetParam();
 
-  UTTableMetadata* testdata_table_metadata =
-      global->testdata_table_metadata.get();
-  std::string table_name = testdata_table_metadata->name + std::get<0>(param);
+  std::string table_name = TableMetadataHelper::make_table_name(
+      "ApiTestColumnStatistics", std::get<0>(param), __LINE__);
   std::vector<ptree> column_statistics = std::get<1>(param);
 
   ErrorCode error = ErrorCode::UNKNOWN;
@@ -432,9 +431,8 @@ TEST_P(ApiTestColumnStatisticsAllAPIHappy, get_remove_api_by_statistic_id) {
 TEST_P(ApiTestColumnStatisticsAllAPIHappy, get_remove_api_by_statistic_name) {
   auto param = GetParam();
 
-  UTTableMetadata* testdata_table_metadata =
-      global->testdata_table_metadata.get();
-  std::string table_name = testdata_table_metadata->name + std::get<0>(param);
+  std::string table_name = TableMetadataHelper::make_table_name(
+      "ApiTestColumnStatistics", std::get<0>(param), __LINE__);
   std::vector<ptree> column_statistics = std::get<1>(param);
 
   ErrorCode error = ErrorCode::UNKNOWN;
@@ -549,9 +547,8 @@ TEST_P(ApiTestColumnStatisticsAllAPIHappy, get_remove_api_by_statistic_name) {
 TEST_P(ApiTestColumnStatisticsAllAPIHappy, get_remove_api_by_column_id) {
   auto param = GetParam();
 
-  UTTableMetadata* testdata_table_metadata =
-      global->testdata_table_metadata.get();
-  std::string table_name = testdata_table_metadata->name + std::get<0>(param);
+  std::string table_name = TableMetadataHelper::make_table_name(
+      "ApiTestColumnStatistics", std::get<0>(param), __LINE__);
   std::vector<ptree> column_statistics = std::get<1>(param);
 
   ErrorCode error = ErrorCode::UNKNOWN;
@@ -679,9 +676,8 @@ TEST_P(ApiTestColumnStatisticsAllAPIHappy, get_remove_api_by_column_id) {
 TEST_P(ApiTestColumnStatisticsAllAPIHappy, get_remove_api_by_column_number) {
   auto param = GetParam();
 
-  UTTableMetadata* testdata_table_metadata =
-      global->testdata_table_metadata.get();
-  std::string table_name = testdata_table_metadata->name + std::get<0>(param);
+  std::string table_name = TableMetadataHelper::make_table_name(
+      "ApiTestColumnStatistics", std::get<0>(param), __LINE__);
   std::vector<ptree> column_statistics = std::get<1>(param);
 
   ErrorCode error = ErrorCode::UNKNOWN;
@@ -784,9 +780,8 @@ TEST_P(ApiTestColumnStatisticsAllAPIHappy, get_remove_api_by_column_number) {
 TEST_P(ApiTestColumnStatisticsAllAPIHappy, get_remove_api_by_column_name) {
   auto param = GetParam();
 
-  UTTableMetadata* testdata_table_metadata =
-      global->testdata_table_metadata.get();
-  std::string table_name = testdata_table_metadata->name + std::get<0>(param);
+  std::string table_name = TableMetadataHelper::make_table_name(
+      "ApiTestColumnStatistics", std::get<0>(param), __LINE__);
   std::vector<ptree> column_statistics = std::get<1>(param);
 
   ErrorCode error = ErrorCode::UNKNOWN;
@@ -919,9 +914,8 @@ TEST_P(ApiTestColumnStatisticsAllAPIHappy, get_remove_api_by_column_name) {
 TEST_P(ApiTestColumnStatisticsUpdateHappy, update_column_statistics) {
   auto param = GetParam();
 
-  UTTableMetadata* testdata_table_metadata =
-      global->testdata_table_metadata.get();
-  std::string table_name = testdata_table_metadata->name + std::get<0>(param);
+  std::string table_name = TableMetadataHelper::make_table_name(
+      "ApiTestColumnStatistics", std::get<0>(param), __LINE__);
 
   ObjectIdType ret_table_id;
   TableMetadataHelper::add_table(table_name, &ret_table_id);
@@ -1221,9 +1215,8 @@ TEST_P(ApiTestColumnStatisticsUpdateHappy, update_column_statistics) {
 TEST_P(ApiTestColumnStatisticsRemoveAllHappy, remove_by_table_id) {
   auto param = GetParam();
 
-  UTTableMetadata* testdata_table_metadata =
-      global->testdata_table_metadata.get();
-  std::string table_name = testdata_table_metadata->name + param;
+  std::string table_name = TableMetadataHelper::make_table_name(
+      "ApiTestColumnStatistics", param, __LINE__);
 
   ObjectIdType ret_table_id;
   TableMetadataHelper::add_table(table_name, &ret_table_id);
@@ -1355,9 +1348,9 @@ TEST_P(ApiTestColumnStatisticsRemoveAllHappy, remove_by_table_id) {
  */
 TEST_P(ApiTestColumnStatisticsAllAPIException, all_api_exception) {
   auto param = GetParam();
-  UTTableMetadata* testdata_table_metadata =
-      global->testdata_table_metadata.get();
-  std::string table_name = testdata_table_metadata->name + param;
+
+  std::string table_name = TableMetadataHelper::make_table_name(
+      "ApiTestColumnStatistics", param, __LINE__);
 
   ObjectIdType ret_table_id;
   TableMetadataHelper::add_table(table_name, &ret_table_id);
@@ -1554,9 +1547,8 @@ TEST_P(ApiTestColumnStatisticsAllAPIHappyWithoutInit,
        all_api_happy_without_init) {
   auto param = GetParam();
 
-  UTTableMetadata* testdata_table_metadata =
-      global->testdata_table_metadata.get();
-  std::string table_name = testdata_table_metadata->name + std::get<0>(param);
+  std::string table_name = TableMetadataHelper::make_table_name(
+      "ApiTestColumnStatistics", std::get<0>(param), __LINE__);
 
   ObjectIdType ret_table_id;
   TableMetadataHelper::add_table(table_name, &ret_table_id);

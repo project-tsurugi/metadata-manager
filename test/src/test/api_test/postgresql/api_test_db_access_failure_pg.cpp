@@ -142,10 +142,11 @@ INSTANTIATE_TEST_CASE_P(
 TEST_F(ApiTestDBAccessFailure, add_table_metadata) {
   UTTableMetadata* testdata_table_metadata =
       global->testdata_table_metadata.get();
-  ptree new_table = testdata_table_metadata->tables;
+  ptree new_table = testdata_table_metadata->get_metadata_ptree();
 
-  std::string table_name =
-      testdata_table_metadata->name + "ApiTestDBAccessFailure_add_table";
+  std::string table_name = "ApiTestDBAccessFailure_" +
+                           UTUtils::generate_narrow_uid() + "_" +
+                           std::to_string(__LINE__);
   new_table.put(Tables::NAME, table_name);
 
   auto tables = std::make_unique<Tables>(GlobalTestEnvironment::TEST_DB);
@@ -210,10 +211,11 @@ TEST_F(ApiTestDBAccessFailure, get_table_metadata_by_table_name) {
 TEST_F(ApiTestDBAccessFailure, update_table_metadata) {
   UTTableMetadata* testdata_table_metadata =
       global->testdata_table_metadata.get();
-  ptree table_metadata = testdata_table_metadata->tables;
+  ptree table_metadata = testdata_table_metadata->get_metadata_ptree();
 
-  std::string table_name =
-      testdata_table_metadata->name + "ApiTestDBAccessFailure_update_table";
+  std::string table_name = "ApiTestDBAccessFailure_" +
+                           UTUtils::generate_narrow_uid() + "_" +
+                           std::to_string(__LINE__);
   table_metadata.put(Tables::NAME, table_name);
 
   auto tables = std::make_unique<Tables>(GlobalTestEnvironment::TEST_DB);

@@ -487,9 +487,8 @@ ErrorCode DaoTestColumnStatistics::remove_all_column_statistics(
 TEST_P(DaoTestColumnStatisticsAllAPIHappy, All_API_happy) {
   auto param = GetParam();
 
-  UTTableMetadata* testdata_table_metadata =
-      global->testdata_table_metadata.get();
-  std::string table_name = testdata_table_metadata->name + std::get<0>(param);
+  std::string table_name = TableMetadataHelper::make_table_name(
+      "DaoTestColumnStatistics", std::get<0>(param), __LINE__);
 
   ObjectIdType ret_table_id;
   TableMetadataHelper::add_table(table_name, &ret_table_id);
@@ -591,9 +590,8 @@ TEST_P(DaoTestColumnStatisticsAllAPIHappy, All_API_happy) {
 TEST_P(DaoTestColumnStatisticsUpdateHappy, update_column_statistics) {
   auto param = GetParam();
 
-  UTTableMetadata* testdata_table_metadata =
-      global->testdata_table_metadata.get();
-  std::string table_name = testdata_table_metadata->name + std::get<0>(param);
+  std::string table_name = TableMetadataHelper::make_table_name(
+      "DaoTestColumnStatistics", std::get<0>(param), __LINE__);
 
   ObjectIdType ret_table_id;
   TableMetadataHelper::add_table(table_name, &ret_table_id);
@@ -752,9 +750,8 @@ TEST_P(DaoTestColumnStatisticsUpdateHappy, update_column_statistics) {
 TEST_P(DaoTestColumnStatisticsRemoveAllHappy, remove_all_column_statistics) {
   auto param = GetParam();
 
-  UTTableMetadata* testdata_table_metadata =
-      global->testdata_table_metadata.get();
-  std::string table_name = testdata_table_metadata->name + param;
+  std::string table_name = TableMetadataHelper::make_table_name(
+      "DaoTestColumnStatistics", param, __LINE__);
 
   ObjectIdType ret_table_id;
   TableMetadataHelper::add_table(table_name, &ret_table_id);
@@ -832,9 +829,9 @@ TEST_P(DaoTestColumnStatisticsRemoveAllHappy, remove_all_column_statistics) {
  */
 TEST_P(DaoTestColumnStatisticsAllAPIException, all_api_exception) {
   auto param = GetParam();
-  UTTableMetadata* testdata_table_metadata =
-      global->testdata_table_metadata.get();
-  std::string table_name = testdata_table_metadata->name + param;
+
+  std::string table_name = TableMetadataHelper::make_table_name(
+      "DaoTestColumnStatistics", param, __LINE__);
 
   ObjectIdType ret_table_id;
   TableMetadataHelper::add_table(table_name, &ret_table_id);
@@ -963,9 +960,8 @@ TEST_F(DaoTestColumnStatisticsAllAPIException,
        upsert_one_column_statistics_in_nullptr) {
   ErrorCode error = ErrorCode::INTERNAL_ERROR;
 
-  UTTableMetadata* testdata_table_metadata =
-      global->testdata_table_metadata.get();
-  std::string table_name     = testdata_table_metadata->name + "_empty";
+  std::string table_name = TableMetadataHelper::make_table_name(
+      "DaoTestColumnStatistics", "empty", __LINE__);
   std::string statistic_name = "statistic-name";
 
   ObjectIdType ret_table_id;

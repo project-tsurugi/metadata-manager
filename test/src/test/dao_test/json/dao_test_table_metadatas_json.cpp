@@ -93,7 +93,7 @@ class DaoTestTableMetadata : public ::testing::Test {
     // table metadata.
     UTTableMetadata* testdata_table_metadata =
         global->testdata_table_metadata.get();
-    ptree new_table = testdata_table_metadata->tables;
+    ptree new_table = testdata_table_metadata->get_metadata_ptree();
     new_table.put(Table::NAME, table_name);
 
     // Add table metadata object to table metadata table.
@@ -437,7 +437,7 @@ TEST_F(DaoTestTableMetadata, add_get_table_metadata_by_table_name) {
   // prepare test data for adding table metadata.
   UTTableMetadata testdata_table_metadata =
       *(global->testdata_table_metadata.get());
-  ptree new_table            = testdata_table_metadata.tables;
+  ptree new_table            = testdata_table_metadata.get_metadata_ptree();
   std::string new_table_name = new_table.get<std::string>(Table::NAME) +
                                "_DaoTestTableMetadata" +
                                std::to_string(__LINE__);
@@ -454,8 +454,8 @@ TEST_F(DaoTestTableMetadata, add_get_table_metadata_by_table_name) {
                                            table_metadata_inserted);
 
   // verifies that the returned table metadata is expected one.
-  TableMetadataHelper::check_table_metadata_expected(new_table,
-                                                     table_metadata_inserted);
+  testdata_table_metadata.CHECK_METADATA_EXPECTED(new_table,
+                                                  table_metadata_inserted);
 
   // cleanup
   remove_table_metadata(new_table_name.c_str(), nullptr);
@@ -469,7 +469,7 @@ TEST_F(DaoTestTableMetadata, add_get_table_metadata_by_table_id) {
   // prepare test data for adding table metadata.
   UTTableMetadata testdata_table_metadata =
       *(global->testdata_table_metadata.get());
-  ptree new_table            = testdata_table_metadata.tables;
+  ptree new_table            = testdata_table_metadata.get_metadata_ptree();
   std::string new_table_name = new_table.get<std::string>(Table::NAME) +
                                "_DaoTestTableMetadata" +
                                std::to_string(__LINE__);
@@ -489,8 +489,8 @@ TEST_F(DaoTestTableMetadata, add_get_table_metadata_by_table_id) {
   UTUtils::print(UTUtils::get_tree_string(table_metadata_inserted));
 
   // verifies that the returned table metadata is expected one.
-  TableMetadataHelper::check_table_metadata_expected(new_table,
-                                                     table_metadata_inserted);
+  testdata_table_metadata.CHECK_METADATA_EXPECTED(new_table,
+                                                  table_metadata_inserted);
 
   // cleanup
   remove_table_metadata(new_table_name.c_str(), nullptr);
@@ -504,14 +504,15 @@ TEST_F(DaoTestTableMetadata, add_update_table_metadata) {
   // prepare test data for adding table metadata.
   UTTableMetadata testdata_table_metadata =
       *(global->testdata_table_metadata.get());
+  ptree table = testdata_table_metadata.get_metadata_ptree();
 
   // #1 add table metadata.
   ptree table_metadata_1;
   ObjectIdType ret_table_id_1 = -1;
   {
-    std::string new_table_name =
-        testdata_table_metadata.tables.get<std::string>(Table::NAME) +
-        "_DaoTestTableMetadata" + std::to_string(__LINE__);
+    std::string new_table_name = table.get<std::string>(Table::NAME) +
+                                 "_DaoTestTableMetadata" +
+                                 std::to_string(__LINE__);
     // add table metadata.
     DaoTestTableMetadata::add_table(new_table_name, &ret_table_id_1);
     // get table metadata.
@@ -522,9 +523,9 @@ TEST_F(DaoTestTableMetadata, add_update_table_metadata) {
   ptree table_metadata_2;
   ObjectIdType ret_table_id_2 = -1;
   {
-    std::string new_table_name =
-        testdata_table_metadata.tables.get<std::string>(Table::NAME) +
-        "_DaoTestTableMetadata" + std::to_string(__LINE__);
+    std::string new_table_name = table.get<std::string>(Table::NAME) +
+                                 "_DaoTestTableMetadata" +
+                                 std::to_string(__LINE__);
     // add table metadata.
     DaoTestTableMetadata::add_table(new_table_name, &ret_table_id_2);
     // get table metadata.
@@ -535,9 +536,9 @@ TEST_F(DaoTestTableMetadata, add_update_table_metadata) {
   ptree table_metadata_3;
   ObjectIdType ret_table_id_3 = -1;
   {
-    std::string new_table_name =
-        testdata_table_metadata.tables.get<std::string>(Table::NAME) +
-        "_DaoTestTableMetadata" + std::to_string(__LINE__);
+    std::string new_table_name = table.get<std::string>(Table::NAME) +
+                                 "_DaoTestTableMetadata" +
+                                 std::to_string(__LINE__);
     // add table metadata.
     DaoTestTableMetadata::add_table(new_table_name, &ret_table_id_3);
     // get table metadata.
@@ -572,6 +573,8 @@ TEST_F(DaoTestTableMetadata, add_update_table_metadata) {
     // When Update is performed, the constraint metadata check should be
     // exempted.
     expected_table_metadata.erase(Table::CONSTRAINTS_NODE);
+    ptree empty_constraints;
+    expected_table_metadata.add_child(Table::CONSTRAINTS_NODE, empty_constraints);
   }
 
   // get table metadata.
@@ -604,15 +607,15 @@ TEST_F(DaoTestTableMetadata, add_update_table_metadata) {
   // Verify that there is no change in the data after the update.
   UTUtils::print(
       "-- Verify that there is no change in the data after the update --");
-  TableMetadataHelper::check_table_metadata_expected(table_metadata_1,
-                                                     table_metadata_updated_1);
-  TableMetadataHelper::check_table_metadata_expected(table_metadata_3,
-                                                     table_metadata_updated_3);
+  testdata_table_metadata.CHECK_METADATA_EXPECTED(table_metadata_1,
+                                                  table_metadata_updated_1);
+  testdata_table_metadata.CHECK_METADATA_EXPECTED(table_metadata_3,
+                                                  table_metadata_updated_3);
 
   // Verify the data after the update.
   UTUtils::print("-- Verify the data after the update. --");
-  TableMetadataHelper::check_table_metadata_expected(expected_table_metadata,
-                                                     table_metadata_updated_2);
+  testdata_table_metadata.CHECK_METADATA_EXPECTED(expected_table_metadata,
+                                                  table_metadata_updated_2);
 
   // cleanup
   remove_table_metadata(ret_table_id_1);
@@ -627,7 +630,7 @@ TEST_F(DaoTestTableMetadata, remove_table_metadata_by_table_name) {
   // prepare test data for adding table metadata.
   UTTableMetadata testdata_table_metadata =
       *(global->testdata_table_metadata.get());
-  ptree new_table            = testdata_table_metadata.tables;
+  ptree new_table            = testdata_table_metadata.get_metadata_ptree();
   std::string new_table_name = new_table.get<std::string>(Table::NAME) +
                                "_DaoTestTableMetadata" +
                                std::to_string(__LINE__);
@@ -659,7 +662,7 @@ TEST_F(DaoTestTableMetadata, remove_table_metadata_by_table_id) {
   // prepare test data for adding table metadata.
   UTTableMetadata testdata_table_metadata =
       *(global->testdata_table_metadata.get());
-  ptree new_table            = testdata_table_metadata.tables;
+  ptree new_table            = testdata_table_metadata.get_metadata_ptree();
   std::string new_table_name = new_table.get<std::string>(Table::NAME) +
                                "_DaoTestTableMetadata" +
                                std::to_string(__LINE__);

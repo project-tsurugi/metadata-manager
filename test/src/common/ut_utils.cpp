@@ -15,13 +15,22 @@
  */
 #include "test/common/ut_utils.h"
 
-#include <gtest/gtest.h>
-
+#include <chrono>
 #include <iostream>
 
 #include "test/common/global_test_environment.h"
 
 namespace manager::metadata::testing {
+
+/**
+ * @brief Generates a unique ID in the narrow sense..
+ */
+std::string UTUtils::generate_narrow_uid() {
+  auto system_time = std::chrono::system_clock::now().time_since_epoch();
+  auto microseconds =
+      std::chrono::duration_cast<std::chrono::microseconds>(system_time);
+  return std::to_string(microseconds.count()).substr(6UL);
+}
 
 /**
  * @brief Skip tests if a connection to metadata repository is not opened.
@@ -99,9 +108,10 @@ void UTUtils::get_tree_string_internal(const boost::property_tree::ptree& pt,
 
 /**
  * @brief Get string converted from ptree. (not print string)
- * @param (pt)                   [in]  ptree to be converted to string.
+ * @param (pt)  [in]  ptree to be converted to string.
  */
-std::string UTUtils::get_tree_string(const boost::property_tree::ptree& pt) {
+std::string UTUtils::get_tree_string(
+    const boost::property_tree::ptree& pt) {
   std::string output_string;
   int level = 0;
   get_tree_string_internal(pt, level, output_string, false);
@@ -109,9 +119,17 @@ std::string UTUtils::get_tree_string(const boost::property_tree::ptree& pt) {
 }
 
 /**
+ * @brief Get string converted from structure object. (not print string)
+ * @param (ob)  [in]  structure object to be converted to string.
+ */
+std::string UTUtils::get_tree_string(const Object& ob) {
+  return get_tree_string(ob.convert_to_ptree());
+}
+
+/**
  * @brief Get and print string converted from ptree.
- * @param (pt)                   [in]  ptree to be converted to string.
- * @param (level)                [in]  indent level.
+ * @param (pt)     [in]  ptree to be converted to string.
+ * @param (level)  [in]  indent level.
  */
 std::string UTUtils::print_tree(const boost::property_tree::ptree& pt,
                                 int level) {

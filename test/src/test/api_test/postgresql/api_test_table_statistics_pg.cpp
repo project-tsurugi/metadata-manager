@@ -166,8 +166,9 @@ TEST_P(ApiTestTableStatisticsByTableIdHappy,
   // prepare test data for adding table metadata.
   UTTableMetadata* testdata_table_metadata =
       global->testdata_table_metadata.get();
-  auto param             = GetParam();
-  std::string table_name = testdata_table_metadata->name + std::get<0>(param);
+  auto param = GetParam();
+  std::string table_name =
+      TableMetadataHelper::make_table_name("ApiTestTableStatistics", std::get<0>(param), __LINE__);
 
   // add table metadata.
   ObjectIdType ret_table_id = -1;
@@ -213,7 +214,7 @@ TEST_P(ApiTestTableStatisticsByTableIdHappy,
   // verifies that the returned table statistic is expected one.
   EXPECT_EQ(ret_table_id, add_metadata_id.get());
   EXPECT_EQ(table_name, add_metadata_name.get());
-  EXPECT_EQ(testdata_table_metadata->namespace_name,
+  EXPECT_EQ(testdata_table_metadata->get_metadata_struct()->namespace_name,
             add_metadata_namespace.get());
   if (!optional_tuples_add) {
     reltuples_to_add = 0;
@@ -252,7 +253,7 @@ TEST_P(ApiTestTableStatisticsByTableIdHappy,
   // verifies that the returned table statistic is expected one.
   EXPECT_EQ(ret_table_id, upd_metadata_id.get());
   EXPECT_EQ(table_name, upd_metadata_name.get());
-  EXPECT_EQ(testdata_table_metadata->namespace_name,
+  EXPECT_EQ(testdata_table_metadata->get_metadata_struct()->namespace_name,
             upd_metadata_namespace.get());
   if (optional_tuples_upd) {
     EXPECT_EQ(reltuples_to_update, upd_metadata_tuples.get());
@@ -276,8 +277,9 @@ TEST_P(ApiTestTableStatisticsByTableNameHappy,
   // prepare test data for adding table metadata.
   UTTableMetadata* testdata_table_metadata =
       global->testdata_table_metadata.get();
-  auto param             = GetParam();
-  std::string table_name = testdata_table_metadata->name + std::get<0>(param);
+  auto param = GetParam();
+  std::string table_name =
+      TableMetadataHelper::make_table_name("ApiTestTableStatistics", std::get<0>(param), __LINE__);
 
   // add table metadata.
   ObjectIdType ret_table_id;
@@ -324,7 +326,7 @@ TEST_P(ApiTestTableStatisticsByTableNameHappy,
   // verifies that the returned table statistic is expected one.
   EXPECT_EQ(ret_table_id, add_metadata_id.get());
   EXPECT_EQ(table_name, add_metadata_name.get());
-  EXPECT_EQ(testdata_table_metadata->namespace_name,
+  EXPECT_EQ(testdata_table_metadata->get_metadata_struct()->namespace_name,
             add_metadata_namespace.get());
   if (!optional_tuples_add) {
     reltuples_to_add = 0;
@@ -363,7 +365,7 @@ TEST_P(ApiTestTableStatisticsByTableNameHappy,
   // verifies that the returned table statistic is expected one.
   EXPECT_EQ(ret_table_id, upd_metadata_id.get());
   EXPECT_EQ(table_name, upd_metadata_name.get());
-  EXPECT_EQ(testdata_table_metadata->namespace_name,
+  EXPECT_EQ(testdata_table_metadata->get_metadata_struct()->namespace_name,
             upd_metadata_namespace.get());
   if (optional_tuples_upd) {
     EXPECT_EQ(reltuples_to_update, upd_metadata_tuples.get());

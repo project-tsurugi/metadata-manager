@@ -13,18 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TEST_INCLUDE_TEST_HELPER_CONSTRAINT_METADATA_HELPER_H_
-#define TEST_INCLUDE_TEST_HELPER_CONSTRAINT_METADATA_HELPER_H_
+#ifndef TEST_INCLUDE_TEST_HELPER_JSON_CONSTRAINT_METADATA_HELPER_JSON_H_
+#define TEST_INCLUDE_TEST_HELPER_JSON_CONSTRAINT_METADATA_HELPER_JSON_H_
 
-#include <cstdint>
+#include <boost/property_tree/ptree.hpp>
+
+#include "test/helper/metadata_helper.h"
 
 namespace manager::metadata::testing {
 
-class ConstraintMetadataHelper {
+class ConstraintMetadataHelperJson : public MetadataHelperInterface {
  public:
-  static int32_t get_record_count();
+  int32_t get_record_count() const override;
+
+ private:
+  boost::property_tree::ptree load_contents() const;
 };
 
 }  // namespace manager::metadata::testing
 
-#endif  // TEST_INCLUDE_TEST_HELPER_CONSTRAINT_METADATA_HELPER_H_
+#endif  // TEST_INCLUDE_TEST_HELPER_JSON_CONSTRAINT_METADATA_HELPER_JSON_H_

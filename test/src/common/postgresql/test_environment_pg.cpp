@@ -31,10 +31,11 @@ using db::postgresql::DbcUtils;
 
 void TestEnvironmentPg::SetUp() {
   // generate table metadata as test data.
-  TableMetadataHelper::generate_table_metadata(testdata_table_metadata);
+  testdata_table_metadata = std::make_unique<UTTableMetadata>("");
+  testdata_table_metadata->generate_test_metadata();
 
   // generate column statistics as test data.
-  for (auto column : testdata_table_metadata->columns) {
+  for (auto column : testdata_table_metadata->get_metadata_struct()->columns) {
     column_statistics.push_back(
         ColumnStatisticsHelper::generate_column_statistic());
   }

@@ -21,15 +21,31 @@
 
 #include <boost/property_tree/ptree.hpp>
 
+#include "manager/metadata/metadata.h"
+
 namespace manager::metadata::testing {
 
 class UTUtils {
  public:
+  static std::string generate_narrow_uid();
   static void skip_if_connection_not_opened();
   static void skip_if_connection_opened();
   static std::string get_tree_string(const boost::property_tree::ptree& pt);
+  static std::string get_tree_string(const manager::metadata::Object& ob);
   static std::string print_tree(const boost::property_tree::ptree& pt,
                                 int level);
+
+  template <typename T>
+  static auto to_integral(std::string_view input) ->
+      typename std::enable_if_t<std::is_integral<T>::value, T> {
+    T res_value;
+    try {
+      res_value = std::stoi(std::string(input));
+    } catch (...) {
+      res_value = -1;
+    }
+    return res_value;
+  }
 
   static void print() {
 #ifndef NDEBUG

@@ -21,33 +21,55 @@
 
 #include <boost/property_tree/ptree.hpp>
 
+#include "test/metadata/ut_metadata.h"
+
 #include "manager/metadata/tables.h"
 #include "test/metadata/ut_column_metadata.h"
 #include "test/metadata/ut_constraint_metadata.h"
 
 namespace manager::metadata::testing {
 
-class UTTableMetadata {
+class UTTableMetadata : public UtMetadata {
  public:
-  int32_t format_version = NOT_INITIALIZED;
-  int64_t generation     = NOT_INITIALIZED;
-  int64_t id             = NOT_INITIALIZED;
-  std::string name;
-  std::string namespace_name;
-  int64_t tuples = NOT_INITIALIZED;
-  boost::property_tree::ptree tables;
-  std::vector<UTColumnMetadata> columns;
-  std::vector<UTConstraintMetadata> constraints;
-  manager::metadata::Table table;
+  UTTableMetadata() : table_name_("") {}
+  explicit UTTableMetadata(std::string table_name) : table_name_(table_name) {}
+  explicit UTTableMetadata(const Table& metadata)
+      : metadata_ptree_(metadata.convert_to_ptree()),
+        metadata_struct_(metadata) {}
+  explicit UTTableMetadata(const boost::property_tree::ptree& metadata)
+      : metadata_ptree_(metadata) {
+    metadata_struct_.convert_from_ptree(metadata_ptree_);
+  }
 
-  UTTableMetadata() = delete;
-  explicit UTTableMetadata(std::string name) : name(name) {}
+  void generate_test_metadata() override;
 
-  void generate_ptree();
-  void generate_table();
+  const manager::metadata::Table* get_metadata_struct() const override {
+    return &metadata_struct_;
+  }
+  boost::property_tree::ptree get_metadata_ptree() const override {
+    return metadata_ptree_;
+  }
+
+  void check_metadata_expected(const boost::property_tree::ptree& expected,
+                               const boost::property_tree::ptree& actual,
+                               const char* file,
+                               const int64_t line) const override;
+
+  void check_metadata_expected(const manager::metadata::Table& expected,
+                               const boost::property_tree::ptree& actual,
+                               const char* file, const int64_t line) const;
+  void check_metadata_expected(const boost::property_tree::ptree& expected,
+                               const manager::metadata::Table& actual,
+                               const char* file, const int64_t line) const;
+  void check_metadata_expected(const manager::metadata::Table& expected,
+                               const manager::metadata::Table& actual,
+                               const char* file, const int64_t line) const;
 
  private:
-  static constexpr int64_t NOT_INITIALIZED = -1;
+  boost::property_tree::ptree metadata_ptree_;
+  manager::metadata::Table metadata_struct_;
+
+  std::string table_name_;
 };
 
 }  // namespace manager::metadata::testing
