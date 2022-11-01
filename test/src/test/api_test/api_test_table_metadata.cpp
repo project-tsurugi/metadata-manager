@@ -379,8 +379,25 @@ TEST_F(ApiTestTableMetadata, get_all_table_next) {
     expected_table.put(Tables::NAME, table_name);
 
     // verifies that the returned table metadata is expected one.
-    TableMetadataHelper::check_table_metadata_expected(expected_table,
-                                                       table.convert_to_ptree());
+    testdata_table_metadata.CHECK_METADATA_EXPECTED(expected_table,
+                                                    table.convert_to_ptree());
+    ++actual_count;
+  }
+
+  actual_count = 0;
+  auto ite = tables->iterator();
+  while (ite->has_next()) {
+    UTUtils::print("-- get all table metadata by iterator using has_next --");
+    UTUtils::print(UTUtils::get_tree_string(table.convert_to_ptree()));
+
+    std::string table_name = table_name_prefix + std::to_string(actual_count + 1);
+    ite->next(table);
+    expected_table.put(Tables::ID, table_ids[actual_count]);
+    expected_table.put(Tables::NAME, table_name);
+
+    // verifies that the returned table metadata is expected one.
+    testdata_table_metadata.CHECK_METADATA_EXPECTED(expected_table,
+                                                    table.convert_to_ptree());
     ++actual_count;
   }
 
