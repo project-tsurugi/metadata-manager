@@ -36,16 +36,17 @@ class ApiTest : public ::testing::Test {
   virtual ~ApiTest() {}
 
   virtual int64_t get_record_count() const = 0;
-  virtual Object* get_structure() const = 0;
+  virtual Object* get_structure() const    = 0;
 
   // Series of flow tests.
-  void test_add_get_remove_by_id(const UtMetadata* ut_metadata) const;
-  void test_add_get_remove_by_id_with_struct(
-      const UtMetadata* ut_metadata) const;
-  void test_add_get_remove_by_name(const UtMetadata* ut_metadata) const;
-  void test_add_get_remove_by_name_with_struct(
-      const UtMetadata* ut_metadata) const;
-  void test_add_getall_remove(const UtMetadata* ut_metadata) const;
+  void test_flow_get_by_id(const UtMetadata* ut_metadata) const;
+  void test_flow_get_by_id_with_struct(const UtMetadata* ut_metadata) const;
+  void test_flow_get_by_name(const UtMetadata* ut_metadata) const;
+  void test_flow_get_by_name_with_struct(const UtMetadata* ut_metadata) const;
+  void test_flow_getall(const UtMetadata* ut_metadata) const;
+  void test_flow_getall_with_struct(const UtMetadata* ut_metadata) const;
+  void test_flow_update(const UtMetadata* ut_metadata,
+                        const UtMetadata* ut_metadata_update) const;
 
   // Standalone tests.
   void test_init(const Metadata* managers,

@@ -17,7 +17,8 @@ add_executable(tables_test
 target_link_libraries(tables_test
   api)
 target_include_directories(tables_test
-    PRIVATE ${PROJECT_SOURCE_DIR}/include)
+    PRIVATE ${PROJECT_SOURCE_DIR}/include
+    PRIVATE ${PROJECT_SOURCE_DIR}/test/include)
 set_target_properties(tables_test
   PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}")

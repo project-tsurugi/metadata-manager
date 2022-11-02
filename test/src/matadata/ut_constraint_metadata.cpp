@@ -27,13 +27,13 @@ namespace manager::metadata::testing {
  * @brief Generate metadata for testing.
  */
 void UTConstraintMetadata::generate_test_metadata() {
-  // Generate unique table name.
+  // Generate unique constraint name.
   std::string constraint_name =
       "constraint_name_" + UTUtils::generate_narrow_uid();
 
-  metadata_struct_.format_version = INVALID_VALUE;
-  metadata_struct_.generation     = INVALID_VALUE;
-  metadata_struct_.id             = INVALID_OBJECT_ID;
+  metadata_struct_.format_version = NOT_INITIALIZED;
+  metadata_struct_.generation     = NOT_INITIALIZED;
+  metadata_struct_.id             = NOT_INITIALIZED;
   metadata_struct_.name           = constraint_name;
   metadata_struct_.table_id       = table_id_;
   metadata_struct_.type           = Constraint::ConstraintType::UNIQUE;
@@ -59,30 +59,25 @@ void UTConstraintMetadata::check_metadata_expected(
     const boost::property_tree::ptree& actual, const char* file,
     const int64_t line) const {
   // Constraint metadata id
-  auto id_actual = actual.get<ObjectId>(Constraint::ID);
-  EXPECT_GT(id_actual, static_cast<ObjectId>(0));
+  auto opt_id_actual = actual.get_optional<ObjectId>(Constraint::ID);
+  ObjectId id_actual = opt_id_actual.value_or(INVALID_OBJECT_ID);
+  EXPECT_GT_EX(id_actual, 0, file, line);
 
   // Constraint metadata table id
-  UtMetadata::check_expected<ObjectId>(expected, actual, Constraint::TABLE_ID,
-                                       file, line);
+  check_expected<ObjectId>(expected, actual, Constraint::TABLE_ID, file, line);
   // Constraint name
-  UtMetadata::check_expected<std::string>(expected, actual, Constraint::NAME,
-                                          file, line);
+  check_expected<std::string>(expected, actual, Constraint::NAME, file, line);
   // Constraint type
-  UtMetadata::check_expected<int64_t>(expected, actual, Constraint::TYPE, file,
-                                      line);
+  check_expected<int64_t>(expected, actual, Constraint::TYPE, file, line);
   // Constraint column numbers
-  UtMetadata::check_child_expected(expected, actual, Constraint::COLUMNS, file,
-                                   line);
+  check_child_expected(expected, actual, Constraint::COLUMNS, file, line);
   // Constraint column IDs
-  UtMetadata::check_child_expected(expected, actual, Constraint::COLUMNS_ID,
-                                   file, line);
+  check_child_expected(expected, actual, Constraint::COLUMNS_ID, file, line);
   // Constraint index id
-  UtMetadata::check_expected<ObjectId>(expected, actual, Constraint::INDEX_ID,
-                                       file, line);
+  check_expected<ObjectId>(expected, actual, Constraint::INDEX_ID, file, line);
   // Constraint expression
-  UtMetadata::check_expected<std::string>(expected, actual,
-                                          Constraint::EXPRESSION, file, line);
+  check_expected<std::string>(expected, actual, Constraint::EXPRESSION, file,
+                              line);
 }
 
 }  // namespace manager::metadata::testing

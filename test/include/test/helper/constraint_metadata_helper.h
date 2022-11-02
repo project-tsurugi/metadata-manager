@@ -22,7 +22,7 @@ namespace manager::metadata::testing {
 
 class ConstraintMetadataHelper {
  public:
-  static int32_t get_record_count();
+  static int64_t get_record_count();
 };
 
 }  // namespace manager::metadata::testing

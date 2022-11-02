@@ -13,18 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TEST_INCLUDE_TEST_HELPER_POSTGRESQL_CONSTRAINT_METADATA_HELPER_PG_H_
-#define TEST_INCLUDE_TEST_HELPER_POSTGRESQL_CONSTRAINT_METADATA_HELPER_PG_H_
+#ifndef TEST_INCLUDE_TEST_HELPER_POSTGRESQL_METADATA_HELPER_PG_H_
+#define TEST_INCLUDE_TEST_HELPER_POSTGRESQL_METADATA_HELPER_PG_H_
 
-#include "test/helper/metadata_helper.h"
+#include <string>
+#include <string_view>
 
 namespace manager::metadata::testing {
 
-class ConstraintMetadataHelperPg : public MetadataHelperInterface {
+class MetadataHelperPg {
  public:
-  int32_t get_record_count() const override;
+ /**
+  * @param table_name metadata table name.
+  */
+  explicit MetadataHelperPg(std::string_view table_name)
+      : table_name_(table_name) {}
+  MetadataHelperPg() = delete;
+
+  int64_t get_record_count() const;
+
+ private:
+  std::string table_name_;
 };
 
 }  // namespace manager::metadata::testing
 
-#endif  // TEST_INCLUDE_TEST_HELPER_POSTGRESQL_CONSTRAINT_METADATA_HELPER_PG_H_
+#endif  // TEST_INCLUDE_TEST_HELPER_POSTGRESQL_METADATA_HELPER_PG_H_

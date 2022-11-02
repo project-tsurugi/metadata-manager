@@ -17,22 +17,32 @@
 
 #include <memory>
 
-#include "test/helper/metadata_helper.h"
+#if defined(STORAGE_POSTGRESQL)
+#include "test/helper/postgresql/metadata_helper_pg.h"
+#elif defined(STORAGE_JSON)
+#include "test/helper/json/metadata_helper_json.h"
+#endif
+
+namespace {
 
 #if defined(STORAGE_POSTGRESQL)
-#include "test/helper/postgresql/constraint_metadata_helper_pg.h"
+static constexpr const char* const kTableName = "tsurugi_constraint";
 #elif defined(STORAGE_JSON)
-#include "test/helper/json/constraint_metadata_helper_json.h"
+static constexpr const char* const kMetadataName = "tables";
+static constexpr const char* const kRootNode     = "tables";
+static constexpr const char* const kSubNode      = "constraints";
 #endif
+
+}  // namespace
 
 namespace manager::metadata::testing {
 
-int32_t ConstraintMetadataHelper::get_record_count() {
-  std::unique_ptr<MetadataHelperInterface> helper;
+int64_t ConstraintMetadataHelper::get_record_count() {
 #if defined(STORAGE_POSTGRESQL)
-  helper = std::make_unique<ConstraintMetadataHelperPg>();
+  auto helper = std::make_unique<MetadataHelperPg>(kTableName);
 #elif defined(STORAGE_JSON)
-  helper = std::make_unique<ConstraintMetadataHelperJson>();
+  auto helper =
+      std::make_unique<MetadataHelperJson>(kMetadataName, kRootNode, kSubNode);
 #endif
 
   return helper->get_record_count();

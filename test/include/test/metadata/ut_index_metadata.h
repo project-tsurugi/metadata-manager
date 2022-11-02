@@ -22,47 +22,41 @@
 #include <boost/property_tree/ptree.hpp>
 
 #include "manager/metadata/indexes.h"
+#include "test/metadata/ut_metadata.h"
 
 namespace manager::metadata::testing {
 
-class UTIndexMetadata {
+class UTIndexMetadata : public UtMetadata {
  public:
-  int64_t id;
-  std::string name;
-  std::string namespace_name;
-  int64_t owner_id;
-  std::string acl;
-  ObjectId table_id;
-  int64_t access_method;  //!< @brief refer to enumeration of Method.
-  int64_t
-      number_of_key_columns;  //!< @brief exclude non-key (included) columns.
-  bool is_unique;
-  bool is_primary;
-  std::vector<int64_t> columns;
-  std::vector<ObjectId> columns_id;
-  std::vector<int64_t> options;  //!< @brief refer to enumeration of Option.
+  explicit UTIndexMetadata(const Index& metadata)
+      : metadata_ptree_(metadata.convert_to_ptree()),
+        metadata_struct_(metadata) {}
+  explicit UTIndexMetadata(const boost::property_tree::ptree& metadata)
+      : metadata_ptree_(metadata) {
+    metadata_struct_.convert_from_ptree(metadata_ptree_);
+  }
+  explicit UTIndexMetadata(ObjectId table_id = NOT_INITIALIZED)
+      : table_id_(table_id) {}
 
-  boost::property_tree::ptree indexes_metadata;
+  void generate_test_metadata() override;
 
-  UTIndexMetadata()
-      : id(NOT_INITIALIZED),
-        name(""),
-        namespace_name(""),
-        owner_id(NOT_INITIALIZED),
-        acl(""),
-        table_id(NOT_INITIALIZED),
-        access_method(NOT_INITIALIZED),
-        number_of_key_columns(NOT_INITIALIZED),
-        is_unique(false),
-        is_primary(false),
-        columns({}),
-        columns_id({}),
-        options({}) {}
+  const manager::metadata::Index* get_metadata_struct() const override {
+    return &metadata_struct_;
+  }
+  boost::property_tree::ptree get_metadata_ptree() const override {
+    return metadata_ptree_;
+  }
 
-  void generate_ptree();
+  void check_metadata_expected(const boost::property_tree::ptree& expected,
+                               const boost::property_tree::ptree& actual,
+                               const char* file,
+                               const int64_t line) const override;
 
  private:
-  static constexpr int64_t NOT_INITIALIZED = -1;
+  boost::property_tree::ptree metadata_ptree_;
+  manager::metadata::Index metadata_struct_;
+
+  ObjectId table_id_ = NOT_INITIALIZED;
 };
 
 }  // namespace manager::metadata::testing

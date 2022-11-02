@@ -371,8 +371,6 @@ TEST_P(ApiTestColumnStatisticsAllAPIHappy, get_remove_api_by_statistic_id) {
     error = stats->get(statistic_id, cs_returned);
     EXPECT_EQ(ErrorCode::OK, error);
 
-    UTUtils::print("@@@@@", UTUtils::get_tree_string(cs_returned));
-
     // column metadata column number
     auto optional_column_number =
         cs_returned.get_optional<std::int64_t>(Column::COLUMN_NUMBER);

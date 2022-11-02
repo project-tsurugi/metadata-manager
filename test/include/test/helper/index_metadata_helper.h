@@ -16,51 +16,13 @@
 #ifndef TEST_INCLUDE_TEST_HELPER_INDEX_METADATA_HELPER_H_
 #define TEST_INCLUDE_TEST_HELPER_INDEX_METADATA_HELPER_H_
 
-#include <memory>
-#include <string>
-
-#include <boost/property_tree/ptree.hpp>
-
-#include "manager/metadata/indexes.h"
-#include "test/metadata/ut_index_metadata.h"
+#include <cstdint>
 
 namespace manager::metadata::testing {
 
 class IndexMetadataHelper {
  public:
-  static std::string get_source_name() { return "tsurugi_index"; }
-  static std::int64_t get_record_count();
-
-  static void generate_test_metadata(
-      const ObjectId& table_id,
-      std::unique_ptr<UTIndexMetadata>& index_metadata);
-
-  static void add(const Indexes* indexes,
-                  const boost::property_tree::ptree& index_metadata,
-                  ObjectIdType* index_id = nullptr);
-  static void add(const Metadata* indexes,
-                  const boost::property_tree::ptree& index_metadata,
-                  ObjectIdType* index_id = nullptr);
-  static void add(const Metadata* indexes, const Index& index_metadata,
-                  ObjectIdType* index_id = nullptr);
-
-  static void remove(const Indexes* indexes, const ObjectIdType index_id);
-  static void remove(const Metadata* indexes, const ObjectIdType index_id);
-  static void remove(const Metadata* indexes, std::string_view index_name,
-                     ObjectIdType* removed_id);
-
-  static void check_metadata_expected(
-      const boost::property_tree::ptree& expected,
-      const boost::property_tree::ptree& actual);
-
- private:
-  static void check_child_expected(const boost::property_tree::ptree& expected,
-                                   const boost::property_tree::ptree& actual,
-                                   const char* meta_name);
-  template <typename T>
-  static void check_expected(const boost::property_tree::ptree& expected,
-                             const boost::property_tree::ptree& actual,
-                             const char* meta_name);
+  static int64_t get_record_count();
 };
 
 }  // namespace manager::metadata::testing

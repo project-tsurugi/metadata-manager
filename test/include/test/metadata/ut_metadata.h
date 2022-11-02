@@ -33,6 +33,9 @@ namespace manager::metadata::testing {
 #define CHECK_METADATA_EXPECTED(exp, act) \
   check_metadata_expected(exp, act, __FILE__, __LINE__);
 
+#define EXPECT_GT_EX(expected, actual, file, line) \
+  EXPECT_GT(expected, actual)                      \
+      << "Caller: " + std::string(file) + ":" + std::to_string(line);
 #define EXPECT_EQ_EX(expected, actual, file, line) \
   EXPECT_EQ(expected, actual)                      \
       << "Caller: " + std::string(file) + ":" + std::to_string(line);

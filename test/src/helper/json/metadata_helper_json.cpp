@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "test/helper/json/constraint_metadata_helper_json.h"
+#include "test/helper/json/metadata_helper_json.h"
 
 #include <fstream>
 
@@ -23,15 +23,6 @@
 #include <boost/property_tree/ptree.hpp>
 
 #include "manager/metadata/common/config.h"
-#include "manager/metadata/dao/json/constraints_dao_json.h"
-
-namespace {
-
-static constexpr const char* const kConstraintsMetadataName = "tables";
-static constexpr const char* const kRootNode                = "tables";
-static constexpr const char* const kConstraintsNode         = "constraints";
-
-}  // namespace
 
 namespace manager::metadata::testing {
 
@@ -39,20 +30,26 @@ using boost::property_tree::ptree;
 
 /**
  * @brief Get the number of records in the current constraint metadata.
- * @return Current number of records.
+ * @return int32_t - current number of records.
  */
-int32_t ConstraintMetadataHelperJson::get_record_count() const {
-  int32_t record_count = 0;
+int64_t MetadataHelperJson::get_record_count() const {
+  int64_t record_count = 0;
 
-  // load constraint metadata.
+  // load root metadata.
   auto metadata = load_contents();
 
-  // constraint metadata
-  BOOST_FOREACH (const auto& root_node, metadata.get_child(kRootNode)) {
-    auto& tables = root_node.second;
-
-    auto constraints = tables.get_child_optional(kConstraintsNode);
-    record_count += (constraints ? constraints.get().size() : 0);
+  // root
+  auto root_node = metadata.get_child_optional(this->root_node_name_.data());
+  if (root_node) {
+    if (this->sub_node_name_.empty()) {
+      record_count = root_node.get().size();
+    } else {
+      BOOST_FOREACH (const auto& child_node, root_node.get()) {
+        auto child_contents =
+            child_node.second.get_child_optional(this->sub_node_name_.data());
+        record_count += (child_contents ? child_contents.get().size() : 0);
+      }
+    }
   }
 
   return record_count;
@@ -62,12 +59,10 @@ int32_t ConstraintMetadataHelperJson::get_record_count() const {
  * @brief Load root metadata from a metadata file.
  * @return boost::property_tree::ptree - metadata
  */
-boost::property_tree::ptree ConstraintMetadataHelperJson::load_contents()
-    const {
+boost::property_tree::ptree MetadataHelperJson::load_contents() const {
   // Filename of the constraint metadata.
   boost::format filename = boost::format("%s/%s.json") %
-                           Config::get_storage_dir_path() %
-                           std::string(kConstraintsMetadataName);
+                           Config::get_storage_dir_path() % this->metadata_name_;
 
   ptree contents;
 
@@ -75,6 +70,7 @@ boost::property_tree::ptree ConstraintMetadataHelperJson::load_contents()
   if (file_stream) {
     try {
       boost::property_tree::json_parser::read_json(file_stream, contents);
+      file_stream.close();
     } catch (...) {
     }
   }
