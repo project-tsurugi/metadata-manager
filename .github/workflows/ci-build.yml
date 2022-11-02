@@ -23,23 +23,23 @@ jobs:
         container-tag: [ubuntu-20.04]
       
     steps:
-      - id: Make_CI_Directory1
-        name: Make_CI_Directory1
+      - id: Make_CI_Directory_Postgresql
+        name: Make_CI_Directory_Postgresql
         run: |
           cd ${GITHUB_WORKSPACE}
           rm -rf ci_test
           mkdir ci_test
 
-      - id: Checkout1
-        name: Checkout1
+      - id: Checkout_Postgresql
+        name: Checkout_Postgresql
         uses: actions/checkout@v2
         with:
           path: ci_test
           submodules: recursive
           token: ${{ secrets.GHA_PAT }}
 
-      - id: CMake_Build_metadata-manager_postgres
-        name: CMake_Build_metadata-manager_postgres
+      - id: CMake_Build_metadata-manager_Postgresql
+        name: CMake_Build_metadata-manager_Postgresql
         run: |
           cd ${GITHUB_WORKSPACE}/ci_test
           rm -rf build
@@ -50,29 +50,29 @@ jobs:
           make
           make install
           
-      - id: Cleanup1
-        name: Cleanup1
+      - id: Cleanup_Postgresql
+        name: Cleanup_Postgresql
         run: |
           rm -rf ${GITHUB_WORKSPACE}/.local/
           rm -rf ${GITHUB_WORKSPACE}/ci_test
           
-      - id: Make_CI_Directory2
-        name: Make_CI_Directory2
+      - id: Make_CI_Directory_Json
+        name: Make_CI_Directory_Json
         run: |
           cd ${GITHUB_WORKSPACE}
           rm -rf ci_test2
           mkdir ci_test2
 
-      - id: Checkout2
-        name: Checkout2
+      - id: Checkout_Json
+        name: Checkout_Json
         uses: actions/checkout@v2
         with:
           path: ci_test2
           submodules: recursive
           token: ${{ secrets.GHA_PAT }}
           
-      - id: CMake_Build_metadata-manager_json
-        name: CMake_Build_metadata-manager_json
+      - id: CMake_Build_metadata-manager_Json
+        name: CMake_Build_metadata-manager_Json
         run: |
           cd ${GITHUB_WORKSPACE}/ci_test2
           rm -rf build
@@ -83,8 +83,8 @@ jobs:
           make
           make install
           
-      - id: Cleanup2
-        name: Cleanup2
+      - id: Cleanup_Json
+        name: Cleanup_Json
         run: |
           rm -rf ${GITHUB_WORKSPACE}/.local/
           rm -rf ${GITHUB_WORKSPACE}/ci_test2
