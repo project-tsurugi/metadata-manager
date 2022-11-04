@@ -13,8 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "test/test/api_test.h"
-
 #include <gtest/gtest.h>
 
 #include "manager/metadata/metadata_factory.h"
@@ -23,6 +21,7 @@
 #include "test/helper/constraint_metadata_helper.h"
 #include "test/helper/table_metadata_helper.h"
 #include "test/metadata/ut_constraint_metadata.h"
+#include "test/test/api_test_facade.h"
 
 namespace {
 
@@ -34,19 +33,12 @@ namespace manager::metadata::testing {
 
 using boost::property_tree::ptree;
 
-// class ApiTestConstraintMetadata : public ::testing::Test {
-class ApiTestConstraintMetadata : public ApiTest {
+class ApiTestConstraintMetadata
+    : public ApiTestFacade<::manager::metadata::Constraint,
+                           ConstraintMetadataHelper> {
  public:
   ApiTestConstraintMetadata()
-      : ApiTest(get_constraint_metadata(GlobalTestEnvironment::TEST_DB)),
-        metadata_struct_(std::make_unique<::manager::metadata::Constraint>()) {}
-
-  int64_t get_record_count() const override {
-    return ConstraintMetadataHelper::get_record_count();
-  }
-
-  ::manager::metadata::Constraint* get_structure() const override {
-    return metadata_struct_.get();
+      : ApiTestFacade(get_constraint_metadata(GlobalTestEnvironment::TEST_DB)) {
   }
 
   void SetUp() override {
@@ -70,9 +62,6 @@ class ApiTestConstraintMetadata : public ApiTest {
       TableMetadataHelper::remove_table(table_id);
     }
   }
-
- private:
-  std::unique_ptr<::manager::metadata::Constraint> metadata_struct_;
 };
 
 /**
@@ -82,12 +71,8 @@ class ApiTestConstraintMetadata : public ApiTest {
 TEST_F(ApiTestConstraintMetadata, test_get_by_id_with_ptree) {
   SCOPED_TRACE("");
 
-  // Generate test metadata.
-  UTConstraintMetadata ut_metadata(table_id);
-  ut_metadata.generate_test_metadata();
-
   // Execute the test.
-  this->test_flow_get_by_id(&ut_metadata);
+  this->test_flow_get_by_id(UtConstraintMetadata(table_id));
 }
 
 /**
@@ -97,12 +82,8 @@ TEST_F(ApiTestConstraintMetadata, test_get_by_id_with_ptree) {
 TEST_F(ApiTestConstraintMetadata, test_get_by_id_with_struct) {
   SCOPED_TRACE("");
 
-  // Generate test metadata.
-  UTConstraintMetadata ut_metadata(table_id);
-  ut_metadata.generate_test_metadata();
-
   // Execute the test.
-  this->test_flow_get_by_id_with_struct(&ut_metadata);
+  this->test_flow_get_by_id_with_struct(UtConstraintMetadata(table_id));
 }
 
 /**
@@ -112,15 +93,15 @@ TEST_F(ApiTestConstraintMetadata, test_get_by_id_with_struct) {
 TEST_F(ApiTestConstraintMetadata, test_get_by_name_with_ptree) {
   SCOPED_TRACE("");
 
-  // Generate constraints metadata manager.
+  // Generate test metadata.
   auto managers = get_constraint_metadata(GlobalTestEnvironment::TEST_DB);
 
   auto object_name = "dummy_name";
   ptree retrieved_metadata;
 
   // Execute the test.
-  this->test_get(managers.get(), object_name, retrieved_metadata,
-                 ErrorCode::UNKNOWN);
+  this->test_get(managers.get(), object_name, ErrorCode::UNKNOWN,
+                 retrieved_metadata);
   this->test_remove(managers.get(), object_name, ErrorCode::UNKNOWN);
 }
 
@@ -131,30 +112,48 @@ TEST_F(ApiTestConstraintMetadata, test_get_by_name_with_ptree) {
 TEST_F(ApiTestConstraintMetadata, test_get_by_name_with_struct) {
   SCOPED_TRACE("");
 
-  // Generate constraints metadata manager.
+  // Generate test metadata.
   auto managers = get_constraint_metadata(GlobalTestEnvironment::TEST_DB);
 
   auto object_name = "dummy_name";
   Constraint retrieved_metadata;
 
   // Execute the test.
-  this->test_get(managers.get(), object_name, retrieved_metadata,
-                 ErrorCode::UNKNOWN);
+  this->test_get(managers.get(), object_name, ErrorCode::UNKNOWN,
+                 retrieved_metadata);
   this->test_remove(managers.get(), object_name, ErrorCode::UNKNOWN);
 }
 
 /**
  * @brief Test to add new metadata and get_all it in ptree type.
  */
-TEST_F(ApiTestConstraintMetadata, test_getall_remove) {
+TEST_F(ApiTestConstraintMetadata, test_getall_with_ptree) {
+  SCOPED_TRACE("");
+
+  // Execute the test.
+  this->test_flow_getall(UtConstraintMetadata(table_id));
+}
+
+/**
+ * @brief Test to add new metadata and update it in ptree type
+ *   with object ID as key.
+ */
+TEST_F(ApiTestConstraintMetadata, test_update) {
   SCOPED_TRACE("");
 
   // Generate test metadata.
-  UTConstraintMetadata ut_metadata(table_id);
-  ut_metadata.generate_test_metadata();
+  auto managers = get_constraint_metadata(GlobalTestEnvironment::TEST_DB);
+
+  // Generate test metadata.
+  UtConstraintMetadata ut_metadata(table_id);
+
+  auto updated_metadata   = ut_metadata.get_metadata_ptree();
+  std::string object_name = ut_metadata.get_metadata_struct()->name;
+  ObjectId object_id      = INT64_MAX;
 
   // Execute the test.
-  this->test_flow_getall(&ut_metadata);
+  this->test_update(managers.get(), object_id, updated_metadata,
+                    ErrorCode::UNKNOWN);
 }
 
 /**
@@ -167,39 +166,38 @@ TEST_F(ApiTestConstraintMetadata, test_not_found) {
   auto managers = get_constraint_metadata(GlobalTestEnvironment::TEST_DB);
 
   // Test to initialize the manager.
-  this->test_init(managers.get());
+  this->test_init(managers.get(), ErrorCode::OK);
 
   // Generate test metadata.
-  UTConstraintMetadata ut_metadata(table_id);
-  ut_metadata.generate_test_metadata();
+  UtConstraintMetadata ut_metadata(table_id);
 
   ObjectId object_id      = INT64_MAX;
   std::string object_name = "unregistered_dummy_name";
 
-  // Get constraint metadata by index id/name with ptree.
+  // Get constraint metadata by constraint id/name with ptree.
   {
     ptree retrieved_metadata;
 
     // Test of get by ID with ptree.
-    this->test_get(managers.get(), object_id, retrieved_metadata,
-                   ErrorCode::ID_NOT_FOUND);
+    this->test_get(managers.get(), object_id, ErrorCode::ID_NOT_FOUND,
+                   retrieved_metadata);
     EXPECT_TRUE(retrieved_metadata.empty());
 
     // Test of get by name with ptree.
-    this->test_get(managers.get(), object_name, retrieved_metadata,
-                   ErrorCode::UNKNOWN);
+    this->test_get(managers.get(), object_name, ErrorCode::UNKNOWN,
+                   retrieved_metadata);
     EXPECT_TRUE(retrieved_metadata.empty());
   }
 
-  // Get constraint metadata by index id/name with structure.
+  // Get constraint metadata by constraint id/name with structure.
   {
     Index retrieved_metadata_struct;
     // Test of get by ID with structure.
-    this->test_get(managers.get(), object_id, retrieved_metadata_struct,
-                   ErrorCode::ID_NOT_FOUND);
+    this->test_get(managers.get(), object_id, ErrorCode::ID_NOT_FOUND,
+                   retrieved_metadata_struct);
     // Test of get by name with structure.
-    this->test_get(managers.get(), object_name, retrieved_metadata_struct,
-                   ErrorCode::UNKNOWN);
+    this->test_get(managers.get(), object_name, ErrorCode::UNKNOWN,
+                   retrieved_metadata_struct);
   }
 
   // Remove constraint metadata by constraint id/name.
@@ -221,11 +219,10 @@ TEST_F(ApiTestConstraintMetadata, test_invalid_parameter) {
   auto managers = get_constraint_metadata(GlobalTestEnvironment::TEST_DB);
 
   // Test to initialize the manager.
-  this->test_init(managers.get());
+  this->test_init(managers.get(), ErrorCode::OK);
 
   // Generate test metadata.
-  UTConstraintMetadata ut_metadata(table_id);
-  ut_metadata.generate_test_metadata();
+  UtConstraintMetadata ut_metadata(table_id);
 
   ObjectId invalid_id      = INVALID_OBJECT_ID;
   std::string invalid_name = "";
@@ -241,30 +238,30 @@ TEST_F(ApiTestConstraintMetadata, test_invalid_parameter) {
                    ErrorCode::INVALID_PARAMETER);
   }
 
-  // Get constraint metadata by index id/name with ptree.
+  // Get constraint metadata by constraint id/name with ptree.
   {
     ptree retrieved_metadata;
 
     // Test of get by ID with ptree.
-    this->test_get(managers.get(), invalid_id, retrieved_metadata,
-                   ErrorCode::ID_NOT_FOUND);
+    this->test_get(managers.get(), invalid_id, ErrorCode::ID_NOT_FOUND,
+                   retrieved_metadata);
     EXPECT_TRUE(retrieved_metadata.empty());
 
     // Test of get by name with ptree.
-    this->test_get(managers.get(), invalid_name, retrieved_metadata,
-                   ErrorCode::UNKNOWN);
+    this->test_get(managers.get(), invalid_name, ErrorCode::UNKNOWN,
+                   retrieved_metadata);
     EXPECT_TRUE(retrieved_metadata.empty());
   }
 
-  // Get constraint metadata by index id/name with structure.
+  // Get constraint metadata by constraint id/name with structure.
   {
     Index retrieved_metadata_struct;
     // Test of get by ID with structure.
-    this->test_get(managers.get(), invalid_id, retrieved_metadata_struct,
-                   ErrorCode::ID_NOT_FOUND);
+    this->test_get(managers.get(), invalid_id, ErrorCode::ID_NOT_FOUND,
+                   retrieved_metadata_struct);
     // Test of get by name with structure.
-    this->test_get(managers.get(), invalid_name, retrieved_metadata_struct,
-                   ErrorCode::UNKNOWN);
+    this->test_get(managers.get(), invalid_name, ErrorCode::UNKNOWN,
+                   retrieved_metadata_struct);
   }
 
   // Remove constraint metadata by constraint id/name.
@@ -284,8 +281,7 @@ TEST_F(ApiTestConstraintMetadata, test_without_initialized) {
   SCOPED_TRACE("");
 
   // Generate test metadata.
-  UTConstraintMetadata ut_metadata(table_id);
-  ut_metadata.generate_test_metadata();
+  UtConstraintMetadata ut_metadata(table_id);
 
   auto inserted_metadata  = ut_metadata.get_metadata_ptree();
   std::string object_name = ut_metadata.get_metadata_struct()->name;
@@ -296,7 +292,8 @@ TEST_F(ApiTestConstraintMetadata, test_without_initialized) {
     // Generate constraints metadata manager.
     auto managers = get_constraint_metadata(GlobalTestEnvironment::TEST_DB);
 
-    object_id = this->test_add(managers_.get(), inserted_metadata);
+    object_id =
+        this->test_add(managers.get(), inserted_metadata, ErrorCode::OK);
   }
 
   // Get constraint metadata by constraint id with ptree.
@@ -305,7 +302,8 @@ TEST_F(ApiTestConstraintMetadata, test_without_initialized) {
     auto managers = get_constraint_metadata(GlobalTestEnvironment::TEST_DB);
 
     ptree retrieved_metadata;
-    this->test_get(managers_.get(), object_id, retrieved_metadata);
+    this->test_get(managers.get(), object_id, ErrorCode::OK,
+                   retrieved_metadata);
   }
 
   // Get constraint metadata by constraint name with ptree.
@@ -314,8 +312,8 @@ TEST_F(ApiTestConstraintMetadata, test_without_initialized) {
     auto managers = get_constraint_metadata(GlobalTestEnvironment::TEST_DB);
 
     ptree retrieved_metadata;
-    this->test_get(managers_.get(), object_name, retrieved_metadata,
-                   ErrorCode::UNKNOWN);
+    this->test_get(managers.get(), object_name, ErrorCode::UNKNOWN,
+                   retrieved_metadata);
   }
 
   // Get constraint metadata by constraint id with structure.
@@ -324,7 +322,8 @@ TEST_F(ApiTestConstraintMetadata, test_without_initialized) {
     auto managers = get_constraint_metadata(GlobalTestEnvironment::TEST_DB);
 
     Constraint retrieved_metadata;
-    this->test_get(managers_.get(), object_id, retrieved_metadata);
+    this->test_get(managers.get(), object_id, ErrorCode::OK,
+                   retrieved_metadata);
   }
 
   // Get constraint metadata by constraint name with structure.
@@ -333,8 +332,8 @@ TEST_F(ApiTestConstraintMetadata, test_without_initialized) {
     auto managers = get_constraint_metadata(GlobalTestEnvironment::TEST_DB);
 
     Constraint retrieved_metadata;
-    this->test_get(managers_.get(), object_name, retrieved_metadata,
-                   ErrorCode::UNKNOWN);
+    this->test_get(managers.get(), object_name, ErrorCode::UNKNOWN,
+                   retrieved_metadata);
   }
 
   // Get all constraint metadata with ptree.
@@ -344,16 +343,16 @@ TEST_F(ApiTestConstraintMetadata, test_without_initialized) {
 
     std::vector<ptree> container = {};
     // Get all constraints metadata.
-    container = this->test_getall(managers_.get());
+    this->test_getall(managers.get(), ErrorCode::OK, container);
   }
 
   // Update constraint metadata.
   {
     // Generate constraints metadata manager.
-    auto managers = get_index_metadata(GlobalTestEnvironment::TEST_DB);
+    auto managers = get_constraint_metadata(GlobalTestEnvironment::TEST_DB);
 
     // Execute the test.
-    this->test_update(managers_.get(), object_id, inserted_metadata,
+    this->test_update(managers.get(), object_id, inserted_metadata,
                       ErrorCode::UNKNOWN);
   }
 
@@ -363,7 +362,7 @@ TEST_F(ApiTestConstraintMetadata, test_without_initialized) {
     auto managers = get_constraint_metadata(GlobalTestEnvironment::TEST_DB);
 
     // Remove constraint metadata by constraint id.
-    this->test_remove(managers_.get(), object_id);
+    this->test_remove(managers.get(), object_id, ErrorCode::OK);
   }
 
   // Remove constraint metadata by constraint name.

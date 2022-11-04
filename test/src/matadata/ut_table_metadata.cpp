@@ -38,15 +38,15 @@ void UTTableMetadata::generate_test_metadata() {
       (table_name_.empty() ? "table_name_" + UTUtils::generate_narrow_uid()
                            : table_name_);
 
-  metadata_struct_.format_version   = INVALID_VALUE;
-  metadata_struct_.generation       = INVALID_VALUE;
-  metadata_struct_.id               = INVALID_OBJECT_ID;
-  metadata_struct_.name             = table_name;
-  metadata_struct_.namespace_name   = "";
-  metadata_struct_.number_of_tuples = INVALID_VALUE;
+  metadata_struct_->format_version   = INVALID_VALUE;
+  metadata_struct_->generation       = INVALID_VALUE;
+  metadata_struct_->id               = INVALID_OBJECT_ID;
+  metadata_struct_->name             = table_name;
+  metadata_struct_->namespace_name   = "";
+  metadata_struct_->number_of_tuples = INVALID_VALUE;
 
   manager::metadata::Column column;
-  metadata_struct_.columns.clear();
+  metadata_struct_->columns.clear();
   {
     column.id            = INVALID_OBJECT_ID;
     column.name          = "column_name_1_" + UTUtils::generate_narrow_uid();
@@ -57,7 +57,7 @@ void UTTableMetadata::generate_test_metadata() {
     column.varying       = false;
     column.is_not_null   = true;
     column.default_expression = "auto number";
-    metadata_struct_.columns.push_back(column);
+    metadata_struct_->columns.push_back(column);
 
     column.id            = INVALID_OBJECT_ID;
     column.name          = "column_name_2_" + UTUtils::generate_narrow_uid();
@@ -68,7 +68,7 @@ void UTTableMetadata::generate_test_metadata() {
     column.varying      = true;
     column.is_not_null  = false;
     column.default_expression = "";
-    metadata_struct_.columns.push_back(column);
+    metadata_struct_->columns.push_back(column);
 
     column.id            = INVALID_OBJECT_ID;
     column.name          = "column_name_3_" + UTUtils::generate_narrow_uid();
@@ -79,12 +79,12 @@ void UTTableMetadata::generate_test_metadata() {
     column.varying       = false;
     column.is_not_null   = false;
     column.default_expression = "";
-    metadata_struct_.columns.push_back(column);
+    metadata_struct_->columns.push_back(column);
   }
 
   // constraints
   manager::metadata::Constraint constraint;
-  metadata_struct_.constraints.clear();
+  metadata_struct_->constraints.clear();
   {
     constraint.id       = INVALID_OBJECT_ID;
     constraint.name     = "constraint_name_1_" + UTUtils::generate_narrow_uid();
@@ -94,7 +94,7 @@ void UTTableMetadata::generate_test_metadata() {
     constraint.columns_id = {1001};
     constraint.index_id   = 1;
     constraint.expression = "";
-    metadata_struct_.constraints.push_back(constraint);
+    metadata_struct_->constraints.push_back(constraint);
 
     constraint.id       = INVALID_OBJECT_ID;
     constraint.name     = "constraint_name_2_" + UTUtils::generate_narrow_uid();
@@ -104,9 +104,9 @@ void UTTableMetadata::generate_test_metadata() {
     constraint.columns_id = {1001, 1002};
     constraint.index_id   = 2;
     constraint.expression = "";
-    metadata_struct_.constraints.push_back(constraint);
+    metadata_struct_->constraints.push_back(constraint);
   }
-  metadata_ptree_ = metadata_struct_.convert_to_ptree();
+  metadata_ptree_ = metadata_struct_->convert_to_ptree();
 }
 
 /**

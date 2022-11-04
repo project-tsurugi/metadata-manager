@@ -28,31 +28,31 @@ using boost::property_tree::ptree;
 /**
  * @brief Generate metadata for testing.
  */
-void UTIndexMetadata::generate_test_metadata() {
+void UtIndexMetadata::generate_test_metadata() {
   // Generate unique index name.
   std::string index_name = "index_name_" + UTUtils::generate_narrow_uid();
 
-  metadata_struct_.format_version = NOT_INITIALIZED;
-  metadata_struct_.generation     = NOT_INITIALIZED;
-  metadata_struct_.id             = NOT_INITIALIZED;
-  metadata_struct_.name           = index_name;
-  metadata_struct_.namespace_name = "namespace_name";
-  metadata_struct_.owner_id       = 1001;
-  metadata_struct_.acl            = "rawdDxt";
-  metadata_struct_.table_id       = table_id_;
-  metadata_struct_.access_method =
+  metadata_struct_->format_version = NOT_INITIALIZED;
+  metadata_struct_->generation     = NOT_INITIALIZED;
+  metadata_struct_->id             = NOT_INITIALIZED;
+  metadata_struct_->name           = index_name;
+  metadata_struct_->namespace_name = "namespace_name";
+  metadata_struct_->owner_id       = 1001;
+  metadata_struct_->acl            = "rawdDxt";
+  metadata_struct_->table_id       = table_id_;
+  metadata_struct_->access_method =
       static_cast<int64_t>(Index::AccessMethod::DEFAULT);
-  metadata_struct_.number_of_key_columns = 1;
-  metadata_struct_.is_unique             = false;
-  metadata_struct_.is_primary            = false;
-  metadata_struct_.keys                  = {1, 2};
-  metadata_struct_.keys_id               = {1001, 1002};
-  metadata_struct_.options               = {
+  metadata_struct_->number_of_key_columns = 1;
+  metadata_struct_->is_unique             = false;
+  metadata_struct_->is_primary            = false;
+  metadata_struct_->keys                  = {1, 2};
+  metadata_struct_->keys_id               = {1001, 1002};
+  metadata_struct_->options               = {
       static_cast<int64_t>(Index::Direction::ASC_NULLS_LAST),
       static_cast<int64_t>(Index::Direction::DESC_NULLS_FIRST)};
 
   // Generate ptree from UTTableMetadata fields.
-  metadata_ptree_ = metadata_struct_.convert_to_ptree();
+  metadata_ptree_ = metadata_struct_->convert_to_ptree();
 }
 
 /**
@@ -63,7 +63,7 @@ void UTIndexMetadata::generate_test_metadata() {
  * @param line      [in]  line number of the caller.
  * @return none.
  */
-void UTIndexMetadata::check_metadata_expected(
+void UtIndexMetadata::check_metadata_expected(
     const boost::property_tree::ptree& expected,
     const boost::property_tree::ptree& actual, const char* file,
     const int64_t line) const {

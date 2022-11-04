@@ -16,13 +16,46 @@
 #ifndef TEST_INCLUDE_TEST_HELPER_INDEX_METADATA_HELPER_H_
 #define TEST_INCLUDE_TEST_HELPER_INDEX_METADATA_HELPER_H_
 
-#include <cstdint>
+#include <memory>
+
+#include "test/helper/metadata_helper.h"
+
+#if defined(STORAGE_POSTGRESQL)
+#include "test/helper/postgresql/metadata_helper_pg.h"
+#elif defined(STORAGE_JSON)
+#include "test/helper/json/metadata_helper_json.h"
+#endif
 
 namespace manager::metadata::testing {
 
-class IndexMetadataHelper {
+class IndexMetadataHelper : public MetadataHelper {
  public:
-  static int64_t get_record_count();
+#if defined(STORAGE_POSTGRESQL)
+  IndexMetadataHelper()
+      : helper_(std::make_unique<MetadataHelperPg>(kTableName)) {}
+#elif defined(STORAGE_JSON)
+  IndexMetadataHelper()
+      : helper_(
+            std::make_unique<MetadataHelperJson>(kMetadataName, kRootNode)) {}
+#endif
+
+  int64_t get_record_count() const override {
+    return helper_->get_record_count();
+  }
+
+ private:
+#if defined(STORAGE_POSTGRESQL)
+  static constexpr const char* const kTableName = "tsurugi_index";
+#elif defined(STORAGE_JSON)
+  static constexpr const char* const kMetadataName = "indexes";
+  static constexpr const char* const kRootNode     = "indexes";
+#endif
+
+#if defined(STORAGE_POSTGRESQL)
+  std::unique_ptr<MetadataHelperPg> helper_;
+#elif defined(STORAGE_JSON)
+  std::unique_ptr<MetadataHelperJson> helper_;
+#endif
 };
 
 }  // namespace manager::metadata::testing

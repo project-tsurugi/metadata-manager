@@ -13,8 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "test/test/api_test.h"
-
 #include <gtest/gtest.h>
 
 #include "manager/metadata/metadata_factory.h"
@@ -23,6 +21,7 @@
 #include "test/helper/index_metadata_helper.h"
 #include "test/helper/table_metadata_helper.h"
 #include "test/metadata/ut_index_metadata.h"
+#include "test/test/api_test_facade.h"
 
 namespace {
 
@@ -34,19 +33,11 @@ namespace manager::metadata::testing {
 
 using boost::property_tree::ptree;
 
-class ApiTestIndexMetadata : public ApiTest {
+class ApiTestIndexMetadata
+    : public ApiTestFacade<::manager::metadata::Index, IndexMetadataHelper> {
  public:
   ApiTestIndexMetadata()
-      : ApiTest(get_index_metadata(GlobalTestEnvironment::TEST_DB)),
-        metadata_struct_(std::make_unique<::manager::metadata::Index>()) {}
-
-  int64_t get_record_count() const override {
-    return IndexMetadataHelper::get_record_count();
-  }
-
-  ::manager::metadata::Index* get_structure() const override {
-    return metadata_struct_.get();
-  }
+      : ApiTestFacade(get_index_metadata(GlobalTestEnvironment::TEST_DB)) {}
 
   void SetUp() override {
     UTUtils::skip_if_connection_not_opened();
@@ -69,9 +60,6 @@ class ApiTestIndexMetadata : public ApiTest {
       TableMetadataHelper::remove_table(table_id);
     }
   }
-
- private:
-  std::unique_ptr<::manager::metadata::Index> metadata_struct_;
 };
 
 /**
@@ -81,12 +69,8 @@ class ApiTestIndexMetadata : public ApiTest {
 TEST_F(ApiTestIndexMetadata, test_get_by_id_with_ptree) {
   SCOPED_TRACE("");
 
-  // Generate test metadata.
-  UTIndexMetadata ut_metadata(table_id);
-  ut_metadata.generate_test_metadata();
-
   // Execute the test.
-  this->test_flow_get_by_id(&ut_metadata);
+  this->test_flow_get_by_id(UtIndexMetadata(table_id));
 }
 
 /**
@@ -96,12 +80,8 @@ TEST_F(ApiTestIndexMetadata, test_get_by_id_with_ptree) {
 TEST_F(ApiTestIndexMetadata, test_get_by_id_with_struct) {
   SCOPED_TRACE("");
 
-  // Generate test metadata.
-  UTIndexMetadata ut_metadata(table_id);
-  ut_metadata.generate_test_metadata();
-
   // Execute the test.
-  this->test_flow_get_by_id_with_struct(&ut_metadata);
+  this->test_flow_get_by_id_with_struct(UtIndexMetadata(table_id));
 }
 
 /**
@@ -111,12 +91,8 @@ TEST_F(ApiTestIndexMetadata, test_get_by_id_with_struct) {
 TEST_F(ApiTestIndexMetadata, test_get_by_name_with_ptree) {
   SCOPED_TRACE("");
 
-  // Generate test metadata.
-  UTIndexMetadata ut_metadata(table_id);
-  ut_metadata.generate_test_metadata();
-
   // Execute the test.
-  this->test_flow_get_by_name(&ut_metadata);
+  this->test_flow_get_by_name(UtIndexMetadata(table_id));
 }
 
 /**
@@ -126,12 +102,8 @@ TEST_F(ApiTestIndexMetadata, test_get_by_name_with_ptree) {
 TEST_F(ApiTestIndexMetadata, test_get_by_name_with_struct) {
   SCOPED_TRACE("");
 
-  // Generate test metadata.
-  UTIndexMetadata ut_metadata(table_id);
-  ut_metadata.generate_test_metadata();
-
   // Execute the test.
-  this->test_flow_get_by_name_with_struct(&ut_metadata);
+  this->test_flow_get_by_name_with_struct(UtIndexMetadata(table_id));
 }
 
 /**
@@ -140,12 +112,8 @@ TEST_F(ApiTestIndexMetadata, test_get_by_name_with_struct) {
 TEST_F(ApiTestIndexMetadata, test_getall_with_ptree) {
   SCOPED_TRACE("");
 
-  // Generate test metadata.
-  UTIndexMetadata ut_metadata(table_id);
-  ut_metadata.generate_test_metadata();
-
   // Execute the test.
-  this->test_flow_getall(&ut_metadata);
+  this->test_flow_getall(UtIndexMetadata(table_id));
 }
 
 /**
@@ -156,8 +124,7 @@ TEST_F(ApiTestIndexMetadata, test_update) {
   SCOPED_TRACE("");
 
   // Generate test metadata.
-  UTIndexMetadata ut_metadata(table_id);
-  ut_metadata.generate_test_metadata();
+  UtIndexMetadata ut_metadata(table_id);
 
   auto metadata_base = ut_metadata.get_metadata_struct();
   // Copy
@@ -178,10 +145,10 @@ TEST_F(ApiTestIndexMetadata, test_update) {
   metadata_update.keys_id = {2011, 2012};
 
   // Generate update test metadata.
-  UTIndexMetadata ut_metadata_update(metadata_update);
+  UtIndexMetadata ut_metadata_update(metadata_update);
 
   // Execute the test.
-  this->test_flow_update(&ut_metadata, &ut_metadata_update);
+  this->test_flow_update(ut_metadata, ut_metadata_update);
 }
 
 /**
@@ -195,18 +162,19 @@ TEST_F(ApiTestIndexMetadata, test_name_duplicate) {
   auto managers = get_index_metadata(GlobalTestEnvironment::TEST_DB);
 
   // Generate test metadata.
-  UTIndexMetadata ut_metadata(table_id);
-  ut_metadata.generate_test_metadata();
+  UtIndexMetadata ut_metadata(table_id);
+  
   ptree inserted_metadata = ut_metadata.get_metadata_ptree();
 
   // Add first index metadata.
-  ObjectId inserted_id = this->test_add(managers.get(), inserted_metadata);
+  ObjectId inserted_id =
+      this->test_add(managers.get(), inserted_metadata, ErrorCode::OK);
 
   // Add second index metadata.
   this->test_add(managers.get(), inserted_metadata, ErrorCode::ALREADY_EXISTS);
 
   // Remove index metadata.
-  this->test_remove(managers.get(), inserted_id);
+  this->test_remove(managers.get(), inserted_id, ErrorCode::OK);
 }
 
 /**
@@ -219,12 +187,11 @@ TEST_F(ApiTestIndexMetadata, test_not_found) {
   auto managers = get_index_metadata(GlobalTestEnvironment::TEST_DB);
 
   // Test to initialize the manager.
-  this->test_init(managers.get());
+  this->test_init(managers.get(), ErrorCode::OK);
 
   // Generate test metadata.
-  UTIndexMetadata ut_metadata(table_id);
-  ut_metadata.generate_test_metadata();
-
+  UtIndexMetadata ut_metadata(table_id);
+  
   ObjectId object_id      = INT64_MAX;
   std::string object_name = "unregistered_dummy_name";
 
@@ -233,13 +200,13 @@ TEST_F(ApiTestIndexMetadata, test_not_found) {
     ptree retrieved_metadata;
 
     // Test of get by ID with ptree.
-    this->test_get(managers.get(), object_id, retrieved_metadata,
-                   ErrorCode::ID_NOT_FOUND);
+    this->test_get(managers.get(), object_id, ErrorCode::ID_NOT_FOUND,
+                   retrieved_metadata);
     EXPECT_TRUE(retrieved_metadata.empty());
 
     // Test of get by name with ptree.
-    this->test_get(managers.get(), object_name, retrieved_metadata,
-                   ErrorCode::NAME_NOT_FOUND);
+    this->test_get(managers.get(), object_name, ErrorCode::NAME_NOT_FOUND,
+                   retrieved_metadata);
     EXPECT_TRUE(retrieved_metadata.empty());
   }
 
@@ -247,11 +214,11 @@ TEST_F(ApiTestIndexMetadata, test_not_found) {
   {
     Index retrieved_metadata_struct;
     // Test of get by ID with structure.
-    this->test_get(managers.get(), object_id, retrieved_metadata_struct,
-                   ErrorCode::ID_NOT_FOUND);
+    this->test_get(managers.get(), object_id, ErrorCode::ID_NOT_FOUND,
+                   retrieved_metadata_struct);
     // Test of get by name with structure.
-    this->test_get(managers.get(), object_name, retrieved_metadata_struct,
-                   ErrorCode::NAME_NOT_FOUND);
+    this->test_get(managers.get(), object_name, ErrorCode::NAME_NOT_FOUND,
+                   retrieved_metadata_struct);
   }
 
   // Remove index metadata by index id/name.
@@ -273,12 +240,11 @@ TEST_F(ApiTestIndexMetadata, test_invalid_parameter) {
   auto managers = get_index_metadata(GlobalTestEnvironment::TEST_DB);
 
   // Test to initialize the manager.
-  this->test_init(managers.get());
+  this->test_init(managers.get(), ErrorCode::OK);
 
   // Generate test metadata.
-  UTIndexMetadata ut_metadata(table_id);
-  ut_metadata.generate_test_metadata();
-
+  UtIndexMetadata ut_metadata(table_id);
+  
   ObjectId invalid_id      = INVALID_OBJECT_ID;
   std::string invalid_name = "";
 
@@ -300,13 +266,13 @@ TEST_F(ApiTestIndexMetadata, test_invalid_parameter) {
     ptree retrieved_metadata;
 
     // Test of get by ID with ptree.
-    this->test_get(managers.get(), invalid_id, retrieved_metadata,
-                   ErrorCode::INVALID_PARAMETER);
+    this->test_get(managers.get(), invalid_id, ErrorCode::INVALID_PARAMETER,
+                   retrieved_metadata);
     EXPECT_TRUE(retrieved_metadata.empty());
 
     // Test of get by name with ptree.
-    this->test_get(managers.get(), invalid_name, retrieved_metadata,
-                   ErrorCode::INVALID_PARAMETER);
+    this->test_get(managers.get(), invalid_name, ErrorCode::INVALID_PARAMETER,
+                   retrieved_metadata);
     EXPECT_TRUE(retrieved_metadata.empty());
   }
 
@@ -314,11 +280,11 @@ TEST_F(ApiTestIndexMetadata, test_invalid_parameter) {
   {
     Index retrieved_metadata_struct;
     // Test of get by ID with structure.
-    this->test_get(managers.get(), invalid_id, retrieved_metadata_struct,
-                   ErrorCode::INVALID_PARAMETER);
+    this->test_get(managers.get(), invalid_id, ErrorCode::INVALID_PARAMETER,
+                   retrieved_metadata_struct);
     // Test of get by name with structure.
-    this->test_get(managers.get(), invalid_name, retrieved_metadata_struct,
-                   ErrorCode::INVALID_PARAMETER);
+    this->test_get(managers.get(), invalid_name, ErrorCode::INVALID_PARAMETER,
+                   retrieved_metadata_struct);
   }
 
   // Remove index metadata by index id/name.
@@ -326,7 +292,8 @@ TEST_F(ApiTestIndexMetadata, test_invalid_parameter) {
     // Test of remove by ID.
     this->test_remove(managers.get(), invalid_id, ErrorCode::INVALID_PARAMETER);
     // Test of remove by name.
-    this->test_remove(managers.get(), invalid_name, ErrorCode::INVALID_PARAMETER);
+    this->test_remove(managers.get(), invalid_name,
+                      ErrorCode::INVALID_PARAMETER);
   }
 }
 
@@ -338,9 +305,8 @@ TEST_F(ApiTestIndexMetadata, test_without_initialized) {
   SCOPED_TRACE("");
 
   // Generate test metadata.
-  UTIndexMetadata ut_metadata(table_id);
-  ut_metadata.generate_test_metadata();
-
+  UtIndexMetadata ut_metadata(table_id);
+  
   auto inserted_metadata  = ut_metadata.get_metadata_ptree();
   std::string object_name = ut_metadata.get_metadata_struct()->name;
   ObjectId object_id      = -1;
@@ -350,7 +316,8 @@ TEST_F(ApiTestIndexMetadata, test_without_initialized) {
     // Generate indexes metadata manager.
     auto managers = get_index_metadata(GlobalTestEnvironment::TEST_DB);
 
-    object_id = this->test_add(managers_.get(), inserted_metadata);
+    object_id =
+        this->test_add(managers.get(), inserted_metadata, ErrorCode::OK);
   }
 
   // Get index metadata by index id with ptree.
@@ -359,7 +326,8 @@ TEST_F(ApiTestIndexMetadata, test_without_initialized) {
     auto managers = get_index_metadata(GlobalTestEnvironment::TEST_DB);
 
     ptree retrieved_metadata;
-    this->test_get(managers_.get(), object_id, retrieved_metadata);
+    this->test_get(managers.get(), object_id, ErrorCode::OK,
+                   retrieved_metadata);
   }
 
   // Get index metadata by index name with ptree.
@@ -368,7 +336,8 @@ TEST_F(ApiTestIndexMetadata, test_without_initialized) {
     auto managers = get_index_metadata(GlobalTestEnvironment::TEST_DB);
 
     ptree retrieved_metadata;
-    this->test_get(managers_.get(), object_name, retrieved_metadata);
+    this->test_get(managers.get(), object_name, ErrorCode::OK,
+                   retrieved_metadata);
   }
 
   // Get index metadata by index id with structure.
@@ -376,8 +345,9 @@ TEST_F(ApiTestIndexMetadata, test_without_initialized) {
     // Generate indexes metadata manager.
     auto managers = get_index_metadata(GlobalTestEnvironment::TEST_DB);
 
-    Constraint retrieved_metadata;
-    this->test_get(managers_.get(), object_id, retrieved_metadata);
+    Index retrieved_metadata;
+    this->test_get(managers.get(), object_id, ErrorCode::OK,
+                   retrieved_metadata);
   }
 
   // Get index metadata by index name with structure.
@@ -385,8 +355,9 @@ TEST_F(ApiTestIndexMetadata, test_without_initialized) {
     // Generate indexes metadata manager.
     auto managers = get_index_metadata(GlobalTestEnvironment::TEST_DB);
 
-    Constraint retrieved_metadata;
-    this->test_get(managers_.get(), object_name, retrieved_metadata);
+    Index retrieved_metadata;
+    this->test_get(managers.get(), object_name, ErrorCode::OK,
+                   retrieved_metadata);
   }
 
   // Get all index metadata with ptree.
@@ -396,7 +367,7 @@ TEST_F(ApiTestIndexMetadata, test_without_initialized) {
 
     std::vector<ptree> container = {};
     // Get all index metadata.
-    container = this->test_getall(managers_.get());
+    this->test_getall(managers.get(), ErrorCode::OK, container);
   }
 
   // Update index metadata.
@@ -405,7 +376,8 @@ TEST_F(ApiTestIndexMetadata, test_without_initialized) {
     auto managers = get_index_metadata(GlobalTestEnvironment::TEST_DB);
 
     // Execute the test.
-    this->test_update(managers_.get(), object_id, inserted_metadata);
+    this->test_update(managers.get(), object_id, inserted_metadata,
+                      ErrorCode::OK);
   }
 
   // Remove index metadata by index id.
@@ -414,7 +386,7 @@ TEST_F(ApiTestIndexMetadata, test_without_initialized) {
     auto managers = get_index_metadata(GlobalTestEnvironment::TEST_DB);
 
     // Remove index metadata by index id.
-    this->test_remove(managers_.get(), object_id);
+    this->test_remove(managers.get(), object_id, ErrorCode::OK);
   }
 
   // Add index metadata.
@@ -422,7 +394,8 @@ TEST_F(ApiTestIndexMetadata, test_without_initialized) {
     // Generate indexes metadata manager.
     auto managers = get_index_metadata(GlobalTestEnvironment::TEST_DB);
 
-    object_id = this->test_add(managers_.get(), inserted_metadata);
+    object_id =
+        this->test_add(managers.get(), inserted_metadata, ErrorCode::OK);
   }
 
   // Remove index metadata by index name.
@@ -431,7 +404,7 @@ TEST_F(ApiTestIndexMetadata, test_without_initialized) {
     auto managers = get_index_metadata(GlobalTestEnvironment::TEST_DB);
 
     // Remove index metadata by index id.
-    this->test_remove(managers_.get(), object_name);
+    this->test_remove(managers.get(), object_name, ErrorCode::OK);
   }
 }
 

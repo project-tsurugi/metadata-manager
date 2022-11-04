@@ -114,18 +114,11 @@ std::vector<UTTableMetadata> TableMetadataHelper::make_valid_table_metadata() {
  */
 void TableMetadataHelper::add_table(std::string_view table_name,
                                     ObjectIdType* ret_table_id) {
-  // prepare test data for adding table metadata.
-  UTTableMetadata* testdata_table_metadata =
-      global->testdata_table_metadata.get();
-
   // Generate test metadata.
-  testdata_table_metadata->generate_test_metadata();
-
-  ptree new_table = testdata_table_metadata->get_metadata_ptree();
-  new_table.put(Table::NAME, table_name);
+  UTTableMetadata ut_metadata(table_name);
 
   // add table metadata.
-  add_table(new_table, ret_table_id);
+  add_table(ut_metadata.get_metadata_ptree(), ret_table_id);
 }
 
 /**

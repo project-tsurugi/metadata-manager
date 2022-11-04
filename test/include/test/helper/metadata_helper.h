@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 tsurugi project.
+ * Copyright 2022 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,26 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "test/common/json/test_environment_json.h"
+#ifndef TEST_INCLUDE_TEST_HELPER_METADATA_HELPER_H_
+#define TEST_INCLUDE_TEST_HELPER_METADATA_HELPER_H_
 
-#include <boost/format.hpp>
-
-#include "manager/metadata/common/config.h"
-#include "test/helper/table_metadata_helper.h"
+#include <cstdint>
 
 namespace manager::metadata::testing {
 
-void TestEnvironmentJson::SetUp() {
-  // generate table metadata as test data.
-  testdata_table_metadata = std::make_unique<UTTableMetadata>("");
-
-  // initialize json file.
-  boost::format filename = boost::format("%s/%s.json") %
-                           manager::metadata::Config::get_storage_dir_path() %
-                           "tables";
-  std::remove(filename.str().c_str());
-}
-
-void TestEnvironmentJson::TearDown() {}
+class MetadataHelper {
+ public:
+  virtual int64_t get_record_count() const = 0;
+};
 
 }  // namespace manager::metadata::testing
+
+#endif  // TEST_INCLUDE_TEST_HELPER_METADATA_HELPER_H_

@@ -16,9 +16,6 @@
 #ifndef TEST_INCLUDE_TEST_METADATA_UT_CONSTRAINT_METADATA_H_
 #define TEST_INCLUDE_TEST_METADATA_UT_CONSTRAINT_METADATA_H_
 
-#include <memory>
-#include <string>
-
 #include <boost/property_tree/ptree.hpp>
 
 #include "manager/metadata/constraints.h"
@@ -26,26 +23,16 @@
 
 namespace manager::metadata::testing {
 
-class UTConstraintMetadata : public UtMetadata {
+class UtConstraintMetadata : public UtMetadata<manager::metadata::Constraint> {
  public:
-  explicit UTConstraintMetadata(const Constraint& metadata)
-      : metadata_ptree_(metadata.convert_to_ptree()),
-        metadata_struct_(metadata) {}
-  explicit UTConstraintMetadata(const boost::property_tree::ptree& metadata)
-      : metadata_ptree_(metadata) {
-    metadata_struct_.convert_from_ptree(metadata_ptree_);
+  using UtMetadata::UtMetadata;
+
+  UtConstraintMetadata() { this->generate_test_metadata(); }
+  explicit UtConstraintMetadata(ObjectId table_id) : table_id_(table_id) {
+    this->generate_test_metadata();
   }
-  explicit UTConstraintMetadata(ObjectId table_id = NOT_INITIALIZED)
-      : table_id_(table_id) {}
 
   void generate_test_metadata() override;
-
-  const manager::metadata::Constraint* get_metadata_struct() const override {
-    return &metadata_struct_;
-  }
-  boost::property_tree::ptree get_metadata_ptree() const override {
-    return metadata_ptree_;
-  }
 
   void check_metadata_expected(const boost::property_tree::ptree& expected,
                                const boost::property_tree::ptree& actual,
@@ -53,9 +40,6 @@ class UTConstraintMetadata : public UtMetadata {
                                const int64_t line) const override;
 
  private:
-  boost::property_tree::ptree metadata_ptree_;
-  manager::metadata::Constraint metadata_struct_;
-
   ObjectId table_id_ = NOT_INITIALIZED;
 };
 

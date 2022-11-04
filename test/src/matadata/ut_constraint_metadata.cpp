@@ -26,24 +26,24 @@ namespace manager::metadata::testing {
 /**
  * @brief Generate metadata for testing.
  */
-void UTConstraintMetadata::generate_test_metadata() {
+void UtConstraintMetadata::generate_test_metadata() {
   // Generate unique constraint name.
   std::string constraint_name =
       "constraint_name_" + UTUtils::generate_narrow_uid();
 
-  metadata_struct_.format_version = NOT_INITIALIZED;
-  metadata_struct_.generation     = NOT_INITIALIZED;
-  metadata_struct_.id             = NOT_INITIALIZED;
-  metadata_struct_.name           = constraint_name;
-  metadata_struct_.table_id       = table_id_;
-  metadata_struct_.type           = Constraint::ConstraintType::UNIQUE;
-  metadata_struct_.columns        = {1, 2};
-  metadata_struct_.columns_id     = {1001, 2001};
-  metadata_struct_.index_id       = 3;
-  metadata_struct_.expression     = "none";
+  metadata_struct_->format_version = NOT_INITIALIZED;
+  metadata_struct_->generation     = NOT_INITIALIZED;
+  metadata_struct_->id             = NOT_INITIALIZED;
+  metadata_struct_->name           = constraint_name;
+  metadata_struct_->table_id       = table_id_;
+  metadata_struct_->type           = Constraint::ConstraintType::UNIQUE;
+  metadata_struct_->columns        = {1, 2};
+  metadata_struct_->columns_id     = {1001, 2001};
+  metadata_struct_->index_id       = 3;
+  metadata_struct_->expression     = "none";
 
   // Generate ptree from UTTableMetadata fields.
-  metadata_ptree_ = metadata_struct_.convert_to_ptree();
+  metadata_ptree_ = metadata_struct_->convert_to_ptree();
 }
 
 /**
@@ -54,7 +54,7 @@ void UTConstraintMetadata::generate_test_metadata() {
  * @param line      [in]  line number of the caller.
  * @return none.
  */
-void UTConstraintMetadata::check_metadata_expected(
+void UtConstraintMetadata::check_metadata_expected(
     const boost::property_tree::ptree& expected,
     const boost::property_tree::ptree& actual, const char* file,
     const int64_t line) const {

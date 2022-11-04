@@ -55,7 +55,7 @@ class ApiTestTableMetadataExtra
  */
 TEST_F(ApiTestTableMetadataExtra, add_get_remove_table_metadata_by_table_name) {
   // variable "table_metadata" is test data set.
-  for (auto table_metadata : table_metadata_) {
+  for (const auto& table_metadata : table_metadata_) {
     auto table_expected = table_metadata.get_metadata_ptree();
 
     // add valid table metadata.
@@ -103,7 +103,7 @@ TEST_F(ApiTestTableMetadataExtra, add_get_remove_table_metadata_by_table_name) {
 TEST_F(ApiTestTableMetadataExtra,
        add_get_update_remove_table_metadata_by_table_id) {
   // variable "table_metadata" is test data set.
-  for (auto table_metadata : table_metadata_) {
+  for (const auto& table_metadata : table_metadata_) {
     auto table_expected = table_metadata.get_metadata_ptree();
 
     // add valid table metadata.

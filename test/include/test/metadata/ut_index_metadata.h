@@ -16,9 +16,6 @@
 #ifndef TEST_INCLUDE_TEST_METADATA_UT_INDEX_METADATA_H_
 #define TEST_INCLUDE_TEST_METADATA_UT_INDEX_METADATA_H_
 
-#include <string>
-#include <vector>
-
 #include <boost/property_tree/ptree.hpp>
 
 #include "manager/metadata/indexes.h"
@@ -26,26 +23,16 @@
 
 namespace manager::metadata::testing {
 
-class UTIndexMetadata : public UtMetadata {
+class UtIndexMetadata : public UtMetadata<manager::metadata::Index> {
  public:
-  explicit UTIndexMetadata(const Index& metadata)
-      : metadata_ptree_(metadata.convert_to_ptree()),
-        metadata_struct_(metadata) {}
-  explicit UTIndexMetadata(const boost::property_tree::ptree& metadata)
-      : metadata_ptree_(metadata) {
-    metadata_struct_.convert_from_ptree(metadata_ptree_);
+  using UtMetadata::UtMetadata;
+
+  UtIndexMetadata() { this->generate_test_metadata(); }
+  explicit UtIndexMetadata(ObjectId table_id) : table_id_(table_id) {
+    this->generate_test_metadata();
   }
-  explicit UTIndexMetadata(ObjectId table_id = NOT_INITIALIZED)
-      : table_id_(table_id) {}
 
   void generate_test_metadata() override;
-
-  const manager::metadata::Index* get_metadata_struct() const override {
-    return &metadata_struct_;
-  }
-  boost::property_tree::ptree get_metadata_ptree() const override {
-    return metadata_ptree_;
-  }
 
   void check_metadata_expected(const boost::property_tree::ptree& expected,
                                const boost::property_tree::ptree& actual,
@@ -53,9 +40,6 @@ class UTIndexMetadata : public UtMetadata {
                                const int64_t line) const override;
 
  private:
-  boost::property_tree::ptree metadata_ptree_;
-  manager::metadata::Index metadata_struct_;
-
   ObjectId table_id_ = NOT_INITIALIZED;
 };
 
