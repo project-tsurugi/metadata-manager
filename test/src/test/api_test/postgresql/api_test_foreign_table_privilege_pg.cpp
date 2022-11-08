@@ -26,7 +26,7 @@
 #include "test/common/global_test_environment.h"
 #include "test/common/ut_utils.h"
 #include "test/helper/postgresql/foreign_table_helper_pg.h"
-#include "test/helper/postgresql/role_metadata_helper_pg.h"
+#include "test/helper/role_metadata_helper.h"
 #include "test/helper/table_metadata_helper.h"
 
 namespace {

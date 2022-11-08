@@ -23,12 +23,6 @@
 #include "test/metadata/ut_constraint_metadata.h"
 #include "test/test/api_test_facade.h"
 
-namespace {
-
-manager::metadata::ObjectId table_id = 0;
-
-}  // namespace
-
 namespace manager::metadata::testing {
 
 using boost::property_tree::ptree;
@@ -37,9 +31,11 @@ class ApiTestConstraintMetadata
     : public ApiTestFacade<::manager::metadata::Constraint,
                            ConstraintMetadataHelper> {
  public:
+  manager::metadata::ObjectId table_id_;
+
   ApiTestConstraintMetadata()
-      : ApiTestFacade(get_constraint_metadata(GlobalTestEnvironment::TEST_DB)) {
-  }
+      : ApiTestFacade(get_constraint_metadata(GlobalTestEnvironment::TEST_DB)),
+        table_id_(0) {}
 
   void SetUp() override {
     UTUtils::skip_if_connection_not_opened();
@@ -51,7 +47,7 @@ class ApiTestConstraintMetadata
         "ApiTestConstraintMetadata_" + UTUtils::generate_narrow_uid();
 
     // Add table metadata.
-    TableMetadataHelper::add_table(table_name, &table_id);
+    TableMetadataHelper::add_table(table_name, &table_id_);
   }
 
   void TearDown() override {
@@ -59,7 +55,7 @@ class ApiTestConstraintMetadata
       UTUtils::print(">> gtest::TearDown()");
 
       // Remove table metadata.
-      TableMetadataHelper::remove_table(table_id);
+      TableMetadataHelper::remove_table(table_id_);
     }
   }
 };
@@ -72,7 +68,7 @@ TEST_F(ApiTestConstraintMetadata, test_get_by_id_with_ptree) {
   SCOPED_TRACE("");
 
   // Execute the test.
-  this->test_flow_get_by_id(UtConstraintMetadata(table_id));
+  this->test_flow_get_by_id(UtConstraintMetadata(table_id_));
 }
 
 /**
@@ -83,7 +79,7 @@ TEST_F(ApiTestConstraintMetadata, test_get_by_id_with_struct) {
   SCOPED_TRACE("");
 
   // Execute the test.
-  this->test_flow_get_by_id_with_struct(UtConstraintMetadata(table_id));
+  this->test_flow_get_by_id_with_struct(UtConstraintMetadata(table_id_));
 }
 
 /**
@@ -131,7 +127,7 @@ TEST_F(ApiTestConstraintMetadata, test_getall_with_ptree) {
   SCOPED_TRACE("");
 
   // Execute the test.
-  this->test_flow_getall(UtConstraintMetadata(table_id));
+  this->test_flow_getall(UtConstraintMetadata(table_id_));
 }
 
 /**
@@ -145,7 +141,7 @@ TEST_F(ApiTestConstraintMetadata, test_update) {
   auto managers = get_constraint_metadata(GlobalTestEnvironment::TEST_DB);
 
   // Generate test metadata.
-  UtConstraintMetadata ut_metadata(table_id);
+  UtConstraintMetadata ut_metadata(table_id_);
 
   auto updated_metadata   = ut_metadata.get_metadata_ptree();
   std::string object_name = ut_metadata.get_metadata_struct()->name;
@@ -169,7 +165,7 @@ TEST_F(ApiTestConstraintMetadata, test_not_found) {
   this->test_init(managers.get(), ErrorCode::OK);
 
   // Generate test metadata.
-  UtConstraintMetadata ut_metadata(table_id);
+  UtConstraintMetadata ut_metadata(table_id_);
 
   ObjectId object_id      = INT64_MAX;
   std::string object_name = "unregistered_dummy_name";
@@ -222,7 +218,7 @@ TEST_F(ApiTestConstraintMetadata, test_invalid_parameter) {
   this->test_init(managers.get(), ErrorCode::OK);
 
   // Generate test metadata.
-  UtConstraintMetadata ut_metadata(table_id);
+  UtConstraintMetadata ut_metadata(table_id_);
 
   ObjectId invalid_id      = INVALID_OBJECT_ID;
   std::string invalid_name = "";
@@ -281,7 +277,7 @@ TEST_F(ApiTestConstraintMetadata, test_without_initialized) {
   SCOPED_TRACE("");
 
   // Generate test metadata.
-  UtConstraintMetadata ut_metadata(table_id);
+  UtConstraintMetadata ut_metadata(table_id_);
 
   auto inserted_metadata  = ut_metadata.get_metadata_ptree();
   std::string object_name = ut_metadata.get_metadata_struct()->name;

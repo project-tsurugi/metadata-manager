@@ -15,8 +15,6 @@
  */
 #include "test/metadata/ut_constraint_metadata.h"
 
-#include <gtest/gtest.h>
-
 #include "manager/metadata/constraints.h"
 #include "manager/metadata/helper/ptree_helper.h"
 #include "test/common/ut_utils.h"

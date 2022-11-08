@@ -13,10 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TEST_INCLUDE_TEST_TEST_API_TEST2_H_
-#define TEST_INCLUDE_TEST_TEST_API_TEST2_H_
-
-#include <gtest/gtest.h>
+#ifndef TEST_INCLUDE_TEST_TEST_API_TEST_H_
+#define TEST_INCLUDE_TEST_TEST_API_TEST_H_
 
 #include <memory>
 #include <utility>
@@ -39,6 +37,7 @@ class ApiTest {
   virtual Object* get_structure() const                     = 0;
   virtual std::vector<Object>* get_structure_vector() const = 0;
 
+ protected:
   // Series of flow tests.
   void test_flow_get_by_id(const UtMetadataInterface* ut_metadata) const;
   void test_flow_get_by_id_with_struct(
@@ -111,4 +110,4 @@ class ApiTest {
 
 }  // namespace manager::metadata::testing
 
-#endif  // TEST_INCLUDE_TEST_TEST_API_TEST2_H_
+#endif  // TEST_INCLUDE_TEST_TEST_API_TEST_H_

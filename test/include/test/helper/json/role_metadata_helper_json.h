@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TEST_INCLUDE_TEST_HELPER_POSTGRESQL_ROLE_METADATA_HELPER_PG_H_
-#define TEST_INCLUDE_TEST_HELPER_POSTGRESQL_ROLE_METADATA_HELPER_PG_H_
+#ifndef TEST_INCLUDE_TEST_HELPER_JSON_ROLE_METADATA_HELPER_JSON_H_
+#define TEST_INCLUDE_TEST_HELPER_JSON_ROLE_METADATA_HELPER_JSON_H_
 
 #include <string_view>
 
@@ -24,16 +24,15 @@
 
 namespace manager::metadata::testing {
 
-class RoleMetadataHelperPg {
+class RoleMetadataHelperJson {
  public:
-  static ObjectIdType create_role(std::string_view role_name,
-                                  std::string_view options);
-  static void drop_role(std::string_view role_name);
-
- private:
-  static void db_connection();
+  static ObjectIdType create_role([[maybe_unused]] std::string_view role_name,
+                                  [[maybe_unused]] std::string_view options) {
+    return INVALID_OBJECT_ID;
+  }
+  static void drop_role([[maybe_unused]] std::string_view role_name) {}
 };
 
 }  // namespace manager::metadata::testing
 
-#endif  // TEST_INCLUDE_TEST_HELPER_POSTGRESQL_ROLE_METADATA_HELPER_PG_H_
+#endif  // TEST_INCLUDE_TEST_HELPER_JSON_ROLE_METADATA_HELPER_JSON_H_

@@ -15,8 +15,6 @@
  */
 #include "test/metadata/ut_index_metadata.h"
 
-#include <gtest/gtest.h>
-
 #include "manager/metadata/helper/ptree_helper.h"
 #include "manager/metadata/indexes.h"
 #include "test/common/ut_utils.h"

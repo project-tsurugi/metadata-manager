@@ -23,12 +23,6 @@
 #include "test/metadata/ut_index_metadata.h"
 #include "test/test/api_test_facade.h"
 
-namespace {
-
-manager::metadata::ObjectId table_id = 0;
-
-}  // namespace
-
 namespace manager::metadata::testing {
 
 using boost::property_tree::ptree;
@@ -36,8 +30,11 @@ using boost::property_tree::ptree;
 class ApiTestIndexMetadata
     : public ApiTestFacade<::manager::metadata::Index, IndexMetadataHelper> {
  public:
+  manager::metadata::ObjectId table_id_;
+
   ApiTestIndexMetadata()
-      : ApiTestFacade(get_index_metadata(GlobalTestEnvironment::TEST_DB)) {}
+      : ApiTestFacade(get_index_metadata(GlobalTestEnvironment::TEST_DB)),
+        table_id_(0) {}
 
   void SetUp() override {
     UTUtils::skip_if_connection_not_opened();
@@ -49,7 +46,7 @@ class ApiTestIndexMetadata
         "ApiTestIndexMetadata_" + UTUtils::generate_narrow_uid();
 
     // Add table metadata.
-    TableMetadataHelper::add_table(table_name, &table_id);
+    TableMetadataHelper::add_table(table_name, &table_id_);
   }
 
   void TearDown() override {
@@ -57,7 +54,7 @@ class ApiTestIndexMetadata
       UTUtils::print(">> gtest::TearDown()");
 
       // Remove table metadata.
-      TableMetadataHelper::remove_table(table_id);
+      TableMetadataHelper::remove_table(table_id_);
     }
   }
 };
@@ -70,7 +67,7 @@ TEST_F(ApiTestIndexMetadata, test_get_by_id_with_ptree) {
   SCOPED_TRACE("");
 
   // Execute the test.
-  this->test_flow_get_by_id(UtIndexMetadata(table_id));
+  this->test_flow_get_by_id(UtIndexMetadata(table_id_));
 }
 
 /**
@@ -81,7 +78,7 @@ TEST_F(ApiTestIndexMetadata, test_get_by_id_with_struct) {
   SCOPED_TRACE("");
 
   // Execute the test.
-  this->test_flow_get_by_id_with_struct(UtIndexMetadata(table_id));
+  this->test_flow_get_by_id_with_struct(UtIndexMetadata(table_id_));
 }
 
 /**
@@ -92,7 +89,7 @@ TEST_F(ApiTestIndexMetadata, test_get_by_name_with_ptree) {
   SCOPED_TRACE("");
 
   // Execute the test.
-  this->test_flow_get_by_name(UtIndexMetadata(table_id));
+  this->test_flow_get_by_name(UtIndexMetadata(table_id_));
 }
 
 /**
@@ -103,7 +100,7 @@ TEST_F(ApiTestIndexMetadata, test_get_by_name_with_struct) {
   SCOPED_TRACE("");
 
   // Execute the test.
-  this->test_flow_get_by_name_with_struct(UtIndexMetadata(table_id));
+  this->test_flow_get_by_name_with_struct(UtIndexMetadata(table_id_));
 }
 
 /**
@@ -113,7 +110,7 @@ TEST_F(ApiTestIndexMetadata, test_getall_with_ptree) {
   SCOPED_TRACE("");
 
   // Execute the test.
-  this->test_flow_getall(UtIndexMetadata(table_id));
+  this->test_flow_getall(UtIndexMetadata(table_id_));
 }
 
 /**
@@ -124,7 +121,7 @@ TEST_F(ApiTestIndexMetadata, test_update) {
   SCOPED_TRACE("");
 
   // Generate test metadata.
-  UtIndexMetadata ut_metadata(table_id);
+  UtIndexMetadata ut_metadata(table_id_);
 
   auto metadata_base = ut_metadata.get_metadata_struct();
   // Copy
@@ -162,8 +159,8 @@ TEST_F(ApiTestIndexMetadata, test_name_duplicate) {
   auto managers = get_index_metadata(GlobalTestEnvironment::TEST_DB);
 
   // Generate test metadata.
-  UtIndexMetadata ut_metadata(table_id);
-  
+  UtIndexMetadata ut_metadata(table_id_);
+
   ptree inserted_metadata = ut_metadata.get_metadata_ptree();
 
   // Add first index metadata.
@@ -190,8 +187,8 @@ TEST_F(ApiTestIndexMetadata, test_not_found) {
   this->test_init(managers.get(), ErrorCode::OK);
 
   // Generate test metadata.
-  UtIndexMetadata ut_metadata(table_id);
-  
+  UtIndexMetadata ut_metadata(table_id_);
+
   ObjectId object_id      = INT64_MAX;
   std::string object_name = "unregistered_dummy_name";
 
@@ -243,8 +240,8 @@ TEST_F(ApiTestIndexMetadata, test_invalid_parameter) {
   this->test_init(managers.get(), ErrorCode::OK);
 
   // Generate test metadata.
-  UtIndexMetadata ut_metadata(table_id);
-  
+  UtIndexMetadata ut_metadata(table_id_);
+
   ObjectId invalid_id      = INVALID_OBJECT_ID;
   std::string invalid_name = "";
 
@@ -305,8 +302,8 @@ TEST_F(ApiTestIndexMetadata, test_without_initialized) {
   SCOPED_TRACE("");
 
   // Generate test metadata.
-  UtIndexMetadata ut_metadata(table_id);
-  
+  UtIndexMetadata ut_metadata(table_id_);
+
   auto inserted_metadata  = ut_metadata.get_metadata_ptree();
   std::string object_name = ut_metadata.get_metadata_struct()->name;
   ObjectId object_id      = -1;

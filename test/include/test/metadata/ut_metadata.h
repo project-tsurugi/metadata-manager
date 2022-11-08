@@ -98,6 +98,19 @@ class UtMetadata : public UtMetadataInterface {
     check_metadata_expected(expected, actual.convert_to_ptree(), file, line);
   }
 
+  /**
+   * @brief Verifies that the actual metadata equals expected one.
+   * @param actual    [in]  actual metadata.
+   * @param file      [in]  file name of the caller.
+   * @param line      [in]  line number of the caller.
+   * @return none.
+   */
+  void check_metadata_expected(const ::manager::metadata::Object& actual,
+                               const char* file, const int64_t line) const {
+    check_metadata_expected(metadata_ptree_, actual.convert_to_ptree(), file,
+                            line);
+  }
+
  protected:
   static constexpr int64_t NOT_INITIALIZED = -1;
 

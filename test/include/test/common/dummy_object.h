@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 tsurugi project.
+ * Copyright 2022 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,27 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TEST_INCLUDE_TEST_HELPER_POSTGRESQL_ROLE_METADATA_HELPER_PG_H_
-#define TEST_INCLUDE_TEST_HELPER_POSTGRESQL_ROLE_METADATA_HELPER_PG_H_
-
-#include <string_view>
-
-#include <boost/property_tree/ptree.hpp>
+#ifndef TEST_INCLUDE_TEST_COMMON_DUMMY_OBJECT_H_
+#define TEST_INCLUDE_TEST_COMMON_DUMMY_OBJECT_H_
 
 #include "manager/metadata/metadata.h"
 
 namespace manager::metadata::testing {
 
-class RoleMetadataHelperPg {
+/**
+ * @brief Dummy metadata object.
+ */
+struct DummyObject : public manager::metadata::Object {
  public:
-  static ObjectIdType create_role(std::string_view role_name,
-                                  std::string_view options);
-  static void drop_role(std::string_view role_name);
+  boost::property_tree::ptree convert_to_ptree() const override {
+    boost::property_tree::ptree dummy;
+    return dummy;
+  }
 
- private:
-  static void db_connection();
+  void convert_from_ptree(
+      [[maybe_unused]] const boost::property_tree::ptree& pt) override {}
 };
 
 }  // namespace manager::metadata::testing
 
-#endif  // TEST_INCLUDE_TEST_HELPER_POSTGRESQL_ROLE_METADATA_HELPER_PG_H_
+#endif  // TEST_INCLUDE_TEST_COMMON_DUMMY_OBJECT_H_
