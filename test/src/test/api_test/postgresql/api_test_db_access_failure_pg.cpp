@@ -31,6 +31,7 @@
 #include "test/common/global_test_environment.h"
 #include "test/common/ut_utils.h"
 #include "test/helper/column_statistics_helper.h"
+#include "test/metadata/ut_column_statistics.h"
 
 namespace manager::metadata::testing {
 
@@ -67,7 +68,7 @@ class ApiTestDBAccessFailureByTableIdColumnNumber
 
 class ApiTestDBAccessFailureByColumnStatistics
     : public ::testing::TestWithParam<
-          std::tuple<ObjectIdType, ObjectIdType, ptree>> {
+          std::tuple<ObjectIdType, ObjectIdType>> {
   void SetUp() override { UTUtils::skip_if_connection_opened(); }
 };
 
@@ -102,10 +103,6 @@ std::vector<int64_t> reltuples_dbaf = {
     static_cast<int64_t>(INT64_MAX),
     static_cast<int64_t>(INT64_MIN)};
 
-ptree empty_column_stats_dbaf;
-std::vector<ptree> ptree_dbaf = {
-    empty_column_stats_dbaf,
-    ColumnStatisticsHelper::generate_column_statistic()};
 std::vector<std::string> table_name_dbaf = {"table_name_not_exists", ""};
 
 INSTANTIATE_TEST_CASE_P(ParameterizedTest, ApiTestDBAccessFailureByTableId,
@@ -132,8 +129,7 @@ INSTANTIATE_TEST_CASE_P(
 INSTANTIATE_TEST_CASE_P(
     ParameterizedTest, ApiTestDBAccessFailureByColumnStatistics,
     ::testing::Combine(::testing::ValuesIn(table_id_not_exists_dbaf),
-                       ::testing::ValuesIn(column_number_not_exists_dbaf),
-                       ::testing::ValuesIn(ptree_dbaf)));
+                       ::testing::ValuesIn(column_number_not_exists_dbaf)));
 
 /**
  * @brief API to add table metadata
@@ -515,20 +511,12 @@ TEST_P(ApiTestDBAccessFailureByColumnStatistics, add_one_column_statistic) {
   auto params                = GetParam();
   ObjectIdType table_id      = std::get<0>(params);
   ObjectIdType column_number = std::get<1>(params);
-  ptree column_stats         = std::get<2>(params);
 
-  ptree statistic;
-  // name
   std::string statistic_name = "ApiTestDBAccessFailureByColumnStatistics_" +
                                std::to_string(table_id) + "-" +
                                std::to_string(column_number);
-  statistic.put(Statistics::NAME, statistic_name);
-  // table_id
-  statistic.put(Statistics::TABLE_ID, table_id);
-  // column_number
-  statistic.put(Statistics::COLUMN_NUMBER, column_number);
-  // column_statistic
-  statistic.add_child(Statistics::COLUMN_STATISTIC, column_stats);
+  UtColumnStatistics ut_statistics(table_id, column_number, statistic_name);
+  ptree statistic = ut_statistics.get_metadata_ptree();
 
   // Execute the test.
   error = stats->add(statistic);

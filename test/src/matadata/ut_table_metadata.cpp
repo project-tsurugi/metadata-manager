@@ -28,88 +28,6 @@ namespace manager::metadata::testing {
 using boost::property_tree::ptree;
 
 /**
- * @brief Generate ptree type table metadata
- * from UTTableMetadata fields.
- * @return none.
- */
-void UTTableMetadata::generate_test_metadata() {
-  // Generate unique table name.
-  std::string table_name =
-      (table_name_.empty() ? "table_name_" + UTUtils::generate_narrow_uid()
-                           : table_name_);
-
-  metadata_struct_->format_version   = INVALID_VALUE;
-  metadata_struct_->generation       = INVALID_VALUE;
-  metadata_struct_->id               = INVALID_OBJECT_ID;
-  metadata_struct_->name             = table_name;
-  metadata_struct_->namespace_name   = "";
-  metadata_struct_->number_of_tuples = INVALID_VALUE;
-
-  manager::metadata::Column column;
-  metadata_struct_->columns.clear();
-  {
-    column.id            = INVALID_OBJECT_ID;
-    column.name          = "column_name_1_" + UTUtils::generate_narrow_uid();
-    column.table_id      = INVALID_OBJECT_ID;
-    column.column_number = 1;
-    column.data_type_id  = static_cast<int64_t>(DataTypes::DataTypesId::INT64);
-    column.data_length   = {};
-    column.varying       = false;
-    column.is_not_null   = true;
-    column.default_expression = "auto number";
-    metadata_struct_->columns.push_back(column);
-
-    column.id            = INVALID_OBJECT_ID;
-    column.name          = "column_name_2_" + UTUtils::generate_narrow_uid();
-    column.table_id      = INVALID_OBJECT_ID;
-    column.column_number = 2;
-    column.data_type_id = static_cast<int64_t>(DataTypes::DataTypesId::VARCHAR);
-    column.data_length  = {64};
-    column.varying      = true;
-    column.is_not_null  = false;
-    column.default_expression = "";
-    metadata_struct_->columns.push_back(column);
-
-    column.id            = INVALID_OBJECT_ID;
-    column.name          = "column_name_3_" + UTUtils::generate_narrow_uid();
-    column.table_id      = INVALID_OBJECT_ID;
-    column.column_number = 3;
-    column.data_type_id  = static_cast<int64_t>(DataTypes::DataTypesId::CHAR);
-    column.data_length   = {5};
-    column.varying       = false;
-    column.is_not_null   = false;
-    column.default_expression = "";
-    metadata_struct_->columns.push_back(column);
-  }
-
-  // constraints
-  manager::metadata::Constraint constraint;
-  metadata_struct_->constraints.clear();
-  {
-    constraint.id       = INVALID_OBJECT_ID;
-    constraint.name     = "constraint_name_1_" + UTUtils::generate_narrow_uid();
-    constraint.table_id = INVALID_OBJECT_ID;
-    constraint.type     = Constraint::ConstraintType::PRIMARY_KEY;
-    constraint.columns  = {1};
-    constraint.columns_id = {1001};
-    constraint.index_id   = 1;
-    constraint.expression = "";
-    metadata_struct_->constraints.push_back(constraint);
-
-    constraint.id       = INVALID_OBJECT_ID;
-    constraint.name     = "constraint_name_2_" + UTUtils::generate_narrow_uid();
-    constraint.table_id = INVALID_OBJECT_ID;
-    constraint.type     = Constraint::ConstraintType::UNIQUE;
-    constraint.columns  = {1, 2};
-    constraint.columns_id = {1001, 1002};
-    constraint.index_id   = 2;
-    constraint.expression = "";
-    metadata_struct_->constraints.push_back(constraint);
-  }
-  metadata_ptree_ = metadata_struct_->convert_to_ptree();
-}
-
-/**
  * @brief Verifies that the actual table metadata equals expected one.
  * @param expected  [in]  expected table metadata.
  * @param actual    [in]  actual table metadata.
@@ -271,6 +189,88 @@ void UTTableMetadata::check_metadata_expected(
                      line);
     }
   }
+}
+
+/**
+ * @brief Generate ptree type table metadata
+ * from UTTableMetadata fields.
+ * @return none.
+ */
+void UTTableMetadata::generate_test_metadata() {
+  // Generate unique table name.
+  std::string table_name =
+      (table_name_.empty() ? "table_name_" + UTUtils::generate_narrow_uid()
+                           : table_name_);
+
+  metadata_struct_->format_version   = INVALID_VALUE;
+  metadata_struct_->generation       = INVALID_VALUE;
+  metadata_struct_->id               = INVALID_OBJECT_ID;
+  metadata_struct_->name             = table_name;
+  metadata_struct_->namespace_name   = "";
+  metadata_struct_->number_of_tuples = INVALID_VALUE;
+
+  manager::metadata::Column column;
+  metadata_struct_->columns.clear();
+  {
+    column.id            = INVALID_OBJECT_ID;
+    column.name          = "column_name_1_" + UTUtils::generate_narrow_uid();
+    column.table_id      = INVALID_OBJECT_ID;
+    column.column_number = 1;
+    column.data_type_id  = static_cast<int64_t>(DataTypes::DataTypesId::INT64);
+    column.data_length   = {};
+    column.varying       = false;
+    column.is_not_null   = true;
+    column.default_expression = "auto number";
+    metadata_struct_->columns.push_back(column);
+
+    column.id            = INVALID_OBJECT_ID;
+    column.name          = "column_name_2_" + UTUtils::generate_narrow_uid();
+    column.table_id      = INVALID_OBJECT_ID;
+    column.column_number = 2;
+    column.data_type_id = static_cast<int64_t>(DataTypes::DataTypesId::VARCHAR);
+    column.data_length  = {64};
+    column.varying      = true;
+    column.is_not_null  = false;
+    column.default_expression = "";
+    metadata_struct_->columns.push_back(column);
+
+    column.id            = INVALID_OBJECT_ID;
+    column.name          = "column_name_3_" + UTUtils::generate_narrow_uid();
+    column.table_id      = INVALID_OBJECT_ID;
+    column.column_number = 3;
+    column.data_type_id  = static_cast<int64_t>(DataTypes::DataTypesId::CHAR);
+    column.data_length   = {5};
+    column.varying       = false;
+    column.is_not_null   = false;
+    column.default_expression = "";
+    metadata_struct_->columns.push_back(column);
+  }
+
+  // constraints
+  manager::metadata::Constraint constraint;
+  metadata_struct_->constraints.clear();
+  {
+    constraint.id       = INVALID_OBJECT_ID;
+    constraint.name     = "constraint_name_1_" + UTUtils::generate_narrow_uid();
+    constraint.table_id = INVALID_OBJECT_ID;
+    constraint.type     = Constraint::ConstraintType::PRIMARY_KEY;
+    constraint.columns  = {1};
+    constraint.columns_id = {1001};
+    constraint.index_id   = 1;
+    constraint.expression = "";
+    metadata_struct_->constraints.push_back(constraint);
+
+    constraint.id       = INVALID_OBJECT_ID;
+    constraint.name     = "constraint_name_2_" + UTUtils::generate_narrow_uid();
+    constraint.table_id = INVALID_OBJECT_ID;
+    constraint.type     = Constraint::ConstraintType::UNIQUE;
+    constraint.columns  = {1, 2};
+    constraint.columns_id = {1001, 1002};
+    constraint.index_id   = 2;
+    constraint.expression = "";
+    metadata_struct_->constraints.push_back(constraint);
+  }
+  metadata_ptree_ = metadata_struct_->convert_to_ptree();
 }
 
 }  // namespace manager::metadata::testing

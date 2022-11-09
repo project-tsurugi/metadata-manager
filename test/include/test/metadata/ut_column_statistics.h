@@ -13,24 +13,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TEST_INCLUDE_TEST_METADATA_UT_ROLE_METADATA_H_
-#define TEST_INCLUDE_TEST_METADATA_UT_ROLE_METADATA_H_
+#ifndef TEST_INCLUDE_TEST_METADATA_UT_COLUMN_STATISTICS_H_
+#define TEST_INCLUDE_TEST_METADATA_UT_COLUMN_STATISTICS_H_
+
+#include <string>
 
 #include <boost/property_tree/ptree.hpp>
 
-#include "manager/metadata/roles.h"
 #include "test/common/dummy_object.h"
 #include "test/metadata/ut_metadata.h"
 
 namespace manager::metadata::testing {
 
-class UtRoleMetadata : public UtMetadata<DummyObject> {
+class UtColumnStatistics : public UtMetadata<DummyObject> {
  public:
-  static constexpr const char* const kRoleName = "tsurugi_ut_role_user_1";
-
   using UtMetadata::UtMetadata;
-  UtRoleMetadata() { this->generate_test_metadata(); }
-  explicit UtRoleMetadata(ObjectId role_id) : role_id_(role_id) {
+  UtColumnStatistics() { this->generate_test_metadata(); }
+  explicit UtColumnStatistics(ObjectId table_id) : table_id_(table_id) {
+    this->generate_test_metadata();
+  }
+  UtColumnStatistics(ObjectId table_id, int64_t column_number)
+      : table_id_(table_id), column_number_(column_number) {
+    this->generate_test_metadata();
+  }
+  UtColumnStatistics(ObjectId table_id, int64_t column_number,
+                     std::string_view statistic_name)
+      : table_id_(table_id),
+        column_number_(column_number),
+        statistic_name_(statistic_name) {
     this->generate_test_metadata();
   }
 
@@ -51,12 +61,19 @@ class UtRoleMetadata : public UtMetadata<DummyObject> {
     check_metadata_expected(metadata_ptree_, actual, file, line);
   }
 
+  boost::property_tree::ptree get_column_statistic() const;
+
  private:
-  ObjectId role_id_ = NOT_INITIALIZED;
+  ObjectId table_id_          = NOT_INITIALIZED;
+  std::int64_t column_number_ = NOT_INITIALIZED;
+  std::string statistic_name_;
 
   void generate_test_metadata();
+  boost::property_tree::ptree generate_histogram();
+  boost::property_tree::ptree generate_histogram_array();
+  std::string generate_random_string();
 };
 
 }  // namespace manager::metadata::testing
 
-#endif  // TEST_INCLUDE_TEST_METADATA_UT_ROLE_METADATA_H_
+#endif  // TEST_INCLUDE_TEST_METADATA_UT_COLUMN_STATISTICS_H_

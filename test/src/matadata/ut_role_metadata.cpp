@@ -24,26 +24,6 @@ namespace manager::metadata::testing {
 using boost::property_tree::ptree;
 
 /**
- * @brief Generate metadata for testing.
- */
-void UtRoleMetadata::generate_test_metadata() {
-  metadata_ptree_.put(Roles::FORMAT_VERSION, Roles::format_version());
-  metadata_ptree_.put(Roles::GENERATION, Roles::generation());
-  metadata_ptree_.put(Roles::ROLE_OID, role_id_);
-  metadata_ptree_.put(Roles::ROLE_ROLNAME, kRoleName);
-  metadata_ptree_.put(Roles::ROLE_ROLSUPER, "false");       // false
-  metadata_ptree_.put(Roles::ROLE_ROLINHERIT, "false");     // false
-  metadata_ptree_.put(Roles::ROLE_ROLCREATEROLE, "true");   // true
-  metadata_ptree_.put(Roles::ROLE_ROLCREATEDB, "true");     // true
-  metadata_ptree_.put(Roles::ROLE_ROLCANLOGIN, "false");    // false
-  metadata_ptree_.put(Roles::ROLE_ROLREPLICATION, "true");  // true
-  metadata_ptree_.put(Roles::ROLE_ROLBYPASSRLS, "false");   // false
-  metadata_ptree_.put(Roles::ROLE_ROLCONNLIMIT, "10");      // 10
-  metadata_ptree_.put(Roles::ROLE_ROLPASSWORD, "");         // empty
-  metadata_ptree_.put(Roles::ROLE_ROLVALIDUNTIL, "");       // empty
-}
-
-/**
  * @brief Verifies that the actual table metadata equals expected one.
  * @param expected  [in]  expected table metadata.
  * @param actual    [in]  actual table metadata.
@@ -97,6 +77,26 @@ void UtRoleMetadata::check_metadata_expected(
   // role metadata rolvaliduntil.
   check_expected<std::string>(expected, actual, Roles::ROLE_ROLVALIDUNTIL, file,
                               line);
+}
+
+/**
+ * @brief Generate metadata for testing.
+ */
+void UtRoleMetadata::generate_test_metadata() {
+  metadata_ptree_.put(Roles::FORMAT_VERSION, Roles::format_version());
+  metadata_ptree_.put(Roles::GENERATION, Roles::generation());
+  metadata_ptree_.put(Roles::ROLE_OID, role_id_);
+  metadata_ptree_.put(Roles::ROLE_ROLNAME, kRoleName);
+  metadata_ptree_.put(Roles::ROLE_ROLSUPER, "false");       // false
+  metadata_ptree_.put(Roles::ROLE_ROLINHERIT, "false");     // false
+  metadata_ptree_.put(Roles::ROLE_ROLCREATEROLE, "true");   // true
+  metadata_ptree_.put(Roles::ROLE_ROLCREATEDB, "true");     // true
+  metadata_ptree_.put(Roles::ROLE_ROLCANLOGIN, "false");    // false
+  metadata_ptree_.put(Roles::ROLE_ROLREPLICATION, "true");  // true
+  metadata_ptree_.put(Roles::ROLE_ROLBYPASSRLS, "false");   // false
+  metadata_ptree_.put(Roles::ROLE_ROLCONNLIMIT, "10");      // 10
+  metadata_ptree_.put(Roles::ROLE_ROLPASSWORD, "");         // empty
+  metadata_ptree_.put(Roles::ROLE_ROLVALIDUNTIL, "");       // empty
 }
 
 }  // namespace manager::metadata::testing

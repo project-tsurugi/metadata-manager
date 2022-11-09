@@ -24,36 +24,6 @@ namespace manager::metadata::testing {
 using boost::property_tree::ptree;
 
 /**
- * @brief Generate metadata for testing.
- */
-void UtIndexMetadata::generate_test_metadata() {
-  // Generate unique index name.
-  std::string index_name = "index_name_" + UTUtils::generate_narrow_uid();
-
-  metadata_struct_->format_version = NOT_INITIALIZED;
-  metadata_struct_->generation     = NOT_INITIALIZED;
-  metadata_struct_->id             = NOT_INITIALIZED;
-  metadata_struct_->name           = index_name;
-  metadata_struct_->namespace_name = "namespace_name";
-  metadata_struct_->owner_id       = 1001;
-  metadata_struct_->acl            = "rawdDxt";
-  metadata_struct_->table_id       = table_id_;
-  metadata_struct_->access_method =
-      static_cast<int64_t>(Index::AccessMethod::DEFAULT);
-  metadata_struct_->number_of_key_columns = 1;
-  metadata_struct_->is_unique             = false;
-  metadata_struct_->is_primary            = false;
-  metadata_struct_->keys                  = {1, 2};
-  metadata_struct_->keys_id               = {1001, 1002};
-  metadata_struct_->options               = {
-      static_cast<int64_t>(Index::Direction::ASC_NULLS_LAST),
-      static_cast<int64_t>(Index::Direction::DESC_NULLS_FIRST)};
-
-  // Generate ptree from UTTableMetadata fields.
-  metadata_ptree_ = metadata_struct_->convert_to_ptree();
-}
-
-/**
  * @brief Verifies that the actual table metadata equals expected one.
  * @param expected  [in]  expected table metadata.
  * @param actual    [in]  actual table metadata.
@@ -97,6 +67,36 @@ void UtIndexMetadata::check_metadata_expected(
   check_child_expected(expected, actual, Index::KEYS_ID, file, line);
   // index metadata options
   check_child_expected(expected, actual, Index::OPTIONS, file, line);
+}
+
+/**
+ * @brief Generate metadata for testing.
+ */
+void UtIndexMetadata::generate_test_metadata() {
+  // Generate unique index name.
+  std::string index_name = "index_name_" + UTUtils::generate_narrow_uid();
+
+  metadata_struct_->format_version = NOT_INITIALIZED;
+  metadata_struct_->generation     = NOT_INITIALIZED;
+  metadata_struct_->id             = NOT_INITIALIZED;
+  metadata_struct_->name           = index_name;
+  metadata_struct_->namespace_name = "namespace_name";
+  metadata_struct_->owner_id       = 1001;
+  metadata_struct_->acl            = "rawdDxt";
+  metadata_struct_->table_id       = table_id_;
+  metadata_struct_->access_method =
+      static_cast<int64_t>(Index::AccessMethod::DEFAULT);
+  metadata_struct_->number_of_key_columns = 1;
+  metadata_struct_->is_unique             = false;
+  metadata_struct_->is_primary            = false;
+  metadata_struct_->keys                  = {1, 2};
+  metadata_struct_->keys_id               = {1001, 1002};
+  metadata_struct_->options               = {
+      static_cast<int64_t>(Index::Direction::ASC_NULLS_LAST),
+      static_cast<int64_t>(Index::Direction::DESC_NULLS_FIRST)};
+
+  // Generate ptree from UTTableMetadata fields.
+  metadata_ptree_ = metadata_struct_->convert_to_ptree();
 }
 
 }  // namespace manager::metadata::testing

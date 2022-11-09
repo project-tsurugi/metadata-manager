@@ -15,14 +15,6 @@
  */
 #include <gtest/gtest.h>
 
-// #include <memory>
-// #include <string>
-
-// #include <boost/format.hpp>
-
-// #include "manager/metadata/common/config.h"
-// #include "manager/metadata/dao/postgresql/dbc_utils_pg.h"
-// #include "test/common/global_test_environment.h"
 #include "manager/metadata/roles.h"
 #include "test/common/dummy_object.h"
 #include "test/common/ut_utils.h"

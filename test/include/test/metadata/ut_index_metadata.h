@@ -32,8 +32,6 @@ class UtIndexMetadata : public UtMetadata<manager::metadata::Index> {
     this->generate_test_metadata();
   }
 
-  void generate_test_metadata() override;
-
   void check_metadata_expected(const boost::property_tree::ptree& expected,
                                const boost::property_tree::ptree& actual,
                                const char* file,
@@ -41,6 +39,8 @@ class UtIndexMetadata : public UtMetadata<manager::metadata::Index> {
 
  private:
   ObjectId table_id_ = NOT_INITIALIZED;
+
+  void generate_test_metadata();
 };
 
 }  // namespace manager::metadata::testing

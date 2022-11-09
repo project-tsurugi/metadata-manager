@@ -39,8 +39,6 @@ class UTTableMetadata : public UtMetadata<manager::metadata::Table> {
     this->generate_test_metadata();
   }
 
-  void generate_test_metadata() override;
-
   void check_metadata_expected(const boost::property_tree::ptree& expected,
                                const boost::property_tree::ptree& actual,
                                const char* file,
@@ -57,6 +55,8 @@ class UTTableMetadata : public UtMetadata<manager::metadata::Table> {
 
  private:
   std::string table_name_;
+
+  void generate_test_metadata();
 };
 
 }  // namespace manager::metadata::testing

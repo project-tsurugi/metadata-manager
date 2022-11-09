@@ -70,8 +70,6 @@ class UtMetadata : public UtMetadataInterface {
     return metadata_ptree_;
   }
 
-  virtual void generate_test_metadata() = 0;
-
   /**
    * @brief Verifies that the actual metadata equals expected one.
    * @param expected  [in]  expected metadata.

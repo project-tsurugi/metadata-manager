@@ -22,29 +22,6 @@
 namespace manager::metadata::testing {
 
 /**
- * @brief Generate metadata for testing.
- */
-void UtConstraintMetadata::generate_test_metadata() {
-  // Generate unique constraint name.
-  std::string constraint_name =
-      "constraint_name_" + UTUtils::generate_narrow_uid();
-
-  metadata_struct_->format_version = NOT_INITIALIZED;
-  metadata_struct_->generation     = NOT_INITIALIZED;
-  metadata_struct_->id             = NOT_INITIALIZED;
-  metadata_struct_->name           = constraint_name;
-  metadata_struct_->table_id       = table_id_;
-  metadata_struct_->type           = Constraint::ConstraintType::UNIQUE;
-  metadata_struct_->columns        = {1, 2};
-  metadata_struct_->columns_id     = {1001, 2001};
-  metadata_struct_->index_id       = 3;
-  metadata_struct_->expression     = "none";
-
-  // Generate ptree from UTTableMetadata fields.
-  metadata_ptree_ = metadata_struct_->convert_to_ptree();
-}
-
-/**
  * @brief Verifies that the actual table metadata equals expected one.
  * @param expected  [in]  expected table metadata.
  * @param actual    [in]  actual table metadata.
@@ -76,6 +53,29 @@ void UtConstraintMetadata::check_metadata_expected(
   // Constraint expression
   check_expected<std::string>(expected, actual, Constraint::EXPRESSION, file,
                               line);
+}
+
+/**
+ * @brief Generate metadata for testing.
+ */
+void UtConstraintMetadata::generate_test_metadata() {
+  // Generate unique constraint name.
+  std::string constraint_name =
+      "constraint_name_" + UTUtils::generate_narrow_uid();
+
+  metadata_struct_->format_version = NOT_INITIALIZED;
+  metadata_struct_->generation     = NOT_INITIALIZED;
+  metadata_struct_->id             = NOT_INITIALIZED;
+  metadata_struct_->name           = constraint_name;
+  metadata_struct_->table_id       = table_id_;
+  metadata_struct_->type           = Constraint::ConstraintType::UNIQUE;
+  metadata_struct_->columns        = {1, 2};
+  metadata_struct_->columns_id     = {1001, 2001};
+  metadata_struct_->index_id       = 3;
+  metadata_struct_->expression     = "none";
+
+  // Generate ptree from UTTableMetadata fields.
+  metadata_ptree_ = metadata_struct_->convert_to_ptree();
 }
 
 }  // namespace manager::metadata::testing
