@@ -35,7 +35,7 @@ using boost::property_tree::ptree;
  */
 void ApiTest::test_flow_get_by_id(
     const UtMetadataInterface* ut_metadata) const {
-  SCOPED_TRACE("");
+  CALL_TRACE;
   ASSERT_TRUE(managers_);
 
   // auto managers = get_manager();
@@ -48,7 +48,7 @@ void ApiTest::test_flow_get_by_id(
   ObjectId new_object_id = INVALID_OBJECT_ID;
   // Add metadata.
   {
-    SCOPED_TRACE("");
+    CALL_TRACE;
     // Test to add metadata.
     EXPECT_NO_FATAL_FAILURE({
       new_object_id =
@@ -66,18 +66,17 @@ void ApiTest::test_flow_get_by_id(
   ptree retrieved_ptree;
   // Get metadata with ptree.
   {
-    SCOPED_TRACE("");
+    CALL_TRACE;
     // Test to get metadata with ptree.
-    this->test_get(managers, new_object_id, ErrorCode::OK,
-                   retrieved_ptree);
+    this->test_get(managers, new_object_id, ErrorCode::OK, retrieved_ptree);
     // Verifies that the returned metadata is expected one.
     ut_metadata->CHECK_METADATA_EXPECTED(inserted_metadata, retrieved_ptree);
   }
 
   auto retrieved_struct = this->get_structure();
   // Get metadata with structure.
-  {
-    SCOPED_TRACE("");
+  if (retrieved_struct != nullptr) {
+    CALL_TRACE;
     // Test to get metadata with structure.
     this->test_get(managers, new_object_id, ErrorCode::OK, *retrieved_struct);
     // Verifies that the returned metadata is expected one.
@@ -85,13 +84,13 @@ void ApiTest::test_flow_get_by_id(
   }
 
   {
-    SCOPED_TRACE("");
+    CALL_TRACE;
     // Test to remove metadata.
     this->test_remove(managers, new_object_id, ErrorCode::OK);
   }
 
   {
-    SCOPED_TRACE("");
+    CALL_TRACE;
     // Test whether metadata has been removed.
     this->test_get(managers, new_object_id, ErrorCode::ID_NOT_FOUND,
                    retrieved_ptree);
@@ -108,7 +107,7 @@ void ApiTest::test_flow_get_by_id(
  */
 void ApiTest::test_flow_get_by_id_with_struct(
     const UtMetadataInterface* ut_metadata) const {
-  SCOPED_TRACE("");
+  CALL_TRACE;
   ASSERT_TRUE(managers_);
 
   // Test to initialize the manager.
@@ -120,7 +119,7 @@ void ApiTest::test_flow_get_by_id_with_struct(
   ObjectId new_object_id = INVALID_OBJECT_ID;
   // Add metadata.
   {
-    SCOPED_TRACE("");
+    CALL_TRACE;
     // Test to add metadata with structure.
     EXPECT_NO_FATAL_FAILURE({
       new_object_id = this->test_add(managers_.get(), *inserted_metadata_struct,
@@ -138,7 +137,7 @@ void ApiTest::test_flow_get_by_id_with_struct(
   ptree retrieved_ptree;
   // Get metadata with ptree.
   {
-    SCOPED_TRACE("");
+    CALL_TRACE;
     // Test to get metadata with ptree.
     this->test_get(managers_.get(), new_object_id, ErrorCode::OK,
                    retrieved_ptree);
@@ -148,8 +147,8 @@ void ApiTest::test_flow_get_by_id_with_struct(
 
   auto retrieved_struct = this->get_structure();
   // Get metadata with structure.
-  {
-    SCOPED_TRACE("");
+  if (retrieved_struct != nullptr) {
+    CALL_TRACE;
     // Test to get metadata with structure.
     this->test_get(managers_.get(), new_object_id, ErrorCode::OK,
                    *retrieved_struct);
@@ -158,13 +157,13 @@ void ApiTest::test_flow_get_by_id_with_struct(
   }
 
   {
-    SCOPED_TRACE("");
+    CALL_TRACE;
     // Test to remove metadata.
     this->test_remove(managers_.get(), new_object_id, ErrorCode::OK);
   }
 
   {
-    SCOPED_TRACE("");
+    CALL_TRACE;
     // Test whether metadata has been removed.
     this->test_get(managers_.get(), new_object_id, ErrorCode::ID_NOT_FOUND,
                    retrieved_ptree);
@@ -181,7 +180,7 @@ void ApiTest::test_flow_get_by_id_with_struct(
  */
 void ApiTest::test_flow_get_by_name(
     const UtMetadataInterface* ut_metadata) const {
-  SCOPED_TRACE("");
+  CALL_TRACE;
   ASSERT_TRUE(managers_);
 
   // Test to initialize the manager.
@@ -193,7 +192,7 @@ void ApiTest::test_flow_get_by_name(
   ObjectId new_object_id = INVALID_OBJECT_ID;
   // Add metadata.
   {
-    SCOPED_TRACE("");
+    CALL_TRACE;
     // Test to add metadata.
     EXPECT_NO_FATAL_FAILURE({
       new_object_id =
@@ -211,7 +210,7 @@ void ApiTest::test_flow_get_by_name(
   ptree retrieved_ptree;
   // Get metadata with ptree.
   {
-    SCOPED_TRACE("");
+    CALL_TRACE;
     // Test to get metadata with ptree.
     this->test_get(managers_.get(), object_name, ErrorCode::OK,
                    retrieved_ptree);
@@ -221,8 +220,8 @@ void ApiTest::test_flow_get_by_name(
 
   auto retrieved_struct = this->get_structure();
   // Get metadata with structure.
-  {
-    SCOPED_TRACE("");
+  if (retrieved_struct != nullptr) {
+    CALL_TRACE;
     // Test to get metadata with structure.
     this->test_get(managers_.get(), object_name, ErrorCode::OK,
                    *retrieved_struct);
@@ -231,13 +230,13 @@ void ApiTest::test_flow_get_by_name(
   }
 
   {
-    SCOPED_TRACE("");
+    CALL_TRACE;
     // Test to remove metadata.
     this->test_remove(managers_.get(), object_name, ErrorCode::OK);
   }
 
   {
-    SCOPED_TRACE("");
+    CALL_TRACE;
     // Test whether metadata has been removed with ptree.
     this->test_get(managers_.get(), object_name, ErrorCode::NAME_NOT_FOUND,
                    retrieved_ptree);
@@ -254,7 +253,7 @@ void ApiTest::test_flow_get_by_name(
  */
 void ApiTest::test_flow_get_by_name_with_struct(
     const UtMetadataInterface* ut_metadata) const {
-  SCOPED_TRACE("");
+  CALL_TRACE;
   ASSERT_TRUE(managers_);
 
   // Test to initialize the manager.
@@ -268,7 +267,7 @@ void ApiTest::test_flow_get_by_name_with_struct(
   ObjectId new_object_id = INVALID_OBJECT_ID;
   // Add metadata.
   {
-    SCOPED_TRACE("");
+    CALL_TRACE;
     // Test to add metadata with structure.
     EXPECT_NO_FATAL_FAILURE({
       new_object_id = this->test_add(managers_.get(), *inserted_metadata_struct,
@@ -286,7 +285,7 @@ void ApiTest::test_flow_get_by_name_with_struct(
   ptree retrieved_ptree;
   // Get metadata with ptree.
   {
-    SCOPED_TRACE("");
+    CALL_TRACE;
     // Test to get metadata with ptree.
     this->test_get(managers_.get(), object_name, ErrorCode::OK,
                    retrieved_ptree);
@@ -296,8 +295,8 @@ void ApiTest::test_flow_get_by_name_with_struct(
 
   auto retrieved_struct = this->get_structure();
   // Get metadata with structure.
-  {
-    SCOPED_TRACE("");
+  if (retrieved_struct != nullptr) {
+    CALL_TRACE;
     // Test to get metadata with structure.
     this->test_get(managers_.get(), object_name, ErrorCode::OK,
                    *retrieved_struct);
@@ -306,13 +305,13 @@ void ApiTest::test_flow_get_by_name_with_struct(
   }
 
   {
-    SCOPED_TRACE("");
+    CALL_TRACE;
     // Test to remove metadata.
     this->test_remove(managers_.get(), object_name, ErrorCode::OK);
   }
 
   {
-    SCOPED_TRACE("");
+    CALL_TRACE;
     // Test whether metadata has been removed.
     this->test_get(managers_.get(), object_name, ErrorCode::NAME_NOT_FOUND,
                    retrieved_ptree);
@@ -325,27 +324,28 @@ void ApiTest::test_flow_get_by_name_with_struct(
  *   add: patterns that obtain a object ID.
  *   get_all: all object.
  *   remove: object ID as a key.
- * @param ut_metadata  [in]  test metadata.
+ * @param ut_metadata          [in]  test metadata.
+ * @param unique_data_creator  [in]  callback function to create unique data.
+ * @param create_data_max      [in]  number of data to be created.
  */
-void ApiTest::test_flow_getall(const UtMetadataInterface* ut_metadata) const {
-  SCOPED_TRACE("");
+void ApiTest::test_flow_getall(const UtMetadataInterface* ut_metadata,
+                               UniqueDataCreator unique_data_creator,
+                               const int32_t create_data_max) const {
+  CALL_TRACE;
   ASSERT_TRUE(managers_);
-
-  static constexpr const int32_t kTestConstraintCount = 5;
 
   // Get the current number of records.
   auto base_record_count = this->get_record_count();
 
   {
-    SCOPED_TRACE("");
+    CALL_TRACE;
     // Test to initialize the manager.
     ASSERT_NO_FATAL_FAILURE(this->test_init(managers_.get(), ErrorCode::OK));
   }
 
   std::vector<ptree> metadata_container = {};
-
   {
-    SCOPED_TRACE("");
+    CALL_TRACE;
     // Testing in the pre-addition state.
     this->test_getall(managers_.get(), ErrorCode::OK, metadata_container);
     EXPECT_EQ(base_record_count, metadata_container.size());
@@ -353,20 +353,16 @@ void ApiTest::test_flow_getall(const UtMetadataInterface* ut_metadata) const {
 
   // Generate test metadata.
   std::vector<ptree> test_metadata_list{};
-  for (int32_t num = 1; num <= kTestConstraintCount; num++) {
-    std::string metadata_name = "metadata_name_" +
-                                UTUtils::generate_narrow_uid() + "_" +
-                                std::to_string(num);
-
+  for (int32_t num = 1; num <= create_data_max; num++) {
     auto metadata = ut_metadata->get_metadata_ptree();
-    metadata.put(Object::NAME, metadata_name);
-
+    // Creates unique data using the specified callback function.
+    unique_data_creator(metadata, num);
     test_metadata_list.push_back(metadata);
   }
 
   // Add metadata.
   {
-    SCOPED_TRACE("");
+    CALL_TRACE;
     for (auto& metadata : test_metadata_list) {
       ObjectId object_id = INVALID_OBJECT_ID;
       // Test to add metadata.
@@ -386,7 +382,7 @@ void ApiTest::test_flow_getall(const UtMetadataInterface* ut_metadata) const {
 
   // Get metadata with structure.
   {
-    SCOPED_TRACE("");
+    CALL_TRACE;
     // Test to all get metadata with structure.
     this->test_getall(managers_.get(), ErrorCode::OK, metadata_container);
 
@@ -414,7 +410,7 @@ void ApiTest::test_flow_getall(const UtMetadataInterface* ut_metadata) const {
 
   // Remove metadata.
   {
-    SCOPED_TRACE("");
+    CALL_TRACE;
     for (auto& metadata : test_metadata_list) {
       // Extract object ID.
       auto object_id = metadata.get<ObjectId>(Object::ID);
@@ -452,7 +448,7 @@ void ApiTest::test_flow_getall_with_struct(
 void ApiTest::test_flow_update(
     const UtMetadataInterface* ut_metadata,
     const UtMetadataInterface* ut_metadata_update) const {
-  SCOPED_TRACE("");
+  CALL_TRACE;
   ASSERT_TRUE(managers_);
 
   // Test to initialize the manager.
@@ -462,7 +458,7 @@ void ApiTest::test_flow_update(
   ObjectId new_object_id = INVALID_OBJECT_ID;
   // Add metadata.
   {
-    SCOPED_TRACE("");
+    CALL_TRACE;
     // Test to add metadata.
     EXPECT_NO_FATAL_FAILURE({
       new_object_id =
@@ -479,7 +475,7 @@ void ApiTest::test_flow_update(
   ptree before_ptree;
   // Get metadata with ptree.
   {
-    SCOPED_TRACE("");
+    CALL_TRACE;
     // Test to get metadata with ptree.
     this->test_get(managers_.get(), new_object_id, ErrorCode::OK, before_ptree);
     // Verifies that the returned metadata is expected one.
@@ -489,7 +485,7 @@ void ApiTest::test_flow_update(
   auto updated_metadata = ut_metadata_update->get_metadata_ptree();
   // Update metadata.
   {
-    SCOPED_TRACE("");
+    CALL_TRACE;
     // Set object ID.
     updated_metadata.put(Object::ID, new_object_id);
 
@@ -501,7 +497,7 @@ void ApiTest::test_flow_update(
   ptree after_ptree;
   // Get metadata with ptree.
   {
-    SCOPED_TRACE("");
+    CALL_TRACE;
     // Test to get metadata with ptree.
     this->test_get(managers_.get(), new_object_id, ErrorCode::OK, after_ptree);
     // Verifies that the returned metadata is expected one.
@@ -509,7 +505,7 @@ void ApiTest::test_flow_update(
   }
 
   {
-    SCOPED_TRACE("");
+    CALL_TRACE;
     // Test to remove metadata.
     this->test_remove(managers_.get(), new_object_id, ErrorCode::OK);
   }
@@ -517,110 +513,115 @@ void ApiTest::test_flow_update(
 
 /**
  * @brief This is a test to init metadata.
- * @param managers     [in]  metadata management class object.
- * @param expect_code  [in]  expected result code.
+ * @param metadata_manager  [in]  metadata management class object.
+ * @param expect_code       [in]  expected result code.
  */
-void ApiTest::test_init(const Metadata* managers, ErrorCode expect_code) const {
-  assert(managers != nullptr);
+void ApiTest::test_init(const Metadata* metadata_manager,
+                        ErrorCode expect_code) const {
+  const auto managers =
+      (metadata_manager == nullptr ? managers_.get() : metadata_manager);
 
   UTUtils::print("-- init test metadata --");
 
-  ErrorCode error = managers_->init();
+  ErrorCode error = managers->init();
   ASSERT_EQ(expect_code, error);
 }
 
 /**
  * @brief This is a test to add metadata.
- * @param managers         [in]  metadata management class object.
- * @param metadata_object  [in]  metadata object.
- * @param expect_code      [in]  expected result code.
+ * @param metadata_manager  [in]  metadata management class object.
+ * @param metadata_object   [in]  metadata object.
+ * @param expect_code       [in]  expected result code.
  * @return ObjectId - added object ID.
  */
-ObjectId ApiTest::test_add(const Metadata* managers,
+ObjectId ApiTest::test_add(const Metadata* metadata_manager,
                            boost::property_tree::ptree& metadata_object,
                            ErrorCode expect_code) const {
   UTUtils::print("-- add test metadata with ptree --");
-  return metadata_add(managers, metadata_object, expect_code);
+  return metadata_add(metadata_manager, metadata_object, expect_code);
 }
 
 /**
  * @brief This is a test to add metadata.
- * @param managers         [in]  metadata management class object.
- * @param metadata_object  [in]  metadata object.
- * @param expect_code      [in]  expected result code.
+ * @param metadata_manager  [in]  metadata management class object.
+ * @param metadata_object   [in]  metadata object.
+ * @param expect_code       [in]  expected result code.
  * @return ObjectId - added object ID.
  */
-ObjectId ApiTest::test_add(const Metadata* managers, Object& metadata_object,
+ObjectId ApiTest::test_add(const Metadata* metadata_manager,
+                           Object& metadata_object,
                            ErrorCode expect_code) const {
   UTUtils::print("-- add test metadata with structure --");
-  return metadata_add(managers, metadata_object, expect_code);
+  return metadata_add(metadata_manager, metadata_object, expect_code);
 }
 
 /**
  * @brief This is a test to get metadata.
- * @param managers         [in]  metadata management class object.
- * @param object_id        [in]  object ID of the metadata to be retrieved.
- * @param metadata_object  [out] retrieved metadata object.
- * @param expect_code      [in]  expected result code.
+ * @param metadata_manager  [in]  metadata management class object.
+ * @param object_id         [in]  object ID of the metadata to be retrieved.
+ * @param metadata_object   [out] retrieved metadata object.
+ * @param expect_code       [in]  expected result code.
  * @return boost::property_tree::ptree - retrieved metadata.
  */
-void ApiTest::test_get(const Metadata* managers, ObjectId object_id,
+void ApiTest::test_get(const Metadata* metadata_manager, ObjectId object_id,
                        ErrorCode expect_code,
                        boost::property_tree::ptree& metadata_object) const {
   UTUtils::print("-- get test metadata by object ID with ptree --");
-  metadata_get(managers, object_id, expect_code, metadata_object);
+  metadata_get(metadata_manager, object_id, expect_code, metadata_object);
 }
 
 /**
  * @brief This is a test to get metadata.
- * @param managers         [in]  metadata management class object.
- * @param object_id        [in]  object ID of the metadata to be retrieved.
- * @param expect_code      [in]  expected result code.
- * @param metadata_object  [out] retrieved metadata object.
+ * @param metadata_manager  [in]  metadata management class object.
+ * @param object_id         [in]  object ID of the metadata to be retrieved.
+ * @param expect_code       [in]  expected result code.
+ * @param metadata_object   [out] retrieved metadata object.
  */
-void ApiTest::test_get(const Metadata* managers, ObjectId object_id,
+void ApiTest::test_get(const Metadata* metadata_manager, ObjectId object_id,
                        ErrorCode expect_code, Object& metadata_object) const {
   UTUtils::print("-- get test metadata by object ID with structure --");
-  metadata_get(managers, object_id, expect_code, metadata_object);
+  metadata_get(metadata_manager, object_id, expect_code, metadata_object);
 }
 
 /**
  * @brief This is a test to get metadata.
- * @param managers         [in]  metadata management class object.
- * @param object_name      [in]  object name of the metadata to be retrieved.
- * @param expect_code      [in]  expected result code.
- * @param metadata_object  [out] retrieved metadata object.
+ * @param metadata_manager  [in]  metadata management class object.
+ * @param object_name       [in]  object name of the metadata to be retrieved.
+ * @param expect_code       [in]  expected result code.
+ * @param metadata_object   [out] retrieved metadata object.
  */
-void ApiTest::test_get(const Metadata* managers, std::string_view object_name,
-                       ErrorCode expect_code,
+void ApiTest::test_get(const Metadata* metadata_manager,
+                       std::string_view object_name, ErrorCode expect_code,
                        boost::property_tree::ptree& metadata_object) const {
   UTUtils::print("-- get test metadata by object name with ptree --");
-  metadata_get(managers, object_name, expect_code, metadata_object);
+  metadata_get(metadata_manager, object_name, expect_code, metadata_object);
 }
 
 /**
  * @brief This is a test to get metadata.
- * @param managers         [in]  metadata management class object.
- * @param object_name      [in]  object name of the metadata to be retrieved.
- * @param expect_code      [in]  expected result code.
- * @param metadata_object  [out] retrieved metadata object.
+ * @param metadata_manager  [in]  metadata management class object.
+ * @param object_name       [in]  object name of the metadata to be retrieved.
+ * @param expect_code       [in]  expected result code.
+ * @param metadata_object   [out] retrieved metadata object.
  */
-void ApiTest::test_get(const Metadata* managers, std::string_view object_name,
-                       ErrorCode expect_code, Object& metadata_object) const {
+void ApiTest::test_get(const Metadata* metadata_manager,
+                       std::string_view object_name, ErrorCode expect_code,
+                       Object& metadata_object) const {
   UTUtils::print("-- get test metadata by object name with structure --");
-  metadata_get(managers, object_name, expect_code, metadata_object);
+  metadata_get(metadata_manager, object_name, expect_code, metadata_object);
 }
 
 /**
  * @brief This is a test to get metadata.
- * @param managers     [in]  metadata management class object.
- * @param expect_code  [in]  expected result code.
- * @param container    [out] retrieved metadata.
+ * @param metadata_manager  [in]  metadata management class object.
+ * @param expect_code       [in]  expected result code.
+ * @param container         [out] retrieved metadata.
  */
 void ApiTest::test_getall(
-    const Metadata* managers, ErrorCode expect_code,
+    const Metadata* metadata_manager, ErrorCode expect_code,
     std::vector<boost::property_tree::ptree>& container) const {
-  SCOPED_TRACE("");
+  const auto managers =
+      (metadata_manager == nullptr ? managers_.get() : metadata_manager);
   assert(managers != nullptr);
 
   UTUtils::print("-- get_all test metadata --");
@@ -643,10 +644,10 @@ void ApiTest::test_getall(
  * @param expect_code  [in]  expected result code.
  * @param container    [out] retrieved metadata.
  */
-void ApiTest::test_getall(const Metadata* managers,
+void ApiTest::test_getall(const Metadata* metadata_manager,
                            ErrorCode expect_code,
                            std::vector<Object>& container) const {
-  SCOPED_TRACE("");
+  const auto managers = (metadata_manager == nullptr ? managers_.get() : metadata_manager);
   assert(managers != nullptr);
 
   UTUtils::print("-- get_all test metadata --");
@@ -665,43 +666,44 @@ void ApiTest::test_getall(const Metadata* managers,
 
 /**
  * @brief This is a test to update metadata.
- * @param managers         [in]  metadata management class object.
- * @param object_id        [in]  object ID of the metadata to be retrieved.
- * @param metadata_object  [in]  metadata object.
- * @param expect_code      [in]  expected result code.
+ * @param metadata_manager  [in]  metadata management class object.
+ * @param object_id         [in]  object ID of the metadata to be retrieved.
+ * @param metadata_object   [in]  metadata object.
+ * @param expect_code       [in]  expected result code.
  */
-void ApiTest::test_update(const Metadata* managers, ObjectId object_id,
+void ApiTest::test_update(const Metadata* metadata_manager, ObjectId object_id,
                           boost::property_tree::ptree& metadata_object,
                           ErrorCode expect_code) const {
   UTUtils::print("-- update test metadata by object id with ptree --");
-  metadata_update(managers, object_id, metadata_object, expect_code);
+  metadata_update(metadata_manager, object_id, metadata_object, expect_code);
 }
 
 #if 0
 /**
  * @brief This is a test to update metadata.
- * @param managers         [in]  metadata management class object.
- * @param object_id        [in]  object ID of the metadata to be retrieved.
- * @param metadata_object  [in]  metadata object.
- * @param expect_code      [in]  expected result code.
+ * @param metadata_manager  [in]  metadata management class object.
+ * @param object_id         [in]  object ID of the metadata to be retrieved.
+ * @param metadata_object   [in]  metadata object.
+ * @param expect_code       [in]  expected result code.
  */
-void ApiTest::test_update(const Metadata* managers, ObjectId object_id,
+void ApiTest::test_update(const Metadata* metadata_manager, ObjectId object_id,
                            Object& metadata_object,
                            ErrorCode expect_code) const {
   UTUtils::print("-- update test metadata by object id with structure --");
-  metadata_update(managers, object_id, metadata_object, expect_code);
+  metadata_update(metadata_manager, object_id, metadata_object, expect_code);
 }
 #endif
 
 /**
  * @brief This is a test to remove metadata.
- * @param managers     [in]  metadata management class object.
- * @param object_id    [in]  object ID of the metadata to be removed.
- * @param expect_code  [in]  expected result code.
+ * @param metadata_manager  [in]  metadata management class object.
+ * @param object_id         [in]  object ID of the metadata to be removed.
+ * @param expect_code       [in]  expected result code.
  */
-void ApiTest::test_remove(const Metadata* managers, ObjectId object_id,
+void ApiTest::test_remove(const Metadata* metadata_manager, ObjectId object_id,
                           ErrorCode expect_code) const {
-  SCOPED_TRACE("");
+  const auto managers =
+      (metadata_manager == nullptr ? managers_.get() : metadata_manager);
   assert(managers != nullptr);
 
   UTUtils::print("-- remove test metadata by object ID --");
@@ -714,14 +716,15 @@ void ApiTest::test_remove(const Metadata* managers, ObjectId object_id,
 
 /**
  * @brief This is a test to remove metadata.
- * @param managers    [in]  metadata management class object.
- * @param object_name [in]  object name of the metadata to be removed.
- * @param expect_code [in]  expected result code.
+ * @param metadata_manager  [in]  metadata management class object.
+ * @param object_name       [in]  object name of the metadata to be removed.
+ * @param expect_code       [in]  expected result code.
  */
-void ApiTest::test_remove(const Metadata* managers,
+void ApiTest::test_remove(const Metadata* metadata_manager,
                           std::string_view object_name,
                           ErrorCode expect_code) const {
-  SCOPED_TRACE("");
+  const auto managers =
+      (metadata_manager == nullptr ? managers_.get() : metadata_manager);
   assert(managers != nullptr);
 
   UTUtils::print("-- remove test metadata by object name --");
@@ -742,15 +745,17 @@ void ApiTest::test_remove(const Metadata* managers,
 
 /**
  * @brief This is a test to add metadata.
- * @param managers         [in]  metadata management class object.
- * @param metadata_object  [in]  metadata object.
- * @param expect_code      [in]  expected result code.
+ * @param metadata_manager  [in]  metadata management class object.
+ * @param metadata_object   [in]  metadata object.
+ * @param expect_code       [in]  expected result code.
  * @return ObjectId - added object ID.
  */
 template <typename T>
-ObjectId ApiTest::metadata_add(const Metadata* managers, T& metadata_object,
+ObjectId ApiTest::metadata_add(const Metadata* metadata_manager,
+                               T& metadata_object,
                                ErrorCode expect_code) const {
-  SCOPED_TRACE("");
+  const auto managers =
+      (metadata_manager == nullptr ? managers_.get() : metadata_manager);
   assert(managers != nullptr);
 
   UTUtils::print(" " + UTUtils::get_tree_string(metadata_object));
@@ -776,17 +781,18 @@ ObjectId ApiTest::metadata_add(const Metadata* managers, T& metadata_object,
 
 /**
  * @brief This is a test to get metadata.
- * @param managers         [in]  metadata management class object.
- * @param object_key       [in]  object ID/name of the metadata to be
+ * @param metadata_manager  [in]  metadata management class object.
+ * @param object_key        [in]  object ID/name of the metadata to be
      retrieved.
- * @param expect_code      [in]  expected result code.
- * @param metadata_object  [out] retrieved metadata object.
+ * @param expect_code       [in]  expected result code.
+ * @param metadata_object   [out] retrieved metadata object.
  * @return boost::property_tree::ptree - retrieved metadata.
  */
 template <typename KEY, typename T>
-void ApiTest::metadata_get(const Metadata* managers, KEY object_key,
+void ApiTest::metadata_get(const Metadata* metadata_manager, KEY object_key,
                            ErrorCode expect_code, T& metadata_object) const {
-  SCOPED_TRACE("");
+  const auto managers =
+      (metadata_manager == nullptr ? managers_.get() : metadata_manager);
   assert(managers != nullptr);
 
   UTUtils::print(" >> object key: ", object_key);
@@ -795,21 +801,29 @@ void ApiTest::metadata_get(const Metadata* managers, KEY object_key,
   ErrorCode actual = managers->get(object_key, metadata_object);
   EXPECT_EQ(expect_code, actual);
 
-  UTUtils::print(" " + UTUtils::get_tree_string(metadata_object));
+  // If there is an error in the test, it terminates.
+  if (!::testing::Test::HasFailure()) {
+    if (expect_code == ErrorCode::OK) {
+      UTUtils::print(" " + UTUtils::get_tree_string(metadata_object));
+    } else {
+      UTUtils::print(" Does not exist.");
+    }
+  }
 }
 
 /**
  * @brief This is a test to update metadata.
- * @param managers         [in]  metadata management class object.
- * @param object_key       [in]  object ID/name of the metadata to be
+ * @param metadata_manager  [in]  metadata management class object.
+ * @param object_key        [in]  object ID/name of the metadata to be
  retrieved.
- * @param metadata_object  [in]  metadata object.
- * @param expect_code      [in]  expected result code.
+ * @param metadata_object   [in]  metadata object.
+ * @param expect_code       [in]  expected result code.
  */
 template <typename KEY, typename T>
-void ApiTest::metadata_update(const Metadata* managers, KEY object_key,
+void ApiTest::metadata_update(const Metadata* metadata_manager, KEY object_key,
                               T& metadata_object, ErrorCode expect_code) const {
-  SCOPED_TRACE("");
+  const auto managers =
+      (metadata_manager == nullptr ? managers_.get() : metadata_manager);
   assert(managers != nullptr);
 
   UTUtils::print(" >> object key: ", object_key);

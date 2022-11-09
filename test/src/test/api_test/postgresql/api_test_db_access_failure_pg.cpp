@@ -140,22 +140,15 @@ INSTANTIATE_TEST_CASE_P(
  *   return ErrorCode::DATABASE_ACCESS_FAILURE
  */
 TEST_F(ApiTestDBAccessFailure, add_table_metadata) {
-  UTTableMetadata* testdata_table_metadata =
-      global->testdata_table_metadata.get();
-  ptree new_table = testdata_table_metadata->get_metadata_ptree();
-
-  std::string table_name = "ApiTestDBAccessFailure_" +
-                           UTUtils::generate_narrow_uid() + "_" +
-                           std::to_string(__LINE__);
-  new_table.put(Tables::NAME, table_name);
-
   auto tables = std::make_unique<Tables>(GlobalTestEnvironment::TEST_DB);
 
   ErrorCode error = tables->init();
   EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
 
+  ptree table_metadata;
   ObjectIdType ret_table_id = -1;
-  error                     = tables->add(new_table, &ret_table_id);
+  // Execute the test.
+  error = tables->add(table_metadata, &ret_table_id);
   EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
   EXPECT_EQ(ret_table_id, -1);
 }
@@ -172,13 +165,14 @@ TEST_F(ApiTestDBAccessFailure, get_table_metadata_by_table_id) {
   ErrorCode error = tables->init();
   EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
 
-  ptree table_metadata_inserted;
-  error = tables->get(table_id, table_metadata_inserted);
+  ptree table_metadata;
+  // Execute the test.
+  error = tables->get(table_id, table_metadata);
   EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
 
   ptree empty_ptree;
   EXPECT_EQ(UTUtils::get_tree_string(empty_ptree),
-            UTUtils::get_tree_string(table_metadata_inserted));
+            UTUtils::get_tree_string(table_metadata));
 }
 
 /**
@@ -186,22 +180,20 @@ TEST_F(ApiTestDBAccessFailure, get_table_metadata_by_table_id) {
  *   return ErrorCode::DATABASE_ACCESS_FAILURE
  */
 TEST_F(ApiTestDBAccessFailure, get_table_metadata_by_table_name) {
-  UTTableMetadata testdata_table_metadata =
-      *(global->testdata_table_metadata.get());
-
   auto tables = std::make_unique<Tables>(GlobalTestEnvironment::TEST_DB);
 
   ErrorCode error = tables->init();
   EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
 
-  ptree table_metadata_inserted;
+  ptree table_metadata;
   std::string table_name = "table_name";
-  error                  = tables->get(table_name, table_metadata_inserted);
+  // Execute the test.
+  error = tables->get(table_name, table_metadata);
   EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
 
   ptree empty_ptree;
   EXPECT_EQ(UTUtils::get_tree_string(empty_ptree),
-            UTUtils::get_tree_string(table_metadata_inserted));
+            UTUtils::get_tree_string(table_metadata));
 }
 
 /**
@@ -209,22 +201,15 @@ TEST_F(ApiTestDBAccessFailure, get_table_metadata_by_table_name) {
  *   return ErrorCode::DATABASE_ACCESS_FAILURE
  */
 TEST_F(ApiTestDBAccessFailure, update_table_metadata) {
-  UTTableMetadata* testdata_table_metadata =
-      global->testdata_table_metadata.get();
-  ptree table_metadata = testdata_table_metadata->get_metadata_ptree();
-
-  std::string table_name = "ApiTestDBAccessFailure_" +
-                           UTUtils::generate_narrow_uid() + "_" +
-                           std::to_string(__LINE__);
-  table_metadata.put(Tables::NAME, table_name);
-
   auto tables = std::make_unique<Tables>(GlobalTestEnvironment::TEST_DB);
 
   ErrorCode error = tables->init();
   EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
 
+  ptree table_metadata;
   ObjectIdType dummy_table_id = 1;
-  error                       = tables->update(dummy_table_id, table_metadata);
+  // Execute the test.
+  error = tables->update(dummy_table_id, table_metadata);
   EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
 }
 
@@ -238,6 +223,7 @@ TEST_F(ApiTestDBAccessFailure, remove_table_metadata_by_table_id) {
   ErrorCode error = tables->init();
   EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
 
+  // Execute the test.
   error = tables->remove(1);
   EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
 }
@@ -254,7 +240,8 @@ TEST_F(ApiTestDBAccessFailure, remove_table_metadata_by_table_name) {
 
   ObjectIdType ret_table_id = -1;
   std::string table_name    = "table_name";
-  error                     = tables->remove(table_name.c_str(), &ret_table_id);
+  // Execute the test.
+  error = tables->remove(table_name.c_str(), &ret_table_id);
   EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
   EXPECT_EQ(ret_table_id, -1);
 }
@@ -271,6 +258,7 @@ TEST_F(ApiTestDBAccessFailure, get_datatypes_by_name) {
 
   std::string table_name = "table_name";
   ptree datatype;
+  // Execute the test.
   error = datatypes->get(table_name, datatype);
   EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
 
@@ -292,7 +280,7 @@ TEST_F(ApiTestDBAccessFailure, get_datatypes_by_key_value) {
   std::string key   = "key";
   std::string value = "value";
   ptree datatype;
-
+  // Execute the test.
   error = datatypes->get(key.c_str(), value, datatype);
   EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
 
@@ -312,6 +300,7 @@ TEST_F(ApiTestDBAccessFailure, get_roles_by_id) {
   EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
 
   ptree role_metadata;
+  // Execute the test.
   error = roles->get(9999, role_metadata);
   EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
 
@@ -331,6 +320,7 @@ TEST_F(ApiTestDBAccessFailure, get_roles_by_name) {
   EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
 
   ptree role_metadata;
+  // Execute the test.
   error = roles->get("role_name", role_metadata);
   EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
 
@@ -355,7 +345,7 @@ TEST_F(ApiTestDBAccessFailure, add_constraint_metadata) {
   EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
 
   ObjectIdType ret_constraint_id = -1;
-
+  // Execute the test.
   error = constraints->add(new_constraints, &ret_constraint_id);
   EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
   EXPECT_EQ(ret_constraint_id, -1);
@@ -375,6 +365,7 @@ TEST_F(ApiTestDBAccessFailure, get_constraint_metadata) {
   EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
 
   ptree constraint_metadata;
+  // Execute the test.
   error = constraints->get(constraint_id, constraint_metadata);
   EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
 
@@ -394,6 +385,7 @@ TEST_F(ApiTestDBAccessFailure, remove_constraint_metadata) {
   ErrorCode error = constraints->init();
   EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
 
+  // Execute the test.
   error = constraints->remove(1);
   EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
 }
@@ -418,6 +410,7 @@ TEST_P(ApiTestDBAccessFailureByTableIdReltuples,
   table_meta.put(Tables::ID, table_id);
   table_meta.put(Table::NUMBER_OF_TUPLES, reltuples);
 
+  // Execute the test.
   error = tables->set_statistic(table_meta);
 
   auto optional_tuples =
@@ -449,6 +442,7 @@ TEST_P(ApiTestDBAccessFailureByTableNameReltuples,
   table_meta.put(Table::NAME, table_name);
   table_meta.put(Table::NUMBER_OF_TUPLES, reltuples);
 
+  // Execute the test.
   error = tables->set_statistic(table_meta);
 
   auto optional_tuples =
@@ -473,6 +467,7 @@ TEST_P(ApiTestDBAccessFailureByTableId, get_table_statistic_by_table_id) {
   ObjectIdType table_id = GetParam();
 
   ptree table_stats;
+  // Execute the test.
   error = tables->get_statistic(table_id, table_stats);
 
   if (table_id <= 0) {
@@ -496,6 +491,7 @@ TEST_P(ApiTestDBAccessFailureByTableName, get_table_statistics_by_table_name) {
   std::string table_name = GetParam();
 
   ptree table_stats;
+  // Execute the test.
   error = tables->get_statistic(table_name, table_stats);
 
   if (table_name.empty()) {
@@ -534,6 +530,7 @@ TEST_P(ApiTestDBAccessFailureByColumnStatistics, add_one_column_statistic) {
   // column_statistic
   statistic.add_child(Statistics::COLUMN_STATISTIC, column_stats);
 
+  // Execute the test.
   error = stats->add(statistic);
 
   if ((table_id <= 0) || (column_number <= 0)) {
@@ -558,6 +555,7 @@ TEST_P(ApiTestDBAccessFailureByTableIdColumnNumber, get_one_column_statistic) {
   ObjectIdType column_number = std::get<1>(params);
 
   ptree column_stats;
+  // Execute the test.
   error = stats->get_by_column_number(table_id, column_number, column_stats);
   if ((table_id <= 0) || (column_number <= 0)) {
     EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
@@ -580,6 +578,7 @@ TEST_P(ApiTestDBAccessFailureByTableId, get_all_column_statistics) {
   ObjectIdType table_id = GetParam();
   std::vector<ptree> column_stats;
 
+  // Execute the test.
   error = stats->get_all(table_id, column_stats);
   if (table_id <= 0) {
     EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
@@ -604,6 +603,7 @@ TEST_P(ApiTestDBAccessFailureByTableIdColumnNumber,
   ObjectIdType table_id      = std::get<0>(params);
   ObjectIdType column_number = std::get<1>(params);
 
+  // Execute the test.
   error = stats->remove_by_column_number(table_id, column_number);
   if ((table_id <= 0) || (column_number <= 0)) {
     EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
@@ -623,7 +623,8 @@ TEST_P(ApiTestDBAccessFailureByTableId, remove_all_column_statistics) {
   EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
 
   ObjectIdType table_id = GetParam();
-  error                 = stats->remove_by_table_id(table_id);
+  // Execute the test.
+  error = stats->remove_by_table_id(table_id);
   if (table_id <= 0) {
     EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
   } else {

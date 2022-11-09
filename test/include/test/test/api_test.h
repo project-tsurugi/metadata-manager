@@ -27,6 +27,9 @@
 
 namespace manager::metadata::testing {
 
+typedef void (*UniqueDataCreator)(boost::property_tree::ptree& object,
+                                  const int64_t unique_num);
+
 class ApiTest {
  public:
   explicit ApiTest(std::unique_ptr<Metadata>&& manager)
@@ -45,66 +48,72 @@ class ApiTest {
   void test_flow_get_by_name(const UtMetadataInterface* ut_metadata) const;
   void test_flow_get_by_name_with_struct(
       const UtMetadataInterface* ut_metadata) const;
-  void test_flow_getall(const UtMetadataInterface* ut_metadata) const;
+  void test_flow_getall(const UtMetadataInterface* ut_metadata,
+                        UniqueDataCreator creator,
+                        const int32_t create_data_max) const;
+#if 0
   void test_flow_getall_with_struct(
       const UtMetadataInterface* ut_metadata) const;
+  void test_flow_getall_with_struct(
+      const std::vector<UtMetadataInterface> container) const;
+#endif
   void test_flow_update(const UtMetadataInterface* ut_metadata,
                         const UtMetadataInterface* ut_metadata_update) const;
 
   // Standalone tests.
-  void test_init(const Metadata* managers, ErrorCode expect_code) const;
-  ObjectId test_add(const Metadata* managers,
+  void test_init(const Metadata* metadata_manager, ErrorCode expect_code) const;
+  ObjectId test_add(const Metadata* metadata_manager,
                     boost::property_tree::ptree& metadata_object,
                     ErrorCode expect_code) const;
-  ObjectId test_add(const Metadata* managers, Object& metadata_object,
+  ObjectId test_add(const Metadata* metadata_manager, Object& metadata_object,
                     ErrorCode expect_code) const;
 
-  void test_get(const Metadata* managers, ObjectId object_id,
+  void test_get(const Metadata* metadata_manager, ObjectId object_id,
                 ErrorCode expect_code,
                 boost::property_tree::ptree& metadata_object) const;
-  void test_get(const Metadata* managers, ObjectId object_id,
+  void test_get(const Metadata* metadata_manager, ObjectId object_id,
                 ErrorCode expect_code, Object& metadata_object) const;
 
-  void test_get(const Metadata* managers, std::string_view object_name,
+  void test_get(const Metadata* metadata_manager, std::string_view object_name,
                 ErrorCode expect_code,
                 boost::property_tree::ptree& metadata_object) const;
-  void test_get(const Metadata* managers, std::string_view object_name,
+  void test_get(const Metadata* metadata_manager, std::string_view object_name,
                 ErrorCode expect_code, Object& metadata_object) const;
 
-  void test_getall(const Metadata* managers, ErrorCode expected,
+  void test_getall(const Metadata* metadata_manager, ErrorCode expected,
                    std::vector<boost::property_tree::ptree>& container) const;
 #if 0
-  void test_getall(const Metadata* managers,
+  void test_getall(const Metadata* metadata_manager,
                    ErrorCode expected, std::vector<Object>& container) const;
 #endif
 
-  void test_update(const Metadata* managers, ObjectId object_id,
+  void test_update(const Metadata* metadata_manager, ObjectId object_id,
                    boost::property_tree::ptree& metadata_object,
                    ErrorCode expected) const;
 #if 0
-  void test_update(const Metadata* managers, ObjectId object_id,
+  void test_update(const Metadata* metadata_manager, ObjectId object_id,
                    const Object& metadata_object, ErrorCode expected) const;
 #endif
 
-  void test_remove(const Metadata* managers, ObjectId object_id,
+  void test_remove(const Metadata* metadata_manager, ObjectId object_id,
                    ErrorCode expect_code) const;
-  void test_remove(const Metadata* managers, std::string_view object_name,
-                   ErrorCode expect_code) const;
+  void test_remove(const Metadata* metadata_manager,
+                   std::string_view object_name, ErrorCode expect_code) const;
 
  protected:
   std::unique_ptr<Metadata> managers_;
 
  private:
   template <typename T>
-  ObjectId metadata_add(const Metadata* managers, T& metadata_object,
+  ObjectId metadata_add(const Metadata* metadata_manager, T& metadata_object,
                         ErrorCode expect_code) const;
 
   template <typename KEY, typename T>
-  void metadata_get(const Metadata* managers, KEY object_key,
+  void metadata_get(const Metadata* metadata_manager, KEY object_key,
                     ErrorCode expect_code, T& metadata_object) const;
 
   template <typename KEY, typename T>
-  void metadata_update(const Metadata* managers, KEY object_key,
+  void metadata_update(const Metadata* metadata_manager, KEY object_key,
                        T& metadata_object, ErrorCode expect_code) const;
 };  // class ApiTest
 

@@ -65,7 +65,7 @@ class ApiTestConstraintMetadata
  *   with object ID as key.
  */
 TEST_F(ApiTestConstraintMetadata, test_get_by_id_with_ptree) {
-  SCOPED_TRACE("");
+  CALL_TRACE;
 
   // Execute the test.
   this->test_flow_get_by_id(UtConstraintMetadata(table_id_));
@@ -76,7 +76,7 @@ TEST_F(ApiTestConstraintMetadata, test_get_by_id_with_ptree) {
  *   with object ID as key.
  */
 TEST_F(ApiTestConstraintMetadata, test_get_by_id_with_struct) {
-  SCOPED_TRACE("");
+  CALL_TRACE;
 
   // Execute the test.
   this->test_flow_get_by_id_with_struct(UtConstraintMetadata(table_id_));
@@ -87,7 +87,7 @@ TEST_F(ApiTestConstraintMetadata, test_get_by_id_with_struct) {
  *   with object name as key.
  */
 TEST_F(ApiTestConstraintMetadata, test_get_by_name_with_ptree) {
-  SCOPED_TRACE("");
+  CALL_TRACE;
 
   // Generate test metadata.
   auto managers = get_constraint_metadata(GlobalTestEnvironment::TEST_DB);
@@ -106,7 +106,7 @@ TEST_F(ApiTestConstraintMetadata, test_get_by_name_with_ptree) {
  *   with object name as key.
  */
 TEST_F(ApiTestConstraintMetadata, test_get_by_name_with_struct) {
-  SCOPED_TRACE("");
+  CALL_TRACE;
 
   // Generate test metadata.
   auto managers = get_constraint_metadata(GlobalTestEnvironment::TEST_DB);
@@ -124,7 +124,7 @@ TEST_F(ApiTestConstraintMetadata, test_get_by_name_with_struct) {
  * @brief Test to add new metadata and get_all it in ptree type.
  */
 TEST_F(ApiTestConstraintMetadata, test_getall_with_ptree) {
-  SCOPED_TRACE("");
+  CALL_TRACE;
 
   // Execute the test.
   this->test_flow_getall(UtConstraintMetadata(table_id_));
@@ -135,7 +135,7 @@ TEST_F(ApiTestConstraintMetadata, test_getall_with_ptree) {
  *   with object ID as key.
  */
 TEST_F(ApiTestConstraintMetadata, test_update) {
-  SCOPED_TRACE("");
+  CALL_TRACE;
 
   // Generate test metadata.
   auto managers = get_constraint_metadata(GlobalTestEnvironment::TEST_DB);
@@ -156,7 +156,7 @@ TEST_F(ApiTestConstraintMetadata, test_update) {
  * @brief Test for incorrect constraint IDs.
  */
 TEST_F(ApiTestConstraintMetadata, test_not_found) {
-  SCOPED_TRACE("");
+  CALL_TRACE;
 
   // Generate constraints metadata manager.
   auto managers = get_constraint_metadata(GlobalTestEnvironment::TEST_DB);
@@ -209,7 +209,7 @@ TEST_F(ApiTestConstraintMetadata, test_not_found) {
  * @brief Test for incorrect constraint IDs.
  */
 TEST_F(ApiTestConstraintMetadata, test_invalid_parameter) {
-  SCOPED_TRACE("");
+  CALL_TRACE;
 
   // Generate constraints metadata manager.
   auto managers = get_constraint_metadata(GlobalTestEnvironment::TEST_DB);
@@ -274,7 +274,7 @@ TEST_F(ApiTestConstraintMetadata, test_invalid_parameter) {
  *   one new table metadata without initialization of all api.
  */
 TEST_F(ApiTestConstraintMetadata, test_without_initialized) {
-  SCOPED_TRACE("");
+  CALL_TRACE;
 
   // Generate test metadata.
   UtConstraintMetadata ut_metadata(table_id_);

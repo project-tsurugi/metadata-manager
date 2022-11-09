@@ -30,34 +30,6 @@ using db::postgresql::ConnectionSPtr;
 using db::postgresql::DbcUtils;
 
 void TestEnvironmentPg::SetUp() {
-  // generate table metadata as test data.
-  testdata_table_metadata = std::make_unique<UTTableMetadata>("");
-
-  // generate column statistics as test data.
-  for (auto column : testdata_table_metadata->get_metadata_struct()->columns) {
-    column_statistics.push_back(
-        ColumnStatisticsHelper::generate_column_statistic());
-  }
-
-  // initialize non-existing table id.
-  table_id_not_exists = {-1,
-                         0,
-                         INT64_MAX - 1,
-                         INT64_MAX,
-                         std::numeric_limits<ObjectIdType>::infinity(),
-                         -std::numeric_limits<ObjectIdType>::infinity(),
-                         std::numeric_limits<ObjectIdType>::quiet_NaN()};
-
-  // initialize non-existing ordinal positions.
-  column_number_not_exists = {-1,
-                              0,
-                              INT64_MAX - 1,
-                              INT64_MAX,
-                              4,
-                              std::numeric_limits<ObjectIdType>::infinity(),
-                              -std::numeric_limits<ObjectIdType>::infinity(),
-                              std::numeric_limits<ObjectIdType>::quiet_NaN()};
-
   // check if a connection to the metadata repository is opened or not.
   ConnectionSPtr connection = DbcUtils::make_connection_sptr(
       PQconnectdb(Config::get_connection_string().c_str()));

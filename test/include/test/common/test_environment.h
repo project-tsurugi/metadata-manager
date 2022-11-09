@@ -18,7 +18,9 @@
 
 #include <gtest/gtest.h>
 
+#include <limits>
 #include <string>
+#include <vector>
 
 namespace manager::metadata::testing {
 
@@ -40,6 +42,15 @@ class TestEnvironment : public ::testing::Environment {
    * @brief Get file name of json schema file.
    */
   std::string get_json_schema_file_name() { return json_schema_file_name_; }
+
+  const std::vector<int64_t> invalid_ids = {
+      -1,
+      0,
+      INT64_MAX - 1,
+      INT64_MAX,
+      std::numeric_limits<int64_t>::infinity(),
+      -std::numeric_limits<int64_t>::infinity(),
+      std::numeric_limits<int64_t>::quiet_NaN()};
 
  protected:
   /**

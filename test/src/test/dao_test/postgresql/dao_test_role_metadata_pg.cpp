@@ -64,7 +64,7 @@ class DaoTestRolesMetadata : public ::testing::Test {
  * name.
  */
 TEST_F(DaoTestRolesMetadata, select_role_metadata) {
-  SCOPED_TRACE("");
+  CALL_TRACE;
 
   ErrorCode error = ErrorCode::UNKNOWN;
 

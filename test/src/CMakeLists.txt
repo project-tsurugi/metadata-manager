@@ -20,6 +20,7 @@ else()
   message(STATUS "  Exclude json test sources.")
   list(FILTER SOURCES EXCLUDE REGEX "/?json/*")
 endif()
+list(FILTER SOURCES EXCLUDE REGEX "/?.not_build/*")
 
 add_executable(metadata_test ${SOURCES})
 set_compile_options(metadata_test)

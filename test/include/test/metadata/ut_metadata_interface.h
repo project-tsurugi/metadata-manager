@@ -29,11 +29,11 @@ class UtMetadataInterface {
   virtual const manager::metadata::Object* get_metadata_struct() const = 0;
   virtual boost::property_tree::ptree get_metadata_ptree() const       = 0;
   virtual void generate_test_metadata()                                = 0;
+
   virtual void check_metadata_expected(
       const boost::property_tree::ptree& expected,
       const boost::property_tree::ptree& actual, const char* file,
       const int64_t line) const = 0;
-
   virtual void check_metadata_expected(
       const boost::property_tree::ptree& expected,
       const ::manager::metadata::Object& actual, const char* file,

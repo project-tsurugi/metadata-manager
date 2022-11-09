@@ -33,17 +33,13 @@ class ApiTestTableMetadata : public ::testing::Test {
  *  and getting it by table name.
  */
 TEST_F(ApiTestTableMetadata, add_get_table_metadata_by_table_name3) {
-  // prepare test data for adding table metadata.
-
-  UTTableMetadata testdata_table_metadata =
-      *(global->testdata_table_metadata.get());
-  manager::metadata::Table new_table =
-      *testdata_table_metadata.get_metadata_struct();
-
-  // change to a unique table name.
   std::string new_table_name = TableMetadataHelper::make_table_name(
       "ApiTestTableMetadata", "", __LINE__);
-  new_table.name = new_table_name;
+
+  // Generate test metadata.
+  UTTableMetadata testdata_table_metadata(new_table_name);
+  auto new_table = *(static_cast<const manager::metadata::Table*>(
+      testdata_table_metadata.get_metadata_struct()));
 
   // add table metadata.
   ObjectIdType ret_table_id = INVALID_OBJECT_ID;
@@ -79,15 +75,12 @@ TEST_F(ApiTestTableMetadata, add_get_table_metadata_by_table_name3) {
 }
 
 TEST_F(ApiTestTableMetadata, add_get_table_metadata_by_table_name2) {
-  // prepare test data for adding table metadata.
-  UTTableMetadata testdata_table_metadata =
-      *(global->testdata_table_metadata.get());
-  ptree new_table = testdata_table_metadata.get_metadata_ptree();
-
-  // change to a unique table name.
   std::string new_table_name = TableMetadataHelper::make_table_name(
       "ApiTestTableMetadata", "", __LINE__);
-  new_table.put(Table::NAME, new_table_name);
+
+  // Generate test metadata.
+  UTTableMetadata testdata_table_metadata(new_table_name);
+  auto new_table = testdata_table_metadata.get_metadata_ptree();
 
   // add table metadata.
   ObjectIdType ret_table_id = INVALID_OBJECT_ID;
@@ -120,15 +113,12 @@ TEST_F(ApiTestTableMetadata, add_get_table_metadata_by_table_name2) {
  *   it using the table name as the key with the ptree type.
  */
 TEST_F(ApiTestTableMetadata, add_get_table_metadata_by_table_name) {
-  // prepare test data for adding table metadata.
-  UTTableMetadata testdata_table_metadata =
-      *(global->testdata_table_metadata.get());
-  ptree new_table = testdata_table_metadata.get_metadata_ptree();
-
-  // change to a unique table name.
   std::string new_table_name = TableMetadataHelper::make_table_name(
       "ApiTestTableMetadata", "", __LINE__);
-  new_table.put(Table::NAME, new_table_name);
+
+  // Generate test metadata.
+  UTTableMetadata testdata_table_metadata(new_table_name);
+  auto new_table = testdata_table_metadata.get_metadata_ptree();
 
   // add table metadata.
   ObjectIdType ret_table_id = -1;
@@ -170,15 +160,12 @@ TEST_F(ApiTestTableMetadata, add_get_table_metadata_by_table_name) {
  */
 TEST_F(ApiTestTableMetadata,
        add_without_returned_table_id_get_table_metadata_by_table_name) {
-  // prepare test data for adding table metadata.
-  UTTableMetadata testdata_table_metadata =
-      *(global->testdata_table_metadata.get());
-  ptree new_table = testdata_table_metadata.get_metadata_ptree();
-
-  // change to a unique table name.
   std::string new_table_name = TableMetadataHelper::make_table_name(
       "ApiTestTableMetadata", "", __LINE__);
-  new_table.put(Table::NAME, new_table_name);
+
+  // Generate test metadata.
+  UTTableMetadata testdata_table_metadata(new_table_name);
+  auto new_table = testdata_table_metadata.get_metadata_ptree();
 
   // add table metadata.
   auto tables     = get_table_metadata(GlobalTestEnvironment::TEST_DB);
@@ -214,15 +201,12 @@ TEST_F(ApiTestTableMetadata,
  *   and getting them by table name.
  */
 TEST_F(ApiTestTableMetadata, get_two_table_metadata_by_table_name) {
-  // prepare test data for adding table metadata.
-  UTTableMetadata testdata_table_metadata =
-      *(global->testdata_table_metadata.get());
-  ptree new_table = testdata_table_metadata.get_metadata_ptree();
-
-  // change to a unique table name.
   std::string new_table_name = TableMetadataHelper::make_table_name(
       "ApiTestTableMetadata", "", __LINE__);
-  new_table.put(Table::NAME, new_table_name);
+
+  // Generate test metadata.
+  UTTableMetadata testdata_table_metadata(new_table_name);
+  auto new_table = testdata_table_metadata.get_metadata_ptree();
 
   auto tables     = get_table_metadata(GlobalTestEnvironment::TEST_DB);
   ErrorCode error = tables->init();
@@ -267,15 +251,12 @@ TEST_F(ApiTestTableMetadata, get_two_table_metadata_by_table_name) {
  *   and getting it by table id.
  */
 TEST_F(ApiTestTableMetadata, add_get_table_metadata_by_table_id) {
-  // prepare test data for adding table metadata.
-  UTTableMetadata testdata_table_metadata =
-      *(global->testdata_table_metadata.get());
-  ptree new_table = testdata_table_metadata.get_metadata_ptree();
-
-  // change to a unique table name.
   std::string new_table_name = TableMetadataHelper::make_table_name(
       "ApiTestTableMetadata", "", __LINE__);
-  new_table.put(Table::NAME, new_table_name);
+
+  // Generate test metadata.
+  UTTableMetadata testdata_table_metadata(new_table_name);
+  auto new_table = testdata_table_metadata.get_metadata_ptree();
 
   // add table metadata.
   ObjectIdType ret_table_id = -1;
@@ -312,10 +293,9 @@ TEST_F(ApiTestTableMetadata, get_all_table_next) {
                                   std::to_string(__LINE__) + "_";
   std::vector<ObjectIdType> table_ids = {};
 
-  // prepare test data for adding table metadata.
-  UTTableMetadata testdata_table_metadata =
-      *(global->testdata_table_metadata.get());
-  ptree expected_table = testdata_table_metadata.get_metadata_ptree();
+  // Generate test metadata.
+  UTTableMetadata testdata_table_metadata;
+  auto expected_table = testdata_table_metadata.get_metadata_ptree();
 
   // add table metadata.
   for (int count = 1; count <= test_table_count; count++) {
@@ -389,10 +369,9 @@ TEST_F(ApiTestTableMetadata, get_all_table_metadata) {
   // get base count
   std::int64_t base_table_count = TableMetadataHelper::get_record_count();
 
-  // prepare test data for adding table metadata.
-  UTTableMetadata testdata_table_metadata =
-      *(global->testdata_table_metadata.get());
-  ptree expected_table = testdata_table_metadata.get_metadata_ptree();
+  // Generate test metadata.
+  UTTableMetadata testdata_table_metadata;
+  auto expected_table = testdata_table_metadata.get_metadata_ptree();
 
   // add table metadata.
   for (int count = 1; count <= test_table_count; count++) {
@@ -458,15 +437,12 @@ TEST_F(ApiTestTableMetadata, get_all_table_metadata_empty) {
  * @brief happy test for all table metadata update.
  */
 TEST_F(ApiTestTableMetadata, update_table_metadata) {
-  // prepare test data for adding table metadata.
-  UTTableMetadata testdata_table_metadata =
-      *(global->testdata_table_metadata.get());
-  ptree new_table = testdata_table_metadata.get_metadata_ptree();
-
-  // change to a unique table name.
   std::string new_table_name = TableMetadataHelper::make_table_name(
       "ApiTestTableMetadata", "", __LINE__);
-  new_table.put(Table::NAME, new_table_name);
+
+  // Generate test metadata.
+  UTTableMetadata testdata_table_metadata(new_table_name);
+  auto new_table = testdata_table_metadata.get_metadata_ptree();
 
   // add table metadata.
   ObjectIdType ret_table_id = -1;
@@ -613,15 +589,12 @@ TEST_F(ApiTestTableMetadata, update_table_metadata) {
  * @brief happy test for removing one new table metadata by table name.
  */
 TEST_F(ApiTestTableMetadata, remove_table_metadata_by_table_name) {
-  // prepare test data for adding table metadata.
-  UTTableMetadata testdata_table_metadata =
-      *(global->testdata_table_metadata.get());
-  ptree new_table = testdata_table_metadata.get_metadata_ptree();
-
-  // change to a unique table name.
   std::string new_table_name = TableMetadataHelper::make_table_name(
       "ApiTestTableMetadata", "", __LINE__);
-  new_table.put(Table::NAME, new_table_name);
+
+  // Generate test metadata.
+  UTTableMetadata testdata_table_metadata(new_table_name);
+  auto new_table = testdata_table_metadata.get_metadata_ptree();
 
   // add table metadata.
   ObjectIdType ret_table_id = -1;
@@ -650,15 +623,12 @@ TEST_F(ApiTestTableMetadata, remove_table_metadata_by_table_name) {
  * @brief happy test for removing one new table metadata by table id.
  */
 TEST_F(ApiTestTableMetadata, remove_table_metadata_by_table_id) {
-  // prepare test data for adding table metadata.
-  UTTableMetadata testdata_table_metadata =
-      *(global->testdata_table_metadata.get());
-  ptree new_table = testdata_table_metadata.get_metadata_ptree();
-
-  // change to a unique table name.
   std::string new_table_name = TableMetadataHelper::make_table_name(
       "ApiTestTableMetadata", "", __LINE__);
-  new_table.put(Table::NAME, new_table_name);
+
+  // Generate test metadata.
+  UTTableMetadata testdata_table_metadata(new_table_name);
+  auto new_table = testdata_table_metadata.get_metadata_ptree();
 
   // add table metadata.
   ObjectIdType ret_table_id = -1;
@@ -687,15 +657,12 @@ TEST_F(ApiTestTableMetadata, remove_table_metadata_by_table_id) {
  */
 TEST_F(ApiTestTableMetadata,
        add_get_remove_table_metadata_without_initialized) {
-  // prepare test data for adding table metadata.
-  UTTableMetadata testdata_table_metadata =
-      *(global->testdata_table_metadata.get());
-  ptree new_table = testdata_table_metadata.get_metadata_ptree();
-
-  // change to a unique table name.
   std::string new_table_name = TableMetadataHelper::make_table_name(
       "ApiTestTableMetadata", "", __LINE__);
-  new_table.put(Table::NAME, new_table_name);
+
+  // Generate test metadata.
+  UTTableMetadata testdata_table_metadata(new_table_name);
+  auto new_table = testdata_table_metadata.get_metadata_ptree();
 
   // add table metadata without initialized.
   ObjectIdType ret_table_id = -1;

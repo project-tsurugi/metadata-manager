@@ -40,11 +40,13 @@ class TableMetadataHelper {
   static std::vector<UTTableMetadata> make_valid_table_metadata();
 
   static void add_table(std::string_view table_name,
-                        ObjectIdType* ret_table_id = nullptr);
+                        ObjectId* ret_table_id = nullptr);
   static void add_table(const boost::property_tree::ptree& new_table,
-                        ObjectIdType* ret_table_id = nullptr);
+                        ObjectId* ret_table_id = nullptr);
 
-  static void remove_table(const ObjectIdType table_id);
+  static boost::property_tree::ptree get_table(ObjectId table_id);
+
+  static void remove_table(const ObjectId table_id);
   static void remove_table(std::string_view table_name);
 
   static void print_column_metadata(const UTColumnMetadata& column_metadata);
@@ -53,7 +55,7 @@ class TableMetadataHelper {
 
   // add
   static void add_table(const manager::metadata::Table& new_table,
-                        ObjectIdType* table_id);
+                        ObjectId* table_id);
 
   static void check_table_acls_expected(
       const std::map<std::string_view, std::string_view>& expected,

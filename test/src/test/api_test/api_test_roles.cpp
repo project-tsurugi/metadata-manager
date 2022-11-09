@@ -82,7 +82,7 @@ class ApiTestRolesMetadataJson
  * @brief api test for add role metadata.
  */
 TEST_F(ApiTestRolesMetadataPg, test_add) {
-  SCOPED_TRACE("");
+  CALL_TRACE;
 
   // Generate roles metadata manager.
   auto managers = std::make_unique<Roles>(GlobalTestEnvironment::TEST_DB);
@@ -100,7 +100,7 @@ TEST_F(ApiTestRolesMetadataPg, test_add) {
  * @brief Test to get it in ptree type with object ID as key.
  */
 TEST_F(ApiTestRolesMetadataPg, test_get_by_id) {
-  SCOPED_TRACE("");
+  CALL_TRACE;
 
   // Generate roles metadata manager.
   auto managers = std::make_unique<Roles>(GlobalTestEnvironment::TEST_DB);
@@ -125,7 +125,7 @@ TEST_F(ApiTestRolesMetadataPg, test_get_by_id) {
  * @brief Test to get it in ptree type with object name as key.
  */
 TEST_F(ApiTestRolesMetadataPg, test_get_by_name) {
-  SCOPED_TRACE("");
+  CALL_TRACE;
 
   // Generate roles metadata manager.
   auto managers = std::make_unique<Roles>(GlobalTestEnvironment::TEST_DB);
@@ -150,7 +150,7 @@ TEST_F(ApiTestRolesMetadataPg, test_get_by_name) {
  * @brief Test to get all it in ptree type.
  */
 TEST_F(ApiTestRolesMetadataPg, test_getall) {
-  SCOPED_TRACE("");
+  CALL_TRACE;
 
   // Generate roles metadata manager.
   auto managers = std::make_unique<Roles>(GlobalTestEnvironment::TEST_DB);
@@ -169,7 +169,7 @@ TEST_F(ApiTestRolesMetadataPg, test_getall) {
  * @brief Test to remove it with object ID as key.
  */
 TEST_F(ApiTestRolesMetadataPg, test_remove_by_id) {
-  SCOPED_TRACE("");
+  CALL_TRACE;
 
   // Generate roles metadata manager.
   auto managers = std::make_unique<Roles>(GlobalTestEnvironment::TEST_DB);
@@ -185,7 +185,7 @@ TEST_F(ApiTestRolesMetadataPg, test_remove_by_id) {
  * @brief Test to remove it with object name as key.
  */
 TEST_F(ApiTestRolesMetadataPg, test_remove_by_name) {
-  SCOPED_TRACE("");
+  CALL_TRACE;
 
   // Generate roles metadata manager.
   auto managers = std::make_unique<Roles>(GlobalTestEnvironment::TEST_DB);
@@ -202,7 +202,7 @@ TEST_F(ApiTestRolesMetadataPg, test_remove_by_name) {
  * @brief Test for getting role metadata based on unknown role id and role name.
  */
 TEST_F(ApiTestRolesMetadataPg, test_not_found) {
-  SCOPED_TRACE("");
+  CALL_TRACE;
 
   // Generate roles metadata manager.
   auto managers = std::make_unique<Roles>(GlobalTestEnvironment::TEST_DB);
@@ -259,7 +259,7 @@ TEST_F(ApiTestRolesMetadataPg, test_not_found) {
  * @brief Test for incorrect constraint IDs.
  */
 TEST_F(ApiTestRolesMetadataPg, test_invalid_parameter) {
-  SCOPED_TRACE("");
+  CALL_TRACE;
 
   // Generate roles metadata manager.
   auto managers = std::make_unique<Roles>(GlobalTestEnvironment::TEST_DB);
@@ -284,7 +284,7 @@ TEST_F(ApiTestRolesMetadataPg, test_invalid_parameter) {
  * @brief api test for add role metadata.
  */
 TEST_F(ApiTestRolesMetadataJson, test_add) {
-  SCOPED_TRACE("");
+  CALL_TRACE;
 
   // Generate roles metadata manager.
   auto managers = std::make_unique<Roles>(GlobalTestEnvironment::TEST_DB);
@@ -302,7 +302,7 @@ TEST_F(ApiTestRolesMetadataJson, test_add) {
  * @brief Unsupported test in JSON version.
  */
 TEST_F(ApiTestRolesMetadataJson, test_get) {
-  SCOPED_TRACE("");
+  CALL_TRACE;
 
   // Generate roles metadata manager.
   auto managers = std::make_unique<Roles>(GlobalTestEnvironment::TEST_DB);
@@ -325,7 +325,7 @@ TEST_F(ApiTestRolesMetadataJson, test_get) {
  * @brief api test for get_all role metadata.
  */
 TEST_F(ApiTestRolesMetadataJson, test_getall) {
-  SCOPED_TRACE("");
+  CALL_TRACE;
 
   // Generate roles metadata manager.
   auto managers = std::make_unique<Roles>(GlobalTestEnvironment::TEST_DB);
@@ -344,7 +344,7 @@ TEST_F(ApiTestRolesMetadataJson, test_getall) {
  * @brief api test for remove role metadata.
  */
 TEST_F(ApiTestRolesMetadataJson, remove_role_metadata) {
-  SCOPED_TRACE("");
+  CALL_TRACE;
 
   // Generate roles metadata manager.
   auto managers = std::make_unique<Roles>(GlobalTestEnvironment::TEST_DB);

@@ -63,8 +63,10 @@ class UtMetadata : public UtMetadataInterface {
 
   virtual ~UtMetadata() {}
 
-  const OBJECT* get_metadata_struct() const { return &(*metadata_struct_); }
-  boost::property_tree::ptree get_metadata_ptree() const {
+  const manager::metadata::Object* get_metadata_struct() const override {
+    return &(*metadata_struct_);
+  }
+  boost::property_tree::ptree get_metadata_ptree() const override {
     return metadata_ptree_;
   }
 
@@ -93,22 +95,11 @@ class UtMetadata : public UtMetadataInterface {
    */
   void check_metadata_expected(const boost::property_tree::ptree& expected,
                                const ::manager::metadata::Object& actual,
-                               const char* file, const int64_t line) const {
+                               const char* file,
+                               const int64_t line) const override {
     // Transform metadata from structure object to ptree object.
-    check_metadata_expected(expected, actual.convert_to_ptree(), file, line);
-  }
-
-  /**
-   * @brief Verifies that the actual metadata equals expected one.
-   * @param actual    [in]  actual metadata.
-   * @param file      [in]  file name of the caller.
-   * @param line      [in]  line number of the caller.
-   * @return none.
-   */
-  void check_metadata_expected(const ::manager::metadata::Object& actual,
-                               const char* file, const int64_t line) const {
-    check_metadata_expected(metadata_ptree_, actual.convert_to_ptree(), file,
-                            line);
+    this->check_metadata_expected(expected, actual.convert_to_ptree(), file,
+                                  line);
   }
 
  protected:

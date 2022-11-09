@@ -113,7 +113,7 @@ std::vector<UTTableMetadata> TableMetadataHelper::make_valid_table_metadata() {
  * @return none.
  */
 void TableMetadataHelper::add_table(std::string_view table_name,
-                                    ObjectIdType* ret_table_id) {
+                                    ObjectId* ret_table_id) {
   // Generate test metadata.
   UTTableMetadata ut_metadata(table_name);
 
@@ -129,7 +129,7 @@ void TableMetadataHelper::add_table(std::string_view table_name,
  * @return none.
  */
 void TableMetadataHelper::add_table(
-    const boost::property_tree::ptree& new_table, ObjectIdType* table_id) {
+    const boost::property_tree::ptree& new_table, ObjectId* table_id) {
   UTUtils::print("-- add table metadata --");
   UTUtils::print(" " + UTUtils::get_tree_string(new_table));
 
@@ -139,8 +139,8 @@ void TableMetadataHelper::add_table(
   ASSERT_EQ(ErrorCode::OK, error);
 
   // add table metadata.
-  ObjectIdType ret_table_id = INVALID_VALUE;
-  error                     = tables->add(new_table, &ret_table_id);
+  ObjectId ret_table_id = INVALID_VALUE;
+  error                 = tables->add(new_table, &ret_table_id);
   ASSERT_EQ(ErrorCode::OK, error);
   ASSERT_GT(ret_table_id, 0);
 
@@ -159,7 +159,7 @@ void TableMetadataHelper::add_table(
  * @return none.
  */
 void TableMetadataHelper::add_table(const manager::metadata::Table& new_table,
-                                    ObjectIdType* table_id) {
+                                    ObjectId* table_id) {
   UTUtils::print("-- add table metadata --");
   ptree pt_table = new_table.convert_to_ptree();
   UTUtils::print(" " + UTUtils::get_tree_string(pt_table));
@@ -170,8 +170,8 @@ void TableMetadataHelper::add_table(const manager::metadata::Table& new_table,
   ASSERT_EQ(ErrorCode::OK, error);
 
   // add table metadata.
-  ObjectIdType ret_table_id = INVALID_VALUE;
-  error                     = tables->add(new_table, &ret_table_id);
+  ObjectId ret_table_id = INVALID_VALUE;
+  error                 = tables->add(new_table, &ret_table_id);
   ASSERT_EQ(ErrorCode::OK, error);
   ASSERT_GT(ret_table_id, 0);
 
@@ -183,11 +183,36 @@ void TableMetadataHelper::add_table(const manager::metadata::Table& new_table,
 }
 
 /**
+ * @brief Get metadata from table metadata table.
+ * @param table_id table id.
+ * @return boost::property_tree::ptree - table metadata.
+ */
+boost::property_tree::ptree TableMetadataHelper::get_table(
+    const ObjectId table_id) {
+  UTUtils::print("-- get table metadata --");
+  UTUtils::print(" >> table_id:" + std::to_string(table_id));
+
+  auto tables = get_table_metadata(GlobalTestEnvironment::TEST_DB);
+
+  ErrorCode error = tables->init();
+  EXPECT_EQ(ErrorCode::OK, error);
+
+  // add table metadata.
+  ptree retrievd_metadata;
+  error = tables->get(table_id, retrievd_metadata);
+  EXPECT_EQ(ErrorCode::OK, error);
+
+  UTUtils::print(" " + UTUtils::get_tree_string(retrievd_metadata));
+
+  return retrievd_metadata;
+}
+
+/**
  * @brief Remove one table metadata to table metadata table.
  * @param (table_id)  [in]   table id of remove table metadata.
  * @return none.
  */
-void TableMetadataHelper::remove_table(const ObjectIdType table_id) {
+void TableMetadataHelper::remove_table(const ObjectId table_id) {
   UTUtils::print("-- remove table metadata --");
   UTUtils::print(" >> table_id: ", table_id);
 
@@ -250,7 +275,7 @@ void TableMetadataHelper::print_column_metadata(
  */
 void TableMetadataHelper::print_table_statistics(
     const boost::property_tree::ptree& table_statistics) {
-  auto metadata_id   = table_statistics.get_optional<ObjectIdType>(Table::ID);
+  auto metadata_id   = table_statistics.get_optional<ObjectId>(Table::ID);
   auto metadata_name = table_statistics.get_optional<std::string>(Table::NAME);
   auto metadata_namespace =
       table_statistics.get_optional<std::string>(Table::NAMESPACE);

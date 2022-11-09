@@ -64,7 +64,7 @@ class ApiTestIndexMetadata
  *   with object ID as key.
  */
 TEST_F(ApiTestIndexMetadata, test_get_by_id_with_ptree) {
-  SCOPED_TRACE("");
+  CALL_TRACE;
 
   // Execute the test.
   this->test_flow_get_by_id(UtIndexMetadata(table_id_));
@@ -75,7 +75,7 @@ TEST_F(ApiTestIndexMetadata, test_get_by_id_with_ptree) {
  *   with object ID as key.
  */
 TEST_F(ApiTestIndexMetadata, test_get_by_id_with_struct) {
-  SCOPED_TRACE("");
+  CALL_TRACE;
 
   // Execute the test.
   this->test_flow_get_by_id_with_struct(UtIndexMetadata(table_id_));
@@ -86,7 +86,7 @@ TEST_F(ApiTestIndexMetadata, test_get_by_id_with_struct) {
  *   with object name as key.
  */
 TEST_F(ApiTestIndexMetadata, test_get_by_name_with_ptree) {
-  SCOPED_TRACE("");
+  CALL_TRACE;
 
   // Execute the test.
   this->test_flow_get_by_name(UtIndexMetadata(table_id_));
@@ -97,7 +97,7 @@ TEST_F(ApiTestIndexMetadata, test_get_by_name_with_ptree) {
  *   with object name as key.
  */
 TEST_F(ApiTestIndexMetadata, test_get_by_name_with_struct) {
-  SCOPED_TRACE("");
+  CALL_TRACE;
 
   // Execute the test.
   this->test_flow_get_by_name_with_struct(UtIndexMetadata(table_id_));
@@ -107,7 +107,7 @@ TEST_F(ApiTestIndexMetadata, test_get_by_name_with_struct) {
  * @brief Test to add new metadata and get_all it in ptree type.
  */
 TEST_F(ApiTestIndexMetadata, test_getall_with_ptree) {
-  SCOPED_TRACE("");
+  CALL_TRACE;
 
   // Execute the test.
   this->test_flow_getall(UtIndexMetadata(table_id_));
@@ -118,14 +118,14 @@ TEST_F(ApiTestIndexMetadata, test_getall_with_ptree) {
  *   with object ID as key.
  */
 TEST_F(ApiTestIndexMetadata, test_update) {
-  SCOPED_TRACE("");
+  CALL_TRACE;
 
   // Generate test metadata.
   UtIndexMetadata ut_metadata(table_id_);
 
-  auto metadata_base = ut_metadata.get_metadata_struct();
   // Copy
-  manager::metadata::Index metadata_update = *metadata_base;
+  auto metadata_update = *(static_cast<const manager::metadata::Index*>(
+      ut_metadata.get_metadata_struct()));
 
   // name
   metadata_update.name += "-update";
@@ -153,7 +153,7 @@ TEST_F(ApiTestIndexMetadata, test_update) {
  *   with object ID as key.
  */
 TEST_F(ApiTestIndexMetadata, test_name_duplicate) {
-  SCOPED_TRACE("");
+  CALL_TRACE;
 
   // Generate indexes metadata manager.
   auto managers = get_index_metadata(GlobalTestEnvironment::TEST_DB);
@@ -178,7 +178,7 @@ TEST_F(ApiTestIndexMetadata, test_name_duplicate) {
  * @brief Test for incorrect index IDs.
  */
 TEST_F(ApiTestIndexMetadata, test_not_found) {
-  SCOPED_TRACE("");
+  CALL_TRACE;
 
   // Generate indexes metadata manager.
   auto managers = get_index_metadata(GlobalTestEnvironment::TEST_DB);
@@ -231,7 +231,7 @@ TEST_F(ApiTestIndexMetadata, test_not_found) {
  * @brief Test for incorrect index IDs.
  */
 TEST_F(ApiTestIndexMetadata, test_invalid_parameter) {
-  SCOPED_TRACE("");
+  CALL_TRACE;
 
   // Generate indexes metadata manager.
   auto managers = get_index_metadata(GlobalTestEnvironment::TEST_DB);
@@ -299,7 +299,7 @@ TEST_F(ApiTestIndexMetadata, test_invalid_parameter) {
  *   one new table metadata without initialization of all api.
  */
 TEST_F(ApiTestIndexMetadata, test_without_initialized) {
-  SCOPED_TRACE("");
+  CALL_TRACE;
 
   // Generate test metadata.
   UtIndexMetadata ut_metadata(table_id_);

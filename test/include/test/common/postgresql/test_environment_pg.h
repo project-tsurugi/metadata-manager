@@ -29,26 +29,6 @@ class TestEnvironmentPg : public TestEnvironment {
   ~TestEnvironmentPg() override {}
   void SetUp() override;
   void TearDown() override;
-
-  /**
-   * @brief table metadata used as test data.
-   */
-  std::unique_ptr<UTTableMetadata> testdata_table_metadata;
-
-  /**
-   * @brief column statistics used as test data.
-   */
-  std::vector<boost::property_tree::ptree> column_statistics;
-
-  /**
-   * @brief a list of non-existing table id.
-   */
-  std::vector<ObjectIdType> table_id_not_exists;
-
-  /**
-   * @brief a list of non-existing column number.
-   */
-  std::vector<ObjectIdType> column_number_not_exists;
 };
 
 }  // namespace manager::metadata::testing

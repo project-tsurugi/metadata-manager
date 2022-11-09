@@ -211,10 +211,13 @@ TEST_P(DaoTestTableStatisticsByTableIdHappy,
        add_and_get_table_statistics_by_table_id) {
   auto param = GetParam();
 
-  UTTableMetadata* testdata_table_metadata =
-      global->testdata_table_metadata.get();
   std::string table_name = TableMetadataHelper::make_table_name(
       "DaoTestTableStatistics", std::get<0>(param), __LINE__);
+
+  // Generate test metadata.
+  UTTableMetadata testdata_table_metadata(table_name);
+  auto testdata_table =
+      static_cast<const Table*>(testdata_table_metadata.get_metadata_struct());
 
   ObjectIdType ret_table_id;
   TableMetadataHelper::add_table(table_name, &ret_table_id);
@@ -264,8 +267,7 @@ TEST_P(DaoTestTableStatisticsByTableIdHappy,
 
   EXPECT_EQ(ret_table_id, add_metadata_id.get());
   EXPECT_EQ(table_name, add_metadata_name.get());
-  EXPECT_EQ(testdata_table_metadata->get_metadata_struct()->namespace_name,
-            add_metadata_namespace.get());
+  EXPECT_EQ(testdata_table->namespace_name, add_metadata_namespace.get());
   if (add_metadata_tuples) {
     if (std::isnan(add_metadata_tuples.get())) {
       EXPECT_TRUE(std::isnan(add_metadata_tuples.get()));
@@ -309,8 +311,7 @@ TEST_P(DaoTestTableStatisticsByTableIdHappy,
 
   EXPECT_EQ(ret_table_id, upd_metadata_id.get());
   EXPECT_EQ(table_name, upd_metadata_name.get());
-  EXPECT_EQ(testdata_table_metadata->get_metadata_struct()->namespace_name,
-            upd_metadata_namespace.get());
+  EXPECT_EQ(testdata_table->namespace_name, upd_metadata_namespace.get());
   if (upd_metadata_tuples) {
     if (std::isnan(upd_metadata_tuples.get())) {
       EXPECT_TRUE(std::isnan(upd_metadata_tuples.get()));
@@ -333,10 +334,13 @@ TEST_P(DaoTestTableStatisticsByTableNameHappy,
        add_and_get_table_statistics_by_table_name) {
   auto param = GetParam();
 
-  UTTableMetadata* testdata_table_metadata =
-      global->testdata_table_metadata.get();
   std::string table_name = TableMetadataHelper::make_table_name(
       "DaoTestTableStatistics", std::get<0>(param), __LINE__);
+
+  // Generate test metadata.
+  UTTableMetadata testdata_table_metadata(table_name);
+  auto testdata_table =
+      static_cast<const Table*>(testdata_table_metadata.get_metadata_struct());
 
   ObjectIdType ret_table_id;
   TableMetadataHelper::add_table(table_name, &ret_table_id);
@@ -386,8 +390,8 @@ TEST_P(DaoTestTableStatisticsByTableNameHappy,
 
   EXPECT_EQ(ret_table_id, add_metadata_id.get());
   EXPECT_EQ(table_name, add_metadata_name.get());
-  EXPECT_EQ(testdata_table_metadata->get_metadata_struct()->namespace_name,
-            add_metadata_namespace.get());
+  EXPECT_EQ(testdata_table->namespace_name, add_metadata_namespace.get());
+
   if (add_metadata_tuples) {
     if (std::isnan(add_metadata_tuples.get())) {
       EXPECT_TRUE(std::isnan(add_metadata_tuples.get()));
@@ -431,8 +435,7 @@ TEST_P(DaoTestTableStatisticsByTableNameHappy,
 
   EXPECT_EQ(ret_table_id, upd_metadata_id.get());
   EXPECT_EQ(table_name, upd_metadata_name.get());
-  EXPECT_EQ(testdata_table_metadata->get_metadata_struct()->namespace_name,
-            upd_metadata_namespace.get());
+  EXPECT_EQ(testdata_table->namespace_name, upd_metadata_namespace.get());
   if (upd_metadata_tuples) {
     if (std::isnan(upd_metadata_tuples.get())) {
       EXPECT_TRUE(std::isnan(upd_metadata_tuples.get()));

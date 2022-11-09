@@ -33,7 +33,7 @@ class UTTableMetadata : public UtMetadata<manager::metadata::Table> {
  public:
   using UtMetadata::UtMetadata;
 
-  explicit UTTableMetadata() { this->generate_test_metadata(); }
+  UTTableMetadata() { this->generate_test_metadata(); }
   explicit UTTableMetadata(std::string_view table_name)
       : table_name_(table_name) {
     this->generate_test_metadata();
