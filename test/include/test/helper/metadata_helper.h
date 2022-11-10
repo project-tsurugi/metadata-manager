@@ -22,7 +22,7 @@ namespace manager::metadata::testing {
 
 class MetadataHelper {
  public:
-  virtual int64_t get_record_count() const = 0;
+  virtual int64_t get_record_count() const { return 0L; }
 };
 
 }  // namespace manager::metadata::testing
