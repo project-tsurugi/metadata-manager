@@ -55,7 +55,7 @@ void UTUtils::skip_if_connection_opened() {
  */
 void UTUtils::skip_if_json() {
 #if defined(STORAGE_JSON)
-    GTEST_SKIP_("Metadata storage is Json.");
+  GTEST_SKIP_("Metadata storage is Json.");
 #endif
 }
 
@@ -64,7 +64,33 @@ void UTUtils::skip_if_json() {
  */
 void UTUtils::skip_if_postgresql() {
 #if defined(STORAGE_POSTGRESQL)
-    GTEST_SKIP_("Metadata storage is PostgreSQL.");
+  GTEST_SKIP_("Metadata storage is PostgreSQL.");
+#endif
+}
+
+/**
+ * @brief Returns whether the metadata storage is JSON or not.
+ * @retval true - Metadata storage is Json.
+ * @retval false - Metadata is not stored in Json.
+ */
+bool UTUtils::is_json() {
+#if defined(STORAGE_POSTGRESQL)
+  return false;
+#elif defined(STORAGE_JSON)
+  return true;
+#endif
+}
+
+/**
+ * @brief Returns whether the metadata storage is PostgreSQL or not.
+ * @retval true - Metadata storage is PostgreSQL.
+ * @retval false - Metadata is not stored in PostgreSQL.
+ */
+bool UTUtils::is_postgresql() {
+#if defined(STORAGE_POSTGRESQL)
+  return true;
+#elif defined(STORAGE_JSON)
+  return false;
 #endif
 }
 

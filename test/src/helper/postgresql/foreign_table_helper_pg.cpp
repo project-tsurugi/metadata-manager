@@ -42,9 +42,9 @@ using db::postgresql::DbcUtils;
  * @param (privileges)  [in]   privileges.
  * @return table_id.
  */
-ObjectIdType ForeignTableHelper::create_table(std::string_view table_name,
-                                              std::string_view role_name,
-                                              std::string_view privileges) {
+ObjectIdType ForeignTableHelperPg::create_table(std::string_view table_name,
+                                                std::string_view role_name,
+                                                std::string_view privileges) {
   ObjectIdType table_id;
 
   boost::format statement;
@@ -84,7 +84,7 @@ ObjectIdType ForeignTableHelper::create_table(std::string_view table_name,
  * @brief remove a table for testing.
  * @param (table_name)  [in]   table name.
  */
-void ForeignTableHelper::drop_table(std::string_view table_name) {
+void ForeignTableHelperPg::drop_table(std::string_view table_name) {
   // db connection.
   db_connection();
 
@@ -100,9 +100,9 @@ void ForeignTableHelper::drop_table(std::string_view table_name) {
  * @param (role_name)   [in]   role name.
  * @param (privileges)  [in]   privileges.
  */
-void ForeignTableHelper::grant_table(std::string_view table_name,
-                                     std::string_view role_name,
-                                     std::string_view privileges) {
+void ForeignTableHelperPg::grant_table(std::string_view table_name,
+                                       std::string_view role_name,
+                                       std::string_view privileges) {
   boost::format statement;
   PGresult* res = nullptr;
 
@@ -126,7 +126,7 @@ void ForeignTableHelper::grant_table(std::string_view table_name,
  * @param (table_name)  [in]   table name.
  * @return table_id.
  */
-ObjectIdType ForeignTableHelper::insert_foreign_table(
+ObjectIdType ForeignTableHelperPg::insert_foreign_table(
     std::string_view table_name) {
   ObjectIdType table_id;
 
@@ -149,7 +149,7 @@ ObjectIdType ForeignTableHelper::insert_foreign_table(
  * @brief discard the data for testing.
  * @param (foreign_table_id)  [in]   foreign table id.
  */
-void ForeignTableHelper::delete_foreign_table(ObjectIdType foreign_table_id) {
+void ForeignTableHelperPg::delete_foreign_table(ObjectIdType foreign_table_id) {
   // db connection.
   db_connection();
 
@@ -164,7 +164,7 @@ void ForeignTableHelper::delete_foreign_table(ObjectIdType foreign_table_id) {
 /**
  * @brief Connect to the database.
  */
-void ForeignTableHelper::db_connection() {
+void ForeignTableHelperPg::db_connection() {
   if (!DbcUtils::is_open(connection)) {
     // db connection.
     PGconn* pgconn = PQconnectdb(Config::get_connection_string().c_str());

@@ -39,18 +39,20 @@ class ApiTestRolesMetadataPg
     UTUtils::skip_if_json();
     UTUtils::skip_if_connection_not_opened();
 
-    UTUtils::print(">> gtest::SetUp()");
+    if (UTUtils::is_postgresql() && global->is_open()) {
+      UTUtils::print(">> gtest::SetUp()");
 
-    // Create dummy data for ROLE.
-    role_id_ = RoleMetadataHelper::create_role(
-        UtRoleMetadata::kRoleName,
-        "NOINHERIT CREATEROLE CREATEDB REPLICATION CONNECTION LIMIT 10");
+      // Create dummy data for ROLE.
+      role_id_ = RoleMetadataHelper::create_role(
+          UtRoleMetadata::kRoleName,
+          "NOINHERIT CREATEROLE CREATEDB REPLICATION CONNECTION LIMIT 10");
+    }
   }
 
   void TearDown() override {
     UTUtils::skip_if_json();
 
-    if (global->is_open()) {
+    if (UTUtils::is_postgresql() && global->is_open()) {
       UTUtils::print(">> gtest::TearDown()");
 
       // Remove dummy data for ROLE.

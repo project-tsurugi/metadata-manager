@@ -25,8 +25,6 @@
 
 #if defined(STORAGE_POSTGRESQL)
 #include "test/helper/postgresql/role_metadata_helper_pg.h"
-#elif defined(STORAGE_JSON)
-#include "test/helper/json/role_metadata_helper_json.h"
 #endif
 
 namespace manager::metadata::testing {
@@ -35,20 +33,18 @@ class RoleMetadataHelper : public MetadataHelper {
  public:
   int64_t get_record_count() const override { return 0L; }
 
-  static ObjectId create_role(std::string_view role_name,
-                              std::string_view options) {
+  static ObjectId create_role([[maybe_unused]] std::string_view role_name,
+                              [[maybe_unused]] std::string_view options) {
 #if defined(STORAGE_POSTGRESQL)
     return RoleMetadataHelperPg::create_role(role_name, options);
 #elif defined(STORAGE_JSON)
-    return RoleMetadataHelperJson::create_role(role_name, options);
+    return INVALID_OBJECT_ID;
 #endif
   }
 
-  static void drop_role(std::string_view role_name) {
+  static void drop_role([[maybe_unused]] std::string_view role_name) {
 #if defined(STORAGE_POSTGRESQL)
     RoleMetadataHelperPg::drop_role(role_name);
-#elif defined(STORAGE_JSON)
-    RoleMetadataHelperJson::drop_role(role_name);
 #endif
   }
 };
