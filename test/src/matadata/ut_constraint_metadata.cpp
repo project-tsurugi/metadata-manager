@@ -74,7 +74,7 @@ void UtConstraintMetadata::generate_test_metadata() {
   metadata_struct_->index_id       = 3;
   metadata_struct_->expression     = "none";
 
-  // Generate ptree from UTTableMetadata fields.
+  // Generate ptree from UtIndexMetadata fields.
   metadata_ptree_ = metadata_struct_->convert_to_ptree();
 }
 

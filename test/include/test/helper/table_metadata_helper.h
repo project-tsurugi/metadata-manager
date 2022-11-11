@@ -37,7 +37,7 @@ class TableMetadataHelper {
                                      std::string_view identifier,
                                      int32_t line_num);
 
-  static std::vector<UTTableMetadata> make_valid_table_metadata();
+  static std::vector<UtTableMetadata> make_valid_table_metadata();
 
   static void add_table(std::string_view table_name,
                         ObjectId* ret_table_id = nullptr);

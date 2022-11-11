@@ -29,12 +29,15 @@
 
 namespace manager::metadata::testing {
 
-class UTTableMetadata : public UtMetadata<manager::metadata::Table> {
+class UtTableMetadata : public UtMetadata<manager::metadata::Table> {
  public:
   using UtMetadata::UtMetadata;
 
-  UTTableMetadata() { this->generate_test_metadata(); }
-  explicit UTTableMetadata(std::string_view table_name)
+  UtTableMetadata() { this->generate_test_metadata(); }
+  explicit UtTableMetadata(const Table& metadata) : UtMetadata(metadata) {
+    excluding_items(metadata_ptree_, "tables", std::to_string(INVALID_VALUE));
+  }
+  explicit UtTableMetadata(std::string_view table_name)
       : table_name_(table_name) {
     this->generate_test_metadata();
   }

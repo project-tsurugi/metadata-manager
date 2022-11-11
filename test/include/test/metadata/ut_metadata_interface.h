@@ -22,6 +22,9 @@
 
 namespace manager::metadata::testing {
 
+#define CHECK_METADATA_EXPECTED(exp, act) \
+  check_metadata_expected(exp, act, __FILE__, __LINE__);
+
 class UtMetadataInterface {
  public:
   virtual ~UtMetadataInterface() {}

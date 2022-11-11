@@ -26,6 +26,9 @@ namespace manager::metadata::testing {
 
 class TestEnvironment : public ::testing::Environment {
  public:
+  void SetUp() override {}
+  void TearDown() override {}
+
   /**
    * @brief Is a connection to the metadata repository opened?
    */

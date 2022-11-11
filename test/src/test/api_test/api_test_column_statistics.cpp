@@ -533,8 +533,7 @@ TEST_F(ApiTestColumnStatisticsPg, test_invalid_ids) {
 }
 
 /**
- * @brief happy test for adding, getting and removing
- *   one new table metadata without initialization of all api.
+ * @brief This test executes all APIs without initialization.
  */
 TEST_F(ApiTestColumnStatisticsPg, test_without_initialized) {
   CALL_TRACE;

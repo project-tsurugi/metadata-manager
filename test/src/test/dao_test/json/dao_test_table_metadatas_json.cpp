@@ -434,7 +434,7 @@ TEST_F(DaoTestTableMetadata, add_get_table_metadata_by_table_name) {
                                std::to_string(__LINE__);
 
   // Generate test metadata.
-  UTTableMetadata testdata_table_metadata(new_table_name);
+  UtTableMetadata testdata_table_metadata(new_table_name);
   auto new_table = testdata_table_metadata.get_metadata_ptree();
 
   // add table metadata.
@@ -465,7 +465,7 @@ TEST_F(DaoTestTableMetadata, add_get_table_metadata_by_table_id) {
                                std::to_string(__LINE__);
 
   // Generate test metadata.
-  UTTableMetadata testdata_table_metadata(new_table_name);
+  UtTableMetadata testdata_table_metadata(new_table_name);
   auto new_table = testdata_table_metadata.get_metadata_ptree();
 
   // add table metadata.
@@ -499,7 +499,7 @@ TEST_F(DaoTestTableMetadata, add_update_table_metadata) {
                                std::to_string(__LINE__);
 
   // Generate test metadata.
-  UTTableMetadata testdata_table_metadata(new_table_name);
+  UtTableMetadata testdata_table_metadata(new_table_name);
   auto new_table = testdata_table_metadata.get_metadata_ptree();
 
   // #1 add table metadata.
@@ -521,7 +521,7 @@ TEST_F(DaoTestTableMetadata, add_update_table_metadata) {
                                  std::to_string(__LINE__);
 
     // Generate test metadata.
-    UTTableMetadata testdata_table_metadata(new_table_name);
+    UtTableMetadata testdata_table_metadata(new_table_name);
     auto new_table = testdata_table_metadata.get_metadata_ptree();
 
     // add table metadata.
@@ -539,7 +539,7 @@ TEST_F(DaoTestTableMetadata, add_update_table_metadata) {
                                  std::to_string(__LINE__);
 
     // Generate test metadata.
-    UTTableMetadata testdata_table_metadata(new_table_name);
+    UtTableMetadata testdata_table_metadata(new_table_name);
     auto new_table = testdata_table_metadata.get_metadata_ptree();
 
     // add table metadata.
@@ -636,7 +636,7 @@ TEST_F(DaoTestTableMetadata, remove_table_metadata_by_table_name) {
                                std::to_string(__LINE__);
 
   // Generate test metadata.
-  UTTableMetadata testdata_table_metadata(new_table_name);
+  UtTableMetadata testdata_table_metadata(new_table_name);
   auto new_table = testdata_table_metadata.get_metadata_ptree();
 
   // add table metadata.
@@ -667,7 +667,7 @@ TEST_F(DaoTestTableMetadata, remove_table_metadata_by_table_id) {
                                std::to_string(__LINE__);
 
   // Generate test metadata.
-  UTTableMetadata testdata_table_metadata(new_table_name);
+  UtTableMetadata testdata_table_metadata(new_table_name);
   auto new_table = testdata_table_metadata.get_metadata_ptree();
 
   // add table metadata.

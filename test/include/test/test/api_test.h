@@ -27,8 +27,10 @@
 
 namespace manager::metadata::testing {
 
-typedef void (*UniqueDataCreator)(boost::property_tree::ptree& object,
-                                  const int64_t unique_num);
+using UniqueDataCreator =
+    std::function<void(boost::property_tree::ptree&, const int64_t)>;
+using UpdateDataCreator = std::function<std::unique_ptr<UtMetadataInterface>(
+    const boost::property_tree::ptree&)>;
 
 class ApiTest {
  public:
@@ -36,9 +38,8 @@ class ApiTest {
       : managers_(std::move(manager)) {}
   virtual ~ApiTest() {}
 
-  virtual int64_t get_record_count() const                  = 0;
-  virtual Object* get_structure() const                     = 0;
-  virtual std::vector<Object>* get_structure_vector() const = 0;
+  virtual int64_t get_record_count() const = 0;
+  virtual Object* get_structure() const    = 0;
 
  protected:
   // Series of flow tests.
@@ -51,14 +52,11 @@ class ApiTest {
   void test_flow_getall(const UtMetadataInterface* ut_metadata,
                         UniqueDataCreator creator,
                         const int32_t create_data_max) const;
-#if 0
-  void test_flow_getall_with_struct(
-      const UtMetadataInterface* ut_metadata) const;
-  void test_flow_getall_with_struct(
-      const std::vector<UtMetadataInterface> container) const;
-#endif
+  void test_flow_getall_next(const UtMetadataInterface* ut_metadata,
+                             UniqueDataCreator creator,
+                             const int32_t create_data_max) const;
   void test_flow_update(const UtMetadataInterface* ut_metadata,
-                        const UtMetadataInterface* ut_metadata_update) const;
+                        UpdateDataCreator update_data_creator) const;
 
   // Standalone tests.
   void test_init(const Metadata* metadata_manager, ErrorCode expect_code) const;
@@ -82,10 +80,14 @@ class ApiTest {
 
   void test_getall(const Metadata* metadata_manager, ErrorCode expected,
                    std::vector<boost::property_tree::ptree>& container) const;
-#if 0
-  void test_getall(const Metadata* metadata_manager,
-                   ErrorCode expected, std::vector<Object>& container) const;
-#endif
+  void test_getall_next(
+      const Metadata* metadata_manager, ErrorCode expected,
+      std::vector<boost::property_tree::ptree>& container) const;
+
+  void test_exists(const Metadata* metadata_manager, ObjectId object_id,
+                   bool expected) const;
+  void test_exists(const Metadata* metadata_manager,
+                   std::string_view object_name, bool expected) const;
 
   void test_update(const Metadata* metadata_manager, ObjectId object_id,
                    boost::property_tree::ptree& metadata_object,
@@ -108,6 +110,12 @@ class ApiTest {
   ObjectId metadata_add(const Metadata* metadata_manager, T& metadata_object,
                         ErrorCode expect_code) const;
 
+  std::vector<boost::property_tree::ptree> metadata_add(
+      const Metadata* metadata_manager,
+      const boost::property_tree::ptree& metadata,
+      UniqueDataCreator unique_data_creator,
+      const int32_t create_data_max) const;
+
   template <typename KEY, typename T>
   void metadata_get(const Metadata* metadata_manager, KEY object_key,
                     ErrorCode expect_code, T& metadata_object) const;
@@ -115,6 +123,16 @@ class ApiTest {
   template <typename KEY, typename T>
   void metadata_update(const Metadata* metadata_manager, KEY object_key,
                        T& metadata_object, ErrorCode expect_code) const;
+
+  void metadata_remove(
+      const Metadata* metadata_manager,
+      const std::vector<boost::property_tree::ptree>& metadata_list) const;
+
+  void metadata_compare_all(
+      const UtMetadataInterface* ut_metadata,
+      const std::vector<boost::property_tree::ptree>& expect_metadata_list,
+      const std::vector<boost::property_tree::ptree>& actual_metadata_list)
+      const;
 };  // class ApiTest
 
 }  // namespace manager::metadata::testing

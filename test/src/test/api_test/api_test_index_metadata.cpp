@@ -57,11 +57,37 @@ class ApiTestIndexMetadata
       TableMetadataHelper::remove_table(table_id_);
     }
   }
+
+  static std::unique_ptr<UtMetadataInterface> generate_update_metadata(
+      const boost::property_tree::ptree& metadata) {
+    // Base metadata.
+    auto metadata_base = *(UtIndexMetadata(metadata).get_metadata_struct());
+
+    // Copy
+    manager::metadata::Index metadata_update;
+    metadata_update.convert_from_ptree(metadata);
+
+    // name
+    metadata_update.name += "-update";
+    // namespace
+    metadata_update.namespace_name += "-update";
+    // access_method
+    metadata_update.access_method =
+        static_cast<int64_t>(Index::AccessMethod::MASS_TREE_METHOD);
+    // is_primary
+    metadata_update.is_primary = true;
+    // columns
+    metadata_update.keys = {11, 12};
+    // columns id.
+    metadata_update.keys_id = {2011, 2012};
+
+    return std::make_unique<UtIndexMetadata>(metadata_update);
+  }
 };
 
 /**
- * @brief Test to add new metadata and get it in ptree type
- *   with object ID as key.
+ * @brief Test to add metadata with ptree type and
+ *   get it with object ID as key.
  */
 TEST_F(ApiTestIndexMetadata, test_get_by_id_with_ptree) {
   CALL_TRACE;
@@ -71,8 +97,8 @@ TEST_F(ApiTestIndexMetadata, test_get_by_id_with_ptree) {
 }
 
 /**
- * @brief Test to add new metadata and get it in ptree type
- *   with object ID as key.
+ * @brief Test to add metadata with structure type and
+ *   get it with object ID as key.
  */
 TEST_F(ApiTestIndexMetadata, test_get_by_id_with_struct) {
   CALL_TRACE;
@@ -82,8 +108,8 @@ TEST_F(ApiTestIndexMetadata, test_get_by_id_with_struct) {
 }
 
 /**
- * @brief Test to add new metadata and get it in ptree type
- *   with object name as key.
+ * @brief Test to add metadata with ptree type and
+ *   get it with object name as key.
  */
 TEST_F(ApiTestIndexMetadata, test_get_by_name_with_ptree) {
   CALL_TRACE;
@@ -93,8 +119,8 @@ TEST_F(ApiTestIndexMetadata, test_get_by_name_with_ptree) {
 }
 
 /**
- * @brief Test to add new metadata and get it in ptree type
- *   with object name as key.
+ * @brief Test to add metadata with structure type and
+ *   get it with object name as key.
  */
 TEST_F(ApiTestIndexMetadata, test_get_by_name_with_struct) {
   CALL_TRACE;
@@ -114,8 +140,7 @@ TEST_F(ApiTestIndexMetadata, test_getall_with_ptree) {
 }
 
 /**
- * @brief Test to add new metadata and update it in ptree type
- *   with object ID as key.
+ * @brief Test to add new metadata and update.
  */
 TEST_F(ApiTestIndexMetadata, test_update) {
   CALL_TRACE;
@@ -123,36 +148,14 @@ TEST_F(ApiTestIndexMetadata, test_update) {
   // Generate test metadata.
   UtIndexMetadata ut_metadata(table_id_);
 
-  // Copy
-  auto metadata_update = *(static_cast<const manager::metadata::Index*>(
-      ut_metadata.get_metadata_struct()));
-
-  // name
-  metadata_update.name += "-update";
-  // namespace
-  metadata_update.namespace_name += "-update";
-  // access_method
-  metadata_update.access_method =
-      static_cast<int64_t>(Index::AccessMethod::MASS_TREE_METHOD);
-  // is_primary
-  metadata_update.is_primary = true;
-  // columns
-  metadata_update.keys = {11, 12};
-  // columns id.
-  metadata_update.keys_id = {2011, 2012};
-
-  // Generate update test metadata.
-  UtIndexMetadata ut_metadata_update(metadata_update);
-
   // Execute the test.
-  this->test_flow_update(ut_metadata, ut_metadata_update);
+  this->test_flow_update(ut_metadata, generate_update_metadata);
 }
 
 /**
- * @brief Test to add new metadata and update it in ptree type
- *   with object ID as key.
+ * @brief This is a test for duplicate table names.
  */
-TEST_F(ApiTestIndexMetadata, test_name_duplicate) {
+TEST_F(ApiTestIndexMetadata, test_duplicate_index_name) {
   CALL_TRACE;
 
   // Generate indexes metadata manager.
@@ -163,15 +166,21 @@ TEST_F(ApiTestIndexMetadata, test_name_duplicate) {
 
   ptree inserted_metadata = ut_metadata.get_metadata_ptree();
 
+  // Test initialization.
+  this->test_init(managers.get(), ErrorCode::OK);
+
   // Add first index metadata.
-  ObjectId inserted_id =
+  ObjectId object_id_1st =
       this->test_add(managers.get(), inserted_metadata, ErrorCode::OK);
+  EXPECT_GT(object_id_1st, INVALID_OBJECT_ID);
 
   // Add second index metadata.
-  this->test_add(managers.get(), inserted_metadata, ErrorCode::ALREADY_EXISTS);
+  ObjectId object_id_2nd = this->test_add(managers.get(), inserted_metadata,
+                                          ErrorCode::ALREADY_EXISTS);
+  EXPECT_EQ(object_id_2nd, INVALID_OBJECT_ID);
 
   // Remove index metadata.
-  this->test_remove(managers.get(), inserted_id, ErrorCode::OK);
+  this->test_remove(managers.get(), object_id_1st, ErrorCode::OK);
 }
 
 /**
@@ -295,8 +304,7 @@ TEST_F(ApiTestIndexMetadata, test_invalid_parameter) {
 }
 
 /**
- * @brief happy test for adding, getting and removing
- *   one new table metadata without initialization of all api.
+ * @brief This test executes all APIs without initialization.
  */
 TEST_F(ApiTestIndexMetadata, test_without_initialized) {
   CALL_TRACE;

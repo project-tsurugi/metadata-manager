@@ -16,19 +16,30 @@
 #ifndef TEST_INCLUDE_TEST_COMMON_POSTGRESQL_TEST_ENVIRONMENT_PG_H_
 #define TEST_INCLUDE_TEST_COMMON_POSTGRESQL_TEST_ENVIRONMENT_PG_H_
 
-#include <memory>
-#include <vector>
-
+#include "manager/metadata/common/config.h"
+#include "manager/metadata/dao/postgresql/dbc_utils_pg.h"
 #include "test/common/test_environment.h"
-#include "test/metadata/ut_table_metadata.h"
 
 namespace manager::metadata::testing {
 
 class TestEnvironmentPg : public TestEnvironment {
  public:
   ~TestEnvironmentPg() override {}
-  void SetUp() override;
-  void TearDown() override;
+
+  void SetUp() override {
+    TestEnvironment::SetUp();
+
+    // check if a connection to the metadata repository is opened or not.
+    db::postgresql::ConnectionSPtr connection =
+        db::postgresql::DbcUtils::make_connection_sptr(
+            PQconnectdb(Config::get_connection_string().c_str()));
+
+    this->is_open_ = db::postgresql::DbcUtils::is_open(connection);
+  }
+
+  void TearDown() override {
+    TestEnvironment::TearDown();
+  }
 };
 
 }  // namespace manager::metadata::testing

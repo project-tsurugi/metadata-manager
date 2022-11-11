@@ -215,9 +215,8 @@ TEST_P(DaoTestTableStatisticsByTableIdHappy,
       "DaoTestTableStatistics", std::get<0>(param), __LINE__);
 
   // Generate test metadata.
-  UTTableMetadata testdata_table_metadata(table_name);
-  auto testdata_table =
-      static_cast<const Table*>(testdata_table_metadata.get_metadata_struct());
+  UtTableMetadata testdata_table_metadata(table_name);
+  auto testdata_table = testdata_table_metadata.get_metadata_struct();
 
   ObjectIdType ret_table_id;
   TableMetadataHelper::add_table(table_name, &ret_table_id);
@@ -338,9 +337,8 @@ TEST_P(DaoTestTableStatisticsByTableNameHappy,
       "DaoTestTableStatistics", std::get<0>(param), __LINE__);
 
   // Generate test metadata.
-  UTTableMetadata testdata_table_metadata(table_name);
-  auto testdata_table =
-      static_cast<const Table*>(testdata_table_metadata.get_metadata_struct());
+  UtTableMetadata testdata_table_metadata(table_name);
+  auto testdata_table = testdata_table_metadata.get_metadata_struct();
 
   ObjectIdType ret_table_id;
   TableMetadataHelper::add_table(table_name, &ret_table_id);

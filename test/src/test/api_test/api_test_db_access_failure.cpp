@@ -38,38 +38,58 @@ namespace manager::metadata::testing {
 using boost::property_tree::ptree;
 
 class ApiTestDBAccessFailure : public ::testing::Test {
-  void SetUp() override { UTUtils::skip_if_connection_opened(); }
+  void SetUp() override {
+    UTUtils::skip_if_json();
+    UTUtils::skip_if_connection_opened();
+  }
 };
 
 class ApiTestDBAccessFailureByTableId
     : public ::testing::TestWithParam<ObjectIdType> {
-  void SetUp() override { UTUtils::skip_if_connection_opened(); }
+  void SetUp() override {
+    UTUtils::skip_if_json();
+    UTUtils::skip_if_connection_opened();
+  }
 };
 
 class ApiTestDBAccessFailureByTableName
     : public ::testing::TestWithParam<std::string> {
-  void SetUp() override { UTUtils::skip_if_connection_opened(); }
+  void SetUp() override {
+    UTUtils::skip_if_json();
+    UTUtils::skip_if_connection_opened();
+  }
 };
 
 class ApiTestDBAccessFailureByTableIdReltuples
     : public ::testing::TestWithParam<std::tuple<ObjectIdType, int64_t>> {
-  void SetUp() override { UTUtils::skip_if_connection_opened(); }
+  void SetUp() override {
+    UTUtils::skip_if_json();
+    UTUtils::skip_if_connection_opened();
+  }
 };
 
 class ApiTestDBAccessFailureByTableNameReltuples
     : public ::testing::TestWithParam<std::tuple<std::string, int64_t>> {
-  void SetUp() override { UTUtils::skip_if_connection_opened(); }
+  void SetUp() override {
+    UTUtils::skip_if_json();
+    UTUtils::skip_if_connection_opened();
+  }
 };
 
 class ApiTestDBAccessFailureByTableIdColumnNumber
     : public ::testing::TestWithParam<std::tuple<ObjectIdType, ObjectIdType>> {
-  void SetUp() override { UTUtils::skip_if_connection_opened(); }
+  void SetUp() override {
+    UTUtils::skip_if_json();
+    UTUtils::skip_if_connection_opened();
+  }
 };
 
 class ApiTestDBAccessFailureByColumnStatistics
-    : public ::testing::TestWithParam<
-          std::tuple<ObjectIdType, ObjectIdType>> {
-  void SetUp() override { UTUtils::skip_if_connection_opened(); }
+    : public ::testing::TestWithParam<std::tuple<ObjectIdType, ObjectIdType>> {
+  void SetUp() override {
+    UTUtils::skip_if_json();
+    UTUtils::skip_if_connection_opened();
+  }
 };
 
 std::vector<ObjectIdType> table_id_not_exists_dbaf = {

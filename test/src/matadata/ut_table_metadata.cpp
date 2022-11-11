@@ -17,8 +17,6 @@
 
 #include <utility>
 
-#include <boost/foreach.hpp>
-
 #include "manager/metadata/datatypes.h"
 #include "manager/metadata/helper/ptree_helper.h"
 #include "manager/metadata/tables.h"
@@ -35,7 +33,7 @@ using boost::property_tree::ptree;
  * @param line      [in]  line number of the caller.
  * @return none.
  */
-void UTTableMetadata::check_metadata_expected(
+void UtTableMetadata::check_metadata_expected(
     const boost::property_tree::ptree& expected,
     const boost::property_tree::ptree& actual, const char* file,
     const int64_t line) const {
@@ -56,7 +54,7 @@ void UTTableMetadata::check_metadata_expected(
  * @param line      [in]  line number of the caller.
  * @return none.
  */
-void UTTableMetadata::check_metadata_expected(
+void UtTableMetadata::check_metadata_expected(
     const manager::metadata::Table& expected,
     const boost::property_tree::ptree& actual, const char* file,
     const int64_t line) const {
@@ -74,7 +72,7 @@ void UTTableMetadata::check_metadata_expected(
  * @param line      [in]  line number of the caller.
  * @return none.
  */
-void UTTableMetadata::check_metadata_expected(
+void UtTableMetadata::check_metadata_expected(
     const boost::property_tree::ptree& expected,
     const manager::metadata::Table& actual, const char* file,
     const int64_t line) const {
@@ -93,7 +91,7 @@ void UTTableMetadata::check_metadata_expected(
  * @param line      [in]  line number of the caller.
  * @return none.
  */
-void UTTableMetadata::check_metadata_expected(
+void UtTableMetadata::check_metadata_expected(
     const manager::metadata::Table& expected,
     const manager::metadata::Table& actual, const char* file,
     const int64_t line) const {
@@ -192,11 +190,10 @@ void UTTableMetadata::check_metadata_expected(
 }
 
 /**
- * @brief Generate ptree type table metadata
- * from UTTableMetadata fields.
+ * @brief Generate ptree type table metadata from UtTableMetadata fields.
  * @return none.
  */
-void UTTableMetadata::generate_test_metadata() {
+void UtTableMetadata::generate_test_metadata() {
   // Generate unique table name.
   std::string table_name =
       (table_name_.empty() ? "table_name_" + UTUtils::generate_narrow_uid()
@@ -207,7 +204,7 @@ void UTTableMetadata::generate_test_metadata() {
   metadata_struct_->id               = INVALID_OBJECT_ID;
   metadata_struct_->name             = table_name;
   metadata_struct_->namespace_name   = "";
-  metadata_struct_->number_of_tuples = INVALID_VALUE;
+  metadata_struct_->number_of_tuples = 0L;
 
   manager::metadata::Column column;
   metadata_struct_->columns.clear();
@@ -271,6 +268,8 @@ void UTTableMetadata::generate_test_metadata() {
     metadata_struct_->constraints.push_back(constraint);
   }
   metadata_ptree_ = metadata_struct_->convert_to_ptree();
+
+  excluding_items(metadata_ptree_, "tables", std::to_string(INVALID_VALUE));
 }
 
 }  // namespace manager::metadata::testing

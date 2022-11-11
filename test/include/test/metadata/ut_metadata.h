@@ -31,9 +31,6 @@
 
 namespace manager::metadata::testing {
 
-#define CHECK_METADATA_EXPECTED(exp, act) \
-  check_metadata_expected(exp, act, __FILE__, __LINE__);
-
 #define EXPECT_GT_EX(expected, actual, file, line) \
   EXPECT_GT(expected, actual)                      \
       << "Caller: " + std::string(file) + ":" + std::to_string(line);
@@ -63,7 +60,7 @@ class UtMetadata : public UtMetadataInterface {
 
   virtual ~UtMetadata() {}
 
-  const manager::metadata::Object* get_metadata_struct() const override {
+  const OBJECT* get_metadata_struct() const override {
     return &(*metadata_struct_);
   }
   boost::property_tree::ptree get_metadata_ptree() const override {
@@ -226,6 +223,30 @@ class UtMetadata : public UtMetadataInterface {
                                 ":" + std::to_string(line);
 
     EXPECT_EQ(expected, actual) << message;
+  }
+
+  /**
+   * @brief Exclude items of a specific value.
+   * @param metadata      [in/out] metadata.
+   * @param key           [in]     key name.
+   * @param exclude_value [in]     value to exclude.
+   */
+  void excluding_items(boost::property_tree::ptree& metadata, std::string key,
+                       std::string exclude_value) {
+    std::string full_key;
+
+    if (!key.empty()) {
+      full_key = key + ".";
+    }
+    for (boost::property_tree::ptree::iterator it = metadata.begin();
+         it != metadata.end();) {
+      excluding_items(it->second, full_key + it->first, exclude_value);
+      if (it->second.data() == exclude_value) {
+        it = metadata.erase(it);
+      } else {
+        ++it;
+      }
+    }
   }
 };
 

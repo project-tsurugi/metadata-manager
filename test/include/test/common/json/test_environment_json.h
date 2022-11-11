@@ -16,19 +16,28 @@
 #ifndef TEST_INCLUDE_TEST_COMMON_JSON_TEST_ENVIRONMENT_JSON_H_
 #define TEST_INCLUDE_TEST_COMMON_JSON_TEST_ENVIRONMENT_JSON_H_
 
-#include <memory>
-#include <vector>
+#include "boost/format.hpp"
 
+#include "manager/metadata/common/config.h"
 #include "test/common/test_environment.h"
-#include "test/metadata/ut_table_metadata.h"
 
 namespace manager::metadata::testing {
 
 class TestEnvironmentJson : public TestEnvironment {
  public:
   ~TestEnvironmentJson() override {}
-  void SetUp() override;
-  void TearDown() override;
+
+  void SetUp() override {
+    TestEnvironment::SetUp();
+
+    // initialize json file.
+    boost::format filename = boost::format("%s/%s.json") %
+                             manager::metadata::Config::get_storage_dir_path() %
+                             "tables";
+    std::remove(filename.str().c_str());
+  }
+
+  void TearDown() override { TestEnvironment::TearDown(); }
 };
 
 }  // namespace manager::metadata::testing

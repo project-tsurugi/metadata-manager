@@ -47,7 +47,7 @@ class ApiTestTableMetadataExtra
   }
 
  protected:
-  std::vector<UTTableMetadata> table_metadata_;
+  std::vector<UtTableMetadata> table_metadata_;
 };
 
 /**

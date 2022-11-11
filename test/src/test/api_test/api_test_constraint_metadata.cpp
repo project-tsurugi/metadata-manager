@@ -61,8 +61,8 @@ class ApiTestConstraintMetadata
 };
 
 /**
- * @brief Test to add new metadata and get it in ptree type
- *   with object ID as key.
+ * @brief Test to add metadata with ptree type and
+ *   get it with object ID as key.
  */
 TEST_F(ApiTestConstraintMetadata, test_get_by_id_with_ptree) {
   CALL_TRACE;
@@ -72,8 +72,8 @@ TEST_F(ApiTestConstraintMetadata, test_get_by_id_with_ptree) {
 }
 
 /**
- * @brief Test to add new metadata and get it in ptree type
- *   with object ID as key.
+ * @brief Test to add metadata with structure type and
+ *   get it with object ID as key.
  */
 TEST_F(ApiTestConstraintMetadata, test_get_by_id_with_struct) {
   CALL_TRACE;
@@ -83,8 +83,8 @@ TEST_F(ApiTestConstraintMetadata, test_get_by_id_with_struct) {
 }
 
 /**
- * @brief Test to add new metadata and get it in ptree type
- *   with object name as key.
+ * @brief Test to add metadata with ptree type and
+ *   get it with object name as key.
  */
 TEST_F(ApiTestConstraintMetadata, test_get_by_name_with_ptree) {
   CALL_TRACE;
@@ -102,8 +102,8 @@ TEST_F(ApiTestConstraintMetadata, test_get_by_name_with_ptree) {
 }
 
 /**
- * @brief Test to add new metadata and get it in ptree type
- *   with object name as key.
+ * @brief Test to add metadata with structure type and
+ *   get it with object name as key.
  */
 TEST_F(ApiTestConstraintMetadata, test_get_by_name_with_struct) {
   CALL_TRACE;
@@ -270,8 +270,7 @@ TEST_F(ApiTestConstraintMetadata, test_invalid_parameter) {
 }
 
 /**
- * @brief happy test for adding, getting and removing
- *   one new table metadata without initialization of all api.
+ * @brief This test executes all APIs without initialization.
  */
 TEST_F(ApiTestConstraintMetadata, test_without_initialized) {
   CALL_TRACE;

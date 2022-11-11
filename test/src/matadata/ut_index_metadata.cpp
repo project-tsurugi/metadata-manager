@@ -95,7 +95,7 @@ void UtIndexMetadata::generate_test_metadata() {
       static_cast<int64_t>(Index::Direction::ASC_NULLS_LAST),
       static_cast<int64_t>(Index::Direction::DESC_NULLS_FIRST)};
 
-  // Generate ptree from UTTableMetadata fields.
+  // Generate ptree from UtIndexMetadata fields.
   metadata_ptree_ = metadata_struct_->convert_to_ptree();
 }
 

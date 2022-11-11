@@ -43,7 +43,6 @@ class ApiTestFacade : protected ApiTest, public ::testing::Test {
   explicit ApiTestFacade(std::unique_ptr<Metadata>&& manager)
       : ApiTest(std::move(manager)),
         metadata_struct_(std::make_unique<OBJECT>()),
-        metadata_struct_array_(std::make_unique<std::vector<OBJECT>>()),
         metadata_helper_(std::make_unique<HELPER>()) {}
   virtual ~ApiTestFacade() {}
 
@@ -59,16 +58,12 @@ class ApiTestFacade : protected ApiTest, public ::testing::Test {
     return res_object;
   }
 
-  std::vector<Object>* get_structure_vector() const override {
-    auto struct_array = metadata_struct_array_.get();
-    return reinterpret_cast<std::vector<Object>*>(struct_array);
-  }
-
   // Series of flow tests.
   /**
    * @brief This is a test of the basic paths of metadata management (add, get,
    *   remove).
-   *   add: patterns that obtain a object ID.
+   *   add: metadata is ptree type.
+   *   exists: object ID as a key.
    *   get: object ID as a key.
    *   remove: object ID as a key.
    * @param ut_metadata  [in]  test metadata.
@@ -81,7 +76,8 @@ class ApiTestFacade : protected ApiTest, public ::testing::Test {
   /**
    * @brief This is a test of the basic paths of metadata management (add, get,
    *   remove).
-   *   add: patterns that obtain a object ID.
+   *   add: metadata is structure type.
+   *   exists: object ID as a key.
    *   get: object ID as a key.
    *   remove: object ID as a key.
    * @param ut_metadata  [in]  test metadata.
@@ -95,7 +91,8 @@ class ApiTestFacade : protected ApiTest, public ::testing::Test {
   /**
    * @brief This is a test of the basic paths of metadata management (add, get,
    *   remove).
-   *   add: patterns that obtain a object ID.
+   *   add: metadata is ptree type.
+   *   exists: object name as a key.
    *   get: object name as a key.
    *   remove: object name as a key.
    * @param ut_metadata  [in]  test metadata.
@@ -108,7 +105,8 @@ class ApiTestFacade : protected ApiTest, public ::testing::Test {
   /**
    * @brief This is a test of the basic paths of metadata management (add, get,
    *   remove).
-   *   add: patterns that obtain a object ID.
+   *   add: metadata is structure type.
+   *   exists: object name as a key.
    *   get: object name as a key.
    *   remove: object name as a key.
    * @param ut_metadata  [in]  test metadata.
@@ -122,7 +120,7 @@ class ApiTestFacade : protected ApiTest, public ::testing::Test {
   /**
    * @brief This is a test of the basic paths of metadata management (add,
    *   get_all, remove).
-   *   add: patterns that obtain a object ID.
+   *   add: metadata is ptree type.
    *   get_all: all object.
    *   remove: object ID as a key.
    * @param ut_metadata      [in]  test metadata.
@@ -135,49 +133,51 @@ class ApiTestFacade : protected ApiTest, public ::testing::Test {
                         const int32_t create_data_max = 5) const {
     CALL_TRACE;
     if (creator == nullptr) {
-      ApiTest::test_flow_getall(
-          &ut_metadata,
-          [](boost::property_tree::ptree& object, const int64_t unique_num) {
-            std::string metadata_name = "metadata_name_" +
-                                        UTUtils::generate_narrow_uid() + "_" +
-                                        std::to_string(unique_num);
-            object.put(manager::metadata::Object::NAME, metadata_name);
-          },
-          create_data_max);
+      ApiTest::test_flow_getall(&ut_metadata, make_unique_name,
+                                create_data_max);
     } else {
       ApiTest::test_flow_getall(&ut_metadata, creator, create_data_max);
     }
   }
 
-#if 0
   /**
    * @brief This is a test of the basic paths of metadata management (add,
-   *   get_all, remove).
-   *   add: patterns that obtain a object ID.
+   *   get_all, next, remove).
+   *   add: metadata is ptree type.
    *   get_all: all object.
+   *   next: all object.
    *   remove: object ID as a key.
-   * @param ut_metadata  [in]  test metadata.
+   * @param ut_metadata      [in]  test metadata.
+   * @param creator          [in]  callback function to create unique data.
+   *   If omitted, a unique value is set to 'name'.
+   * @param create_data_max  [in]  number of data to be created.
    */
-  void test_flow_getall_with_struct(const UtMetadata<OBJECT>& ut_metadata) const {
+  void test_flow_getall_next(const UtMetadata<OBJECT>& ut_metadata,
+                             UniqueDataCreator creator     = nullptr,
+                             const int32_t create_data_max = 5) const {
     CALL_TRACE;
-    ApiTest::test_flow_getall_with_struct(&ut_metadata);
+    if (creator == nullptr) {
+      ApiTest::test_flow_getall_next(&ut_metadata, make_unique_name,
+                                     create_data_max);
+    } else {
+      ApiTest::test_flow_getall_next(&ut_metadata, creator, create_data_max);
+    }
   }
-#endif
 
   /**
    * @brief This is a test of the basic paths of metadata management (add, get,
    *   update, remove).
-   *   add: patterns that obtain a object ID.
+   *   add: metadata is ptree type.
    *   get: object ID as a key.
    *   update: object ID as a key.
    *   remove: object ID as a key.
-   * @param ut_metadata         [in]  test metadata.
-   * @param ut_metadata_update  [in]  update test metadata.
+   * @param ut_metadata          [in]  test metadata.
+   * @param update_data_creator  [in]  callback function to create update test metadata.
    */
   void test_flow_update(const UtMetadata<OBJECT>& ut_metadata,
-                        const UtMetadata<OBJECT>& ut_metadata_update) const {
+                        UpdateDataCreator update_data_creator) const {
     CALL_TRACE;
-    ApiTest::test_flow_update(&ut_metadata, &ut_metadata_update);
+    ApiTest::test_flow_update(&ut_metadata, update_data_creator);
   }
 
   /**
@@ -353,8 +353,18 @@ class ApiTestFacade : protected ApiTest, public ::testing::Test {
 
  private:
   std::unique_ptr<OBJECT> metadata_struct_;
-  std::unique_ptr<std::vector<OBJECT>> metadata_struct_array_;
   std::unique_ptr<HELPER> metadata_helper_;
+
+  /**
+   * @brief Function to make `name` a unique value.
+   */
+  UniqueDataCreator make_unique_name = [](boost::property_tree::ptree& object,
+                                          const int64_t unique_num) {
+    object.put(manager::metadata::Object::NAME,
+               "metadata_name_" + UTUtils::generate_narrow_uid() + "_" +
+                   std::to_string(unique_num));
+  };
+
 };  // class ApiTest
 
 }  // namespace manager::metadata::testing

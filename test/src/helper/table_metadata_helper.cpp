@@ -76,8 +76,8 @@ std::int64_t TableMetadataHelper::get_record_count() {
  * @brief Make valid table metadata used as test data,
  * by reading a json file with table metadata.
  */
-std::vector<UTTableMetadata> TableMetadataHelper::make_valid_table_metadata() {
-  std::vector<UTTableMetadata> testdata_table_metadata_list;
+std::vector<UtTableMetadata> TableMetadataHelper::make_valid_table_metadata() {
+  std::vector<UtTableMetadata> testdata_table_metadata_list;
 
   ptree pt;
   try {
@@ -97,7 +97,7 @@ std::vector<UTTableMetadata> TableMetadataHelper::make_valid_table_metadata() {
     ptree& tables = o_tables.value();
     BOOST_FOREACH (const ptree::value_type& node, tables) {
       ptree table = node.second;
-      UTTableMetadata testdata_table_metadata(table);
+      UtTableMetadata testdata_table_metadata(table);
       testdata_table_metadata_list.emplace_back(testdata_table_metadata);
     }
   }
@@ -115,7 +115,7 @@ std::vector<UTTableMetadata> TableMetadataHelper::make_valid_table_metadata() {
 void TableMetadataHelper::add_table(std::string_view table_name,
                                     ObjectId* ret_table_id) {
   // Generate test metadata.
-  UTTableMetadata ut_metadata(table_name);
+  UtTableMetadata ut_metadata(table_name);
 
   // add table metadata.
   add_table(ut_metadata.get_metadata_ptree(), ret_table_id);

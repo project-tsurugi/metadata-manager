@@ -472,7 +472,7 @@ TEST_F(DaoTestTableMetadata, add_get_table_metadata_by_table_name) {
       "DaoTestTableMetadata", "", __LINE__);
 
   // Generate test metadata.
-  UTTableMetadata testdata_table_metadata(new_table_name);
+  UtTableMetadata testdata_table_metadata(new_table_name);
   auto new_table = testdata_table_metadata.get_metadata_ptree();
 
   // add table metadata.
@@ -502,7 +502,7 @@ TEST_F(DaoTestTableMetadata, add_get_table_metadata_by_table_id) {
       "DaoTestTableMetadata", "", __LINE__);
 
   // Generate test metadata.
-  UTTableMetadata testdata_table_metadata(new_table_name);
+  UtTableMetadata testdata_table_metadata(new_table_name);
   auto new_table = testdata_table_metadata.get_metadata_ptree();
 
   // add table metadata.
@@ -534,7 +534,7 @@ TEST_F(DaoTestTableMetadata, update_table_metadata) {
       "DaoTestTableMetadata", "", __LINE__);
 
   // Generate test metadata.
-  UTTableMetadata testdata_table_metadata(new_table_name);
+  UtTableMetadata testdata_table_metadata(new_table_name);
   auto new_table = testdata_table_metadata.get_metadata_ptree();
 
   // add table metadata.
@@ -578,7 +578,7 @@ TEST_F(DaoTestTableMetadata, remove_table_metadata_by_table_name) {
       "DaoTestTableMetadata", "", __LINE__);
 
   // Generate test metadata.
-  UTTableMetadata testdata_table_metadata(new_table_name);
+  UtTableMetadata testdata_table_metadata(new_table_name);
   auto new_table = testdata_table_metadata.get_metadata_ptree();
 
   // add table metadata.
@@ -608,7 +608,7 @@ TEST_F(DaoTestTableMetadata, remove_table_metadata_by_table_id) {
       "DaoTestTableMetadata", "", __LINE__);
 
   // Generate test metadata.
-  UTTableMetadata testdata_table_metadata(new_table_name);
+  UtTableMetadata testdata_table_metadata(new_table_name);
   auto new_table = testdata_table_metadata.get_metadata_ptree();
 
   // add table metadata.

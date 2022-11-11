@@ -51,7 +51,7 @@ class ApiTestAddTableMetadataException
     invalid_table_metadata.emplace_back(empty_table);
 
     // Generate test metadata.
-    UTTableMetadata testdata_table_metadata;
+    UtTableMetadata testdata_table_metadata;
     auto new_table = testdata_table_metadata.get_metadata_ptree();
 
     new_table.erase(Table::NAME);
@@ -211,7 +211,7 @@ TEST_F(ApiTestAddTableMetadataException, update_table_metadata) {
 TEST_P(ApiTestTableMetadataByTableIdException,
        update_table_metadata_by_non_existing_table_id) {
   // Generate test metadata.
-  UTTableMetadata testdata_table_metadata;
+  UtTableMetadata testdata_table_metadata;
 
   UTUtils::print(
       UTUtils::get_tree_string(testdata_table_metadata.get_metadata_ptree()));
