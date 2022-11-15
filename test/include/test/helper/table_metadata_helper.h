@@ -25,13 +25,31 @@
 #include <boost/property_tree/ptree.hpp>
 
 #include "manager/metadata/tables.h"
+#include "test/helper/metadata_helper.h"
 #include "test/metadata/ut_table_metadata.h"
+
+#if defined(STORAGE_POSTGRESQL)
+#include "test/helper/postgresql/metadata_helper_pg.h"
+#elif defined(STORAGE_JSON)
+#include "test/helper/json/metadata_helper_json.h"
+#endif
 
 namespace manager::metadata::testing {
 
-class TableMetadataHelper {
+class TableMetadataHelper : public MetadataHelper {
  public:
-  static std::int64_t get_record_count();
+#if defined(STORAGE_POSTGRESQL)
+  TableMetadataHelper()
+      : helper_(std::make_unique<MetadataHelperPg>(kTableName)) {}
+#elif defined(STORAGE_JSON)
+  TableMetadataHelper()
+      : helper_(std::make_unique<MetadataHelperJson>(kMetadataName, kRootNode,
+                                                     kSubNode)) {}
+#endif
+
+  int64_t get_record_count() const override {
+    return helper_->get_record_count();
+  }
 
   static std::string make_table_name(std::string_view prefix,
                                      std::string_view identifier,
@@ -60,6 +78,21 @@ class TableMetadataHelper {
   static void check_table_acls_expected(
       const std::map<std::string_view, std::string_view>& expected,
       const boost::property_tree::ptree& actual);
+
+ private:
+#if defined(STORAGE_POSTGRESQL)
+  static constexpr const char* const kTableName = "tsurugi_constraint";
+#elif defined(STORAGE_JSON)
+  static constexpr const char* const kMetadataName = "tables";
+  static constexpr const char* const kRootNode     = "tables";
+  static constexpr const char* const kSubNode      = "constraints";
+#endif
+
+#if defined(STORAGE_POSTGRESQL)
+  std::unique_ptr<MetadataHelperPg> helper_;
+#elif defined(STORAGE_JSON)
+  std::unique_ptr<MetadataHelperJson> helper_;
+#endif
 };
 
 }  // namespace manager::metadata::testing

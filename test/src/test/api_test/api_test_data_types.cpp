@@ -23,7 +23,7 @@
 #include "test/common/ut_utils.h"
 #include "test/helper/metadata_helper.h"
 #include "test/metadata/ut_datatypes_metadata.h"
-#include "test/test/api_test_facade.h"
+#include "test/helper/api_test_helper.h"
 
 namespace manager::metadata::testing {
 
@@ -76,13 +76,8 @@ static std::vector<std::string> make_datatype_names() {
   return UtDataTypesMetadata().get_datatype_names();
 }
 
-class ApiTestDataTypes
-    : public ApiTestFacade<DataType, MetadataHelper> {
+class ApiTestDataTypes : public ::testing::Test {
  public:
-  ApiTestDataTypes()
-      : ApiTestFacade(
-            std::make_unique<DataTypes>(GlobalTestEnvironment::TEST_DB)) {}
-
   void SetUp() override { UTUtils::skip_if_connection_not_opened(); }
 };
 class ApiTestDataTypesByKeyValue
@@ -118,8 +113,10 @@ INSTANTIATE_TEST_CASE_P(
 TEST_F(ApiTestDataTypes, test_init) {
   CALL_TRACE;
 
+  auto manager = std::make_unique<DataTypes>(GlobalTestEnvironment::TEST_DB);
+
   // Execute the test.
-  this->test_init(nullptr, ErrorCode::OK);
+  ApiTestHelper::test_init(manager.get(), ErrorCode::OK);
 }
 
 /**
@@ -128,9 +125,11 @@ TEST_F(ApiTestDataTypes, test_init) {
 TEST_F(ApiTestDataTypes, test_add) {
   CALL_TRACE;
 
+  auto manager = std::make_unique<DataTypes>(GlobalTestEnvironment::TEST_DB);
+
   ptree inserted_metadata;
   // Execute the test.
-  this->test_add(nullptr, inserted_metadata, ErrorCode::UNKNOWN);
+  ApiTestHelper::test_add(manager.get(), inserted_metadata, ErrorCode::UNKNOWN);
 }
 
 /**
@@ -139,9 +138,11 @@ TEST_F(ApiTestDataTypes, test_add) {
 TEST_F(ApiTestDataTypes, test_getall) {
   CALL_TRACE;
 
+  auto manager = std::make_unique<DataTypes>(GlobalTestEnvironment::TEST_DB);
+
   std::vector<ptree> container = {};
   // Execute the test.
-  this->test_getall(nullptr, ErrorCode::UNKNOWN, container);
+  ApiTestHelper::test_getall(manager.get(), ErrorCode::UNKNOWN, container);
   EXPECT_TRUE(container.empty());
 }
 
@@ -151,9 +152,11 @@ TEST_F(ApiTestDataTypes, test_getall) {
 TEST_F(ApiTestDataTypes, test_update) {
   CALL_TRACE;
 
+  auto manager = std::make_unique<DataTypes>(GlobalTestEnvironment::TEST_DB);
+
   ptree updated_metadata;
   // Execute the test.
-  this->test_update(nullptr, INT64_MAX, updated_metadata, ErrorCode::UNKNOWN);
+  ApiTestHelper::test_update(manager.get(), INT64_MAX, updated_metadata, ErrorCode::UNKNOWN);
 }
 
 /**
@@ -162,8 +165,10 @@ TEST_F(ApiTestDataTypes, test_update) {
 TEST_F(ApiTestDataTypes, test_remove_by_id) {
   CALL_TRACE;
 
+  auto manager = std::make_unique<DataTypes>(GlobalTestEnvironment::TEST_DB);
+
   // Execute the test.
-  this->test_remove(nullptr, INT64_MAX, ErrorCode::UNKNOWN);
+  ApiTestHelper::test_remove(manager.get(), INT64_MAX, ErrorCode::UNKNOWN);
 }
 
 /**
@@ -172,8 +177,10 @@ TEST_F(ApiTestDataTypes, test_remove_by_id) {
 TEST_F(ApiTestDataTypes, test_remove_by_name) {
   CALL_TRACE;
 
+  auto manager = std::make_unique<DataTypes>(GlobalTestEnvironment::TEST_DB);
+
   // Execute the test.
-  this->test_remove(nullptr, "INT32", ErrorCode::UNKNOWN);
+  ApiTestHelper::test_remove(manager.get(), "INT32", ErrorCode::UNKNOWN);
 }
 
 /**

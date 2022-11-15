@@ -26,7 +26,6 @@
 #include "test/helper/foreign_table_helper.h"
 #include "test/helper/role_metadata_helper.h"
 #include "test/helper/table_metadata_helper.h"
-// #include "test/metadata/ut_foreign_table_metadata.h"
 
 namespace {
 

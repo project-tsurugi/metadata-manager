@@ -16,24 +16,21 @@
 #include <gtest/gtest.h>
 
 #include "manager/metadata/roles.h"
-#include "test/common/dummy_object.h"
+#include "test/common/global_test_environment.h"
 #include "test/common/ut_utils.h"
+#include "test/helper/api_test_helper.h"
 #include "test/helper/role_metadata_helper.h"
 #include "test/metadata/ut_role_metadata.h"
-#include "test/test/api_test_facade.h"
 
 namespace manager::metadata::testing {
 
 using boost::property_tree::ptree;
 
-class ApiTestRolesMetadataPg
-    : public ApiTestFacade<DummyObject, RoleMetadataHelper> {
+class ApiTestRolesMetadataPg : public ::testing::Test {
  public:
   manager::metadata::ObjectId role_id_;
 
-  ApiTestRolesMetadataPg()
-      : ApiTestFacade(std::make_unique<Roles>(GlobalTestEnvironment::TEST_DB)),
-        role_id_(0) {}
+  ApiTestRolesMetadataPg() : role_id_(0) {}
 
   void SetUp() override {
     UTUtils::skip_if_json();
@@ -61,13 +58,8 @@ class ApiTestRolesMetadataPg
   }
 };
 
-class ApiTestRolesMetadataJson
-    : public ApiTestFacade<DummyObject, RoleMetadataHelper> {
+class ApiTestRolesMetadataJson : public ::testing::Test {
  public:
-  ApiTestRolesMetadataJson()
-      : ApiTestFacade(std::make_unique<Roles>(GlobalTestEnvironment::TEST_DB)) {
-  }
-
   void SetUp() override { UTUtils::skip_if_postgresql(); }
   void TearDown() override { UTUtils::skip_if_postgresql(); }
 };
@@ -84,10 +76,11 @@ TEST_F(ApiTestRolesMetadataPg, test_add) {
   ptree inserted_metadata;
 
   // Test to initialize the manager.
-  this->test_init(managers.get(), ErrorCode::OK);
+  ApiTestHelper::test_init(managers.get(), ErrorCode::OK);
 
   // Execute the test.
-  this->test_add(managers.get(), inserted_metadata, ErrorCode::UNKNOWN);
+  ApiTestHelper::test_add(managers.get(), inserted_metadata,
+                          ErrorCode::UNKNOWN);
 }
 
 /**
@@ -100,13 +93,13 @@ TEST_F(ApiTestRolesMetadataPg, test_get_by_id) {
   auto managers = std::make_unique<Roles>(GlobalTestEnvironment::TEST_DB);
 
   // Test to initialize the manager.
-  this->test_init(managers.get(), ErrorCode::OK);
+  ApiTestHelper::test_init(managers.get(), ErrorCode::OK);
 
   ptree retrieve_metadata;
 
   // Test getting by role id.
-  this->test_get(managers.get(), this->role_id_, ErrorCode::OK,
-                 retrieve_metadata);
+  ApiTestHelper::test_get(managers.get(), this->role_id_, ErrorCode::OK,
+                          retrieve_metadata);
 
   // Generate test metadata.
   UtRoleMetadata ut_metadata(this->role_id_);
@@ -125,13 +118,13 @@ TEST_F(ApiTestRolesMetadataPg, test_get_by_name) {
   auto managers = std::make_unique<Roles>(GlobalTestEnvironment::TEST_DB);
 
   // Test to initialize the manager.
-  this->test_init(managers.get(), ErrorCode::OK);
+  ApiTestHelper::test_init(managers.get(), ErrorCode::OK);
 
   ptree retrieve_metadata;
 
   // Test getting by role name.
-  this->test_get(managers.get(), UtRoleMetadata::kRoleName, ErrorCode::OK,
-                 retrieve_metadata);
+  ApiTestHelper::test_get(managers.get(), UtRoleMetadata::kRoleName,
+                          ErrorCode::OK, retrieve_metadata);
 
   // Generate test metadata.
   UtRoleMetadata ut_metadata(this->role_id_);
@@ -150,12 +143,12 @@ TEST_F(ApiTestRolesMetadataPg, test_getall) {
   auto managers = std::make_unique<Roles>(GlobalTestEnvironment::TEST_DB);
 
   // Test to initialize the manager.
-  this->test_init(managers.get(), ErrorCode::OK);
+  ApiTestHelper::test_init(managers.get(), ErrorCode::OK);
 
   std::vector<ptree> container = {};
 
   // Execute the test.
-  this->test_getall(managers.get(), ErrorCode::UNKNOWN, container);
+  ApiTestHelper::test_getall(managers.get(), ErrorCode::UNKNOWN, container);
   EXPECT_TRUE(container.empty());
 }
 
@@ -169,10 +162,10 @@ TEST_F(ApiTestRolesMetadataPg, test_remove_by_id) {
   auto managers = std::make_unique<Roles>(GlobalTestEnvironment::TEST_DB);
 
   // Test to initialize the manager.
-  this->test_init(managers.get(), ErrorCode::OK);
+  ApiTestHelper::test_init(managers.get(), ErrorCode::OK);
 
   // Execute the test.
-  this->test_remove(managers.get(), INT64_MAX, ErrorCode::UNKNOWN);
+  ApiTestHelper::test_remove(managers.get(), INT64_MAX, ErrorCode::UNKNOWN);
 }
 
 /**
@@ -185,11 +178,11 @@ TEST_F(ApiTestRolesMetadataPg, test_remove_by_name) {
   auto managers = std::make_unique<Roles>(GlobalTestEnvironment::TEST_DB);
 
   // Test to initialize the manager.
-  this->test_init(managers.get(), ErrorCode::OK);
+  ApiTestHelper::test_init(managers.get(), ErrorCode::OK);
 
   // Execute the test.
-  this->test_remove(managers.get(), UtRoleMetadata::kRoleName,
-                    ErrorCode::UNKNOWN);
+  ApiTestHelper::test_remove(managers.get(), UtRoleMetadata::kRoleName,
+                             ErrorCode::UNKNOWN);
 }
 
 /**
@@ -202,7 +195,7 @@ TEST_F(ApiTestRolesMetadataPg, test_not_found) {
   auto managers = std::make_unique<Roles>(GlobalTestEnvironment::TEST_DB);
 
   // Test to initialize the manager.
-  this->test_init(managers.get(), ErrorCode::OK);
+  ApiTestHelper::test_init(managers.get(), ErrorCode::OK);
 
   // The role id (0) does not exist.
   {
@@ -210,8 +203,8 @@ TEST_F(ApiTestRolesMetadataPg, test_not_found) {
     ObjectId object_id = 0;
 
     // Test of get by ID with ptree.
-    this->test_get(managers.get(), object_id, ErrorCode::ID_NOT_FOUND,
-                   retrieved_metadata);
+    ApiTestHelper::test_get(managers.get(), object_id, ErrorCode::ID_NOT_FOUND,
+                            retrieved_metadata);
     EXPECT_TRUE(retrieved_metadata.empty());
   }
 
@@ -221,8 +214,8 @@ TEST_F(ApiTestRolesMetadataPg, test_not_found) {
     ObjectId object_id = INT32_MAX;
 
     // Test of get by ID with ptree.
-    this->test_get(managers.get(), object_id, ErrorCode::ID_NOT_FOUND,
-                   retrieved_metadata);
+    ApiTestHelper::test_get(managers.get(), object_id, ErrorCode::ID_NOT_FOUND,
+                            retrieved_metadata);
     EXPECT_TRUE(retrieved_metadata.empty());
   }
 
@@ -232,8 +225,8 @@ TEST_F(ApiTestRolesMetadataPg, test_not_found) {
     std::string object_name = "";
 
     // Test of get by ID with ptree.
-    this->test_get(managers.get(), object_name, ErrorCode::NAME_NOT_FOUND,
-                   retrieved_metadata);
+    ApiTestHelper::test_get(managers.get(), object_name,
+                            ErrorCode::NAME_NOT_FOUND, retrieved_metadata);
     EXPECT_TRUE(retrieved_metadata.empty());
   }
 
@@ -243,8 +236,8 @@ TEST_F(ApiTestRolesMetadataPg, test_not_found) {
     std::string object_name = "unregistered_dummy_name";
 
     // Test of get by ID with ptree.
-    this->test_get(managers.get(), object_name, ErrorCode::NAME_NOT_FOUND,
-                   retrieved_metadata);
+    ApiTestHelper::test_get(managers.get(), object_name,
+                            ErrorCode::NAME_NOT_FOUND, retrieved_metadata);
     EXPECT_TRUE(retrieved_metadata.empty());
   }
 }
@@ -259,7 +252,7 @@ TEST_F(ApiTestRolesMetadataPg, test_invalid_parameter) {
   auto managers = std::make_unique<Roles>(GlobalTestEnvironment::TEST_DB);
 
   // Test to initialize the manager.
-  this->test_init(managers.get(), ErrorCode::OK);
+  ApiTestHelper::test_init(managers.get(), ErrorCode::OK);
 
   ObjectId invalid_id = INVALID_OBJECT_ID;
 
@@ -268,8 +261,8 @@ TEST_F(ApiTestRolesMetadataPg, test_invalid_parameter) {
     ptree retrieved_metadata;
 
     // Test of get by ID with ptree.
-    this->test_get(managers.get(), invalid_id, ErrorCode::ID_NOT_FOUND,
-                   retrieved_metadata);
+    ApiTestHelper::test_get(managers.get(), invalid_id, ErrorCode::ID_NOT_FOUND,
+                            retrieved_metadata);
     EXPECT_TRUE(retrieved_metadata.empty());
   }
 }
@@ -284,12 +277,13 @@ TEST_F(ApiTestRolesMetadataJson, test_add) {
   auto managers = std::make_unique<Roles>(GlobalTestEnvironment::TEST_DB);
 
   // Test to initialize the manager.
-  this->test_init(managers.get(), ErrorCode::NOT_SUPPORTED);
+  ApiTestHelper::test_init(managers.get(), ErrorCode::NOT_SUPPORTED);
 
   ptree inserted_metadata;
 
   // Test to add the manager.
-  this->test_add(managers.get(), inserted_metadata, ErrorCode::UNKNOWN);
+  ApiTestHelper::test_add(managers.get(), inserted_metadata,
+                          ErrorCode::UNKNOWN);
 }
 
 /**
@@ -302,17 +296,17 @@ TEST_F(ApiTestRolesMetadataJson, test_get) {
   auto managers = std::make_unique<Roles>(GlobalTestEnvironment::TEST_DB);
 
   // Test to initialize the manager.
-  this->test_init(managers.get(), ErrorCode::NOT_SUPPORTED);
+  ApiTestHelper::test_init(managers.get(), ErrorCode::NOT_SUPPORTED);
 
   ptree retrieve_metadata;
 
   // Test to get the manager by role id.
-  this->test_get(managers.get(), INT32_MAX, ErrorCode::NOT_SUPPORTED,
-                 retrieve_metadata);
+  ApiTestHelper::test_get(managers.get(), INT32_MAX, ErrorCode::NOT_SUPPORTED,
+                          retrieve_metadata);
 
   // Test to get the manager by role name.
-  this->test_get(managers.get(), "role_name", ErrorCode::NOT_SUPPORTED,
-                 retrieve_metadata);
+  ApiTestHelper::test_get(managers.get(), "role_name", ErrorCode::NOT_SUPPORTED,
+                          retrieve_metadata);
 }
 
 /**
@@ -325,12 +319,12 @@ TEST_F(ApiTestRolesMetadataJson, test_getall) {
   auto managers = std::make_unique<Roles>(GlobalTestEnvironment::TEST_DB);
 
   // Test to initialize the manager.
-  this->test_init(managers.get(), ErrorCode::NOT_SUPPORTED);
+  ApiTestHelper::test_init(managers.get(), ErrorCode::NOT_SUPPORTED);
 
   std::vector<boost::property_tree::ptree> container = {};
 
   // Test to gte all the manager.
-  this->test_getall(managers.get(), ErrorCode::UNKNOWN, container);
+  ApiTestHelper::test_getall(managers.get(), ErrorCode::UNKNOWN, container);
   EXPECT_TRUE(container.empty());
 }
 
@@ -344,15 +338,15 @@ TEST_F(ApiTestRolesMetadataJson, remove_role_metadata) {
   auto managers = std::make_unique<Roles>(GlobalTestEnvironment::TEST_DB);
 
   // Test to initialize the manager.
-  this->test_init(managers.get(), ErrorCode::NOT_SUPPORTED);
+  ApiTestHelper::test_init(managers.get(), ErrorCode::NOT_SUPPORTED);
 
   std::vector<boost::property_tree::ptree> container = {};
 
   // Test to remove the manager by role id.
-  this->test_remove(managers.get(), INT32_MAX, ErrorCode::UNKNOWN);
+  ApiTestHelper::test_remove(managers.get(), INT32_MAX, ErrorCode::UNKNOWN);
 
   // Test to remove the manager by role name.
-  this->test_remove(managers.get(), "role_name", ErrorCode::UNKNOWN);
+  ApiTestHelper::test_remove(managers.get(), "role_name", ErrorCode::UNKNOWN);
 }
 
 }  // namespace manager::metadata::testing

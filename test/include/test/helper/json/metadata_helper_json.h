@@ -21,10 +21,21 @@
 
 #include <boost/property_tree/ptree.hpp>
 
+#include "test/helper/metadata_helper.h"
+
 namespace manager::metadata::testing {
 
-class MetadataHelperJson {
+class MetadataHelperJson : public MetadataHelper {
  public:
+  /**
+   * @param metadata_name  metadata name (file name without extension).
+   * @param root_node_name root node name of the tree.
+   */
+  MetadataHelperJson(std::string_view metadata_name,
+                     std::string_view root_node_name)
+      : metadata_name_(metadata_name),
+        root_node_name_(root_node_name),
+        sub_node_name_("") {}
   /**
    * @param metadata_name  metadata name (file name without extension).
    * @param root_node_name root node name of the tree.
@@ -32,13 +43,13 @@ class MetadataHelperJson {
    */
   MetadataHelperJson(std::string_view metadata_name,
                      std::string_view root_node_name,
-                     std::string_view sub_node_name = "")
+                     std::string_view sub_node_name)
       : metadata_name_(metadata_name),
         root_node_name_(root_node_name),
         sub_node_name_(sub_node_name) {}
   MetadataHelperJson() = delete;
 
-  int64_t get_record_count() const;
+  int64_t get_record_count() const override;
 
  private:
   std::string metadata_name_;

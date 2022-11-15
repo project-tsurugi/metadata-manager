@@ -19,18 +19,20 @@
 #include <string>
 #include <string_view>
 
+#include "test/helper/metadata_helper.h"
+
 namespace manager::metadata::testing {
 
-class MetadataHelperPg {
+class MetadataHelperPg : public MetadataHelper {
  public:
- /**
-  * @param table_name metadata table name.
-  */
+  /**
+   * @param table_name metadata table name.
+   */
   explicit MetadataHelperPg(std::string_view table_name)
       : table_name_(table_name) {}
   MetadataHelperPg() = delete;
 
-  int64_t get_record_count() const;
+  int64_t get_record_count() const override;
 
  private:
   std::string table_name_;

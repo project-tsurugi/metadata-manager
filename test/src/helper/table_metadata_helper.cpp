@@ -53,26 +53,6 @@ std::string TableMetadataHelper::make_table_name(std::string_view prefix,
 }
 
 /**
- * @brief Get the number of records in the current table metadata.
- * @return Current number of records.
- */
-std::int64_t TableMetadataHelper::get_record_count() {
-  // generate constraint metadata manager.
-  auto tables = std::make_unique<Tables>(GlobalTestEnvironment::TEST_DB);
-
-  // initialize tables metadata manager.
-  ErrorCode error = tables->init();
-
-  std::vector<ptree> container = {};
-  if (error == ErrorCode::OK) {
-    // get all tables metadata.
-    tables->get_all(container);
-  }
-
-  return container.size();
-}
-
-/**
  * @brief Make valid table metadata used as test data,
  * by reading a json file with table metadata.
  */

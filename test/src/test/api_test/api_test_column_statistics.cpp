@@ -19,11 +19,11 @@
 #include "boost/property_tree/ptree.hpp"
 
 #include "manager/metadata/statistics.h"
-#include "test/common/dummy_object.h"
+#include "test/common/global_test_environment.h"
+#include "test/helper/api_test_helper.h"
 #include "test/helper/column_statistics_helper.h"
 #include "test/helper/table_metadata_helper.h"
 #include "test/metadata/ut_column_statistics.h"
-#include "test/test/api_test_facade.h"
 
 namespace {
 
@@ -41,15 +41,11 @@ namespace manager::metadata::testing {
 
 using boost::property_tree::ptree;
 
-class ApiTestColumnStatisticsPg
-    : public ApiTestFacade<DummyObject, ColumnStatisticsHelper> {
+class ApiTestColumnStatisticsPg : public ::testing::Test {
  public:
   manager::metadata::ObjectId table_id_;
 
-  ApiTestColumnStatisticsPg()
-      : ApiTestFacade(
-            std::make_unique<Statistics>(GlobalTestEnvironment::TEST_DB)),
-        table_id_(0) {}
+  ApiTestColumnStatisticsPg() : table_id_(0) {}
 
   void SetUp() override {
     UTUtils::skip_if_json();
@@ -90,6 +86,9 @@ class ApiTestColumnStatisticsPg
     std::vector<ObjectId> statistic_ids{};
     std::vector<UtColumnStatistics> ut_statistics{};
 
+    // Generate columns statistics manager.
+    auto manager = std::make_unique<Statistics>(GlobalTestEnvironment::TEST_DB);
+
     // Add table metadata.
     for (int32_t i = 1; i <= kMakeTableCount; i++) {
       ObjectId table_id;
@@ -117,7 +116,8 @@ class ApiTestColumnStatisticsPg
         ObjectId statistic_id = INVALID_OBJECT_ID;
         // Add column statistics.
         auto statistic = test_data.get_metadata_ptree();
-        statistic_id   = this->test_add(nullptr, statistic, ErrorCode::OK);
+        statistic_id =
+            ApiTestHelper::test_add(manager.get(), statistic, ErrorCode::OK);
 
         statistic_ids.push_back(statistic_id);
         ut_statistics.push_back(test_data);
@@ -132,14 +132,14 @@ class ApiTestColumnStatisticsPg
 
   void cleanup_test_data(std::vector<StatisticsTestData> test_data) {
     // Generate columns statistics manager.
-    auto managers =
+    auto manager =
         std::make_unique<Statistics>(GlobalTestEnvironment::TEST_DB);
 
     // Add table metadata.
     for (auto& tables : test_data) {
       auto table_id = std::get<0>(tables);
       for (auto& statistic_id : std::get<2>(tables)) {
-        managers->remove(statistic_id);
+        manager->remove(statistic_id);
       }
       if (table_id != table_id_) {
         TableMetadataHelper::remove_table(table_id);
@@ -152,45 +152,18 @@ class ApiTestColumnStatisticsPg
   const int32_t kMakeStatisticCount = 2;
 };
 
-class ApiTestColumnStatisticsJson
-    : public ApiTestFacade<DummyObject, ColumnStatisticsHelper> {
+class ApiTestColumnStatisticsJson : public ::testing::Test {
  public:
-  ApiTestColumnStatisticsJson()
-      : ApiTestFacade(
-            std::make_unique<Statistics>(GlobalTestEnvironment::TEST_DB)) {}
-
   void SetUp() override { UTUtils::skip_if_postgresql(); }
   void TearDown() override { UTUtils::skip_if_postgresql(); }
 };
-
-/**
- * @brief Test to add new statistics and get it in ptree type
- *   with object ID as key.
- */
-TEST_F(ApiTestColumnStatisticsPg, test_get_by_id_with_ptree) {
-  CALL_TRACE;
-
-  // Execute the test.
-  this->test_flow_get_by_id(UtColumnStatistics(table_id_, 1));
-}
-
-/**
- * @brief Test to add new statistics and get it in ptree type
- *   with object name as key.
- */
-TEST_F(ApiTestColumnStatisticsPg, test_get_by_name_with_ptree) {
-  CALL_TRACE;
-
-  // Execute the test.
-  this->test_flow_get_by_name(UtColumnStatistics(table_id_, 1));
-}
 
 /**
  * @brief Test to add new statistics and get/remove it by columns ID.
  */
 TEST_F(ApiTestColumnStatisticsPg, test_get_by_column_id) {
   // Generate columns statistics manager.
-  auto managers = std::make_unique<Statistics>(GlobalTestEnvironment::TEST_DB);
+  auto manager = std::make_unique<Statistics>(GlobalTestEnvironment::TEST_DB);
 
   // Create test data for column statistics.
   auto test_data = create_test_data();
@@ -204,20 +177,20 @@ TEST_F(ApiTestColumnStatisticsPg, test_get_by_column_id) {
   const auto& column_id = columns[0].get<ObjectId>(Column::ID);
 
   // Get by column ID.
-  error = managers->get_by_column_id(column_id, retrieved_ptree);
+  error = manager->get_by_column_id(column_id, retrieved_ptree);
   EXPECT_EQ(ErrorCode::OK, error);
   ut_statistics[0].check_metadata_expected(retrieved_ptree, __FILE__, __LINE__);
 
   // Remove by column ID.
-  error = managers->remove_by_column_id(column_id);
+  error = manager->remove_by_column_id(column_id);
   EXPECT_EQ(ErrorCode::OK, error);
 
   // Check for data availability.
-  error = managers->remove_by_column_id(column_id);
+  error = manager->remove_by_column_id(column_id);
   EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
 
   // Check for the presence of other data.
-  error = managers->get_by_column_id(columns[1].get<ObjectId>(Column::ID),
+  error = manager->get_by_column_id(columns[1].get<ObjectId>(Column::ID),
                                      retrieved_ptree);
   EXPECT_EQ(ErrorCode::OK, error);
   ut_statistics[1].check_metadata_expected(retrieved_ptree, __FILE__, __LINE__);
@@ -231,7 +204,7 @@ TEST_F(ApiTestColumnStatisticsPg, test_get_by_column_id) {
  */
 TEST_F(ApiTestColumnStatisticsPg, test_get_by_column_name) {
   // Generate columns statistics manager.
-  auto managers = std::make_unique<Statistics>(GlobalTestEnvironment::TEST_DB);
+  auto manager = std::make_unique<Statistics>(GlobalTestEnvironment::TEST_DB);
 
   // Create test data for column statistics.
   auto test_data = create_test_data();
@@ -244,20 +217,20 @@ TEST_F(ApiTestColumnStatisticsPg, test_get_by_column_name) {
   const auto& column_name = columns[0].get<std::string>(Column::NAME);
 
   // Get by column name.
-  error = managers->get_by_column_name(table_id, column_name, retrieved_ptree);
+  error = manager->get_by_column_name(table_id, column_name, retrieved_ptree);
   EXPECT_EQ(ErrorCode::OK, error);
   ut_statistics[0].check_metadata_expected(retrieved_ptree, __FILE__, __LINE__);
 
   // Remove by column name.
-  error = managers->remove_by_column_name(table_id, column_name);
+  error = manager->remove_by_column_name(table_id, column_name);
   EXPECT_EQ(ErrorCode::OK, error);
 
   // Check for data availability.
-  error = managers->remove_by_column_name(table_id, column_name);
+  error = manager->remove_by_column_name(table_id, column_name);
   EXPECT_EQ(ErrorCode::NAME_NOT_FOUND, error);
 
   // Check for the presence of other data.
-  error = managers->get_by_column_name(
+  error = manager->get_by_column_name(
       table_id, columns[1].get<std::string>(Column::NAME), retrieved_ptree);
   EXPECT_EQ(ErrorCode::OK, error);
   ut_statistics[1].check_metadata_expected(retrieved_ptree, __FILE__, __LINE__);
@@ -271,7 +244,7 @@ TEST_F(ApiTestColumnStatisticsPg, test_get_by_column_name) {
  */
 TEST_F(ApiTestColumnStatisticsPg, test_get_by_column_number) {
   // Generate columns statistics manager.
-  auto managers = std::make_unique<Statistics>(GlobalTestEnvironment::TEST_DB);
+  auto manager = std::make_unique<Statistics>(GlobalTestEnvironment::TEST_DB);
 
   // Create test data for column statistics.
   auto test_data = create_test_data();
@@ -284,20 +257,20 @@ TEST_F(ApiTestColumnStatisticsPg, test_get_by_column_number) {
   ptree retrieved_ptree;
 
   // Get by column number.
-  error = managers->get_by_column_number(table_id, 1, retrieved_ptree);
+  error = manager->get_by_column_number(table_id, 1, retrieved_ptree);
   EXPECT_EQ(ErrorCode::OK, error);
   ut_statistics[0].check_metadata_expected(retrieved_ptree, __FILE__, __LINE__);
 
   // Remove by column number.
-  error = managers->remove_by_column_number(table_id, 1);
+  error = manager->remove_by_column_number(table_id, 1);
   EXPECT_EQ(ErrorCode::OK, error);
 
   // Check for data availability.
-  error = managers->remove_by_column_number(table_id, 1);
+  error = manager->remove_by_column_number(table_id, 1);
   EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
 
   // Check for the presence of other data.
-  error = managers->get_by_column_number(table_id, 2, retrieved_ptree);
+  error = manager->get_by_column_number(table_id, 2, retrieved_ptree);
   EXPECT_EQ(ErrorCode::OK, error);
   ut_statistics[1].check_metadata_expected(retrieved_ptree, __FILE__, __LINE__);
 
@@ -310,7 +283,7 @@ TEST_F(ApiTestColumnStatisticsPg, test_get_by_column_number) {
  */
 TEST_F(ApiTestColumnStatisticsPg, test_remove_by_table_id) {
   // Generate columns statistics manager.
-  auto managers = std::make_unique<Statistics>(GlobalTestEnvironment::TEST_DB);
+  auto manager = std::make_unique<Statistics>(GlobalTestEnvironment::TEST_DB);
 
   // Create test data for column statistics.
   auto test_data = create_test_data();
@@ -321,28 +294,28 @@ TEST_F(ApiTestColumnStatisticsPg, test_remove_by_table_id) {
   ErrorCode error;
   // Remove column statistics by table ID.
   {
-    error = managers->remove_by_table_id(table_id_1);
+    error = manager->remove_by_table_id(table_id_1);
     EXPECT_EQ(ErrorCode::OK, error);
 
-    error = managers->remove_by_table_id(table_id_1);
+    error = manager->remove_by_table_id(table_id_1);
     EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
 
     std::vector<boost::property_tree::ptree> container;
-    error = managers->get_all(table_id_1, container);
+    error = manager->get_all(table_id_1, container);
     EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
     EXPECT_EQ(container.size(), 0);
   }
 
   // Remove column statistics by table ID.
   {
-    error = managers->remove_by_table_id(table_id_2);
+    error = manager->remove_by_table_id(table_id_2);
     EXPECT_EQ(ErrorCode::OK, error);
 
-    error = managers->remove_by_table_id(table_id_2);
+    error = manager->remove_by_table_id(table_id_2);
     EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
 
     std::vector<boost::property_tree::ptree> container;
-    error = managers->get_all(table_id_2, container);
+    error = manager->get_all(table_id_2, container);
     EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
     EXPECT_EQ(container.size(), 0);
   }
@@ -352,34 +325,18 @@ TEST_F(ApiTestColumnStatisticsPg, test_remove_by_table_id) {
 }
 
 /**
- * @brief Test to add new statistics and get_all it in ptree type.
- */
-TEST_F(ApiTestColumnStatisticsPg, test_getall_with_ptree) {
-  CALL_TRACE;
-
-  static constexpr const int32_t kTestColumnsCount = 2;
-  this->test_flow_getall(
-      UtColumnStatistics(table_id_),
-      [](ptree& object, const int64_t unique_num) {
-        std::string metadata_name = "metadata_name_" +
-                                    UTUtils::generate_narrow_uid() + "_" +
-                                    std::to_string(unique_num);
-        object.put(Statistics::NAME, metadata_name);
-        object.put(Statistics::COLUMN_NUMBER, unique_num);
-      },
-      kTestColumnsCount);
-}
-
-/**
  * @brief Test to add new metadata and update it in ptree type
  *   with object ID as key.
  */
 TEST_F(ApiTestColumnStatisticsPg, test_update) {
   CALL_TRACE;
 
+  // Generate columns statistics manager.
+  auto manager = std::make_unique<Statistics>(GlobalTestEnvironment::TEST_DB);
+
   ptree statistic;
   // Execute the test.
-  this->test_update(nullptr, INT64_MAX, statistic, ErrorCode::UNKNOWN);
+  ApiTestHelper::test_update(manager.get(), INT64_MAX, statistic, ErrorCode::UNKNOWN);
 }
 
 /**
@@ -393,13 +350,13 @@ TEST_F(ApiTestColumnStatisticsPg, test_add_exists) {
   auto [table_id, columns, statistic_ids, ut_statistics] = test_data[0];
 
   // Generate columns statistics manager.
-  auto managers = std::make_unique<Statistics>(GlobalTestEnvironment::TEST_DB);
+  auto manager = std::make_unique<Statistics>(GlobalTestEnvironment::TEST_DB);
 
   ErrorCode error;
   // Get the statistics of the columns before updating.
   std::vector<ptree> container_before;
   {
-    error = managers->get_all(table_id, container_before);
+    error = manager->get_all(table_id, container_before);
     EXPECT_EQ(ErrorCode::OK, error);
   }
 
@@ -411,14 +368,14 @@ TEST_F(ApiTestColumnStatisticsPg, test_add_exists) {
     ptree updated_ptree = ut_statistic.get_metadata_ptree();
 
     ObjectId statistic_id =
-        this->test_add(nullptr, updated_ptree, ErrorCode::OK);
+        ApiTestHelper::test_add(manager.get(), updated_ptree, ErrorCode::OK);
     EXPECT_EQ(statistic_ids[0], statistic_id);
   }
 
   // Get the statistics of the columns after updating.
   std::vector<ptree> container_after;
   {
-    error = managers->get_all(table_id, container_after);
+    error = manager->get_all(table_id, container_after);
     EXPECT_EQ(ErrorCode::OK, error);
   }
   EXPECT_EQ(container_after.size(), container_before.size());
@@ -442,9 +399,9 @@ TEST_F(ApiTestColumnStatisticsPg, test_invalid_ids) {
   ErrorCode error;
 
   // Generate columns statistics manager.
-  auto managers = std::make_unique<Statistics>(GlobalTestEnvironment::TEST_DB);
+  auto manager = std::make_unique<Statistics>(GlobalTestEnvironment::TEST_DB);
 
-  error = managers->init();
+  error = manager->init();
   EXPECT_EQ(ErrorCode::OK, error);
 
   // Test of add to a table ID that does not exist.
@@ -452,39 +409,41 @@ TEST_F(ApiTestColumnStatisticsPg, test_invalid_ids) {
     UtColumnStatistics ut_statistic(invalid_id, 1);
     ptree statistic = ut_statistic.get_metadata_ptree();
 
-    this->test_add(nullptr, statistic, ErrorCode::INVALID_PARAMETER);
+    ApiTestHelper::test_add(manager.get(), statistic, ErrorCode::INVALID_PARAMETER);
   }
 
   // Test of get to a statistic ID that does not exist.
   for (auto invalid_id : global->invalid_ids) {
     ptree statistic;
-    this->test_get(nullptr, invalid_id, ErrorCode::ID_NOT_FOUND, statistic);
+    ApiTestHelper::test_get(manager.get(), invalid_id, ErrorCode::ID_NOT_FOUND,
+                            statistic);
   }
 
   // Test of get to a statistic name that does not exist.
   for (auto invalid_name : invalid_names) {
     ptree statistic;
-    this->test_get(nullptr, invalid_name, ErrorCode::NAME_NOT_FOUND, statistic);
+    ApiTestHelper::test_get(manager.get(), invalid_name, ErrorCode::NAME_NOT_FOUND,
+                            statistic);
   }
 
   // Test of get to a column ID that does not exist.
   for (auto invalid_id : global->invalid_ids) {
     ptree statistic;
-    error = managers->get_by_column_id(invalid_id, statistic);
+    error = manager->get_by_column_id(invalid_id, statistic);
     EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
   }
 
   // Test of get to a column number that does not exist.
   for (auto invalid_id : global->invalid_ids) {
     ptree statistic;
-    error = managers->get_by_column_number(table_id_, invalid_id, statistic);
+    error = manager->get_by_column_number(table_id_, invalid_id, statistic);
     EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
   }
 
   // Test of get to a column name that does not exist.
   for (auto invalid_name : invalid_names) {
     ptree statistic;
-    error = managers->get_by_column_name(table_id_, invalid_name, statistic);
+    error = manager->get_by_column_name(table_id_, invalid_name, statistic);
     EXPECT_EQ(ErrorCode::NAME_NOT_FOUND, error);
   }
 
@@ -492,42 +451,43 @@ TEST_F(ApiTestColumnStatisticsPg, test_invalid_ids) {
   for (auto invalid_id : global->invalid_ids) {
     std::vector<ptree> container{};
 
-    error = managers->get_all(invalid_id, container);
+    error = manager->get_all(invalid_id, container);
     EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
     EXPECT_EQ(container.size(), 0);
   }
 
   // Test of remove to a statistic ID that does not exist.
   for (auto invalid_id : global->invalid_ids) {
-    this->test_remove(nullptr, invalid_id, ErrorCode::ID_NOT_FOUND);
+    ApiTestHelper::test_remove(manager.get(), invalid_id, ErrorCode::ID_NOT_FOUND);
   }
 
   // Test of remove to a statistic name that does not exist.
   for (auto invalid_name : invalid_names) {
-    this->test_remove(nullptr, invalid_name, ErrorCode::NAME_NOT_FOUND);
+    ApiTestHelper::test_remove(manager.get(), invalid_name,
+                               ErrorCode::NAME_NOT_FOUND);
   }
 
   // Test of remove to a table ID that does not exist.
   for (auto invalid_id : global->invalid_ids) {
-    error = managers->remove_by_table_id(invalid_id);
+    error = manager->remove_by_table_id(invalid_id);
     EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
   }
 
   // Test of remove to a column ID that does not exist.
   for (auto invalid_id : global->invalid_ids) {
-    error = managers->remove_by_column_id(invalid_id);
+    error = manager->remove_by_column_id(invalid_id);
     EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
   }
 
   // Test of remove to a column number that does not exist.
   for (auto invalid_id : global->invalid_ids) {
-    error = managers->remove_by_column_number(table_id_, invalid_id);
+    error = manager->remove_by_column_number(table_id_, invalid_id);
     EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
   }
 
   // Test of remove to a column name that does not exist.
   for (auto invalid_name : invalid_names) {
-    error = managers->remove_by_column_name(table_id_, invalid_name);
+    error = manager->remove_by_column_name(table_id_, invalid_name);
     EXPECT_EQ(ErrorCode::NAME_NOT_FOUND, error);
   }
 }
@@ -546,152 +506,154 @@ TEST_F(ApiTestColumnStatisticsPg, test_without_initialized) {
 
   {
     // Generate columns statistics manager.
-    auto managers =
+    auto manager =
         std::make_unique<Statistics>(GlobalTestEnvironment::TEST_DB);
 
     UtColumnStatistics ut_statistic_1(table_id_1, 3);
     ptree statistic = ut_statistic_1.get_metadata_ptree();
 
     CALL_TRACE;
-    this->test_add(managers.get(), statistic, ErrorCode::OK);
+    ApiTestHelper::test_add(manager.get(), statistic, ErrorCode::OK);
 
     UtColumnStatistics ut_statistic_2(table_id_2, 3);
     statistic = ut_statistic_2.get_metadata_ptree();
 
     CALL_TRACE;
-    this->test_add(managers.get(), statistic, ErrorCode::OK);
+    ApiTestHelper::test_add(manager.get(), statistic, ErrorCode::OK);
   }
 
   {
     // Generate columns statistics manager.
-    auto managers =
+    auto manager =
         std::make_unique<Statistics>(GlobalTestEnvironment::TEST_DB);
 
     ptree retrieved;
     auto object_id = statistic_ids_1[0];
 
     CALL_TRACE;
-    this->test_get(managers.get(), object_id, ErrorCode::OK, retrieved);
+    ApiTestHelper::test_get(manager.get(), object_id, ErrorCode::OK,
+                            retrieved);
   }
 
   {
     // Generate columns statistics manager.
-    auto managers =
+    auto manager =
         std::make_unique<Statistics>(GlobalTestEnvironment::TEST_DB);
 
     ptree retrieved;
     auto object_name = ut_statistics_1[0].get_metadata_struct()->name;
 
     CALL_TRACE;
-    this->test_get(managers.get(), object_name, ErrorCode::OK, retrieved);
+    ApiTestHelper::test_get(manager.get(), object_name, ErrorCode::OK,
+                            retrieved);
   }
 
   {
     // Generate columns statistics manager.
-    auto managers =
+    auto manager =
         std::make_unique<Statistics>(GlobalTestEnvironment::TEST_DB);
 
     ptree statistic;
     auto object_id = columns_1[0].get<ObjectId>(Column::ID);
 
-    ErrorCode error = managers->get_by_column_id(object_id, statistic);
+    ErrorCode error = manager->get_by_column_id(object_id, statistic);
     EXPECT_EQ(ErrorCode::OK, error);
   }
 
   {
     // Generate columns statistics manager.
-    auto managers =
+    auto manager =
         std::make_unique<Statistics>(GlobalTestEnvironment::TEST_DB);
 
     ptree statistic;
 
-    ErrorCode error = managers->get_by_column_number(table_id_1, 1, statistic);
+    ErrorCode error = manager->get_by_column_number(table_id_1, 1, statistic);
     EXPECT_EQ(ErrorCode::OK, error);
   }
 
   {
     // Generate columns statistics manager.
-    auto managers =
+    auto manager =
         std::make_unique<Statistics>(GlobalTestEnvironment::TEST_DB);
 
     ptree statistic;
     auto object_name = columns_1[0].get<std::string>(Column::NAME);
 
     ErrorCode error =
-        managers->get_by_column_name(table_id_1, object_name, statistic);
+        manager->get_by_column_name(table_id_1, object_name, statistic);
     EXPECT_EQ(ErrorCode::OK, error);
   }
 
   {
     // Generate columns statistics manager.
-    auto managers =
+    auto manager =
         std::make_unique<Statistics>(GlobalTestEnvironment::TEST_DB);
 
     std::vector<ptree> container = {};
 
     CALL_TRACE;
-    this->test_getall(managers.get(), ErrorCode::OK, container);
+    ApiTestHelper::test_getall(manager.get(), ErrorCode::OK, container);
   }
 
   {
     // Generate columns statistics manager.
-    auto managers =
+    auto manager =
         std::make_unique<Statistics>(GlobalTestEnvironment::TEST_DB);
 
     auto object_id = statistic_ids_1[0];
 
     CALL_TRACE;
-    this->test_remove(managers.get(), object_id, ErrorCode::OK);
+    ApiTestHelper::test_remove(manager.get(), object_id, ErrorCode::OK);
   }
 
   {
     // Generate columns statistics manager.
-    auto managers =
+    auto manager =
         std::make_unique<Statistics>(GlobalTestEnvironment::TEST_DB);
 
     auto object_name = ut_statistics_1[1].get_metadata_struct()->name;
 
     CALL_TRACE;
-    this->test_remove(managers.get(), object_name, ErrorCode::OK);
+    ApiTestHelper::test_remove(manager.get(), object_name, ErrorCode::OK);
   }
 
   {
     // Generate columns statistics manager.
-    auto managers =
+    auto manager =
         std::make_unique<Statistics>(GlobalTestEnvironment::TEST_DB);
 
-    ErrorCode error = managers->remove_by_table_id(table_id_1);
+    ErrorCode error = manager->remove_by_table_id(table_id_1);
     EXPECT_EQ(ErrorCode::OK, error);
   }
 
   {
     // Generate columns statistics manager.
-    auto managers =
+    auto manager =
         std::make_unique<Statistics>(GlobalTestEnvironment::TEST_DB);
 
     auto object_id = columns_2[0].get<ObjectId>(Column::ID);
 
-    ErrorCode error = managers->remove_by_column_id(object_id);
+    ErrorCode error = manager->remove_by_column_id(object_id);
     EXPECT_EQ(ErrorCode::OK, error);
   }
 
   {
     // Generate columns statistics manager.
-    auto managers =
+    auto manager =
         std::make_unique<Statistics>(GlobalTestEnvironment::TEST_DB);
 
-    ErrorCode error = managers->remove_by_column_number(table_id_2, 3);
+    ErrorCode error = manager->remove_by_column_number(table_id_2, 3);
     EXPECT_EQ(ErrorCode::OK, error);
   }
 
   {
     // Generate columns statistics manager.
-    auto managers =
+    auto manager =
         std::make_unique<Statistics>(GlobalTestEnvironment::TEST_DB);
 
     auto object_name = columns_2[1].get<std::string>(Column::NAME);
 
-    ErrorCode error = managers->remove_by_column_name(table_id_2, object_name);
+    ErrorCode error = manager->remove_by_column_name(table_id_2, object_name);
     EXPECT_EQ(ErrorCode::OK, error);
   }
 
@@ -706,16 +668,17 @@ TEST_F(ApiTestColumnStatisticsJson, test_add) {
   CALL_TRACE;
 
   // Generate statistics metadata manager.
-  auto managers = std::make_unique<Statistics>(GlobalTestEnvironment::TEST_DB);
+  auto manager = std::make_unique<Statistics>(GlobalTestEnvironment::TEST_DB);
 
   // Test to initialize the manager.
-  this->test_init(managers.get(), ErrorCode::NOT_SUPPORTED);
+  ApiTestHelper::test_init(manager.get(), ErrorCode::NOT_SUPPORTED);
 
   UtColumnStatistics ut_statistic(INT32_MAX, 1);
   ptree inserted_metadata = ut_statistic.get_metadata_ptree();
 
   // Test to add the manager.
-  this->test_add(managers.get(), inserted_metadata, ErrorCode::NOT_SUPPORTED);
+  ApiTestHelper::test_add(manager.get(), inserted_metadata,
+                          ErrorCode::NOT_SUPPORTED);
 }
 
 /**
@@ -725,20 +688,20 @@ TEST_F(ApiTestColumnStatisticsJson, test_get) {
   CALL_TRACE;
 
   // Generate statistics metadata manager.
-  auto managers = std::make_unique<Statistics>(GlobalTestEnvironment::TEST_DB);
+  auto manager = std::make_unique<Statistics>(GlobalTestEnvironment::TEST_DB);
 
   // Test to initialize the manager.
-  this->test_init(managers.get(), ErrorCode::NOT_SUPPORTED);
+  ApiTestHelper::test_init(manager.get(), ErrorCode::NOT_SUPPORTED);
 
   ptree retrieve_metadata;
 
   // Test to get the manager by statistic id.
-  this->test_get(managers.get(), INT32_MAX, ErrorCode::NOT_SUPPORTED,
-                 retrieve_metadata);
+  ApiTestHelper::test_get(manager.get(), INT32_MAX, ErrorCode::NOT_SUPPORTED,
+                          retrieve_metadata);
 
   // Test to get the manager by statistic name.
-  this->test_get(managers.get(), "statistics_name", ErrorCode::NOT_SUPPORTED,
-                 retrieve_metadata);
+  ApiTestHelper::test_get(manager.get(), "statistics_name",
+                          ErrorCode::NOT_SUPPORTED, retrieve_metadata);
 }
 
 /**
@@ -748,15 +711,16 @@ TEST_F(ApiTestColumnStatisticsJson, test_getall) {
   CALL_TRACE;
 
   // Generate statistics metadata manager.
-  auto managers = std::make_unique<Statistics>(GlobalTestEnvironment::TEST_DB);
+  auto manager = std::make_unique<Statistics>(GlobalTestEnvironment::TEST_DB);
 
   // Test to initialize the manager.
-  this->test_init(managers.get(), ErrorCode::NOT_SUPPORTED);
+  ApiTestHelper::test_init(manager.get(), ErrorCode::NOT_SUPPORTED);
 
   std::vector<boost::property_tree::ptree> container = {};
 
   // Test to gte all the manager.
-  this->test_getall(managers.get(), ErrorCode::NOT_SUPPORTED, container);
+  ApiTestHelper::test_getall(manager.get(), ErrorCode::NOT_SUPPORTED,
+                             container);
   EXPECT_TRUE(container.empty());
 }
 
@@ -767,18 +731,20 @@ TEST_F(ApiTestColumnStatisticsJson, remove_statistic_metadata) {
   CALL_TRACE;
 
   // Generate statistics metadata manager.
-  auto managers = std::make_unique<Statistics>(GlobalTestEnvironment::TEST_DB);
+  auto manager = std::make_unique<Statistics>(GlobalTestEnvironment::TEST_DB);
 
   // Test to initialize the manager.
-  this->test_init(managers.get(), ErrorCode::NOT_SUPPORTED);
+  ApiTestHelper::test_init(manager.get(), ErrorCode::NOT_SUPPORTED);
 
   std::vector<boost::property_tree::ptree> container = {};
 
   // Test to remove the manager by statistic id.
-  this->test_remove(managers.get(), INT32_MAX, ErrorCode::NOT_SUPPORTED);
+  ApiTestHelper::test_remove(manager.get(), INT32_MAX,
+                             ErrorCode::NOT_SUPPORTED);
 
   // Test to remove the manager by statistic name.
-  this->test_remove(managers.get(), "statistic_name", ErrorCode::NOT_SUPPORTED);
+  ApiTestHelper::test_remove(manager.get(), "statistic_name",
+                             ErrorCode::NOT_SUPPORTED);
 }
 
 }  // namespace manager::metadata::testing

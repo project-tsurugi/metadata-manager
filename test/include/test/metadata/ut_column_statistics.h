@@ -29,7 +29,8 @@ class UtColumnStatistics : public UtMetadata<DummyObject> {
  public:
   using UtMetadata::UtMetadata;
   UtColumnStatistics() { this->generate_test_metadata(); }
-  explicit UtColumnStatistics(ObjectId table_id) : table_id_(table_id) {
+  explicit UtColumnStatistics(ObjectId table_id)
+      : table_id_(table_id), column_number_(1) {
     this->generate_test_metadata();
   }
   UtColumnStatistics(ObjectId table_id, int64_t column_number)

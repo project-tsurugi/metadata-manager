@@ -20,9 +20,10 @@
 
 #include <boost/foreach.hpp>
 
-#include "manager/metadata/tables.h"
+#include "manager/metadata/metadata_factory.h"
 #include "test/common/global_test_environment.h"
 #include "test/common/ut_utils.h"
+#include "test/helper/api_test_helper.h"
 #include "test/helper/table_metadata_helper.h"
 
 namespace manager::metadata::testing {
@@ -137,19 +138,12 @@ INSTANTIATE_TEST_CASE_P(ParameterizedTest,
  * @brief Add invalid table metadata.
  */
 TEST_F(ApiTestAddTableMetadataException, add_table_metadata) {
-  auto tables = std::make_unique<Tables>(GlobalTestEnvironment::TEST_DB);
+  auto tables = get_table_metadata(GlobalTestEnvironment::TEST_DB);
 
-  ErrorCode error = tables->init();
-  EXPECT_EQ(ErrorCode::OK, error);
-
+  ApiTestHelper::test_init(tables.get(), ErrorCode::OK);
   for (auto invalid_table : invalid_table_metadata_) {
-    UTUtils::print("-- add invalid table metadata --");
-    UTUtils::print(UTUtils::get_tree_string(invalid_table));
-
-    ObjectIdType ret_table_id = -1;
-    error                     = tables->add(invalid_table, &ret_table_id);
-    EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);
-    EXPECT_EQ(ret_table_id, -1);
+    ApiTestHelper::test_add(tables.get(), invalid_table,
+                            ErrorCode::INVALID_PARAMETER);
   }
 }
 
@@ -159,14 +153,13 @@ TEST_F(ApiTestAddTableMetadataException, add_table_metadata) {
  */
 TEST_P(ApiTestTableMetadataByTableIdException,
        get_table_metadata_by_non_existing_table_id) {
-  auto tables = std::make_unique<Tables>(GlobalTestEnvironment::TEST_DB);
+  auto tables = get_table_metadata(GlobalTestEnvironment::TEST_DB);
 
-  ErrorCode error = tables->init();
-  EXPECT_EQ(ErrorCode::OK, error);
+  ApiTestHelper::test_init(tables.get(), ErrorCode::OK);
 
-  ptree table;
-  error = tables->get(GetParam(), table);
-  EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
+  ptree metadata;
+  ApiTestHelper::test_get(tables.get(), GetParam(), ErrorCode::ID_NOT_FOUND,
+                          metadata);
 }
 
 /**
@@ -175,32 +168,27 @@ TEST_P(ApiTestTableMetadataByTableIdException,
  */
 TEST_P(ApiTestTableMetadataByTableNameException,
        get_table_metadata_by_non_existing_table_name) {
-  auto tables = std::make_unique<Tables>(GlobalTestEnvironment::TEST_DB);
+  auto tables = get_table_metadata(GlobalTestEnvironment::TEST_DB);
 
-  ErrorCode error = tables->init();
-  EXPECT_EQ(ErrorCode::OK, error);
+  ApiTestHelper::test_init(tables.get(), ErrorCode::OK);
 
-  ptree table;
-  error = tables->get(GetParam(), table);
-  EXPECT_EQ(ErrorCode::NAME_NOT_FOUND, error);
+  ptree metadata;
+  ApiTestHelper::test_get(tables.get(), GetParam(), ErrorCode::NAME_NOT_FOUND,
+                          metadata);
 }
 
 /**
  * @brief Update invalid table metadata.
  */
 TEST_F(ApiTestAddTableMetadataException, update_table_metadata) {
-  auto tables = std::make_unique<Tables>(GlobalTestEnvironment::TEST_DB);
+  auto tables = get_table_metadata(GlobalTestEnvironment::TEST_DB);
 
-  ErrorCode error = tables->init();
-  EXPECT_EQ(ErrorCode::OK, error);
+  ApiTestHelper::test_init(tables.get(), ErrorCode::OK);
 
   for (auto invalid_table : invalid_table_metadata_) {
-    UTUtils::print("-- update invalid table metadata --");
-    UTUtils::print(UTUtils::get_tree_string(invalid_table));
-
     ObjectIdType dummy_table_id = 1;
-    error                       = tables->update(dummy_table_id, invalid_table);
-    EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);
+    ApiTestHelper::test_update(tables.get(), dummy_table_id, invalid_table,
+                               ErrorCode::INVALID_PARAMETER);
   }
 }
 
@@ -216,14 +204,13 @@ TEST_P(ApiTestTableMetadataByTableIdException,
   UTUtils::print(
       UTUtils::get_tree_string(testdata_table_metadata.get_metadata_ptree()));
 
-  auto tables = std::make_unique<Tables>(GlobalTestEnvironment::TEST_DB);
+  auto tables = get_table_metadata(GlobalTestEnvironment::TEST_DB);
 
-  ErrorCode error = tables->init();
-  EXPECT_EQ(ErrorCode::OK, error);
+  ApiTestHelper::test_init(tables.get(), ErrorCode::OK);
 
-  error =
-      tables->update(GetParam(), testdata_table_metadata.get_metadata_ptree());
-  EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
+  ptree metadata = testdata_table_metadata.get_metadata_ptree();
+  ApiTestHelper::test_update(tables.get(), GetParam(), metadata,
+                             ErrorCode::ID_NOT_FOUND);
 }
 
 /**
@@ -232,13 +219,10 @@ TEST_P(ApiTestTableMetadataByTableIdException,
  */
 TEST_P(ApiTestTableMetadataByTableIdException,
        remove_table_metadata_by_non_existing_table_id) {
-  auto tables = std::make_unique<Tables>(GlobalTestEnvironment::TEST_DB);
+  auto tables = get_table_metadata(GlobalTestEnvironment::TEST_DB);
 
-  ErrorCode error = tables->init();
-  EXPECT_EQ(ErrorCode::OK, error);
-
-  error = tables->remove(GetParam());
-  EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
+  ApiTestHelper::test_init(tables.get(), ErrorCode::OK);
+  ApiTestHelper::test_remove(tables.get(), GetParam(), ErrorCode::ID_NOT_FOUND);
 }
 
 /**
@@ -247,15 +231,11 @@ TEST_P(ApiTestTableMetadataByTableIdException,
  */
 TEST_P(ApiTestTableMetadataByTableNameException,
        remove_table_metadata_by_non_existing_table_name) {
-  auto tables = std::make_unique<Tables>(GlobalTestEnvironment::TEST_DB);
+  auto tables = get_table_metadata(GlobalTestEnvironment::TEST_DB);
 
-  ErrorCode error = tables->init();
-  EXPECT_EQ(ErrorCode::OK, error);
-
-  ObjectIdType ret_table_id = -1;
-  error                     = tables->remove(GetParam().c_str(), &ret_table_id);
-  EXPECT_EQ(ErrorCode::NAME_NOT_FOUND, error);
-  EXPECT_EQ(-1, ret_table_id);
+  ApiTestHelper::test_init(tables.get(), ErrorCode::OK);
+  ApiTestHelper::test_remove(tables.get(), GetParam().c_str(),
+                             ErrorCode::NAME_NOT_FOUND);
 }
 
 }  // namespace manager::metadata::testing
