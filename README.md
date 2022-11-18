@@ -77,7 +77,7 @@ See [How to build](#how-to-build) for how to specify.
    ```
 
    available options:
-     - `DCMAKE_INSTALL_PREFIX=<installation directory>` - change install location
+     - `-DCMAKE_INSTALL_PREFIX=<installation directory>` - change install location
      - `-DBUILD_DOCUMENTS=OFF` - never build documents by doxygen
      - `-DDATA_STORAGE=postgresql` - specifies the data storage where the metadata is stored: `postgresql`, `json`
      - `-DLOG_LEVEL=error` - specifies the default log output level (minimum) for metadata-manager: `none`, `err[or]`, `warn[ing]`, `info`, `debug`
