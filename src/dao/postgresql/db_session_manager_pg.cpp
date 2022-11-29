@@ -21,10 +21,10 @@
 
 #include "manager/metadata/common/config.h"
 #include "manager/metadata/common/message.h"
-#include "manager/metadata/helper/logging_helper.h"
 #include "manager/metadata/dao/postgresql/common_pg.h"
 #include "manager/metadata/dao/postgresql/dbc_utils_pg.h"
 #include "manager/metadata/dao/postgresql/index_dao_pg.h"
+#include "manager/metadata/helper/logging_helper.h"
 
 // =============================================================================
 namespace manager::metadata::db {
@@ -76,7 +76,6 @@ ErrorCode DbSessionManagerPg::start_transaction() {
  * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode DbSessionManagerPg::commit() {
-
   ErrorCode error = ErrorCode::UNKNOWN;
 
   if (!DbcUtils::is_open(conn_.pg_conn)) {
@@ -116,7 +115,8 @@ ErrorCode DbSessionManagerPg::rollback() {
   if (PQresultStatus(res.get()) == PGRES_COMMAND_OK) {
     error = ErrorCode::OK;
   } else {
-    LOG_ERROR << Message::ROLLBACK_FAILURE << PQerrorMessage(conn_.pg_conn.get());
+    LOG_ERROR << Message::ROLLBACK_FAILURE
+              << PQerrorMessage(conn_.pg_conn.get());
     error = ErrorCode::DATABASE_ACCESS_FAILURE;
   }
 
@@ -182,7 +182,6 @@ ErrorCode DbSessionManagerPg::set_always_secure_search_path() const {
 }
 
 }  // namespace manager::metadata::db
-
 
 // =============================================================================
 namespace manager::metadata::db::postgresql {
@@ -308,12 +307,14 @@ ErrorCode DBSessionManager::rollback() {
 
 /**
  * @brief Establishes a connection_ to the metadata repository
- *   using connection_ information in a string.
+ *   using connection information in a string.
  * @param none.
  * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode DBSessionManager::connect() {
   ErrorCode error = ErrorCode::UNKNOWN;
+
+  LOG_DEBUG << "DB connection: [" << Config::get_connection_string() << "]";
 
   connection_ = DbcUtils::make_connection_sptr(
       PQconnectdb(Config::get_connection_string().c_str()));
@@ -321,8 +322,9 @@ ErrorCode DBSessionManager::connect() {
   if (DbcUtils::is_open(connection_)) {
     error = ErrorCode::OK;
   } else {
-    LOG_ERROR << Message::CONNECT_FAILURE << "\n  "
-              << PQerrorMessage(connection_.get());
+    LOG_ERROR << Message::CONNECT_FAILURE << " connection string: ["
+              << Config::get_connection_string() << "]\n"
+              << "  " << PQerrorMessage(connection_.get());
     error = ErrorCode::DATABASE_ACCESS_FAILURE;
   }
 

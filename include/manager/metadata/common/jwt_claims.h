@@ -18,30 +18,27 @@
 
 #include <cstdint>
 
-namespace manager::metadata {
+namespace manager::metadata::token {
 
-class Token {
- public:
-  struct Header {
-    static constexpr const char* const kType = "JWT";
-  };  // struct Header
+struct Header {
+  static constexpr const char* const kType = "JWT";
+};  // struct Header
 
-  struct Payload {
-    static constexpr const char* const kAuthUserName = "tsurugi/auth/name";
-    static constexpr const char* const kExpirationRefresh =
-        "tsurugi/exp/refresh";
-    static constexpr const char* const kExpirationAvailable =
-        "tsurugi/exp/available";
-  };  // struct Claim
+struct Payload {
+  static constexpr const char* const kTokenType = "sub";
+  static constexpr const char* const kAuthUserName = "tsurugi/auth/name";
+};  // struct Payload
 
-  struct Leeway {
-    static constexpr std::int32_t kIssued = 10;
-    static constexpr std::int32_t kExpiration = 10;
-    static constexpr std::int32_t kExpirationRefresh = 10;
-    static constexpr std::int32_t kExpirationAvailable = 10;
-  };  // struct Leeway
-};    // class Token
+struct Leeway {
+  static constexpr std::int32_t kIssued     = 10;
+  static constexpr std::int32_t kExpiration = 10;
+};  // struct Leeway
 
-}  // namespace manager::metadata
+struct TokenType {
+  static constexpr const char* const kAccess  = "access";
+  static constexpr const char* const kRefresh = "refresh";
+};  // struct TokenType
+
+}  // namespace manager::metadata::token
 
 #endif  // MANAGER_METADATA_COMMON_JWT_CLAIMS_H_

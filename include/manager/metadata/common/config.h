@@ -24,6 +24,8 @@ class Config {
  public:
   static std::string get_connection_string();
   static std::string get_storage_dir_path();
+  static std::string get_jwt_issuer();
+  static std::string get_jwt_audience();
   static std::string get_jwt_secret_key();
 };  // class Config
 

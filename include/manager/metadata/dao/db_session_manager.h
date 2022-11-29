@@ -42,13 +42,6 @@ class DBSessionManager {
   virtual manager::metadata::ErrorCode commit() = 0;
   virtual manager::metadata::ErrorCode rollback() = 0;
 
-//  virtual Connection connection() const = 0;
-//  virtual manager::metadata::ErrorCode connect() = 0;
-//  virtual manager::metadata::ErrorCode start_transaction() = 0;
-//  virtual manager::metadata::ErrorCode commit() = 0;
-//  virtual manager::metadata::ErrorCode rollback() = 0;
-//  virtual void close() = 0;
-
  protected:
   std::string database_;
   std::string metadata_table_;

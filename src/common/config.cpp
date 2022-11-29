@@ -25,7 +25,8 @@ namespace {
 namespace key {
 
 /**
- * @brief The name of an OS environment variable for a Connection Strings.
+ * @brief The name of an OS environment variable for a connection strings
+ *   to the metadata DB.
  */
 static constexpr const char* const kTsurugiConnectionString =
     "TSURUGI_CONNECTION_STRING";
@@ -41,6 +42,17 @@ static constexpr const char* const kTsurugiMetadataDir = "TSURUGI_METADATA_DIR";
  *   directory.
  */
 static constexpr const char* const kHomeDir = "HOME";
+
+/**
+ * @brief The name of an OS environment variable for the JWT issuer claim value.
+ */
+static constexpr const char* const kJwtClaimIssuer = "TSURUGI_JWT_CLAIM_ISS";
+
+/**
+ * @brief The name of an OS environment variable for the
+ *   JWT audience claim value.
+ */
+static constexpr const char* const kJwtClaimAudience = "TSURUGI_JWT_CLAIM_AUD";
 
 /**
  * @brief The name of an OS environment variable for the JWT secret key.
@@ -69,6 +81,16 @@ static constexpr const char* const kHomeDir = ".";
  */
 static constexpr const char* const kTsurugiMetadataDir =
     ".local/tsurugi/metadata";
+
+/**
+ * @brief Default value of the JWT issuer claim.
+ */
+static constexpr const char* const kJwtClaimIssuer =  "authentication-manager";
+
+/**
+ * @brief Default value of the JWT audience claim.
+ */
+static constexpr const char* const kJwtClaimAudience = "metadata-manager";
 
 /**
  * @brief Default JWT secret key.
@@ -113,6 +135,24 @@ std::string Config::get_storage_dir_path() {
     result_value = storage_dir.str();
   }
   return result_value;
+}
+
+/**
+ * @brief Gets JWT issuer value.
+ * @return JWT issuer value.
+ */
+std::string Config::get_jwt_issuer() {
+  const char* env_value = std::getenv(key::kJwtClaimIssuer);
+  return (env_value != nullptr ? env_value : default_value::kJwtClaimIssuer);
+}
+
+/**
+ * @brief Gets JWT audience value.
+ * @return JWT audience value.
+ */
+std::string Config::get_jwt_audience() {
+  const char* env_value = std::getenv(key::kJwtClaimAudience);
+  return (env_value != nullptr ? env_value : default_value::kJwtClaimAudience);
 }
 
 /**

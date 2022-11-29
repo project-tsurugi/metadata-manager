@@ -15,10 +15,6 @@
  */
 #include "manager/metadata/provider/roles_provider.h"
 
-#include <boost/foreach.hpp>
-
-#include "manager/metadata/datatypes.h"
-#include "manager/metadata/provider/datatypes_provider.h"
 #include "manager/metadata/roles.h"
 
 // =============================================================================

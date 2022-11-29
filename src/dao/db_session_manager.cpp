@@ -71,11 +71,13 @@ manager::metadata::ErrorCode DBSessionManager::create_dao(
   gdao = nullptr;
   switch (table_name) {
     case GenericDAO::TableName::TABLES: {
+      LOG_DEBUG << "Generate DAO for table metadata.";
       gdao = std::make_shared<storage::TablesDAO>(storage_session_manager);
       break;
     }
     case GenericDAO::TableName::STATISTICS: {
 #if defined(STORAGE_POSTGRESQL)
+      LOG_DEBUG << "Generate DAO for table statistics.";
       gdao = std::make_shared<storage::StatisticsDAO>(storage_session_manager);
       break;
 #elif defined(STORAGE_JSON)
@@ -84,19 +86,23 @@ manager::metadata::ErrorCode DBSessionManager::create_dao(
 #endif
     }
     case GenericDAO::TableName::DATATYPES: {
+      LOG_DEBUG << "Generate DAO for datatypes metadata.";
       gdao = std::make_shared<storage::DataTypesDAO>(storage_session_manager);
       break;
     }
     case GenericDAO::TableName::COLUMNS: {
+      LOG_DEBUG << "Generate DAO for columns metadata.";
       gdao = std::make_shared<storage::ColumnsDAO>(storage_session_manager);
       break;
     }
     case GenericDAO::TableName::CONSTRAINTS: {
+      LOG_DEBUG << "Generate DAO for constraints metadata.";
       gdao = std::make_shared<storage::ConstraintsDAO>(storage_session_manager);
       break;
     }
     case GenericDAO::TableName::ROLES: {
 #if defined(STORAGE_POSTGRESQL)
+      LOG_DEBUG << "Generate DAO for roles metadata.";
       gdao = std::make_shared<storage::RolesDAO>(storage_session_manager);
       break;
 #elif defined(STORAGE_JSON)
@@ -105,6 +111,7 @@ manager::metadata::ErrorCode DBSessionManager::create_dao(
 #endif
     }
     case GenericDAO::TableName::PRIVILEGES: {
+      LOG_DEBUG << "Generate DAO for privileges metadata.";
       gdao = std::make_shared<storage::PrivilegesDAO>(storage_session_manager);
       break;
     }

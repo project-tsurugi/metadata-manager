@@ -13,6 +13,7 @@
 # limitations under the License.
 
 file(GLOB_RECURSE SOURCES "src/*.cpp")
+list(FILTER SOURCES EXCLUDE REGEX "/?.not_build/*")
 
 add_executable(metadata_test
   ${SOURCES}
