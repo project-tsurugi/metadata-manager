@@ -98,8 +98,6 @@ class Token {
   std::string user_name_;
 
   void decode_token(std::string_view token_string);
-  template <typename T>
-  bool validate_required(T& decoded) const;
 };  // class Token
 
 }  // namespace manager::metadata

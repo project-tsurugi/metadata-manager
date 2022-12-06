@@ -186,9 +186,18 @@ class ApiTestTableAcls : public ::testing::Test {
 
   class TokenBuilder {
    public:
-    TokenBuilder() = delete;
-    explicit TokenBuilder(std::string_view user_name) : user_name_(user_name) {}
+    TokenBuilder() : unset_user_name_(true) {}
+    explicit TokenBuilder(std::string_view user_name)
+        : unset_user_name_(false), user_name_(user_name) {}
 
+    TokenBuilder& unset_issuer_at() {
+      unset_issuer_at_ = true;
+      return *this;
+    }
+    TokenBuilder& unset_expire_at() {
+      unset_expire_at_ = true;
+      return *this;
+    }
     TokenBuilder& set_expires(int32_t expires) {
       expires_ = expires;
       return *this;
@@ -207,20 +216,26 @@ class ApiTestTableAcls : public ::testing::Test {
     }
 
     std::string generate() {
-      // Set the expiration date.
-      auto now_time = std::chrono::system_clock::now();
-      auto exp_time = now_time + std::chrono::seconds{expires_};
-
       // Setting up data for token.
-      auto jwt_builder =
-          jwt::create()
-              .set_type("JWT")
-              .set_issued_at(now_time)
-              .set_expires_at(exp_time)
-              .set_issuer(issuer_)
-              .set_audience(audience_)
-              .set_subject(token_type_)
-              .set_payload_claim("tsurugi/auth/name", jwt::claim(user_name_));
+      auto jwt_builder = jwt::create()
+                             .set_type("JWT")
+                             .set_issuer(issuer_)
+                             .set_audience(audience_)
+                             .set_subject(token_type_);
+      // Set the issuer date.
+      if (!unset_issuer_at_) {
+        jwt_builder.set_issued_at(std::chrono::system_clock::now());
+      }
+      // Set the expiration date.
+      if (!unset_expire_at_) {
+        jwt_builder.set_expires_at(std::chrono::system_clock::now() +
+                                   std::chrono::seconds{expires_});
+      }
+      // Set the authentication user name.
+      if (!unset_user_name_) {
+        jwt_builder.set_payload_claim("tsurugi/auth/name",
+                                      jwt::claim(user_name_));
+      }
 
       // Cryptographic algorithms.
       auto algorithm = jwt::algorithm::hs256{Config::get_jwt_secret_key()};
@@ -233,6 +248,9 @@ class ApiTestTableAcls : public ::testing::Test {
     }
 
    private:
+    bool unset_issuer_at_ = false;
+    bool unset_expire_at_ = false;
+    bool unset_user_name_;
     std::string user_name_;
     int32_t expires_        = 300;
     std::string issuer_     = Config::get_jwt_issuer();
@@ -947,7 +965,16 @@ TEST_F(ApiTestTableAcls, get_acl_token_invalid) {
   {
     UTUtils::print("-- get acls -- [Invalid token token-type (unknown)]");
     std::string token_string =
-        TokenBuilder(role_1::role_name).set_token_type("invalid").generate();
+        TokenBuilder(role_1::role_name).set_token_type("unknown").generate();
+
+    error = tables->get_acls(token_string, table_metadata);
+    EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);
+  }
+
+  {
+    UTUtils::print("-- get acls -- [Invalid token token-type (_access_)]");
+    std::string token_string =
+        TokenBuilder(role_1::role_name).set_token_type("_access_").generate();
 
     error = tables->get_acls(token_string, table_metadata);
     EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);
@@ -966,6 +993,40 @@ TEST_F(ApiTestTableAcls, get_acl_token_invalid) {
     UTUtils::print("-- get acls -- [Invalid token audience]");
     std::string token_string =
         TokenBuilder(role_1::role_name).set_audience("invalid").generate();
+
+    error = tables->get_acls(token_string, table_metadata);
+    EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);
+  }
+
+  {
+    UTUtils::print("-- get acls -- [Empty tsurugi/auth/name]");
+    std::string token_string = TokenBuilder("").generate();
+
+    error = tables->get_acls(token_string, table_metadata);
+    EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);
+  }
+
+  {
+    UTUtils::print("-- get acls -- [Undefined tsurugi/auth/name]");
+    std::string token_string = TokenBuilder().generate();
+
+    error = tables->get_acls(token_string, table_metadata);
+    EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);
+  }
+
+  {
+    UTUtils::print("-- get acls -- [Undefined iat]");
+    std::string token_string =
+        TokenBuilder(role_1::role_name).unset_issuer_at().generate();
+
+    error = tables->get_acls(token_string, table_metadata);
+    EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);
+  }
+
+  {
+    UTUtils::print("-- get acls -- [Undefined exp]");
+    std::string token_string =
+        TokenBuilder(role_1::role_name).unset_expire_at().generate();
 
     error = tables->get_acls(token_string, table_metadata);
     EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);

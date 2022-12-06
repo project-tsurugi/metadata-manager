@@ -45,19 +45,11 @@ bool Token::is_valid() const {
     // Decode the access token.
     auto decoded_token = jwt::decode(token_string_);
 
-    // Validation of required claims.
-    result = validate_required(decoded_token);
-    if (!result) {
-      // Illegal token.
-      LOG_ERROR << Message::INVALID_TOKEN;
-      return result;
-    }
-
     // Claim verification lambda.
     auto claim_verifier = [](const jwt::verify_context& ctx,
                              std::string_view regex) -> std::error_code {
       using verify_error = jwt::error::token_verification_error;
-      std::error_code ec;
+      std::error_code ec = verify_error::ok;
 
       // Get claims from jwt.
       auto claim_data = ctx.get_claim(false, ec);
@@ -117,13 +109,12 @@ bool Token::is_valid() const {
     // Verify the JWT token.
     verifier.verify(decoded_token);
 
-    // Ensure that the user name is defined.
-    result = decoded_token.has_payload_claim(token::Payload::kAuthUserName);
+    result = true;
   } catch (jwt::error::token_verification_exception ex) {
-    LOG_ERROR << Message::INVALID_TOKEN << ex.what();
+    LOG_ERROR << Message::INVALID_TOKEN << ex.what() << "\n  " << token_string_;
     result = false;
   } catch (...) {
-    LOG_ERROR << Message::INVALID_TOKEN;
+    LOG_ERROR << Message::INVALID_TOKEN << token_string_;
     result = false;
   }
 
@@ -195,11 +186,15 @@ void Token::decode_token(std::string_view token_string) {
 
     // Set the value of the issued-at claim.
     issued_time_ =
-        std::chrono::system_clock::to_time_t(decoded_token.get_issued_at());
+        (decoded_token.has_issued_at() ? std::chrono::system_clock::to_time_t(
+                                             decoded_token.get_issued_at())
+                                       : 0);
 
     // Set the value of the expires-at claim.
     expiration_time_ =
-        std::chrono::system_clock::to_time_t(decoded_token.get_expires_at());
+        (decoded_token.has_expires_at() ? std::chrono::system_clock::to_time_t(
+                                              decoded_token.get_expires_at())
+                                        : 0);
 
     // Set the value of the issuer claim.
     issuer_ = (decoded_token.has_issuer() ? decoded_token.get_issuer() : "");
@@ -214,13 +209,18 @@ void Token::decode_token(std::string_view token_string) {
     // Set the value of the subject  claim.
     subject_ = (decoded_token.has_subject() ? decoded_token.get_subject() : "");
 
-    // Set the value of the token-type claim.
-    user_name_ = decoded_token.get_payload_claim(token::Payload::kAuthUserName)
-                     .as_string();
+    // Set the value of the tsurugi/auth/name  claim.
+    user_name_ =
+        (decoded_token.has_payload_claim(token::Payload::kAuthUserName)
+             ? decoded_token.get_payload_claim(token::Payload::kAuthUserName)
+                   .as_string()
+             : "");
 
     // Set the access token string.
     token_string_ = token_string;
   } catch (...) {
+    LOG_ERROR << Message::INVALID_TOKEN << token_string;
+
     // Clear the access token data.
     token_string_    = "";
     type_            = "";
@@ -231,40 +231,6 @@ void Token::decode_token(std::string_view token_string) {
     subject_   = "";
     user_name_ = "";
   }
-}
-
-/**
- * @brief Check if the token is valid.
- * @retval true if valid.
- * @retval false if invalid.
- */
-template <typename T>
-bool Token::validate_required(T& decoded) const {
-  bool result = false;
-
-  try {
-    // Check if algorithm is present ("alg").
-    result = decoded.has_algorithm();
-    // Check if type is present ("typ").
-    result = (result ? decoded.has_type() : false);
-    // Check if issued date is present ("iat").
-    result = (result ? decoded.has_issued_at() : false);
-    // Check if expires date is present ("exp").
-    result = (result ? decoded.has_expires_at() : false);
-    // Check if expires date is present ("iss").
-    result = (result ? decoded.has_issuer() : false);
-    // Check if expires date is present ("aud").
-    result = (result ? decoded.has_audience() : false);
-    // Check if expires date is present ("sub").
-    result = (result ? decoded.has_subject() : false);
-    // Check if a payload claim is present ("tsurugi/token_type").
-    result = (result ? decoded.has_payload_claim(token::Payload::kTokenType)
-                     : false);
-  } catch (...) {
-    result = false;
-  }
-
-  return result;
 }
 
 }  // namespace manager::metadata
