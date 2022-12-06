@@ -21,7 +21,8 @@ target_link_libraries(roles_test
   pq)
 target_include_directories(roles_test
   PRIVATE ${PG_INCLUDE_DIR}
-  PRIVATE ${PROJECT_SOURCE_DIR}/include)
+  PRIVATE ${PROJECT_SOURCE_DIR}/include
+  PRIVATE ${PROJECT_SOURCE_DIR}/test/include)
 set_target_properties(roles_test
   PROPERTIES
   RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}")

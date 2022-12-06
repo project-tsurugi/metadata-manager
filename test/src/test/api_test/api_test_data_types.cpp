@@ -21,18 +21,67 @@
 #include "manager/metadata/datatypes.h"
 #include "test/common/global_test_environment.h"
 #include "test/common/ut_utils.h"
-#include "test/helper/data_types_helper.h"
+#include "test/helper/metadata_helper.h"
+#include "test/metadata/ut_datatypes_metadata.h"
+#include "test/helper/api_test_helper.h"
 
 namespace manager::metadata::testing {
 
 using boost::property_tree::ptree;
+using BasicTestParameter = std::tuple<std::string, std::string>;
+
+/**
+ * @brief internal function of make_datatypes_tuple.
+ * @param (key)      [in]  a data types key.
+ * @param (values)   [in]  data types values.
+ * @param (v)        [out] a list of key/value pair about data types metadata.
+ * @return none.
+ */
+static void make_datatypes_tuple(std::string_view key,
+                                 const std::vector<std::string> values,
+                                 std::vector<BasicTestParameter>& v) {
+  for (auto value : values) {
+    v.emplace_back(key, value);
+  }
+}
+
+/**
+ * @brief Make a list of key/value pair about data types metadata.
+ * @return a list of key/value pair about data types metadata.
+ *   For example, if key = DataTypes::NAME, values are "INT32", "INT64", and
+ *   "FLOAT32" etc.
+ */
+static std::vector<BasicTestParameter> make_datatypes_tuple() {
+  std::vector<BasicTestParameter> v;
+
+  make_datatypes_tuple(DataTypes::ID, UtDataTypesMetadata().get_datatype_ids(),
+                       v);
+  make_datatypes_tuple(DataTypes::NAME,
+                       UtDataTypesMetadata().get_datatype_names(), v);
+  make_datatypes_tuple(DataTypes::PG_DATA_TYPE,
+                       UtDataTypesMetadata().get_pg_datatype_ids(), v);
+  make_datatypes_tuple(DataTypes::PG_DATA_TYPE_NAME,
+                       UtDataTypesMetadata().get_pg_datatype_names(), v);
+  make_datatypes_tuple(DataTypes::PG_DATA_TYPE_QUALIFIED_NAME,
+                       UtDataTypesMetadata().get_pg_datatype_qualified_names(),
+                       v);
+  return v;
+}
+
+/**
+ * @brief Make a list of list about data type names.
+ * @return data type names.
+ */
+static std::vector<std::string> make_datatype_names() {
+  return UtDataTypesMetadata().get_datatype_names();
+}
 
 class ApiTestDataTypes : public ::testing::Test {
  public:
   void SetUp() override { UTUtils::skip_if_connection_not_opened(); }
 };
 class ApiTestDataTypesByKeyValue
-    : public ::testing::TestWithParam<DataTypesHelper::BasicTestParameter> {
+    : public ::testing::TestWithParam<BasicTestParameter> {
   void SetUp() override { UTUtils::skip_if_connection_not_opened(); }
 };
 class ApiTestDataTypesByName : public ::testing::TestWithParam<std::string> {
@@ -43,12 +92,10 @@ class ApiTestDataTypesException
   void SetUp() override { UTUtils::skip_if_connection_not_opened(); }
 };
 
-INSTANTIATE_TEST_CASE_P(
-    ParameterizedTest, ApiTestDataTypesByName,
-    ::testing::ValuesIn(DataTypesHelper::make_datatype_names()));
-INSTANTIATE_TEST_CASE_P(
-    ParameterizedTest, ApiTestDataTypesByKeyValue,
-    ::testing::ValuesIn(DataTypesHelper::make_datatypes_tuple()));
+INSTANTIATE_TEST_CASE_P(ParameterizedTest, ApiTestDataTypesByName,
+                        ::testing::ValuesIn(make_datatype_names()));
+INSTANTIATE_TEST_CASE_P(ParameterizedTest, ApiTestDataTypesByKeyValue,
+                        ::testing::ValuesIn(make_datatypes_tuple()));
 INSTANTIATE_TEST_CASE_P(
     ParameterizedTest, ApiTestDataTypesException,
     ::testing::Values(std::make_tuple("", ""),
@@ -59,6 +106,82 @@ INSTANTIATE_TEST_CASE_P(
                       std::make_tuple(DataTypes::ID, "invalid_value"),
                       std::make_tuple(DataTypes::NAME, ""),
                       std::make_tuple(DataTypes::NAME, "invalid_value")));
+
+/**
+ * @brief Test to init datatype metadata.
+ */
+TEST_F(ApiTestDataTypes, test_init) {
+  CALL_TRACE;
+
+  auto manager = std::make_unique<DataTypes>(GlobalTestEnvironment::TEST_DB);
+
+  // Execute the test.
+  ApiTestHelper::test_init(manager.get(), ErrorCode::OK);
+}
+
+/**
+ * @brief Test to add datatype metadata.
+ */
+TEST_F(ApiTestDataTypes, test_add) {
+  CALL_TRACE;
+
+  auto manager = std::make_unique<DataTypes>(GlobalTestEnvironment::TEST_DB);
+
+  ptree inserted_metadata;
+  // Execute the test.
+  ApiTestHelper::test_add(manager.get(), inserted_metadata, ErrorCode::UNKNOWN);
+}
+
+/**
+ * @brief Test to get all it in ptree type.
+ */
+TEST_F(ApiTestDataTypes, test_getall) {
+  CALL_TRACE;
+
+  auto manager = std::make_unique<DataTypes>(GlobalTestEnvironment::TEST_DB);
+
+  std::vector<ptree> container = {};
+  // Execute the test.
+  ApiTestHelper::test_getall(manager.get(), ErrorCode::UNKNOWN, container);
+  EXPECT_TRUE(container.empty());
+}
+
+/**
+ * @brief Test to update it with object name as key.
+ */
+TEST_F(ApiTestDataTypes, test_update) {
+  CALL_TRACE;
+
+  auto manager = std::make_unique<DataTypes>(GlobalTestEnvironment::TEST_DB);
+
+  ptree updated_metadata;
+  // Execute the test.
+  ApiTestHelper::test_update(manager.get(), INT64_MAX, updated_metadata, ErrorCode::UNKNOWN);
+}
+
+/**
+ * @brief Test to remove it with object ID as key.
+ */
+TEST_F(ApiTestDataTypes, test_remove_by_id) {
+  CALL_TRACE;
+
+  auto manager = std::make_unique<DataTypes>(GlobalTestEnvironment::TEST_DB);
+
+  // Execute the test.
+  ApiTestHelper::test_remove(manager.get(), INT64_MAX, ErrorCode::UNKNOWN);
+}
+
+/**
+ * @brief Test to remove it with object name as key.
+ */
+TEST_F(ApiTestDataTypes, test_remove_by_name) {
+  CALL_TRACE;
+
+  auto manager = std::make_unique<DataTypes>(GlobalTestEnvironment::TEST_DB);
+
+  // Execute the test.
+  ApiTestHelper::test_remove(manager.get(), "INT32", ErrorCode::UNKNOWN);
+}
 
 /**
  * @brief Happy test for getting all data type metadata based on data type
@@ -77,7 +200,7 @@ TEST_P(ApiTestDataTypesByName, get_datatypes_by_name) {
   UTUtils::print(UTUtils::get_tree_string(datatype));
 
   // Verifies that returned data type metadata equals expected one.
-  DataTypesHelper::check_datatype_metadata_expected(datatype);
+  UtDataTypesMetadata().check_metadata_expected(datatype, __FILE__, __LINE__);
 }
 
 /**
@@ -99,7 +222,7 @@ TEST_P(ApiTestDataTypesByKeyValue, get_datatypes_by_key_value) {
   UTUtils::print(UTUtils::get_tree_string(datatype));
 
   // Verifies that returned data type metadata equals expected one.
-  DataTypesHelper::check_datatype_metadata_expected(datatype);
+  UtDataTypesMetadata().check_metadata_expected(datatype, __FILE__, __LINE__);
 }
 
 /**
@@ -155,62 +278,6 @@ TEST_P(ApiTestDataTypesException, get_non_existing_datatypes_by_key_value) {
   ptree empty_ptree;
   EXPECT_EQ(UTUtils::get_tree_string(empty_ptree),
             UTUtils::get_tree_string(datatype));
-}
-
-/**
- * @brief api test for add role metadata.
- */
-TEST_F(ApiTestDataTypes, add_datatypes) {
-  ErrorCode error = ErrorCode::UNKNOWN;
-
-  auto datatypes = std::make_unique<DataTypes>(GlobalTestEnvironment::TEST_DB);
-  error          = datatypes->init();
-  EXPECT_EQ(ErrorCode::OK, error);
-
-  ptree datatype_metadata;
-
-  error = datatypes->add(datatype_metadata);
-  EXPECT_EQ(ErrorCode::UNKNOWN, error);
-
-  ObjectIdType retval_datatype_id = -1;
-  error = datatypes->add(datatype_metadata, &retval_datatype_id);
-  EXPECT_EQ(ErrorCode::UNKNOWN, error);
-  EXPECT_EQ(-1, retval_datatype_id);
-}
-
-/**
- * @brief api test for get_all role metadata.
- */
-TEST_F(ApiTestDataTypes, get_all_datatypes) {
-  ErrorCode error = ErrorCode::UNKNOWN;
-
-  auto datatypes = std::make_unique<DataTypes>(GlobalTestEnvironment::TEST_DB);
-  error          = datatypes->init();
-  EXPECT_EQ(ErrorCode::OK, error);
-
-  std::vector<boost::property_tree::ptree> container = {};
-  error = datatypes->get_all(container);
-  EXPECT_EQ(ErrorCode::UNKNOWN, error);
-  EXPECT_TRUE(container.empty());
-}
-
-/**
- * @brief api test for remove role metadata.
- */
-TEST_F(ApiTestDataTypes, remove_datatypes) {
-  ErrorCode error = ErrorCode::UNKNOWN;
-
-  auto datatypes = std::make_unique<DataTypes>(GlobalTestEnvironment::TEST_DB);
-  error          = datatypes->init();
-  EXPECT_EQ(ErrorCode::OK, error);
-
-  error = datatypes->remove(99999);
-  EXPECT_EQ(ErrorCode::UNKNOWN, error);
-
-  ObjectIdType retval_datatype_id = -1;
-  error = datatypes->remove("role_name", &retval_datatype_id);
-  EXPECT_EQ(ErrorCode::UNKNOWN, error);
-  EXPECT_EQ(-1, retval_datatype_id);
 }
 
 }  // namespace manager::metadata::testing

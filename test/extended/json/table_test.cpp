@@ -43,8 +43,13 @@ using manager::metadata::db::json::ObjectId;
 const char* const TEST_DB = "test_DB";
 
 std::vector<std::pair<ObjectIdType, std::string>> datatypes_list = {
-    {4, "INT32"},   {6, "INT64"}, {8, "FLOAT32"},
-    {9, "FLOAT64"}, {13, "CHAR"}, {14, "VARCHAR"}};
+    { 4,   "INT32"},
+    { 6,   "INT64"},
+    { 8, "FLOAT32"},
+    { 9, "FLOAT64"},
+    {13,    "CHAR"},
+    {14, "VARCHAR"}
+};
 
 /*
  * @brief print error code and line number.
@@ -62,7 +67,7 @@ const std::string get_table_name() {
   auto oid_manager = std::make_unique<ObjectId>();
 
   ObjectIdType number = oid_manager->current("tables") + 1;
-  std::string name = "table_" + std::to_string(number);
+  std::string name    = "table_" + std::to_string(number);
 
   return name;
 }
@@ -102,7 +107,7 @@ ErrorCode output_object_diff(std::string_view key, const ptree& before,
   ErrorCode error = ErrorCode::OK;
 
   boost::optional<T> optional_before = before.get_optional<T>(key.data());
-  boost::optional<T> optional_after = after.get_optional<T>(key.data());
+  boost::optional<T> optional_after  = after.get_optional<T>(key.data());
 
   std::cout << " " << std::right << std::setw(10) << key.substr(0, 10) << ": ";
   if (optional_before) {
@@ -182,24 +187,21 @@ ErrorCode display_table_metadata_object(const ptree& table) {
     }
 
     // name
-    error =
-        check_object<std::string>(Column::NAME, true, column);
+    error = check_object<std::string>(Column::NAME, true, column);
     if (error != ErrorCode::OK) {
       ERROR(error);
       return error;
     }
 
     // columnNumber
-    error =
-        check_object<uint64_t>(Column::COLUMN_NUMBER, true, column);
+    error = check_object<uint64_t>(Column::COLUMN_NUMBER, true, column);
     if (error != ErrorCode::OK) {
       ERROR(error);
       return error;
     }
 
     // dataTypeId
-    error =
-        check_object<ObjectIdType>(Column::DATA_TYPE_ID, true, column);
+    error = check_object<ObjectIdType>(Column::DATA_TYPE_ID, true, column);
     if (error != ErrorCode::OK) {
       ERROR(error);
       return error;
@@ -278,9 +280,9 @@ ErrorCode display_table_metadata_object(const ptree& before,
 
   // column metadata
   auto columns_node_before = before.get_child(Table::COLUMNS_NODE);
-  auto columns_node_after = after.get_child(Table::COLUMNS_NODE);
-  auto columns_before = columns_node_before.begin();
-  auto columns_after = columns_node_after.begin();
+  auto columns_node_after  = after.get_child(Table::COLUMNS_NODE);
+  auto columns_before      = columns_node_before.begin();
+  auto columns_after       = columns_node_after.begin();
 
   // Inspection to see if the required fields are set.
   const std::vector<std::string> required_keys = {
@@ -306,8 +308,7 @@ ErrorCode display_table_metadata_object(const ptree& before,
        it_before != columns_node_before.end(); it_before++) {
     boost::optional<manager::metadata::ObjectIdType> opt_id_before;
     auto before_id =
-        it_before->second.get_optional<ObjectIdType>(Column::ID)
-            .value();
+        it_before->second.get_optional<ObjectIdType>(Column::ID).value();
 
     ptree temp_after;
     temp_after.clear();
@@ -324,26 +325,24 @@ ErrorCode display_table_metadata_object(const ptree& before,
     }
 
     // id
-    output_object_diff<ObjectIdType>(Column::ID, it_before->second,
-                                     temp_after);
+    output_object_diff<ObjectIdType>(Column::ID, it_before->second, temp_after);
     // tableId
-    output_object_diff<ObjectIdType>(Column::TABLE_ID,
-                                     it_before->second, temp_after);
+    output_object_diff<ObjectIdType>(Column::TABLE_ID, it_before->second,
+                                     temp_after);
     // name
     output_object_diff<std::string>(Column::NAME, it_before->second,
                                     temp_after);
     // ordinalPosition
-    output_object_diff<uint64_t>(Column::COLUMN_NUMBER,
-                                 it_before->second, temp_after);
+    output_object_diff<uint64_t>(Column::COLUMN_NUMBER, it_before->second,
+                                 temp_after);
     // dataTypeId
-    output_object_diff<ObjectIdType>(Column::DATA_TYPE_ID,
-                                     it_before->second, temp_after);
+    output_object_diff<ObjectIdType>(Column::DATA_TYPE_ID, it_before->second,
+                                     temp_after);
     // dataLength
     output_object_diff<uint64_t>(Column::DATA_LENGTH, it_before->second,
                                  temp_after);
     // varying
-    output_object_diff<bool>(Column::VARYING, it_before->second,
-                             temp_after);
+    output_object_diff<bool>(Column::VARYING, it_before->second, temp_after);
     // isNotNull
     output_object_diff<bool>(Column::IS_NOT_NULL, it_before->second,
                              temp_after);
@@ -359,8 +358,7 @@ ErrorCode display_table_metadata_object(const ptree& before,
   BOOST_FOREACH (const ptree::value_type& node, columns_node_after) {
     const ptree& column = node.second;
 
-    auto optional_object =
-        column.get_optional<ObjectIdType>(Column::ID);
+    auto optional_object = column.get_optional<ObjectIdType>(Column::ID);
     if (optional_object) {
       // id
       output_object_diff<ObjectIdType>(Column::ID, dummy, column);
@@ -369,11 +367,9 @@ ErrorCode display_table_metadata_object(const ptree& before,
       // name
       output_object_diff<std::string>(Column::NAME, dummy, column);
       // ordinalPosition
-      output_object_diff<uint64_t>(Column::COLUMN_NUMBER, dummy,
-                                   column);
+      output_object_diff<uint64_t>(Column::COLUMN_NUMBER, dummy, column);
       // dataTypeId
-      output_object_diff<ObjectIdType>(Column::DATA_TYPE_ID, dummy,
-                                       column);
+      output_object_diff<ObjectIdType>(Column::DATA_TYPE_ID, dummy, column);
       // dataLength
       output_object_diff<uint64_t>(Column::DATA_LENGTH, dummy, column);
       // varying
@@ -398,7 +394,7 @@ ErrorCode add_table_metadata() {
 
   ptree datatype_metadata;
   ptree new_table_metadata;
-  auto tables = std::make_unique<Tables>(TEST_DB);  // use Template-Method.
+  auto tables    = std::make_unique<Tables>(TEST_DB);  // use Template-Method.
   auto datatypes = std::make_unique<DataTypes>(TEST_DB);
 
   //
@@ -520,9 +516,9 @@ ErrorCode test_tables_add_get() {
   }
 
   ptree table_metadata;
-  auto tables = std::make_unique<Tables>(TEST_DB);  // use Template-Method.
+  auto tables      = std::make_unique<Tables>(TEST_DB);  // use Template-Method.
   auto oid_manager = std::make_unique<ObjectId>();
-  auto table_id = oid_manager->current("tables");
+  auto table_id    = oid_manager->current("tables");
 
   std::string table_name = "table_" + std::to_string(table_id);
   if (error == ErrorCode::OK) {
@@ -566,8 +562,8 @@ ErrorCode test_tables_add_get() {
 ErrorCode test_tables_update() {
   ErrorCode error = ErrorCode::UNKNOWN;
 
-  auto tables = std::make_unique<Tables>(TEST_DB);  // use Template-Method.
-  auto datatypes = std::make_unique<DataTypes>(TEST_DB);
+  auto tables      = std::make_unique<Tables>(TEST_DB);  // use Template-Method.
+  auto datatypes   = std::make_unique<DataTypes>(TEST_DB);
   auto oid_manager = std::make_unique<ObjectId>();
 
   try {
@@ -606,7 +602,8 @@ ErrorCode test_tables_update() {
 
     auto optional_tuples =
         table_metadata_before.get_optional<int64_t>(Table::NUMBER_OF_TUPLES);
-    table_metadata.put(Table::NUMBER_OF_TUPLES, optional_tuples.value_or(-1) + 123);
+    table_metadata.put(Table::NUMBER_OF_TUPLES,
+                       optional_tuples.value_or(-1) + 123);
 
     //
     // column-metadata
@@ -698,7 +695,7 @@ ErrorCode test_tables_update() {
  *  @brief Test to remove a table-metadata to metadata-table.
  */
 ErrorCode tables_remove_test() {
-  ErrorCode error = ErrorCode::UNKNOWN;
+  ErrorCode error     = ErrorCode::UNKNOWN;
   int TABLE_NUM_ADDED = 4;
 
   for (int num = 0; num < TABLE_NUM_ADDED; num++) {
@@ -716,7 +713,7 @@ ErrorCode tables_remove_test() {
   //
   auto oid_manager = std::make_unique<ObjectId>();
 
-  ObjectIdType number = oid_manager->current("tables");
+  ObjectIdType number                  = oid_manager->current("tables");
   std::vector<std::string> table_names = {
       "table_" + std::to_string(number - 3),
       "table_" + std::to_string(number - 1),
@@ -725,7 +722,7 @@ ErrorCode tables_remove_test() {
 
   for (std::string name : table_names) {
     ObjectIdType object_id = 0;
-    error = tables->remove(name.c_str(), &object_id);
+    error                  = tables->remove(name.c_str(), &object_id);
     if (error != ErrorCode::OK) {
       ERROR(error);
       return error;
@@ -736,7 +733,7 @@ ErrorCode tables_remove_test() {
   }
 
   const char* const table_name_not_exists = "table_name_not_exists";
-  ObjectIdType ret_object_id = 0;
+  ObjectIdType ret_object_id              = 0;
   error = tables->remove(table_name_not_exists, &ret_object_id);
   if (error == ErrorCode::OK) {
     ERROR(error);
@@ -758,7 +755,7 @@ ErrorCode tables_remove_test() {
   // remove table-metadata object
   //
 
-  number = oid_manager->current("tables");
+  number                               = oid_manager->current("tables");
   std::vector<ObjectIdType> object_ids = {number - 3, number - 1, number - 0,
                                           number - 2};
 
@@ -773,7 +770,7 @@ ErrorCode tables_remove_test() {
   }
 
   uint64_t table_id_not_exists = 0;
-  error = tables->remove(table_id_not_exists);
+  error                        = tables->remove(table_id_not_exists);
   if (error == ErrorCode::OK) {
     ERROR(error);
     return error;

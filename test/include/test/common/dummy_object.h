@@ -13,18 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TEST_INCLUDE_TEST_HELPER_POSTGRESQL_CONSTRAINT_METADATA_HELPER_PG_H_
-#define TEST_INCLUDE_TEST_HELPER_POSTGRESQL_CONSTRAINT_METADATA_HELPER_PG_H_
+#ifndef TEST_INCLUDE_TEST_COMMON_DUMMY_OBJECT_H_
+#define TEST_INCLUDE_TEST_COMMON_DUMMY_OBJECT_H_
 
-#include "test/helper/metadata_helper.h"
+#include "manager/metadata/metadata.h"
 
 namespace manager::metadata::testing {
 
-class ConstraintMetadataHelperPg : public MetadataHelperInterface {
+/**
+ * @brief Dummy metadata object.
+ */
+struct DummyObject : public manager::metadata::Object {
  public:
-  int32_t get_record_count() const override;
+  boost::property_tree::ptree convert_to_ptree() const override {
+    boost::property_tree::ptree dummy;
+    return dummy;
+  }
+
+  void convert_from_ptree(
+      [[maybe_unused]] const boost::property_tree::ptree& pt) override {}
 };
 
 }  // namespace manager::metadata::testing
 
-#endif  // TEST_INCLUDE_TEST_HELPER_POSTGRESQL_CONSTRAINT_METADATA_HELPER_PG_H_
+#endif  // TEST_INCLUDE_TEST_COMMON_DUMMY_OBJECT_H_

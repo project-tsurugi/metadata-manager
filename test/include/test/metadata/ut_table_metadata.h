@@ -29,32 +29,23 @@
 
 namespace manager::metadata::testing {
 
-class UTTableMetadata : public UtMetadata {
+class UtTableMetadata : public UtMetadata<manager::metadata::Table> {
  public:
-  UTTableMetadata() : table_name_("") {}
-  explicit UTTableMetadata(std::string table_name) : table_name_(table_name) {}
-  explicit UTTableMetadata(const Table& metadata)
-      : metadata_ptree_(metadata.convert_to_ptree()),
-        metadata_struct_(metadata) {}
-  explicit UTTableMetadata(const boost::property_tree::ptree& metadata)
-      : metadata_ptree_(metadata) {
-    metadata_struct_.convert_from_ptree(metadata_ptree_);
-  }
+  using UtMetadata::UtMetadata;
 
-  void generate_test_metadata() override;
-
-  const manager::metadata::Table* get_metadata_struct() const override {
-    return &metadata_struct_;
+  UtTableMetadata() { this->generate_test_metadata(); }
+  explicit UtTableMetadata(const Table& metadata) : UtMetadata(metadata) {
+    excluding_items(metadata_ptree_, "tables", std::to_string(INVALID_VALUE));
   }
-  boost::property_tree::ptree get_metadata_ptree() const override {
-    return metadata_ptree_;
+  explicit UtTableMetadata(std::string_view table_name)
+      : table_name_(table_name) {
+    this->generate_test_metadata();
   }
 
   void check_metadata_expected(const boost::property_tree::ptree& expected,
                                const boost::property_tree::ptree& actual,
                                const char* file,
                                const int64_t line) const override;
-
   void check_metadata_expected(const manager::metadata::Table& expected,
                                const boost::property_tree::ptree& actual,
                                const char* file, const int64_t line) const;
@@ -66,10 +57,9 @@ class UTTableMetadata : public UtMetadata {
                                const char* file, const int64_t line) const;
 
  private:
-  boost::property_tree::ptree metadata_ptree_;
-  manager::metadata::Table metadata_struct_;
-
   std::string table_name_;
+
+  void generate_test_metadata();
 };
 
 }  // namespace manager::metadata::testing

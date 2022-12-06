@@ -27,28 +27,45 @@
 
 #include "manager/metadata/metadata.h"
 #include "test/common/ut_utils.h"
+#include "test/metadata/ut_metadata_interface.h"
 
 namespace manager::metadata::testing {
 
-#define CHECK_METADATA_EXPECTED(exp, act) \
-  check_metadata_expected(exp, act, __FILE__, __LINE__);
-
-#define EXPECT_EQ_EX(expected, actual, file, line) \
-  EXPECT_EQ(expected, actual)                      \
-      << "Caller: " + std::string(file) + ":" + std::to_string(line);
-#define ASSERT_EQ_EX(expected, actual, file, line) \
-  ASSERT_EQ(expected, actual)                      \
+#define EXPECT_GT_EX(expected, actual, file, line) \
+  EXPECT_GT(expected, actual)                      \
       << "Caller: " + std::string(file) + ":" + std::to_string(line);
 
-class UtMetadata {
+template <class OBJECT = manager::metadata::Object>
+class UtMetadata : public UtMetadataInterface {
  public:
   UtMetadata() {}
+  explicit UtMetadata(const OBJECT& metadata)
+      : metadata_ptree_(metadata.convert_to_ptree()) {
+    this->metadata_struct_ = std::make_unique<OBJECT>(metadata);
+  }
+  explicit UtMetadata(const boost::property_tree::ptree& metadata)
+      : metadata_ptree_(metadata) {
+    this->metadata_struct_->convert_from_ptree(metadata_ptree_);
+  }
+
+  explicit UtMetadata(UtMetadata&& utMetadata) {
+    this->metadata_ptree_  = utMetadata.metadata_ptree_;
+    this->metadata_struct_ = std::move(utMetadata.metadata_struct_);
+  }
+  explicit UtMetadata(const UtMetadata& utMetadata) {
+    this->metadata_ptree_ = utMetadata.metadata_ptree_;
+    this->metadata_struct_ =
+        std::make_unique<OBJECT>(*utMetadata.metadata_struct_);
+  }
+
   virtual ~UtMetadata() {}
 
-  virtual void generate_test_metadata() = 0;
-
-  virtual const manager::metadata::Object* get_metadata_struct() const = 0;
-  virtual boost::property_tree::ptree get_metadata_ptree() const       = 0;
+  const OBJECT* get_metadata_struct() const override {
+    return &(*metadata_struct_);
+  }
+  boost::property_tree::ptree get_metadata_ptree() const override {
+    return metadata_ptree_;
+  }
 
   /**
    * @brief Verifies that the actual metadata equals expected one.
@@ -73,13 +90,18 @@ class UtMetadata {
    */
   void check_metadata_expected(const boost::property_tree::ptree& expected,
                                const ::manager::metadata::Object& actual,
-                               const char* file, const int64_t line) const {
+                               const char* file,
+                               const int64_t line) const override {
     // Transform metadata from structure object to ptree object.
-    check_metadata_expected(expected, actual.convert_to_ptree(), file, line);
+    this->check_metadata_expected(expected, actual.convert_to_ptree(), file,
+                                  line);
   }
 
  protected:
   static constexpr int64_t NOT_INITIALIZED = -1;
+
+  boost::property_tree::ptree metadata_ptree_;
+  std::unique_ptr<OBJECT> metadata_struct_ = std::make_unique<OBJECT>();
 
   /**
    * @brief Verifies that the actual metadata equals expected one.
@@ -201,6 +223,30 @@ class UtMetadata {
                                 ":" + std::to_string(line);
 
     EXPECT_EQ(expected, actual) << message;
+  }
+
+  /**
+   * @brief Exclude items of a specific value.
+   * @param metadata      [in/out] metadata.
+   * @param key           [in]     key name.
+   * @param exclude_value [in]     value to exclude.
+   */
+  void excluding_items(boost::property_tree::ptree& metadata, std::string key,
+                       std::string exclude_value) {
+    std::string full_key;
+
+    if (!key.empty()) {
+      full_key = key + ".";
+    }
+    for (boost::property_tree::ptree::iterator it = metadata.begin();
+         it != metadata.end();) {
+      excluding_items(it->second, full_key + it->first, exclude_value);
+      if (it->second.data() == exclude_value) {
+        it = metadata.erase(it);
+      } else {
+        ++it;
+      }
+    }
   }
 };
 

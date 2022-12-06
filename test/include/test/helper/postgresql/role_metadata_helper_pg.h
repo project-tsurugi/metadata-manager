@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TEST_INCLUDE_TEST_HELPER_ROLE_METADATA_HELPER_H_
-#define TEST_INCLUDE_TEST_HELPER_ROLE_METADATA_HELPER_H_
+#ifndef TEST_INCLUDE_TEST_HELPER_POSTGRESQL_ROLE_METADATA_HELPER_PG_H_
+#define TEST_INCLUDE_TEST_HELPER_POSTGRESQL_ROLE_METADATA_HELPER_PG_H_
 
 #include <string_view>
 
@@ -24,14 +24,11 @@
 
 namespace manager::metadata::testing {
 
-class RoleMetadataHelper {
+class RoleMetadataHelperPg {
  public:
   static ObjectIdType create_role(std::string_view role_name,
                                   std::string_view options);
   static void drop_role(std::string_view role_name);
-
-  static void check_roles_expected(const boost::property_tree::ptree& actual,
-                                   const boost::property_tree::ptree& expect);
 
  private:
   static void db_connection();
@@ -39,4 +36,4 @@ class RoleMetadataHelper {
 
 }  // namespace manager::metadata::testing
 
-#endif  // TEST_INCLUDE_TEST_HELPER_ROLE_METADATA_HELPER_H_
+#endif  // TEST_INCLUDE_TEST_HELPER_POSTGRESQL_ROLE_METADATA_HELPER_PG_H_

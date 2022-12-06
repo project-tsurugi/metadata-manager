@@ -13,29 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "test/helper/constraint_metadata_helper.h"
+#ifndef TEST_INCLUDE_TEST_HELPER_POSTGRESQL_METADATA_HELPER_PG_H_
+#define TEST_INCLUDE_TEST_HELPER_POSTGRESQL_METADATA_HELPER_PG_H_
 
-#include <memory>
+#include <string>
+#include <string_view>
 
 #include "test/helper/metadata_helper.h"
 
-#if defined(STORAGE_POSTGRESQL)
-#include "test/helper/postgresql/constraint_metadata_helper_pg.h"
-#elif defined(STORAGE_JSON)
-#include "test/helper/json/constraint_metadata_helper_json.h"
-#endif
-
 namespace manager::metadata::testing {
 
-int32_t ConstraintMetadataHelper::get_record_count() {
-  std::unique_ptr<MetadataHelperInterface> helper;
-#if defined(STORAGE_POSTGRESQL)
-  helper = std::make_unique<ConstraintMetadataHelperPg>();
-#elif defined(STORAGE_JSON)
-  helper = std::make_unique<ConstraintMetadataHelperJson>();
-#endif
+class MetadataHelperPg : public MetadataHelper {
+ public:
+  /**
+   * @param table_name metadata table name.
+   */
+  explicit MetadataHelperPg(std::string_view table_name)
+      : table_name_(table_name) {}
+  MetadataHelperPg() = delete;
 
-  return helper->get_record_count();
-}
+  int64_t get_record_count() const override;
+
+ private:
+  std::string table_name_;
+};
 
 }  // namespace manager::metadata::testing
+
+#endif  // TEST_INCLUDE_TEST_HELPER_POSTGRESQL_METADATA_HELPER_PG_H_

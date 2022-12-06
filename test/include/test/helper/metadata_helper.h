@@ -20,9 +20,9 @@
 
 namespace manager::metadata::testing {
 
-class MetadataHelperInterface {
+class MetadataHelper {
  public:
-  virtual int32_t get_record_count() const = 0;
+  virtual int64_t get_record_count() const { return 0L; }
 };
 
 }  // namespace manager::metadata::testing

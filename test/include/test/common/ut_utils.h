@@ -28,8 +28,15 @@ namespace manager::metadata::testing {
 class UTUtils {
  public:
   static std::string generate_narrow_uid();
+
   static void skip_if_connection_not_opened();
   static void skip_if_connection_opened();
+  static void skip_if_json();
+  static void skip_if_postgresql();
+
+  static bool is_json();
+  static bool is_postgresql();
+
   static std::string get_tree_string(const boost::property_tree::ptree& pt);
   static std::string get_tree_string(const manager::metadata::Object& ob);
   static std::string print_tree(const boost::property_tree::ptree& pt,

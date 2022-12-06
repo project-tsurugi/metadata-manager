@@ -16,39 +16,30 @@
 #ifndef TEST_INCLUDE_TEST_COMMON_POSTGRESQL_TEST_ENVIRONMENT_PG_H_
 #define TEST_INCLUDE_TEST_COMMON_POSTGRESQL_TEST_ENVIRONMENT_PG_H_
 
-#include <memory>
-#include <vector>
-
+#include "manager/metadata/common/config.h"
+#include "manager/metadata/dao/postgresql/dbc_utils_pg.h"
 #include "test/common/test_environment.h"
-#include "test/metadata/ut_table_metadata.h"
 
 namespace manager::metadata::testing {
 
 class TestEnvironmentPg : public TestEnvironment {
  public:
   ~TestEnvironmentPg() override {}
-  void SetUp() override;
-  void TearDown() override;
 
-  /**
-   * @brief table metadata used as test data.
-   */
-  std::unique_ptr<UTTableMetadata> testdata_table_metadata;
+  void SetUp() override {
+    TestEnvironment::SetUp();
 
-  /**
-   * @brief column statistics used as test data.
-   */
-  std::vector<boost::property_tree::ptree> column_statistics;
+    // check if a connection to the metadata repository is opened or not.
+    db::postgresql::ConnectionSPtr connection =
+        db::postgresql::DbcUtils::make_connection_sptr(
+            PQconnectdb(Config::get_connection_string().c_str()));
 
-  /**
-   * @brief a list of non-existing table id.
-   */
-  std::vector<ObjectIdType> table_id_not_exists;
+    this->is_open_ = db::postgresql::DbcUtils::is_open(connection);
+  }
 
-  /**
-   * @brief a list of non-existing column number.
-   */
-  std::vector<ObjectIdType> column_number_not_exists;
+  void TearDown() override {
+    TestEnvironment::TearDown();
+  }
 };
 
 }  // namespace manager::metadata::testing

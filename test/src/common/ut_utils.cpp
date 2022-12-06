@@ -37,7 +37,7 @@ std::string UTUtils::generate_narrow_uid() {
  */
 void UTUtils::skip_if_connection_not_opened() {
   if (!global->is_open()) {
-    GTEST_SKIP_("metadata repository is not started.");
+    GTEST_SKIP_("  Skipped: Metadata repository is not started.");
   }
 }
 
@@ -46,8 +46,52 @@ void UTUtils::skip_if_connection_not_opened() {
  */
 void UTUtils::skip_if_connection_opened() {
   if (global->is_open()) {
-    GTEST_SKIP_("metadata repository is started.");
+    GTEST_SKIP_("  Skipped: Metadata repository is started.");
   }
+}
+
+/**
+ * @brief If the metadata storage is JSON, skip the test.
+ */
+void UTUtils::skip_if_json() {
+#if defined(STORAGE_JSON)
+  GTEST_SKIP_("  Skipped: Metadata storage is Json.");
+#endif
+}
+
+/**
+ * @brief If the metadata storage is PostgreSQL, skip the test.
+ */
+void UTUtils::skip_if_postgresql() {
+#if defined(STORAGE_POSTGRESQL)
+  GTEST_SKIP_("  Skipped: Metadata storage is PostgreSQL.");
+#endif
+}
+
+/**
+ * @brief Returns whether the metadata storage is JSON or not.
+ * @retval true - Metadata storage is Json.
+ * @retval false - Metadata is not stored in Json.
+ */
+bool UTUtils::is_json() {
+#if defined(STORAGE_POSTGRESQL)
+  return false;
+#elif defined(STORAGE_JSON)
+  return true;
+#endif
+}
+
+/**
+ * @brief Returns whether the metadata storage is PostgreSQL or not.
+ * @retval true - Metadata storage is PostgreSQL.
+ * @retval false - Metadata is not stored in PostgreSQL.
+ */
+bool UTUtils::is_postgresql() {
+#if defined(STORAGE_POSTGRESQL)
+  return true;
+#elif defined(STORAGE_JSON)
+  return false;
+#endif
 }
 
 /**
@@ -110,8 +154,7 @@ void UTUtils::get_tree_string_internal(const boost::property_tree::ptree& pt,
  * @brief Get string converted from ptree. (not print string)
  * @param (pt)  [in]  ptree to be converted to string.
  */
-std::string UTUtils::get_tree_string(
-    const boost::property_tree::ptree& pt) {
+std::string UTUtils::get_tree_string(const boost::property_tree::ptree& pt) {
   std::string output_string;
   int level = 0;
   get_tree_string_internal(pt, level, output_string, false);

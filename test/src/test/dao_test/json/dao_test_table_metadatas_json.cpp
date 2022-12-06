@@ -46,11 +46,12 @@ class DaoTestTableMetadata : public ::testing::Test {
 
   /**
    * @brief Add table metadata to table metadata table.
-   * @param (table_name)  [in]  table name of table metadata to add.
-   * @param (object_id)   [out] ID of the added table metadata.
+   * @param (new_table)  [in]  table metadata to add.
+   * @param (object_id)  [out] ID of the added table metadata.
    * @return ErrorCode::OK if success, otherwise an error code.
    */
-  static void add_table(std::string_view table_name, ObjectIdType* object_id) {
+  static void add_table(boost::property_tree::ptree new_table,
+                        ObjectIdType* object_id) {
     assert(object_id != nullptr);
 
     ErrorCode error = ErrorCode::UNKNOWN;
@@ -89,12 +90,6 @@ class DaoTestTableMetadata : public ::testing::Test {
 
     error = db_session_manager.start_transaction();
     ASSERT_EQ(ErrorCode::OK, error);
-
-    // table metadata.
-    UTTableMetadata* testdata_table_metadata =
-        global->testdata_table_metadata.get();
-    ptree new_table = testdata_table_metadata->get_metadata_ptree();
-    new_table.put(Table::NAME, table_name);
 
     // Add table metadata object to table metadata table.
     ObjectIdType table_id_returned;
@@ -434,18 +429,17 @@ class DaoTestTableMetadata : public ::testing::Test {
  *  and getting it by table name.
  */
 TEST_F(DaoTestTableMetadata, add_get_table_metadata_by_table_name) {
-  // prepare test data for adding table metadata.
-  UTTableMetadata testdata_table_metadata =
-      *(global->testdata_table_metadata.get());
-  ptree new_table            = testdata_table_metadata.get_metadata_ptree();
-  std::string new_table_name = new_table.get<std::string>(Table::NAME) +
-                               "_DaoTestTableMetadata" +
+  std::string new_table_name = "DaoTestTableMetadata_" +
+                               UTUtils::generate_narrow_uid() + "_" +
                                std::to_string(__LINE__);
-  new_table.put(Table::NAME, new_table_name);
+
+  // Generate test metadata.
+  UtTableMetadata testdata_table_metadata(new_table_name);
+  auto new_table = testdata_table_metadata.get_metadata_ptree();
 
   // add table metadata.
   ObjectIdType ret_table_id = -1;
-  DaoTestTableMetadata::add_table(new_table_name, &ret_table_id);
+  DaoTestTableMetadata::add_table(new_table, &ret_table_id);
   new_table.put(Table::ID, ret_table_id);
 
   // get table metadata by table name.
@@ -466,18 +460,17 @@ TEST_F(DaoTestTableMetadata, add_get_table_metadata_by_table_name) {
  *  and getting it by table id.
  */
 TEST_F(DaoTestTableMetadata, add_get_table_metadata_by_table_id) {
-  // prepare test data for adding table metadata.
-  UTTableMetadata testdata_table_metadata =
-      *(global->testdata_table_metadata.get());
-  ptree new_table            = testdata_table_metadata.get_metadata_ptree();
-  std::string new_table_name = new_table.get<std::string>(Table::NAME) +
-                               "_DaoTestTableMetadata" +
+  std::string new_table_name = "DaoTestTableMetadata_" +
+                               UTUtils::generate_narrow_uid() + "_" +
                                std::to_string(__LINE__);
-  new_table.put(Table::NAME, new_table_name);
+
+  // Generate test metadata.
+  UtTableMetadata testdata_table_metadata(new_table_name);
+  auto new_table = testdata_table_metadata.get_metadata_ptree();
 
   // add table metadata.
   ObjectIdType ret_table_id = -1;
-  DaoTestTableMetadata::add_table(new_table_name, &ret_table_id);
+  DaoTestTableMetadata::add_table(new_table, &ret_table_id);
   new_table.put(Table::ID, ret_table_id);
 
   // get table metadata by table id.
@@ -501,20 +494,20 @@ TEST_F(DaoTestTableMetadata, add_get_table_metadata_by_table_id) {
  * metadata.
  */
 TEST_F(DaoTestTableMetadata, add_update_table_metadata) {
-  // prepare test data for adding table metadata.
-  UTTableMetadata testdata_table_metadata =
-      *(global->testdata_table_metadata.get());
-  ptree table = testdata_table_metadata.get_metadata_ptree();
+  std::string new_table_name = "DaoTestTableMetadata_" +
+                               UTUtils::generate_narrow_uid() + "_" +
+                               std::to_string(__LINE__);
+
+  // Generate test metadata.
+  UtTableMetadata testdata_table_metadata(new_table_name);
+  auto new_table = testdata_table_metadata.get_metadata_ptree();
 
   // #1 add table metadata.
   ptree table_metadata_1;
   ObjectIdType ret_table_id_1 = -1;
   {
-    std::string new_table_name = table.get<std::string>(Table::NAME) +
-                                 "_DaoTestTableMetadata" +
-                                 std::to_string(__LINE__);
     // add table metadata.
-    DaoTestTableMetadata::add_table(new_table_name, &ret_table_id_1);
+    DaoTestTableMetadata::add_table(new_table, &ret_table_id_1);
     // get table metadata.
     DaoTestTableMetadata::get_table_metadata(ret_table_id_1, table_metadata_1);
   }
@@ -523,11 +516,16 @@ TEST_F(DaoTestTableMetadata, add_update_table_metadata) {
   ptree table_metadata_2;
   ObjectIdType ret_table_id_2 = -1;
   {
-    std::string new_table_name = table.get<std::string>(Table::NAME) +
-                                 "_DaoTestTableMetadata" +
+    std::string new_table_name = "DaoTestTableMetadata_" +
+                                 UTUtils::generate_narrow_uid() + "_" +
                                  std::to_string(__LINE__);
+
+    // Generate test metadata.
+    UtTableMetadata testdata_table_metadata(new_table_name);
+    auto new_table = testdata_table_metadata.get_metadata_ptree();
+
     // add table metadata.
-    DaoTestTableMetadata::add_table(new_table_name, &ret_table_id_2);
+    DaoTestTableMetadata::add_table(new_table, &ret_table_id_2);
     // get table metadata.
     DaoTestTableMetadata::get_table_metadata(ret_table_id_2, table_metadata_2);
   }
@@ -536,11 +534,16 @@ TEST_F(DaoTestTableMetadata, add_update_table_metadata) {
   ptree table_metadata_3;
   ObjectIdType ret_table_id_3 = -1;
   {
-    std::string new_table_name = table.get<std::string>(Table::NAME) +
-                                 "_DaoTestTableMetadata" +
+    std::string new_table_name = "DaoTestTableMetadata_" +
+                                 UTUtils::generate_narrow_uid() + "_" +
                                  std::to_string(__LINE__);
+
+    // Generate test metadata.
+    UtTableMetadata testdata_table_metadata(new_table_name);
+    auto new_table = testdata_table_metadata.get_metadata_ptree();
+
     // add table metadata.
-    DaoTestTableMetadata::add_table(new_table_name, &ret_table_id_3);
+    DaoTestTableMetadata::add_table(new_table, &ret_table_id_3);
     // get table metadata.
     DaoTestTableMetadata::get_table_metadata(ret_table_id_3, table_metadata_3);
   }
@@ -574,7 +577,8 @@ TEST_F(DaoTestTableMetadata, add_update_table_metadata) {
     // exempted.
     expected_table_metadata.erase(Table::CONSTRAINTS_NODE);
     ptree empty_constraints;
-    expected_table_metadata.add_child(Table::CONSTRAINTS_NODE, empty_constraints);
+    expected_table_metadata.add_child(Table::CONSTRAINTS_NODE,
+                                      empty_constraints);
   }
 
   // get table metadata.
@@ -627,18 +631,17 @@ TEST_F(DaoTestTableMetadata, add_update_table_metadata) {
  * @brief happy test for removing one new table metadata by table name.
  */
 TEST_F(DaoTestTableMetadata, remove_table_metadata_by_table_name) {
-  // prepare test data for adding table metadata.
-  UTTableMetadata testdata_table_metadata =
-      *(global->testdata_table_metadata.get());
-  ptree new_table            = testdata_table_metadata.get_metadata_ptree();
-  std::string new_table_name = new_table.get<std::string>(Table::NAME) +
-                               "_DaoTestTableMetadata" +
+  std::string new_table_name = "DaoTestTableMetadata_" +
+                               UTUtils::generate_narrow_uid() + "_" +
                                std::to_string(__LINE__);
-  new_table.put(Table::NAME, new_table_name);
+
+  // Generate test metadata.
+  UtTableMetadata testdata_table_metadata(new_table_name);
+  auto new_table = testdata_table_metadata.get_metadata_ptree();
 
   // add table metadata.
   ObjectIdType ret_table_id = -1;
-  DaoTestTableMetadata::add_table(new_table_name, &ret_table_id);
+  DaoTestTableMetadata::add_table(new_table, &ret_table_id);
 
   // remove table metadata by table name.
   ObjectIdType table_id_to_remove = -1;
@@ -659,18 +662,17 @@ TEST_F(DaoTestTableMetadata, remove_table_metadata_by_table_name) {
  * @brief happy test for removing one new table metadata by table id.
  */
 TEST_F(DaoTestTableMetadata, remove_table_metadata_by_table_id) {
-  // prepare test data for adding table metadata.
-  UTTableMetadata testdata_table_metadata =
-      *(global->testdata_table_metadata.get());
-  ptree new_table            = testdata_table_metadata.get_metadata_ptree();
-  std::string new_table_name = new_table.get<std::string>(Table::NAME) +
-                               "_DaoTestTableMetadata" +
+  std::string new_table_name = "DaoTestTableMetadata_" +
+                               UTUtils::generate_narrow_uid() + "_" +
                                std::to_string(__LINE__);
-  new_table.put(Table::NAME, new_table_name);
+
+  // Generate test metadata.
+  UtTableMetadata testdata_table_metadata(new_table_name);
+  auto new_table = testdata_table_metadata.get_metadata_ptree();
 
   // add table metadata.
   ObjectIdType ret_table_id = -1;
-  DaoTestTableMetadata::add_table(new_table_name, &ret_table_id);
+  DaoTestTableMetadata::add_table(new_table, &ret_table_id);
 
   // remove table metadata by table id.
   DaoTestTableMetadata::remove_table_metadata(ret_table_id);

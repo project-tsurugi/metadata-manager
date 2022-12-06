@@ -13,22 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TEST_INCLUDE_TEST_METADATA_UT_INDEX_METADATA_H_
-#define TEST_INCLUDE_TEST_METADATA_UT_INDEX_METADATA_H_
+#ifndef TEST_INCLUDE_TEST_METADATA_UT_ROLE_METADATA_H_
+#define TEST_INCLUDE_TEST_METADATA_UT_ROLE_METADATA_H_
 
 #include <boost/property_tree/ptree.hpp>
 
-#include "manager/metadata/indexes.h"
+#include "manager/metadata/roles.h"
+#include "test/common/dummy_object.h"
 #include "test/metadata/ut_metadata.h"
 
 namespace manager::metadata::testing {
 
-class UtIndexMetadata : public UtMetadata<manager::metadata::Index> {
+class UtRoleMetadata : public UtMetadata<DummyObject> {
  public:
-  using UtMetadata::UtMetadata;
+  static constexpr const char* const kRoleName = "tsurugi_ut_role_user_1";
 
-  UtIndexMetadata() { this->generate_test_metadata(); }
-  explicit UtIndexMetadata(ObjectId table_id) : table_id_(table_id) {
+  using UtMetadata::UtMetadata;
+  UtRoleMetadata() { this->generate_test_metadata(); }
+  explicit UtRoleMetadata(ObjectId role_id) : role_id_(role_id) {
     this->generate_test_metadata();
   }
 
@@ -37,12 +39,24 @@ class UtIndexMetadata : public UtMetadata<manager::metadata::Index> {
                                const char* file,
                                const int64_t line) const override;
 
+  /**
+   * @brief Verifies that the actual metadata equals expected one.
+   * @param actual    [in]  actual metadata.
+   * @param file      [in]  file name of the caller.
+   * @param line      [in]  line number of the caller.
+   * @return none.
+   */
+  void check_metadata_expected(const boost::property_tree::ptree& actual,
+                               const char* file, const int64_t line) const {
+    check_metadata_expected(metadata_ptree_, actual, file, line);
+  }
+
  private:
-  ObjectId table_id_ = NOT_INITIALIZED;
+  ObjectId role_id_ = NOT_INITIALIZED;
 
   void generate_test_metadata();
 };
 
 }  // namespace manager::metadata::testing
 
-#endif  // TEST_INCLUDE_TEST_METADATA_UT_INDEX_METADATA_H_
+#endif  // TEST_INCLUDE_TEST_METADATA_UT_ROLE_METADATA_H_

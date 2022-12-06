@@ -24,6 +24,8 @@
 
 namespace manager::metadata::testing {
 
+#define CALL_TRACE SCOPED_TRACE("")
+
 /**
  * @brief GlobalTestEnvironment instance that is a global variable.
  */

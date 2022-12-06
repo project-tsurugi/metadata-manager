@@ -13,36 +13,40 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TEST_INCLUDE_TEST_METADATA_UT_INDEX_METADATA_H_
-#define TEST_INCLUDE_TEST_METADATA_UT_INDEX_METADATA_H_
+#ifndef TEST_INCLUDE_TEST_METADATA_UT_DATATYPES_METADATA_H_
+#define TEST_INCLUDE_TEST_METADATA_UT_DATATYPES_METADATA_H_
+
+#include <string>
+#include <vector>
 
 #include <boost/property_tree/ptree.hpp>
 
-#include "manager/metadata/indexes.h"
+#include "manager/metadata/datatypes.h"
 #include "test/metadata/ut_metadata.h"
 
 namespace manager::metadata::testing {
 
-class UtIndexMetadata : public UtMetadata<manager::metadata::Index> {
+class UtDataTypesMetadata : public UtMetadata<manager::metadata::DataType> {
  public:
   using UtMetadata::UtMetadata;
 
-  UtIndexMetadata() { this->generate_test_metadata(); }
-  explicit UtIndexMetadata(ObjectId table_id) : table_id_(table_id) {
-    this->generate_test_metadata();
-  }
+  UtDataTypesMetadata();
 
   void check_metadata_expected(const boost::property_tree::ptree& expected,
                                const boost::property_tree::ptree& actual,
                                const char* file,
                                const int64_t line) const override;
 
- private:
-  ObjectId table_id_ = NOT_INITIALIZED;
+  void check_metadata_expected(const boost::property_tree::ptree& actual,
+                               const char* file, const int64_t line) const;
 
-  void generate_test_metadata();
+  std::vector<std::string> get_datatype_ids() const;
+  std::vector<std::string> get_datatype_names() const;
+  std::vector<std::string> get_pg_datatype_ids() const;
+  std::vector<std::string> get_pg_datatype_names() const;
+  std::vector<std::string> get_pg_datatype_qualified_names() const;
 };
 
 }  // namespace manager::metadata::testing
 
-#endif  // TEST_INCLUDE_TEST_METADATA_UT_INDEX_METADATA_H_
+#endif  // TEST_INCLUDE_TEST_METADATA_UT_DATATYPES_METADATA_H_

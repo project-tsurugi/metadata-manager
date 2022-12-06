@@ -13,11 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TEST_INCLUDE_TEST_HELPER_COLUMN_STATISTICS_HELPER_H_
-#define TEST_INCLUDE_TEST_HELPER_COLUMN_STATISTICS_HELPER_H_
+#ifndef TEST_INCLUDE_TEST_HELPER_ROLE_METADATA_HELPER_H_
+#define TEST_INCLUDE_TEST_HELPER_ROLE_METADATA_HELPER_H_
 
-#include <memory>
-#include <vector>
+#include <string_view>
 
 #include <boost/property_tree/ptree.hpp>
 
@@ -25,38 +24,31 @@
 #include "test/helper/metadata_helper.h"
 
 #if defined(STORAGE_POSTGRESQL)
-#include "test/helper/postgresql/metadata_helper_pg.h"
+#include "test/helper/postgresql/role_metadata_helper_pg.h"
 #endif
 
 namespace manager::metadata::testing {
 
-class ColumnStatisticsHelper : public MetadataHelper {
+class RoleMetadataHelper : public MetadataHelper {
  public:
-#if defined(STORAGE_POSTGRESQL)
-  ColumnStatisticsHelper()
-      : helper_(std::make_unique<MetadataHelperPg>(kTableName)) {}
-#elif defined(STORAGE_JSON)
-  ColumnStatisticsHelper() {}
-#endif
+  int64_t get_record_count() const override { return 0L; }
 
-  int64_t get_record_count() const override {
+  static ObjectId create_role([[maybe_unused]] std::string_view role_name,
+                              [[maybe_unused]] std::string_view options) {
 #if defined(STORAGE_POSTGRESQL)
-    return helper_->get_record_count();
+    return RoleMetadataHelperPg::create_role(role_name, options);
 #elif defined(STORAGE_JSON)
-    return 0L;
+    return INVALID_OBJECT_ID;
 #endif
   }
 
- private:
+  static void drop_role([[maybe_unused]] std::string_view role_name) {
 #if defined(STORAGE_POSTGRESQL)
-  static constexpr const char* const kTableName = "tsurugi_statistic";
+    RoleMetadataHelperPg::drop_role(role_name);
 #endif
-
-#if defined(STORAGE_POSTGRESQL)
-  std::unique_ptr<MetadataHelperPg> helper_;
-#endif
+  }
 };
 
 }  // namespace manager::metadata::testing
 
-#endif  // TEST_INCLUDE_TEST_HELPER_COLUMN_STATISTICS_HELPER_H_
+#endif  // TEST_INCLUDE_TEST_HELPER_ROLE_METADATA_HELPER_H_
