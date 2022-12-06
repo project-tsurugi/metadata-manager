@@ -25,8 +25,10 @@
 #include <boost/format.hpp>
 
 #include "manager/metadata/common/utility.h"
+#include "manager/metadata/dao/postgresql/common_pg.h"
 #include "manager/metadata/dao/postgresql/dbc_utils_pg.h"
 #include "manager/metadata/helper/logging_helper.h"
+#include "manager/metadata/helper/ptree_helper.h"
 #include "manager/metadata/indexes.h"
 
 namespace manager::metadata::db {
@@ -305,72 +307,126 @@ ErrorCode IndexDaoPg::insert(
   ErrorCode error = ErrorCode::UNKNOWN;
   std::vector<const char*> params;
 
+  // format_version
   std::string s_format_version = std::to_string(Indexes::format_version());
   params.emplace_back(s_format_version.c_str());
 
+  // generation
   std::string s_generation = std::to_string(Indexes::generation());
   params.emplace_back(s_generation.c_str());
 
+  // name
   auto name = object.get_optional<std::string>(Index::NAME);
   params.emplace_back((name ? name.value().c_str() : nullptr));
 
+  // namespace
   auto namespace_name = object.get_optional<std::string>(Index::NAMESPACE);
   params.emplace_back((namespace_name ? namespace_name.value().c_str() : nullptr));
 
+  // ownerId
   auto owner_id = get_string_value<ObjectId>(object, Index::OWNER_ID);
   params.emplace_back(!owner_id.empty() ? owner_id.c_str() : nullptr);
 
+  // acl
   auto acl = object.get_optional<std::string>(Index::ACL);
   params.emplace_back((acl ? acl.value().c_str() : nullptr));
 
+  // tableId
   auto table_id = get_string_value<ObjectId>(object, Index::TABLE_ID);
   params.emplace_back(!table_id.empty() ? table_id.c_str() : nullptr);
 
+  // accessMethod
   auto access_method = get_string_value<int64_t>(object, Index::ACCESS_METHOD);
   params.emplace_back(!access_method.empty() ? access_method.c_str() : nullptr);
 
+  // IsUnique
   auto is_unique = get_string_value<bool>(object, Index::IS_UNIQUE);
   params.emplace_back(!is_unique.empty() ? is_unique.c_str() : nullptr);
 
+  // IsPrimary
   auto is_primary = get_string_value<bool>(object, Index::IS_PRIMARY);
   params.emplace_back(!is_primary.empty() ? is_primary.c_str() : nullptr);
 
+  // numberOfKeyColumns
   auto number_of_key_column = get_string_value<int64_t>(object, Index::NUMBER_OF_KEY_COLUMNS);
   params.emplace_back(!number_of_key_column.empty() ? number_of_key_column.c_str() : nullptr);
 
-  auto columns = object.get_child_optional(Index::KEYS);
+  // columns
+  auto o_columns = object.get_child_optional(Index::KEYS);
   std::string columns_json;
-  if (columns) {
+  if (o_columns) {
+    ptree pt_columns;
+
+    if (o_columns.value().empty()) {
+      // Attempt to obtain by numeric.
+      auto optional_number = object.get_optional<int64_t>(Index::KEYS);
+      if (optional_number) {
+        pt_columns = ptree_helper::make_array_ptree({optional_number.value()});
+      }
+    } else {
+      pt_columns = o_columns.value();
+    }
+
     // Converts a property_tree to a JSON string.
-    error = Utility::ptree_to_json(columns.value(), columns_json);
+    error = Utility::ptree_to_json(pt_columns, columns_json);
     if (error != ErrorCode::OK) {
       return error;
     }
   }
-  params.emplace_back((!columns_json.empty() ? columns_json.c_str() : "{}"));
+  params.emplace_back((!columns_json.empty() ? columns_json.c_str()
+                                             : postgresql::EMPTY_STRING_JSON));
 
-  auto columns_id = object.get_child_optional(Index::KEYS_ID);
+  // columnsId
+  auto o_columns_id = object.get_child_optional(Index::KEYS_ID);
   std::string columns_id_json;
-  if (columns_id) {
-    // Converts a property_tree to a JSON string.
-    error = Utility::ptree_to_json(columns_id.value(), columns_id_json);
-    if (error != ErrorCode::OK) {
-      return error;
-    }
-  }
-  params.emplace_back(
-      (!columns_id_json.empty() ? columns_id_json.c_str() : "{}"));
+  if (o_columns_id) {
+    ptree pt_columns_id;
 
-  auto options = object.get_child_optional(Index::OPTIONS);
-  std::string options_json;
-  if (options) {
+    if (o_columns_id.value().empty()) {
+      // Attempt to obtain by numeric.
+      auto optional_number = object.get_optional<int64_t>(Index::KEYS_ID);
+      if (optional_number) {
+        pt_columns_id =
+            ptree_helper::make_array_ptree({optional_number.value()});
+      }
+    } else {
+      pt_columns_id = o_columns_id.value();
+    }
+
     // Converts a property_tree to a JSON string.
-    error = Utility::ptree_to_json(options.value(), options_json);
+    error = Utility::ptree_to_json(pt_columns_id, columns_id_json);
     if (error != ErrorCode::OK) {
       return error;
     }
   }
-  params.emplace_back((!options_json.empty() ? options_json.c_str() : "{}"));
+  params.emplace_back((!columns_id_json.empty()
+                           ? columns_id_json.c_str()
+                           : postgresql::EMPTY_STRING_JSON));
+
+  // options
+  auto o_options = object.get_child_optional(Index::OPTIONS);
+  std::string options_json;
+  if (o_options) {
+    ptree pt_options;
+
+    if (o_options.value().empty()) {
+      // Attempt to obtain by numeric.
+      auto optional_number = object.get_optional<int64_t>(Index::OPTIONS);
+      if (optional_number) {
+        pt_options = ptree_helper::make_array_ptree({optional_number.value()});
+      }
+    } else {
+      pt_options = o_options.value();
+    }
+
+    // Converts a property_tree to a JSON string.
+    error = Utility::ptree_to_json(pt_options, options_json);
+    if (error != ErrorCode::OK) {
+      return error;
+    }
+  }
+  params.emplace_back((!options_json.empty() ? options_json.c_str()
+                                             : postgresql::EMPTY_STRING_JSON));
 
   PGresult* res = nullptr;
   // Executes a prepared statement.

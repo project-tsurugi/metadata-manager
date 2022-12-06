@@ -75,9 +75,9 @@ ErrorCode StatisticsProvider::add_column_statistic(
   // table_id
   boost::optional<ObjectIdType> optional_table_id =
       object.get_optional<ObjectIdType>(Statistics::TABLE_ID);
-  // ordinal_position
-  boost::optional<std::int64_t> optional_ordinal_position =
-      object.get_optional<std::int64_t>(Statistics::ORDINAL_POSITION);
+  // column_number
+  boost::optional<std::int64_t> optional_column_number =
+      object.get_optional<std::int64_t>(Statistics::COLUMN_NUMBER);
   // column_name
   boost::optional<std::string> optional_column_name =
       object.get_optional<std::string>(Statistics::COLUMN_NAME);
@@ -111,9 +111,9 @@ ErrorCode StatisticsProvider::add_column_statistic(
     // Set the key items and values to be register.
     std::string key;
     std::string value;
-    if (optional_ordinal_position) {
-      key = Statistics::ORDINAL_POSITION;
-      value = std::to_string(optional_ordinal_position.get());
+    if (optional_column_number) {
+      key = Statistics::COLUMN_NUMBER;
+      value = std::to_string(optional_column_number.get());
     } else {
       key = Statistics::COLUMN_NAME;
       value = optional_column_name.get();

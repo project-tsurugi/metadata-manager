@@ -32,6 +32,7 @@
 #include "manager/metadata/dao/postgresql/common_pg.h"
 #include "manager/metadata/dao/postgresql/dbc_utils_pg.h"
 #include "manager/metadata/helper/logging_helper.h"
+#include "manager/metadata/helper/ptree_helper.h"
 
 // =============================================================================
 namespace {
@@ -55,16 +56,15 @@ std::string insert_one_column_metadata() {
   boost::format query =
       boost::format(
           "INSERT INTO %1%.%2%"
-          " (%3%, %4%, %5%, %6%, %7%, %8%, %9%, %10%, %11%, %12%, %13%) "
-          " VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)") %
+          " (%3%, %4%, %5%, %6%, %7%, %8%, %9%, %10%, %11%, %12%)"
+          " VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)") %
       SCHEMA_NAME % ColumnsDAO::kTableName %
       ColumnsDAO::ColumnName::kFormatVersion %
       ColumnsDAO::ColumnName::kGeneration % ColumnsDAO::ColumnName::kTableId %
-      ColumnsDAO::ColumnName::kName % ColumnsDAO::ColumnName::kOrdinalPosition %
+      ColumnsDAO::ColumnName::kName % ColumnsDAO::ColumnName::kColumnNumber %
       ColumnsDAO::ColumnName::kDataTypeId %
       ColumnsDAO::ColumnName::kDataLength % ColumnsDAO::ColumnName::kVarying %
-      ColumnsDAO::ColumnName::kNullable % ColumnsDAO::ColumnName::kDefaultExpr %
-      ColumnsDAO::ColumnName::kDirection;
+      ColumnsDAO::ColumnName::kIsNotNull % ColumnsDAO::ColumnName::kDefaultExpr;
 
   return query.str();
 }
@@ -80,17 +80,16 @@ std::string insert_one_column_metadata_id() {
   boost::format query =
       boost::format(
           "INSERT INTO %1%.%2%"
-          " (%3%, %4%, %5%, %6%, %7%, %8%, %9%, %10%, %11%, %12%, %13%, %14%) "
-          " VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)") %
+          " (%3%, %4%, %5%, %6%, %7%, %8%, %9%, %10%, %11%, %12%, %13%)"
+          " VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)") %
       SCHEMA_NAME % ColumnsDAO::kTableName %
       ColumnsDAO::ColumnName::kFormatVersion %
       ColumnsDAO::ColumnName::kGeneration % ColumnsDAO::ColumnName::kId %
       ColumnsDAO::ColumnName::kTableId % ColumnsDAO::ColumnName::kName %
-      ColumnsDAO::ColumnName::kOrdinalPosition %
+      ColumnsDAO::ColumnName::kColumnNumber %
       ColumnsDAO::ColumnName::kDataTypeId %
       ColumnsDAO::ColumnName::kDataLength % ColumnsDAO::ColumnName::kVarying %
-      ColumnsDAO::ColumnName::kNullable % ColumnsDAO::ColumnName::kDefaultExpr %
-      ColumnsDAO::ColumnName::kDirection;
+      ColumnsDAO::ColumnName::kIsNotNull % ColumnsDAO::ColumnName::kDefaultExpr;
 
   return query.str();
 }
@@ -106,18 +105,17 @@ std::string select_all_column_metadata(std::string_view column_name) {
   // SQL statement
   boost::format query =
       boost::format(
-          "SELECT %3%, %4%, %5%, %6%, %7%, %8%, %9%"
-          " , %10%, %11%, %12%, %13%, %14%"
-          " FROM %1%.%2% WHERE %15% = $1 ORDER BY %8%") %
+          "SELECT %3%, %4%, %5%, %6%, %7%, %8%, %9%, %10%, %11%, %12%, %13%"
+          " FROM %1%.%2% WHERE %14% = $1 ORDER BY %8%") %
       SCHEMA_NAME % ColumnsDAO::kTableName %
       ColumnsDAO::ColumnName::kFormatVersion %
       ColumnsDAO::ColumnName::kGeneration % ColumnsDAO::ColumnName::kId %
       ColumnsDAO::ColumnName::kName % ColumnsDAO::ColumnName::kTableId %
-      ColumnsDAO::ColumnName::kOrdinalPosition %
+      ColumnsDAO::ColumnName::kColumnNumber %
       ColumnsDAO::ColumnName::kDataTypeId %
       ColumnsDAO::ColumnName::kDataLength % ColumnsDAO::ColumnName::kVarying %
-      ColumnsDAO::ColumnName::kNullable % ColumnsDAO::ColumnName::kDefaultExpr %
-      ColumnsDAO::ColumnName::kDirection % column_name.data();
+      ColumnsDAO::ColumnName::kIsNotNull %
+      ColumnsDAO::ColumnName::kDefaultExpr % column_name.data();
 
   return query.str();
 }
@@ -164,7 +162,7 @@ ColumnsDAO::ColumnsDAO(DBSessionManager* session_manager)
   // If column name "tableId" is added to this list,
   // later defines a prepared statement
   // "select * from where tableId = ?".
-  column_names.emplace(Tables::Column::TABLE_ID, ColumnName::kTableId);
+  column_names.emplace(Column::TABLE_ID, ColumnName::kTableId);
 
   // Creates a list of unique name
   // for the new prepared statement for each column names.
@@ -249,8 +247,7 @@ ErrorCode ColumnsDAO::insert_column_metadata(
   StatementName statementName;
 
   // Checks for INSERT execution with object-id specified.
-  auto object_id =
-      columns_metadata.get_optional<ObjectIdType>(Tables::Column::ID);
+  auto object_id = columns_metadata.get_optional<ObjectIdType>(Column::ID);
   if (object_id) {
     LOG_INFO << "Add column metadata with specified column ID. ColumnID: "
              << object_id.value();
@@ -276,9 +273,9 @@ ErrorCode ColumnsDAO::insert_column_metadata(
   param_values.emplace_back(s_table_id.c_str());
 
   // name
-  auto name = columns_metadata.get_optional<std::string>(Tables::Column::NAME);
+  auto name = columns_metadata.get_optional<std::string>(Column::NAME);
   if (!name) {
-    std::string column_name = "Column." + std::string(Tables::Column::NAME);
+    std::string column_name = "Column." + std::string(Column::NAME);
     LOG_ERROR << Message::PARAMETER_FAILED << "\"" << column_name << "\""
               << " => undefined or empty";
     error = ErrorCode::INVALID_PARAMETER;
@@ -286,67 +283,67 @@ ErrorCode ColumnsDAO::insert_column_metadata(
   }
   param_values.emplace_back((name ? name.value().c_str() : nullptr));
 
-  // ordinal_position
-  auto ordinal_position = columns_metadata.get_optional<std::string>(
-      Tables::Column::ORDINAL_POSITION);
+  // column_number
+  auto column_number =
+      columns_metadata.get_optional<std::string>(Column::COLUMN_NUMBER);
   param_values.emplace_back(
-      (ordinal_position ? ordinal_position.value().c_str() : nullptr));
+      (column_number ? column_number.value().c_str() : nullptr));
 
   // data_type_id
   auto data_type_id =
-      columns_metadata.get_optional<std::string>(Tables::Column::DATA_TYPE_ID);
+      columns_metadata.get_optional<std::string>(Column::DATA_TYPE_ID);
   param_values.emplace_back(
       (data_type_id ? data_type_id.value().c_str() : nullptr));
 
   // data_length
-  auto o_data_length =
-      columns_metadata.get_child_optional(Tables::Column::DATA_LENGTH);
+  auto o_data_length = columns_metadata.get_child_optional(Column::DATA_LENGTH);
+  std::string data_length_json;
+  if (o_data_length) {
+    ptree pt_data_length;
 
-  std::string s_data_length;
-  if (!o_data_length) {
-    param_values.emplace_back(nullptr);
-  } else {
-    const ptree& p_data_length = o_data_length.value();
-
-    if (p_data_length.empty()) {
-      param_values.emplace_back(p_data_length.data().c_str());
-    } else {
-      // Converts a property_tree to a JSON string.
-      error = Utility::ptree_to_json(p_data_length, s_data_length);
-      if (error != ErrorCode::OK) {
-        return error;
+    if (o_data_length.value().empty()) {
+      // Attempt to obtain by numeric.
+      auto optional_number =
+          columns_metadata.get_optional<int64_t>(Column::DATA_LENGTH);
+      if (optional_number) {
+        pt_data_length =
+            ptree_helper::make_array_ptree({optional_number.value()});
       }
-      param_values.emplace_back(s_data_length.c_str());
+    } else {
+      pt_data_length = o_data_length.value();
+    }
+    // Converts a property_tree to a JSON string.
+    error = Utility::ptree_to_json(pt_data_length, data_length_json);
+    if (error != ErrorCode::OK) {
+      return error;
     }
   }
+  param_values.emplace_back((!data_length_json.empty()
+                                 ? data_length_json.c_str()
+                                 : EMPTY_STRING_JSON));
 
   // varying
-  auto varying =
-      columns_metadata.get_optional<std::string>(Tables::Column::VARYING);
+  auto varying = columns_metadata.get_optional<std::string>(Column::VARYING);
   param_values.emplace_back((varying ? varying.value().c_str() : nullptr));
 
-  // nullable
-  auto nullable =
-      columns_metadata.get_optional<std::string>(Tables::Column::NULLABLE);
-  if (!nullable) {
-    std::string column_name = "Column." + std::string(Tables::Column::NULLABLE);
+  // is_not_null
+  auto is_not_null =
+      columns_metadata.get_optional<std::string>(Column::IS_NOT_NULL);
+  if (!is_not_null) {
+    std::string column_name = "Column." + std::string(Column::IS_NOT_NULL);
     LOG_ERROR << Message::PARAMETER_FAILED << "\"" << column_name << "\""
               << " => undefined or empty";
     error = ErrorCode::INVALID_PARAMETER;
     return error;
   }
-  param_values.emplace_back((nullable ? nullable.value().c_str() : nullptr));
+  param_values.emplace_back(
+      (is_not_null ? is_not_null.value().c_str() : nullptr));
 
   // default_expr
   auto default_expr =
-      columns_metadata.get_optional<std::string>(Tables::Column::DEFAULT);
+      columns_metadata.get_optional<std::string>(Column::DEFAULT_EXPR);
   param_values.emplace_back(
       (default_expr ? default_expr.value().c_str() : nullptr));
-
-  // direction
-  auto direction =
-      columns_metadata.get_optional<std::string>(Tables::Column::DIRECTION);
-  param_values.emplace_back((direction ? direction.value().c_str() : nullptr));
 
   // Set INSERT statement.
   if (object_id) {
@@ -411,7 +408,8 @@ ErrorCode ColumnsDAO::select_column_metadata(
   if (error == ErrorCode::OK) {
     int nrows = PQntuples(res);
     if (nrows >= 1) {
-      for (int ordinal_position = 0; ordinal_position < nrows; ordinal_position++) {
+      for (int ordinal_position = 0; ordinal_position < nrows;
+           ordinal_position++) {
         ptree column;
 
         // Convert acquired data to ptree type.
@@ -424,9 +422,9 @@ ErrorCode ColumnsDAO::select_column_metadata(
       }
     } else {
       // Convert the error code.
-      if (object_key == Tables::Column::ID) {
+      if (object_key == Column::ID) {
         error = ErrorCode::ID_NOT_FOUND;
-      } else if (object_key == Tables::Column::NAME) {
+      } else if (object_key == Column::NAME) {
         error = ErrorCode::NAME_NOT_FOUND;
       } else {
         error = ErrorCode::NOT_FOUND;
@@ -474,9 +472,9 @@ ErrorCode ColumnsDAO::delete_column_metadata(
       error = error_get;
     } else if (number_of_rows_affected == 0) {
       // Convert the error code.
-      if (object_key == Tables::Column::ID) {
+      if (object_key == Column::ID) {
         error = ErrorCode::ID_NOT_FOUND;
-      } else if (object_key == Tables::Column::NAME) {
+      } else if (object_key == Column::NAME) {
         error = ErrorCode::NAME_NOT_FOUND;
       } else {
         error = ErrorCode::NOT_FOUND;
@@ -510,40 +508,40 @@ ErrorCode ColumnsDAO::convert_pgresult_to_ptree(
 
   // Set the value of the format_version column to ptree.
   columns_metadata.put(
-      Tables::Column::FORMAT_VERSION,
+      Column::FORMAT_VERSION,
       PQgetvalue(res, ordinal_position,
                  static_cast<int>(OrdinalPosition::kFormatVersion)));
 
   // Set the value of the generation column to ptree.
   columns_metadata.put(
-      Tables::Column::GENERATION,
+      Column::GENERATION,
       PQgetvalue(res, ordinal_position,
                  static_cast<int>(OrdinalPosition::kGeneration)));
 
   // Set the value of the id to ptree.
-  columns_metadata.put(Tables::Column::ID,
+  columns_metadata.put(Column::ID,
                        PQgetvalue(res, ordinal_position,
                                   static_cast<int>(OrdinalPosition::kId)));
 
   // Set the value of the name to ptree.
-  columns_metadata.put(Tables::Column::NAME,
+  columns_metadata.put(Column::NAME,
                        PQgetvalue(res, ordinal_position,
                                   static_cast<int>(OrdinalPosition::kName)));
 
   // Set the value of the table_id to ptree.
-  columns_metadata.put(Tables::Column::TABLE_ID,
+  columns_metadata.put(Column::TABLE_ID,
                        PQgetvalue(res, ordinal_position,
                                   static_cast<int>(OrdinalPosition::kTableId)));
 
   // Set the value of the ordinal_position to ptree.
   columns_metadata.put(
-      Tables::Column::ORDINAL_POSITION,
+      Column::COLUMN_NUMBER,
       PQgetvalue(res, ordinal_position,
-                 static_cast<int>(OrdinalPosition::kOrdinalPosition)));
+                 static_cast<int>(OrdinalPosition::kColumnNumber)));
 
   // Set the value of the data_type_id to ptree.
   columns_metadata.put(
-      Tables::Column::DATA_TYPE_ID,
+      Column::DATA_TYPE_ID,
       PQgetvalue(res, ordinal_position,
                  static_cast<int>(OrdinalPosition::kDataTypeId)));
 
@@ -557,35 +555,28 @@ ErrorCode ColumnsDAO::convert_pgresult_to_ptree(
     if (error != ErrorCode::OK) {
       return error;
     }
-    columns_metadata.add_child(Tables::Column::DATA_LENGTH, p_data_length);
+    columns_metadata.add_child(Column::DATA_LENGTH, p_data_length);
   }
 
   // Set the value of the varying to ptree.
   std::string varying = DbcUtils::convert_boolean_expression(PQgetvalue(
       res, ordinal_position, static_cast<int>(OrdinalPosition::kVarying)));
   if (!varying.empty()) {
-    columns_metadata.put(Tables::Column::VARYING, varying);
+    columns_metadata.put(Column::VARYING, varying);
   }
 
   // Set the value of the nullable to ptree.
   std::string nullable = DbcUtils::convert_boolean_expression(PQgetvalue(
-      res, ordinal_position, static_cast<int>(OrdinalPosition::kNullable)));
+      res, ordinal_position, static_cast<int>(OrdinalPosition::kIsNotNull)));
   if (!nullable.empty()) {
-    columns_metadata.put(Tables::Column::NULLABLE, nullable);
+    columns_metadata.put(Column::IS_NOT_NULL, nullable);
   }
 
   // Set the value of the default_expr to ptree.
   std::string default_expr = PQgetvalue(
       res, ordinal_position, static_cast<int>(OrdinalPosition::kDefaultExpr));
   if (!default_expr.empty()) {
-    columns_metadata.put(Tables::Column::DEFAULT, default_expr);
-  }
-
-  // Set the value of the direction to ptree.
-  std::string direction = PQgetvalue(
-      res, ordinal_position, static_cast<int>(OrdinalPosition::kDirection));
-  if (!direction.empty()) {
-    columns_metadata.put(Tables::Column::DIRECTION, direction);
+    columns_metadata.put(Column::DEFAULT_EXPR, default_expr);
   }
 
   error = ErrorCode::OK;

@@ -18,66 +18,94 @@
 #include <string>
 #include <string_view>
 #include <vector>
+#include <memory>
 
 #include <boost/property_tree/ptree.hpp>
+#include <boost/iterator_adaptors.hpp>
 
 #include "manager/metadata/error_code.h"
 
 namespace manager::metadata {
 
-using FormatVersion = std::int32_t;
+using FormatVersion     = std::int32_t;
 using FormatVersionType = FormatVersion;
-using Generation = std::int64_t;
-using GenerationType = Generation;
-using ObjectId = std::int64_t;
-using ObjectIdType = ObjectId;
+using Generation        = std::int64_t;
+using GenerationType    = Generation;
+using ObjectId          = std::int64_t;
+using ObjectIdType      = ObjectId;
 
 static constexpr const ObjectId INVALID_OBJECT_ID = -1;
-static constexpr const int64_t INVALID_VALUE = -1;
+static constexpr const int64_t INVALID_VALUE      = -1;
 
 /**
  * @brief This class manage common metadata of all metadata objects.
  */
 struct Object {
+  /**
+   * @brief Field name constant indicating the format version of the metadata.
+   */
   static constexpr const char* FORMAT_VERSION = "formatVersion";
-  static constexpr const char* GENERATION     = "generation";
-  static constexpr const char* ID             = "id";
-  static constexpr const char* NAME           = "name";
+  static constexpr int64_t DEFAULT_FORMAT_VERSION = 1;
+  /**
+   * @brief Field name constant indicating the generation of the metadata.
+   */
+  static constexpr const char* GENERATION = "generation";
+  static constexpr int64_t DEFAULT_GENERATION = 1;
+  /**
+   * @brief Field name constant indicating the object id of the metadata.
+   */
+  static constexpr const char* ID = "id";
+  /**
+   * @brief Field name constant indicating the column name of the metadata.
+   */
+  static constexpr const char* NAME = "name";
 
-  int64_t format_version; // format version of metadata table schema.
-  int64_t generation;
-  int64_t id;             // object ID.
-  std::string name;       // object name.
+  int64_t format_version;  //!< format version of metadata table schema.
+  int64_t generation;      //!< generation.
+  int64_t id;              //!< object ID.
+  std::string name;        //!< object name.
 
   Object()
-      : format_version(1), 
-        generation(1), 
+      : format_version(DEFAULT_FORMAT_VERSION), 
+        generation(DEFAULT_GENERATION), 
         id(INVALID_OBJECT_ID), 
         name("") {}
-    /** @brief  Convert metadata from structure object to ptree object.
-   *  @return ptree object.
+
+  /** 
+   * @brief  Transform metadata from structure object to ptree object.
+   * @return ptree object.
    */
-  virtual boost::property_tree::ptree convert_to_ptree() const;
-  virtual void convert_from_ptree(const boost::property_tree::ptree& pt);
+  virtual boost::property_tree::ptree convert_to_ptree() const = 0;
+
+  /**
+   * @brief   Transform metadata from ptree object to structure object.
+   * @param   pt [in] ptree object of metdata.
+   * @return  structure object of metadata.
+   */
+  virtual void convert_from_ptree(const boost::property_tree::ptree& pt) = 0;
+
+ protected:
+  virtual boost::property_tree::ptree base_convert_to_ptree() const;
+  virtual void base_convert_from_ptree(const boost::property_tree::ptree& pt);
 };
 
 /**
- * @brief This class manage common metadta of class metadata objects. 
- * @note  Class  metadata objects are such as table objects. 
+ * @brief This class manage common metadata of class metadata objects.
+ * @note  Class  metadata objects are such as table objects.
  * e.g.) table, index, view, materialized-view, etc...
  */
 struct ClassObject : public Object {
-  static constexpr const char* const DATABASE_NAME  = "databaseName";
-  static constexpr const char* const SCHEMA_NAME    = "schemaName";
-  static constexpr const char* const NAMESPACE      = "namespace";
-  static constexpr const char* const OWNER_ID       = "ownerId";
-  static constexpr const char* const ACL            = "acl";
+  static constexpr const char* const DATABASE_NAME = "databaseName";
+  static constexpr const char* const SCHEMA_NAME   = "schemaName";
+  static constexpr const char* const NAMESPACE     = "namespace";
+  static constexpr const char* const OWNER_ID      = "ownerId";
+  static constexpr const char* const ACL           = "acl";
 
-  std::string database_name;  // 1st namespace of full qualified object name.
-  std::string schema_name;    // 2nd namespace of full qualified object name.
-  std::string namespace_name; 
-  int64_t     owner_id;
-  std::string acl;            // access control list.
+  std::string database_name;  //!< 1st namespace of full qualified object name.
+  std::string schema_name;    //!< 2nd namespace of full qualified object name.
+  std::string namespace_name;
+  int64_t owner_id;
+  std::string acl;  //!< access control list.
 
   ClassObject()
       : Object(),
@@ -86,11 +114,13 @@ struct ClassObject : public Object {
         namespace_name(""),
         owner_id(INVALID_OBJECT_ID),
         acl("") {}
-  /** @brief  Convert metadata from structure object to ptree object.
-   *  @return ptree object.
-   */
-  boost::property_tree::ptree convert_to_ptree() const override;
-  void convert_from_ptree(const boost::property_tree::ptree& pt) override;
+
+  virtual boost::property_tree::ptree base_convert_to_ptree() const override;
+  virtual void base_convert_from_ptree(
+      const boost::property_tree::ptree& pt) override;
+  virtual boost::property_tree::ptree convert_to_ptree() const override;
+  virtual void convert_from_ptree(
+      const boost::property_tree::ptree& pt) override;
   /**
    * @brief Obtain a full qualified object name.
    * e.g. database.schema.table
@@ -124,7 +154,7 @@ class Metadata {
   static constexpr const char* const NAME = "name";
 
   Metadata(std::string_view database, std::string_view component);
-  Metadata(const Metadata&) = delete;
+  Metadata(const Metadata&)            = delete;
   Metadata& operator=(const Metadata&) = delete;
   virtual ~Metadata() {}
 
@@ -163,7 +193,8 @@ class Metadata {
    *   load latest generation if NOT provided.
    * @return ErrorCode::OK if success, otherwise an error code.
    */
-  static ErrorCode load(std::string_view database, boost::property_tree::ptree& object,
+  static ErrorCode load(std::string_view database,
+                        boost::property_tree::ptree& object,
                         const GenerationType generation = kLatestVersion);
 
   /**
@@ -238,8 +269,7 @@ class Metadata {
    *  @param  object_id   [in]  object ID of metadata object.
    *  @return true if success.
    */
-  bool exists(const ObjectIdType object_id) const
-  {
+  bool exists(const ObjectIdType object_id) const {
     boost::property_tree::ptree object;
     ErrorCode error = this->get(object_id, object);
     return (error == ErrorCode::OK) ? true : false;
@@ -250,71 +280,69 @@ class Metadata {
    *  @param  name   [in]  name of metadata.
    *  @return true if success.
    */
-  bool exists(std::string_view object_name) const
-  {
+  bool exists(std::string_view object_name) const {
     boost::property_tree::ptree object;
     ErrorCode error = this->get(object_name, object);
     return (error == ErrorCode::OK) ? true : false;
   }
 
-/**
- * @brief Add a metadata object to the metadata table.
- * @param object    [in]  metadata object to add.
- * @param object_id [out] ID of the added metadata object.
- * @return ErrorCode::OK if success, otherwise an error code.
- */
-ErrorCode add(const manager::metadata::Object& object,
-              ObjectIdType* object_id) const;
+  /**
+   * @brief Add a metadata object to the metadata table.
+   * @param object    [in]  metadata object to add.
+   * @param object_id [out] ID of the added metadata object.
+   * @return ErrorCode::OK if success, otherwise an error code.
+   */
+  ErrorCode add(const manager::metadata::Object& object,
+                ObjectIdType* object_id) const;
 
-/**
- * @brief Add a metadata object to table metadata table.
- * @param object  [in]  table metadata to add.
- * @return ErrorCode::OK if success, otherwise an error code.
- */
-ErrorCode add(const manager::metadata::Object& object) const;
+  /**
+   * @brief Add a metadata object to table metadata table.
+   * @param object  [in]  table metadata to add.
+   * @return ErrorCode::OK if success, otherwise an error code.
+   */
+  ErrorCode add(const manager::metadata::Object& object) const;
 
-/**
- * @brief Get a metadata object.
- * @param object_id [in]  object id.
- * @param object     [out] metadata object with the specified ID.
- * @retval ErrorCode::OK if success,
- * @retval ErrorCode::ID_NOT_FOUND if the table id does not exist.
- * @retval otherwise an error code.
- */
-ErrorCode get(const ObjectIdType object_id,
-              manager::metadata::Object& object) const;
+  /**
+   * @brief Get a metadata object.
+   * @param object_id [in]  object id.
+   * @param object     [out] metadata object with the specified ID.
+   * @retval ErrorCode::OK if success,
+   * @retval ErrorCode::ID_NOT_FOUND if the table id does not exist.
+   * @retval otherwise an error code.
+   */
+  ErrorCode get(const ObjectId object_id,
+                manager::metadata::Object& object) const;
 
-/**
- * @brief Get a metadata object object based on object name.
- * @param object_name [in]  object name. (Value of "name" key.)
- * @param object       [out] metadata object object with the specified name.
- * @retval ErrorCode::OK if success,
- * @retval ErrorCode::NAME_NOT_FOUND if the table name does not exist.
- * @retval otherwise an error code.
- */
-ErrorCode get(std::string_view object_name,
-              manager::metadata::Object& object) const;
+  /**
+   * @brief Get a metadata object object based on object name.
+   * @param object_name [in]  object name. (Value of "name" key.)
+   * @param object       [out] metadata object object with the specified name.
+   * @retval ErrorCode::OK if success,
+   * @retval ErrorCode::NAME_NOT_FOUND if the table name does not exist.
+   * @retval otherwise an error code.
+   */
+  ErrorCode get(std::string_view object_name,
+                manager::metadata::Object& object) const;
 
+  ErrorCode update(const manager::metadata::ObjectIdType object_id,
+                   const manager::metadata::Object& object) const;
 
-/**
- * @brief Get all metadata object objects from the metadata table.
- *   If no metadata object existst, return the container as empty.
- * @param objects  [out] Container of metadata objects.
- * @return ErrorCode::OK if success, otherwise an error code.
- */
-ErrorCode get_all(
-    std::vector<manager::metadata::Object>& objects) const;
+  ErrorCode get_all();
+  ErrorCode next(boost::property_tree::ptree& object);
+  ErrorCode next(manager::metadata::Object& object);
 
  protected:
   static constexpr const char* const kDefaultComponent = "visitor";
-  static const Generation kLatestVersion = 0;
+  static const Generation kLatestVersion               = 0;
 
  private:
-  static constexpr Generation kGeneration = 1;
+  static constexpr Generation kGeneration       = 1;
   static constexpr FormatVersion kFormatVersion = 1;
 
   std::string database_;
   std::string component_;
+  std::vector<boost::property_tree::ptree> objects_;
+  int64_t cursor_;
 };
 
 }  // namespace manager::metadata

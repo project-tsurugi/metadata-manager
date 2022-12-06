@@ -18,6 +18,8 @@
 
 #include <string>
 #include <vector>
+#include <memory>
+#include <boost/property_tree/ptree.hpp>
 
 #include "manager/metadata/metadata.h"
 
@@ -67,7 +69,15 @@ struct Constraint : public Object {
     UNKNOWN = INVALID_VALUE,  //!< @brief Unknown Constraints.
   };
 
-  Constraint() {}
+  Constraint()
+      : Object(),
+        table_id(INVALID_OBJECT_ID),
+        type(ConstraintType::UNKNOWN),
+        columns({}),
+        columns_id({}),
+        index_id(INVALID_VALUE),
+        expression("") {}
+
   ObjectId table_id;                 //!< @brief Table id of the metadata.
   ConstraintType type;               //!< @brief Constraint TYPE of the metadata.
   std::vector<int64_t> columns;      //!< @brief List of column numbers subject to constraints.
@@ -89,6 +99,7 @@ class Constraints : public Metadata {
 
   Constraints(const Constraints&)            = delete;
   Constraints& operator=(const Constraints&) = delete;
+  virtual ~Constraints() {}
 
   ErrorCode init() const override;
 
@@ -112,12 +123,6 @@ class Constraints : public Metadata {
                    [[maybe_unused]] ObjectId* object_id) const override {
     return ErrorCode::UNKNOWN;
   }
-
-  ErrorCode add(const manager::metadata::Constraint& constraint) const;
-  ErrorCode add(const manager::metadata::Constraint& constraint, ObjectId* object_id) const;
-
-  ErrorCode get(const ObjectId object_id, manager::metadata::Constraint& constraint) const;
-  ErrorCode get_all(std::vector<manager::metadata::Constraint>& container) const;
 
  private:
   manager::metadata::ErrorCode param_check_metadata_add(

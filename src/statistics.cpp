@@ -256,9 +256,9 @@ ErrorCode Statistics::get_by_column_number(
 
   // Get the column statistic through the provider.
   if (error == ErrorCode::OK) {
-    error = provider->get_column_statistic(
-        table_id, Statistics::ORDINAL_POSITION,
-        std::to_string(ordinal_position), object);
+    error = provider->get_column_statistic(table_id, Statistics::COLUMN_NUMBER,
+                                           std::to_string(ordinal_position),
+                                           object);
   }
 
   // Log of API function finish.
@@ -397,9 +397,9 @@ ErrorCode Statistics::remove(const ObjectIdType object_id) const {
     error = ErrorCode::ID_NOT_FOUND;
   }
 
-  // Remove the all column statistics through the provider.
   if (error == ErrorCode::OK) {
     ObjectIdType retval_object_id = 0;
+    // Remove the column statistic through the provider.
     error = provider->remove_column_statistic(
         Statistics::ID, std::to_string(object_id), retval_object_id);
   }
@@ -434,8 +434,8 @@ ErrorCode Statistics::remove(std::string_view object_name,
   }
 
   ObjectIdType retval_object_id = 0;
-  // Remove the table metadata through the provider.
   if (error == ErrorCode::OK) {
+    // Remove the table metadata through the provider.
     error = provider->remove_column_statistic(Statistics::NAME, object_name,
                                               retval_object_id);
   }
@@ -475,8 +475,8 @@ ErrorCode Statistics::remove_by_table_id(const ObjectIdType table_id) const {
     error = ErrorCode::ID_NOT_FOUND;
   }
 
-  // Remove the all column statistics through the provider.
   if (error == ErrorCode::OK) {
+    // Remove the all column statistics through the provider.
     error = provider->remove_column_statistics(table_id);
   }
 
@@ -510,9 +510,9 @@ ErrorCode Statistics::remove_by_column_id(const ObjectIdType column_id) const {
     error = ErrorCode::ID_NOT_FOUND;
   }
 
-  // Remove the all column statistics through the provider.
   if (error == ErrorCode::OK) {
     ObjectIdType retval_object_id = 0;
+    // Remove the column statistic through the provider.
     error = provider->remove_column_statistic(
         Statistics::COLUMN_ID, std::to_string(column_id), retval_object_id);
   }
@@ -551,12 +551,12 @@ ErrorCode Statistics::remove_by_column_number(
     error = ErrorCode::ID_NOT_FOUND;
   }
 
-  // Remove the column statistic through the provider.
   if (error == ErrorCode::OK) {
     ObjectIdType retval_object_id = 0;
+    // Remove the column statistic through the provider.
     error = provider->remove_column_statistic(
-        table_id, Statistics::ORDINAL_POSITION,
-        std::to_string(ordinal_position), retval_object_id);
+        table_id, Statistics::COLUMN_NUMBER, std::to_string(ordinal_position),
+        retval_object_id);
   }
 
   // Log of API function finish.
@@ -595,9 +595,9 @@ ErrorCode Statistics::remove_by_column_name(
     error = ErrorCode::NAME_NOT_FOUND;
   }
 
-  // Remove the column statistic through the provider.
   if (error == ErrorCode::OK) {
     ObjectIdType retval_object_id = 0;
+    // Remove the column statistic through the provider.
     error = provider->remove_column_statistic(table_id, Statistics::COLUMN_NAME,
                                               column_name, retval_object_id);
   }
@@ -636,7 +636,7 @@ ErrorCode Statistics::param_check_statistics_add(
 
   // ordinal_position
   boost::optional<std::int64_t> ordinal_position =
-      object.get_optional<std::int64_t>(Statistics::ORDINAL_POSITION);
+      object.get_optional<std::int64_t>(Statistics::COLUMN_NUMBER);
   bool specified_ordinal_position =
       (ordinal_position && (ordinal_position.get() > 0));
 
@@ -660,7 +660,7 @@ ErrorCode Statistics::param_check_statistics_add(
     } else {
       // ordinal_position and column_name is not specified.
       LOG_ERROR << Message::PARAMETER_FAILED
-                << (boost::format(kLogFormat) % Statistics::ORDINAL_POSITION %
+                << (boost::format(kLogFormat) % Statistics::COLUMN_NUMBER %
                     Statistics::COLUMN_NAME)
                        .str();
       error = ErrorCode::INVALID_PARAMETER;

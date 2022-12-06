@@ -123,10 +123,6 @@ class DataTypes : public Metadata {
     return ErrorCode::UNKNOWN;
   }
 
-  ErrorCode get(const ObjectId object_id, 
-                manager::metadata::DataType& object) const;
-  ErrorCode get(std::string_view object_name, 
-                manager::metadata::DataType& object) const;
 };  // class DataTypes
 
 }  // namespace manager::metadata

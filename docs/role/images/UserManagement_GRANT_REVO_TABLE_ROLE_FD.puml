@@ -1,0 +1,83 @@
+' =========================================================
+' GRANT/REVOKE Table or Columns
+' =========================================================
+@startuml actGrantRevokeTableOrColumns
+start
+  if (Grant or Revoke?) then (Grant)
+    partition grant_table() {
+      if(Table or Columns?) then (table)
+        :Update pgAclitem of 
+          tsurugi_catalog.tsurugi_class;
+      else (Columns)
+        :Update pgAclitem of 
+          tsurugi_catalog.tsurugi_attribute;
+      endif
+      :Send "GRANT TABLE" message to ogawayam;
+    }
+  else (Revoke)
+    partition revoke_table() {
+      if(Table or Columns?) then (table)
+        :Update pgAclitem of 
+          tsurugi_catalog.tsurugi_class;
+      else (Columns)
+        :Update pgAclitem of 
+          tsurugi_catalog.tsurugi_attribute;
+      endif
+      :Send "REVOKE TABLE" message to ogawayam;
+    }
+  endif
+stop
+@enduml
+
+
+' =========================================================
+' GRANT/REVOKE Role
+' =========================================================
+@startuml actGrantRevokeRole
+start
+  if (Grant or Revoke?) then (Grant)
+    partition grant_role() {
+      :Send Grant DDL Command to PostgreSQL;
+      :Send "GRANT ROLE" message to ogawayam;
+    }
+  else (Revoke)
+    partition revoke_role() {
+      :Send Revoke DDL Command to PostgreSQL;
+      :Send "REVOKE ROLE" message to ogawayam;
+    }
+  endif
+stop
+@enduml
+
+
+' ===============================================
+' GRANT/REVOKE ON OLTP TABLE
+' ===============================================
+@startuml grant_revoke
+actor admin
+
+package PostgreSQL {
+  component frontend
+  component manager
+  entity "t_table(ext)" as ext_table
+  database pg_catalog
+  database metadata
+
+  frontend -> ext_table : GRANT/REVOKE
+  ext_table -> pg_catalog : metadata
+  pg_catalog -> manager : JOIN metadata
+  frontend --> metadata : Update access\nprivileges of the table
+  metadata --> manager
+}
+
+package OLTP {
+  component ogawayama
+  entity "t_table" as t_table
+
+  ogawayama -> t_table : Grant/Revoke
+}
+
+admin --> frontend : GRANT/REVOKE privileges ON t_table
+manager --> ogawayama : metadata
+frontend ---> ogawayama : message(GRANT/REVOKE)
+@enduml

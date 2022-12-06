@@ -84,8 +84,8 @@ ErrorCode TablesProvider::init() {
  * @param table_id  [out] ID of the added table metadata.
  * @return ErrorCode::OK if success, otherwise an error code.
  */
-ErrorCode TablesProvider::add_table_metadata(const boost::property_tree::ptree& object,
-                                             ObjectIdType& table_id) {
+ErrorCode TablesProvider::add_table_metadata(
+    const boost::property_tree::ptree& object, ObjectIdType& table_id) {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   // Initialization
@@ -105,12 +105,13 @@ ErrorCode TablesProvider::add_table_metadata(const boost::property_tree::ptree& 
 
   // Add column metadata object to column metadata table.
   if (error == ErrorCode::OK) {
-    BOOST_FOREACH (const ptree::value_type& node, object.get_child(Tables::COLUMNS_NODE)) {
+    BOOST_FOREACH (const ptree::value_type& node,
+                   object.get_child(Table::COLUMNS_NODE)) {
       // Copy to the temporary area.
       ptree column = node.second;
 
       // Erase the columns ID.
-      column.erase(Tables::Column::ID);
+      column.erase(Column::ID);
 
       // Insert the column metadata.
       error = columns_dao_->insert_column_metadata(table_id, column);
@@ -123,7 +124,7 @@ ErrorCode TablesProvider::add_table_metadata(const boost::property_tree::ptree& 
 
   // Add constraint metadata object to constraint metadata table.
   if (error == ErrorCode::OK) {
-    auto constraints_node = object.get_child_optional(Tables::CONSTRAINTS_NODE);
+    auto constraints_node = object.get_child_optional(Table::CONSTRAINTS_NODE);
     if (constraints_node) {
       BOOST_FOREACH (const ptree::value_type& node, constraints_node.get()) {
         // Copy to the temporary area.
@@ -136,7 +137,8 @@ ErrorCode TablesProvider::add_table_metadata(const boost::property_tree::ptree& 
 
         ObjectId added_id = 0;
         // Insert the constraint metadata.
-        error = constraints_dao_->insert_constraint_metadata(constraint, added_id);
+        error =
+            constraints_dao_->insert_constraint_metadata(constraint, added_id);
         error = (error == ErrorCode::NOT_FOUND ? ErrorCode::OK : error);
 
         if (error != ErrorCode::OK) {
@@ -161,7 +163,8 @@ ErrorCode TablesProvider::add_table_metadata(const boost::property_tree::ptree& 
 }
 
 /**
- * @brief Gets one table metadata object from the table metadata repository, where key = value.
+ * @brief Gets one table metadata object from the table metadata repository,
+ * where key = value.
  * @param key     [in]  key of table metadata object.
  * @param value   [in]  value of table metadata object.
  * @param object  [out] one table metadata object to get, where key = value.
@@ -170,12 +173,13 @@ ErrorCode TablesProvider::add_table_metadata(const boost::property_tree::ptree& 
  * @retval ErrorCode::NAME_NOT_FOUND if the table name does not exist.
  * @retval otherwise an error code.
  */
-ErrorCode TablesProvider::get_table_metadata(std::string_view key, std::string_view value,
-                                             boost::property_tree::ptree& object) {
+ErrorCode TablesProvider::get_table_metadata(
+    std::string_view key, std::string_view value,
+    boost::property_tree::ptree& object) {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   // Parameter value check.
-  if ((key != Tables::ID) && (key != Tables::NAME)) {
+  if ((key != Table::ID) && (key != Table::NAME)) {
     error = ErrorCode::INVALID_PARAMETER;
     return error;
   }
@@ -194,10 +198,10 @@ ErrorCode TablesProvider::get_table_metadata(std::string_view key, std::string_v
 
   // Set the search key for column metadata and constraint metadata.
   std::string table_id;
-  if (key == Tables::ID) {
+  if (key == Table::ID) {
     table_id = value;
   } else {
-    auto o_table_id = object.get_optional<std::string>(Tables::ID);
+    auto o_table_id = object.get_optional<std::string>(Table::ID);
     if (o_table_id) {
       table_id = o_table_id.value();
     }
@@ -221,7 +225,8 @@ ErrorCode TablesProvider::get_table_metadata(std::string_view key, std::string_v
  * @param container  [out] table metadata object to get.
  * @return ErrorCode::OK if success, otherwise an error code.
  */
-ErrorCode TablesProvider::get_table_metadata(std::vector<boost::property_tree::ptree>& container) {
+ErrorCode TablesProvider::get_table_metadata(
+    std::vector<boost::property_tree::ptree>& container) {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   // Initialization
@@ -239,7 +244,7 @@ ErrorCode TablesProvider::get_table_metadata(std::vector<boost::property_tree::p
   // Get columns and constraints metadata.
   BOOST_FOREACH (auto& table_object, container) {
     std::string table_id = "";
-    auto o_table_id      = table_object.get_optional<std::string>(Tables::ID);
+    auto o_table_id      = table_object.get_optional<std::string>(Table::ID);
     if (!o_table_id) {
       error = ErrorCode::INTERNAL_ERROR;
       break;
@@ -262,7 +267,8 @@ ErrorCode TablesProvider::get_table_metadata(std::vector<boost::property_tree::p
 }
 
 /**
- * @brief Gets one table statistic from the table metadata repository, where key = value.
+ * @brief Gets one table statistic from the table metadata repository, where key
+ * = value.
  * @param key     [in]  key of table metadata object.
  * @param value   [in]  value of table metadata object.
  * @param object  [out] one table metadata object to get, where key = value.
@@ -271,8 +277,9 @@ ErrorCode TablesProvider::get_table_metadata(std::vector<boost::property_tree::p
  * @retval ErrorCode::NAME_NOT_FOUND if the table name does not exist.
  * @retval otherwise an error code.
  */
-ErrorCode TablesProvider::get_table_statistic(std::string_view key, std::string_view value,
-                                              boost::property_tree::ptree& object) {
+ErrorCode TablesProvider::get_table_statistic(
+    std::string_view key, std::string_view value,
+    boost::property_tree::ptree& object) {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   // Initialization
@@ -295,8 +302,8 @@ ErrorCode TablesProvider::get_table_statistic(std::string_view key, std::string_
  * @retval ErrorCode::ID_NOT_FOUND if the table id does not exist.
  * @retval otherwise an error code.
  */
-ErrorCode TablesProvider::update_table_metadata(const ObjectIdType table_id,
-                                                const boost::property_tree::ptree& object) {
+ErrorCode TablesProvider::update_table_metadata(
+    const ObjectIdType table_id, const boost::property_tree::ptree& object) {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   // Initialization
@@ -319,8 +326,8 @@ ErrorCode TablesProvider::update_table_metadata(const ObjectIdType table_id,
   // Remove a metadata object from the column metadata table.
   if (error == ErrorCode::OK) {
     // Delete records associated with TableID.
-    error =
-        columns_dao_->delete_column_metadata(Tables::Column::TABLE_ID, std::to_string(table_id));
+    error = columns_dao_->delete_column_metadata(Column::TABLE_ID,
+                                                 std::to_string(table_id));
     // No record is found, it is treated as a success.
     error = (error == ErrorCode::NOT_FOUND ? ErrorCode::OK : error);
   }
@@ -328,7 +335,8 @@ ErrorCode TablesProvider::update_table_metadata(const ObjectIdType table_id,
   // Add metadata object to column metadata table.
   if (error == ErrorCode::OK) {
     // Add metadata object to columns metadata table.
-    BOOST_FOREACH (const ptree::value_type& node, object.get_child(Tables::COLUMNS_NODE)) {
+    BOOST_FOREACH (const ptree::value_type& node,
+                   object.get_child(Table::COLUMNS_NODE)) {
       const ptree& column = node.second;
 
       // Add metadata object to columns metadata table.
@@ -343,15 +351,15 @@ ErrorCode TablesProvider::update_table_metadata(const ObjectIdType table_id,
   // Remove a metadata object from the constraint metadata table.
   if (error == ErrorCode::OK) {
     // Delete records associated with TableID.
-    error = constraints_dao_->delete_constraint_metadata(Constraint::TABLE_ID,
-                                                         std::to_string(table_id));
+    error = constraints_dao_->delete_constraint_metadata(
+        Constraint::TABLE_ID, std::to_string(table_id));
     // No record is found, it is treated as a success.
     error = (error == ErrorCode::NOT_FOUND ? ErrorCode::OK : error);
   }
 
   // Add metadata object to constraints metadata table.
   if (error == ErrorCode::OK) {
-    auto constraints_node = object.get_child_optional(Tables::CONSTRAINTS_NODE);
+    auto constraints_node = object.get_child_optional(Table::CONSTRAINTS_NODE);
     if (constraints_node) {
       BOOST_FOREACH (const ptree::value_type& node, constraints_node.get()) {
         // Copy to the temporary area.
@@ -362,7 +370,8 @@ ErrorCode TablesProvider::update_table_metadata(const ObjectIdType table_id,
 
         ObjectId added_id = 0;
         // Insert the constraint metadata.
-        error = constraints_dao_->insert_constraint_metadata(constraint, added_id);
+        error =
+            constraints_dao_->insert_constraint_metadata(constraint, added_id);
         if (error != ErrorCode::OK) {
           // When an error occurs, the process is aborted.
           break;
@@ -394,8 +403,8 @@ ErrorCode TablesProvider::update_table_metadata(const ObjectIdType table_id,
  * @retval ErrorCode::NAME_NOT_FOUND if the table name does not exist.
  * @retval otherwise an error code.
  */
-ErrorCode TablesProvider::set_table_statistic(const boost::property_tree::ptree& object,
-                                              ObjectIdType& table_id) {
+ErrorCode TablesProvider::set_table_statistic(
+    const boost::property_tree::ptree& object, ObjectIdType& table_id) {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   // Initialization
@@ -405,11 +414,11 @@ ErrorCode TablesProvider::set_table_statistic(const boost::property_tree::ptree&
   }
 
   // id
-  boost::optional<std::string> optional_id = object.get_optional<std::string>(Tables::ID);
+  auto optional_id = object.get_optional<std::string>(Table::ID);
   // name
-  boost::optional<std::string> optional_name = object.get_optional<std::string>(Tables::NAME);
-  // tuples
-  boost::optional<float> optional_tuples = object.get_optional<float>(Tables::TUPLES);
+  auto optional_name = object.get_optional<std::string>(Table::NAME);
+  // number_of_tuples
+  auto optional_tuples = object.get_optional<int64_t>(Table::NUMBER_OF_TUPLES);
 
   // Set the key items and values to be updated.
   std::string key;
@@ -423,7 +432,7 @@ ErrorCode TablesProvider::set_table_statistic(const boost::property_tree::ptree&
   }
 
   // Set the update value.
-  float tuples = optional_tuples.get();
+  int64_t tuples = optional_tuples.get();
 
   // Start the transaction.
   error = session_manager_->start_transaction();
@@ -450,10 +459,10 @@ ErrorCode TablesProvider::set_table_statistic(const boost::property_tree::ptree&
 
 /**
  * @brief Remove all metadata-object based on the given table name
- *   (table metadata, column metadata and constraint metadata and column statistics)
- *   from metadata-repositories
- *   (the table metadata repository, the column metadata repository and the constraint metadata
- *   repository and the column statistics repository).
+ *   (table metadata, column metadata and constraint metadata and column
+ * statistics) from metadata-repositories (the table metadata repository, the
+ * column metadata repository and the constraint metadata repository and the
+ * column statistics repository).
  * @param key       [in]  key of table metadata object.
  * @param value     [in]  value of table metadata object.
  * @param table_id  [out] ID of the removed table metadata.
@@ -462,7 +471,8 @@ ErrorCode TablesProvider::set_table_statistic(const boost::property_tree::ptree&
  * @retval ErrorCode::NAME_NOT_FOUND if the table name does not exist.
  * @retval otherwise an error code.
  */
-ErrorCode TablesProvider::remove_table_metadata(std::string_view key, std::string_view value,
+ErrorCode TablesProvider::remove_table_metadata(std::string_view key,
+                                                std::string_view value,
                                                 ObjectIdType& table_id) {
   ErrorCode error = ErrorCode::UNKNOWN;
 
@@ -483,16 +493,16 @@ ErrorCode TablesProvider::remove_table_metadata(std::string_view key, std::strin
 
   if (error == ErrorCode::OK) {
     // Remove a metadata object from the constraints metadata table.
-    error =
-        columns_dao_->delete_column_metadata(Tables::Column::TABLE_ID, std::to_string(table_id));
+    error = columns_dao_->delete_column_metadata(Column::TABLE_ID,
+                                                 std::to_string(table_id));
     // No record is found, it is treated as a success.
     error = (error == ErrorCode::NOT_FOUND ? ErrorCode::OK : error);
   }
 
   if (error == ErrorCode::OK) {
     // Remove a metadata object from the constraints metadata table.
-    error = constraints_dao_->delete_constraint_metadata(Constraint::TABLE_ID,
-                                                         std::to_string(table_id));
+    error = constraints_dao_->delete_constraint_metadata(
+        Constraint::TABLE_ID, std::to_string(table_id));
     // No record is found, it is treated as a success.
     error = (error == ErrorCode::NOT_FOUND ? ErrorCode::OK : error);
   }
@@ -512,8 +522,8 @@ ErrorCode TablesProvider::remove_table_metadata(std::string_view key, std::strin
 }
 
 /**
- * @brief Gets the presence or absence of the specified permission from the PostgreSQL system
- *   catalog.
+ * @brief Gets the presence or absence of the specified permission from the
+ * PostgreSQL system catalog.
  * @param key           [in]  key of role metadata object.
  * @param value         [in]  value of role metadata object.
  * @param permission    [in]  permissions.
@@ -524,8 +534,10 @@ ErrorCode TablesProvider::remove_table_metadata(std::string_view key, std::strin
  * @retval ErrorCode::NAME_NOT_FOUND if the role name does not exist.
  * @retval otherwise an error code.
  */
-ErrorCode TablesProvider::confirm_permission(std::string_view key, std::string_view value,
-                                             std::string_view permission, bool& check_result) {
+ErrorCode TablesProvider::confirm_permission(std::string_view key,
+                                             std::string_view value,
+                                             std::string_view permission,
+                                             bool& check_result) {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   // Initialization
@@ -534,7 +546,8 @@ ErrorCode TablesProvider::confirm_permission(std::string_view key, std::string_v
     return error;
   }
 
-  error = privileges_dao_->confirm_tables_permission(key, value, permission, check_result);
+  error = privileges_dao_->confirm_tables_permission(key, value, permission,
+                                                     check_result);
 
   return error;
 }
@@ -549,8 +562,9 @@ ErrorCode TablesProvider::confirm_permission(std::string_view key, std::string_v
  * @param table_object  [out] table metadata-object with the specified table id.
  * @return ErrorCode::OK if success, otherwise an error code.
  */
-ErrorCode TablesProvider::get_column_metadata(std::string_view table_id,
-                                              boost::property_tree::ptree& table_object) const {
+ErrorCode TablesProvider::get_column_metadata(
+    std::string_view table_id,
+    boost::property_tree::ptree& table_object) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   if (table_id.empty()) {
@@ -559,10 +573,11 @@ ErrorCode TablesProvider::get_column_metadata(std::string_view table_id,
   }
 
   ptree columns;
-  error = columns_dao_->select_column_metadata(Tables::Column::TABLE_ID, table_id, columns);
+  error = columns_dao_->select_column_metadata(Column::TABLE_ID,
+                                               table_id, columns);
   if ((error == ErrorCode::OK) || (error == ErrorCode::NOT_FOUND)) {
-    if (table_object.find(Tables::COLUMNS_NODE) == table_object.not_found()) {
-      table_object.add_child(Tables::COLUMNS_NODE, columns);
+    if (table_object.find(Table::COLUMNS_NODE) == table_object.not_found()) {
+      table_object.add_child(Table::COLUMNS_NODE, columns);
     }
     error = ErrorCode::OK;
   }
@@ -576,8 +591,9 @@ ErrorCode TablesProvider::get_column_metadata(std::string_view table_id,
  * @param table_object  [out] table metadata-object with the specified table id.
  * @return ErrorCode::OK if success, otherwise an error code.
  */
-ErrorCode TablesProvider::get_constraint_metadata(std::string_view table_id,
-                                                  boost::property_tree::ptree& table_object) const {
+ErrorCode TablesProvider::get_constraint_metadata(
+    std::string_view table_id,
+    boost::property_tree::ptree& table_object) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   if (table_id.empty()) {
@@ -586,10 +602,12 @@ ErrorCode TablesProvider::get_constraint_metadata(std::string_view table_id,
   }
 
   ptree constraints;
-  error = constraints_dao_->select_constraint_metadata(Constraint::TABLE_ID, table_id, constraints);
+  error = constraints_dao_->select_constraint_metadata(Constraint::TABLE_ID,
+                                                       table_id, constraints);
   if ((error == ErrorCode::OK) || (error == ErrorCode::NOT_FOUND)) {
-    if (table_object.find(Tables::CONSTRAINTS_NODE) == table_object.not_found()) {
-      table_object.add_child(Tables::CONSTRAINTS_NODE, constraints);
+    if (table_object.find(Table::CONSTRAINTS_NODE) ==
+        table_object.not_found()) {
+      table_object.add_child(Table::CONSTRAINTS_NODE, constraints);
     }
     error = ErrorCode::OK;
   }
