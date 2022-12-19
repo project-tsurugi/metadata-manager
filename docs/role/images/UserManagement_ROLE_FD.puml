@@ -39,3 +39,32 @@ activate pg
   return
 deactivate pg
 @enduml
+
+
+' ===============================================
+' CREATE ROLE
+' ===============================================
+@startuml role
+actor admin
+
+package PostgreSQL {
+  database pg_catalog
+  component frontend
+  component manager
+  entity role
+}
+
+package OLTP {
+  component ogawayama
+  entity "role" as role_
+}
+
+admin --> frontend : CREATE ROLE
+frontend -> role : Create
+frontend --> pg_catalog : metadata
+pg_catalog --> manager
+manager --> ogawayama : metadata
+ogawayama -> role_ : Create
+frontend --> ogawayama : message(CREATE ROLE)
+
+@enduml
