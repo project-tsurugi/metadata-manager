@@ -18,6 +18,7 @@
 
 #include <string>
 #include <string_view>
+#include <vector>
 
 #include <boost/property_tree/ptree.hpp>
 
@@ -28,23 +29,21 @@ class UTColumnMetadata {
   std::int64_t id = NOT_INITIALIZED;
   std::int64_t table_id = NOT_INITIALIZED;
   std::string name;
-  std::int64_t ordinal_position = NOT_INITIALIZED;
+  std::int64_t column_number = NOT_INITIALIZED;
   std::int64_t data_type_id = NOT_INITIALIZED;
-  std::int64_t data_length =
-      NOT_INITIALIZED;  //!< @brief single value of data length
-  boost::property_tree::ptree p_data_lengths;  //!< @brief array of data length
+  boost::property_tree::ptree p_data_length;  //!< @brief array of data length
+  std::vector<int64_t> data_length;
   int varying = NOT_INITIALIZED;
-  bool nullable;
+  bool is_not_null;
   std::string default_expr;
-  std::int64_t direction = NOT_INITIALIZED;
 
   UTColumnMetadata() = delete;
-  UTColumnMetadata(std::string name, std::int64_t ordinal_position,
-                   std::int64_t data_type_id, bool nullable)
+  UTColumnMetadata(std::string name, std::int64_t column_number,
+                   std::int64_t data_type_id, bool is_not_null)
       : name(name),
-        ordinal_position(ordinal_position),
+        column_number(column_number),
         data_type_id(data_type_id),
-        nullable(nullable) {}
+        is_not_null(is_not_null) {}
 
   void show();
 

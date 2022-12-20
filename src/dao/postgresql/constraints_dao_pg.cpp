@@ -27,8 +27,10 @@
 #include "manager/metadata/common/utility.h"
 #include "manager/metadata/constraints.h"
 #include "manager/metadata/dao/common/statement_name.h"
+#include "manager/metadata/dao/postgresql/common_pg.h"
 #include "manager/metadata/dao/postgresql/dbc_utils_pg.h"
 #include "manager/metadata/helper/logging_helper.h"
+#include "manager/metadata/helper/ptree_helper.h"
 
 // =============================================================================
 namespace {
@@ -52,7 +54,7 @@ std::string insert_constraint_metadata() {
   boost::format query =
       boost::format(
           "INSERT INTO %1%.%2% (%3%, %4%, %5%, %6%, %7%, %8%, %9%, %10%, %11%, %12%, %13%, %14%, "
-          "%15%, %16%, %17%)"
+          " %15%, %16%, %17%)"
           " VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)"
           " RETURNING %18%") %
       SCHEMA_NAME % ConstraintsDAO::kTableName % ConstraintsDAO::ColumnName::kFormatVersion %
@@ -78,7 +80,7 @@ std::string insert_constraint_metadata_id() {
   boost::format query =
       boost::format(
           "INSERT INTO %1%.%2% (%3%, %4%, %5%, %6%, %7%, %8%, %9%, %10%, %11%, %12%, %13%, %14%, "
-          "%15%, %16%, %17%, %18%)"
+          " %15%, %16%, %17%, %18%)"
           " VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)"
           " RETURNING %19%") %
       SCHEMA_NAME % ConstraintsDAO::kTableName % ConstraintsDAO::ColumnName::kFormatVersion %
@@ -313,28 +315,58 @@ ErrorCode ConstraintsDAO::insert_constraint_metadata(
   param_values.emplace_back(!s_type.empty() ? s_type.c_str() : nullptr);
 
   // columns
-  auto columns = constraint_metadata.get_child_optional(Constraint::COLUMNS);
+  auto o_columns = constraint_metadata.get_child_optional(Constraint::COLUMNS);
   std::string columns_json;
-  if (columns) {
+  if (o_columns) {
+    ptree pt_columns;
+
+    if (o_columns.value().empty()) {
+      // Attempt to obtain by numeric.
+      auto optional_number =
+          constraint_metadata.get_optional<ObjectId>(Constraint::COLUMNS);
+      if (optional_number) {
+        pt_columns = ptree_helper::make_array_ptree({optional_number.value()});
+      }
+    } else {
+      pt_columns = o_columns.value();
+    }
+
     // Converts a property_tree to a JSON string.
-    error = Utility::ptree_to_json(columns.value(), columns_json);
+    error = Utility::ptree_to_json(pt_columns, columns_json);
     if (error != ErrorCode::OK) {
       return error;
     }
   }
-  param_values.emplace_back((!columns_json.empty() ? columns_json.c_str() : "{}"));
+  param_values.emplace_back(
+      (!columns_json.empty() ? columns_json.c_str() : EMPTY_STRING_JSON));
 
   // columnsId
-  auto columns_id = constraint_metadata.get_child_optional(Constraint::COLUMNS_ID);
+  auto o_columns_id =
+      constraint_metadata.get_child_optional(Constraint::COLUMNS_ID);
   std::string columns_id_json;
-  if (columns_id) {
+  if (o_columns_id) {
+    ptree pt_columns_id;
+
+    if (o_columns_id.value().empty()) {
+      // Attempt to obtain by numeric.
+      auto optional_number =
+          constraint_metadata.get_optional<ObjectId>(Constraint::COLUMNS_ID);
+      if (optional_number) {
+        pt_columns_id =
+            ptree_helper::make_array_ptree({optional_number.value()});
+      }
+    } else {
+      pt_columns_id = o_columns_id.value();
+    }
+
     // Converts a property_tree to a JSON string.
-    error = Utility::ptree_to_json(columns_id.value(), columns_id_json);
+    error = Utility::ptree_to_json(pt_columns_id, columns_id_json);
     if (error != ErrorCode::OK) {
       return error;
     }
   }
-  param_values.emplace_back((!columns_id_json.empty() ? columns_id_json.c_str() : "{}"));
+  param_values.emplace_back(
+      (!columns_id_json.empty() ? columns_id_json.c_str() : EMPTY_STRING_JSON));
 
   // indexId
   auto index_id   = constraint_metadata.get_optional<int64_t>(Constraint::INDEX_ID);
@@ -345,18 +377,78 @@ ErrorCode ConstraintsDAO::insert_constraint_metadata(
   auto expression = constraint_metadata.get_optional<std::string>(Constraint::EXPRESSION);
   param_values.emplace_back((expression ? expression.value().c_str() : nullptr));
 
-  // pk_table (for future expansion)
-  param_values.emplace_back(nullptr);
-  // pk_columns (for future expansion)
-  param_values.emplace_back(nullptr);
-  // pk_columns_id (for future expansion)
-  param_values.emplace_back(nullptr);
-  // fk_match_type (for future expansion)
-  param_values.emplace_back(nullptr);
-  // fk_delete_action (for future expansion)
-  param_values.emplace_back(nullptr);
-  // fk_update_action (for future expansion)
-  param_values.emplace_back(nullptr);
+  // pk_table
+  auto pk_table = constraint_metadata.get_optional<std::string>(Constraint::PK_TABLE);
+  param_values.emplace_back((pk_table ? pk_table.value().c_str() : nullptr));
+
+  // pk_columns
+  auto o_pk_columns = constraint_metadata.get_child_optional(Constraint::PK_COLUMNS);
+  std::string pk_columns_json;
+  if (o_pk_columns) {
+    ptree pt_pk_columns;
+
+    if (o_pk_columns.value().empty()) {
+      // Attempt to obtain by numeric.
+      auto optional_number =
+          constraint_metadata.get_optional<ObjectId>(Constraint::PK_COLUMNS);
+      if (optional_number) {
+        pt_pk_columns = ptree_helper::make_array_ptree({optional_number.value()});
+      }
+    } else {
+      pt_pk_columns = o_pk_columns.value();
+    }
+
+    // Converts a property_tree to a JSON string.
+    error = Utility::ptree_to_json(pt_pk_columns, pk_columns_json);
+    if (error != ErrorCode::OK) {
+      return error;
+    }
+  }
+  param_values.emplace_back(
+      (!pk_columns_json.empty() ? pk_columns_json.c_str() : EMPTY_STRING_JSON));
+
+  // pk_columns_id
+  auto o_pk_columns_id =
+      constraint_metadata.get_child_optional(Constraint::PK_COLUMNS_ID);
+  std::string pk_columns_id_json;
+  if (o_pk_columns_id) {
+    ptree pt_pk_columns_id;
+
+    if (o_pk_columns_id.value().empty()) {
+      // Attempt to obtain by numeric.
+      auto optional_number =
+          constraint_metadata.get_optional<ObjectId>(Constraint::PK_COLUMNS_ID);
+      if (optional_number) {
+        pt_pk_columns_id =
+            ptree_helper::make_array_ptree({optional_number.value()});
+      }
+    } else {
+      pt_pk_columns_id = o_pk_columns_id.value();
+    }
+
+    // Converts a property_tree to a JSON string.
+    error = Utility::ptree_to_json(pt_pk_columns_id, pk_columns_id_json);
+    if (error != ErrorCode::OK) {
+      return error;
+    }
+  }
+  param_values.emplace_back(
+      (!pk_columns_id_json.empty() ? pk_columns_id_json.c_str() : EMPTY_STRING_JSON));
+
+  // fk_match_type
+  auto fk_match_type = constraint_metadata.get_optional<int64_t>(Constraint::FK_MATCH_TYPE);
+  auto s_fk_match_type = (fk_match_type ? std::to_string(fk_match_type.value()) : "");
+  param_values.emplace_back(!s_fk_match_type.empty() ? s_fk_match_type.c_str() : nullptr);
+
+  // fk_delete_action
+  auto fk_delete_action = constraint_metadata.get_optional<int64_t>(Constraint::FK_DELETE_ACTION);
+  auto s_fk_delete_action = (fk_delete_action ? std::to_string(fk_delete_action.value()) : "");
+  param_values.emplace_back(!s_fk_delete_action.empty() ? s_fk_delete_action.c_str() : nullptr);
+
+  // fk_update_action
+  auto fk_update_action = constraint_metadata.get_optional<int64_t>(Constraint::FK_UPDATE_ACTION);
+  auto s_fk_update_action = (fk_update_action ? std::to_string(fk_update_action.value()) : "");
+  param_values.emplace_back(!s_fk_update_action.empty() ? s_fk_update_action.c_str() : nullptr);
 
   // Set INSERT statement.
   StatementName statementName;
@@ -627,6 +719,49 @@ ErrorCode ConstraintsDAO::convert_pgresult_to_ptree(
   constraint_metadata.put(
       Constraint::EXPRESSION,
       PQgetvalue(res, ordinal_position, static_cast<int>(OrdinalPosition::kExpression)));
+
+  // Set the value of the pk_table column to ptree.
+  constraint_metadata.put(
+      Constraint::PK_TABLE,
+      PQgetvalue(res, ordinal_position, static_cast<int>(OrdinalPosition::kPkTable)));
+
+  // Set the value of the pk_columns column to ptree.
+  ptree pk_columns;
+  // Converts a JSON string to a property_tree.
+  error = Utility::json_to_ptree(
+      PQgetvalue(res, ordinal_position, static_cast<int>(OrdinalPosition::kPkColumns)), pk_columns);
+  if (error != ErrorCode::OK) {
+    return error;
+  }
+  // NOTICE:
+  //   If it is not set, MUST add an empty ptree.
+  //   ogawayama-server read key Constraint::PK_COLUMNS.
+  constraint_metadata.add_child(Constraint::PK_COLUMNS, pk_columns);
+
+  // Set the value of the pk_columns_id column to ptree.
+  ptree pk_columns_id;
+  // Converts a JSON string to a property_tree.
+  error = Utility::json_to_ptree(
+      PQgetvalue(res, ordinal_position, static_cast<int>(OrdinalPosition::kPkColumnsId)), pk_columns_id);
+  if (error != ErrorCode::OK) {
+    return error;
+  }
+  // NOTICE:
+  //   If it is not set, MUST add an empty ptree.
+  //   ogawayama-server read key Constraint::PK_COLUMNS_ID.
+  constraint_metadata.add_child(Constraint::PK_COLUMNS_ID, pk_columns_id);
+
+  // Set the value of the fk_match_type column to ptree.
+  constraint_metadata.put(Constraint::FK_MATCH_TYPE, PQgetvalue(res, ordinal_position,
+                                                       static_cast<int>(OrdinalPosition::kFkMatchType)));
+
+  // Set the value of the fk_delete_action column to ptree.
+  constraint_metadata.put(Constraint::FK_DELETE_ACTION, PQgetvalue(res, ordinal_position,
+                                                       static_cast<int>(OrdinalPosition::kFkDeleteAction)));
+
+  // Set the value of the fk_update_action column to ptree.
+  constraint_metadata.put(Constraint::FK_UPDATE_ACTION, PQgetvalue(res, ordinal_position,
+                                                       static_cast<int>(OrdinalPosition::kFkUpdateAction)));
 
   error = ErrorCode::OK;
   return error;

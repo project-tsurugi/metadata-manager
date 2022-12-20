@@ -14,9 +14,11 @@
  * limitations under the License.
  */
 #include "test/utility/ut_table_metadata.h"
-#include "manager/metadata/tables.h"
 
 #include <utility>
+
+#include "manager/metadata/helper/ptree_helper.h"
+#include "manager/metadata/tables.h"
 
 namespace manager::metadata::testing {
 
@@ -43,25 +45,12 @@ void UTTableMetadata::generate_ptree() {
 
   // namespace
   if (!namespace_name.empty()) {
-    tables.put(Tables::NAMESPACE, namespace_name);
-  }
-
-  // primary keys
-  if (primary_keys.size() > 0) {
-    ptree p_primary_key;
-    ptree p_primary_keys;
-
-    for (int pkey_val : primary_keys) {
-      p_primary_key.put("", pkey_val);
-      p_primary_keys.push_back(std::make_pair("", p_primary_key));
-    }
-
-    tables.add_child(Tables::PRIMARY_KEY_NODE, p_primary_keys);
+    tables.put(Table::NAMESPACE, namespace_name);
   }
 
   // tuples
   if (tuples != NOT_INITIALIZED) {
-    tables.put(Tables::TUPLES, tuples);
+    tables.put(Table::NUMBER_OF_TUPLES, tuples);
   }
 
   // columns
@@ -70,47 +59,40 @@ void UTTableMetadata::generate_ptree() {
     ptree ptree_column;
 
     // column name
-    ptree_column.put(Tables::Column::NAME, column.name);
+    ptree_column.put(Column::NAME, column.name);
 
-    // column ordinal position
-    ptree_column.put(Tables::Column::ORDINAL_POSITION, column.ordinal_position);
+    // column column_number
+    ptree_column.put(Column::COLUMN_NUMBER, column.column_number);
 
-    // column data type id
-    ptree_column.put<ObjectIdType>(Tables::Column::DATA_TYPE_ID,
+    // column data_type_id
+    ptree_column.put<ObjectIdType>(Column::DATA_TYPE_ID,
                                    column.data_type_id);
 
-    // column nullable
-    ptree_column.put<bool>(Tables::Column::NULLABLE, column.nullable);
-
-    // add column data length to ptree
-    // if UTTableMetadata data length is initialized
-    if (column.data_length >= 0) {
-      ptree_column.put(Tables::Column::DATA_LENGTH, column.data_length);
-    }
+    // column is_not_null
+    ptree_column.put<bool>(Column::IS_NOT_NULL, column.is_not_null);
 
     // add column data length array to ptree
     // if UTTableMetadata data length array is initialized
-    if (!column.p_data_lengths.empty()) {
-      ptree_column.add_child(Tables::Column::DATA_LENGTH,
-                             column.p_data_lengths);
+    if (!column.p_data_length.empty()) {
+      ptree_column.add_child(Column::DATA_LENGTH, column.p_data_length);
     }
 
     // add column varying to ptree
     // if UTTableMetadata varying is initialized
     if (column.varying >= 0) {
-      ptree_column.put<bool>(Tables::Column::VARYING,
+      ptree_column.put<bool>(Column::VARYING,
                              static_cast<bool>(column.varying));
     }
 
     // add column default expression to ptree
     // if UTTableMetadata default expression is initialized
     if (!column.default_expr.empty()) {
-      ptree_column.put(Tables::Column::DEFAULT, column.default_expr);
+      ptree_column.put(Column::DEFAULT_EXPR, column.default_expr);
     }
 
     ptree_columns.push_back(std::make_pair("", ptree_column));
   }
-  tables.add_child(Tables::COLUMNS_NODE, ptree_columns);
+  tables.add_child(Table::COLUMNS_NODE, ptree_columns);
 
   // constraints
   ptree ptree_constraints;
@@ -136,7 +118,8 @@ void UTTableMetadata::generate_ptree() {
       ptree_constraint.put(Constraint::COLUMNS_ID, constraint.columns_id);
     }
     if (!constraint.p_columns_id.empty()) {
-      ptree_constraint.add_child(Constraint::COLUMNS_ID, constraint.p_columns_id);
+      ptree_constraint.add_child(Constraint::COLUMNS_ID,
+                                 constraint.p_columns_id);
     }
 
     // constraint type
@@ -147,7 +130,7 @@ void UTTableMetadata::generate_ptree() {
 
     ptree_constraints.push_back(std::make_pair("", ptree_constraint));
   }
-  tables.add_child(Tables::CONSTRAINTS_NODE, ptree_constraints);
+  tables.add_child(Table::CONSTRAINTS_NODE, ptree_constraints);
 }
 
 /**
@@ -155,31 +138,25 @@ void UTTableMetadata::generate_ptree() {
  * from UTTableMetadata fields.
  * @return none.
  */
-void UTTableMetadata::generate_table() 
-{
-  table.format_version = 1;
-  table.generation = 1;
-  table.id = id;
-  table.namespace_name = namespace_name;
-  table.name = name;
-  table.primary_keys.emplace_back(1);
-  table.primary_keys.emplace_back(3);
-  table.tuples = tuples;
+void UTTableMetadata::generate_table() {
+  table.format_version   = 1;
+  table.generation       = 1;
+  table.id               = id;
+  table.namespace_name   = namespace_name;
+  table.name             = name;
+  table.number_of_tuples = tuples;
 
   // columns metadata
   for (const auto& column_meta : columns) {
     Column column;
-    column.id = column_meta.id;
-    column.name = column_meta.name;
-    column.ordinal_position = column_meta.ordinal_position;
-    column.data_type_id = column_meta.data_type_id;
-    column.data_length = column_meta.data_length;
-    for (const auto& length : column_meta.data_lengths) {
-      column.data_lengths.emplace_back(length);
-    }
-    column.nullable = column_meta.nullable;
-    column.varying = column_meta.varying;
-    column.default_expr = column_meta.default_expr;
+    column.id                 = column_meta.id;
+    column.name               = column_meta.name;
+    column.column_number      = column_meta.column_number;
+    column.data_type_id       = column_meta.data_type_id;
+    column.data_length        = column_meta.data_length;
+    column.is_not_null        = column_meta.is_not_null;
+    column.varying            = column_meta.varying;
+    column.default_expression = column_meta.default_expr;
 
     table.columns.emplace_back(column);
   }
@@ -187,17 +164,14 @@ void UTTableMetadata::generate_table()
   // constraints metadata
   for (const auto& constraint_meta : constraints) {
     Constraint constraint;
-    constraint.id = constraint_meta.id;
-    constraint.name = constraint_meta.name;
+    constraint.id       = constraint_meta.id;
+    constraint.name     = constraint_meta.name;
     constraint.table_id = constraint_meta.table_id;
-    constraint.type = static_cast<Constraint::ConstraintType>(constraint_meta.type);
-    for (const auto& column_num : constraint_meta.columns_list) {
-      constraint.columns.emplace_back(column_num);
-    }
-    for (const auto& column_id : constraint_meta.columns_id_list) {
-      constraint.columns.emplace_back(column_id);
-    }
-    constraint.index_id = constraint_meta.index_id;
+    constraint.type =
+        static_cast<Constraint::ConstraintType>(constraint_meta.type);
+    constraint.columns    = constraint_meta.columns_list;
+    constraint.columns_id = constraint_meta.columns_id_list;
+    constraint.index_id   = constraint_meta.index_id;
     constraint.expression = constraint_meta.expression;
 
     table.constraints.emplace_back(constraint);

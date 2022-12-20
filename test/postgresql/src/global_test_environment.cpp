@@ -49,7 +49,7 @@ void GlobalTestEnvironment::SetUp() {
                          std::numeric_limits<ObjectIdType>::quiet_NaN()};
 
   // initialize non-existing ordinal positions.
-  ordinal_position_not_exists = {
+  column_number_not_exists = {
       -1,
       0,
       INT64_MAX - 1,

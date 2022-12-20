@@ -21,7 +21,6 @@
 #include <boost/property_tree/ptree.hpp>
 
 #include "manager/metadata/dao/constraints_dao.h"
-#include "manager/metadata/dao/postgresql/common_pg.h"
 #include "manager/metadata/dao/postgresql/db_session_manager_pg.h"
 #include "manager/metadata/error_code.h"
 

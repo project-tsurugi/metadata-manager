@@ -90,7 +90,7 @@ TEST_F(ApiTestIndexMetadata, add_get_index_metadata_by_id) {
                                     "_" + std::to_string(__LINE__));
 
   // generate index metadata manager.
-  auto indexes    = get_index_metadata(GlobalTestEnvironment::TEST_DB);
+  auto indexes    = get_indexes_ptr(GlobalTestEnvironment::TEST_DB);
   ErrorCode error = indexes->init();
   ASSERT_EQ(ErrorCode::OK, error);
 
@@ -143,7 +143,7 @@ TEST_F(ApiTestIndexMetadata, add_get_index_metadata_by_name) {
   new_metadata.put(Index::NAME, index_name);
 
   // generate index metadata manager.
-  auto indexes    = get_index_metadata(GlobalTestEnvironment::TEST_DB);
+  auto indexes    = get_indexes_ptr(GlobalTestEnvironment::TEST_DB);
   ErrorCode error = indexes->init();
   ASSERT_EQ(ErrorCode::OK, error);
 
@@ -190,7 +190,7 @@ TEST_F(ApiTestIndexMetadata, add_get_all_index_metadata) {
   auto base_index_count = IndexMetadataHelper::get_record_count();
 
   // generate index metadata manager.
-  auto indexes    = get_index_metadata(GlobalTestEnvironment::TEST_DB);
+  auto indexes    = get_indexes_ptr(GlobalTestEnvironment::TEST_DB);
   ErrorCode error = indexes->init();
   ASSERT_EQ(ErrorCode::OK, error);
 
@@ -271,7 +271,7 @@ TEST_F(ApiTestIndexMetadata, add_update_index_metadata) {
                                     "_" + std::to_string(__LINE__));
 
   // generate index metadata manager.
-  auto indexes    = get_index_metadata(GlobalTestEnvironment::TEST_DB);
+  auto indexes    = get_indexes_ptr(GlobalTestEnvironment::TEST_DB);
   ErrorCode error = indexes->init();
   ASSERT_EQ(ErrorCode::OK, error);
 
@@ -373,7 +373,7 @@ TEST_F(ApiTestIndexMetadata, remove_index_metadata_by_id) {
                                     "_" + std::to_string(__LINE__));
 
   // generate index metadata manager.
-  auto indexes    = get_index_metadata(GlobalTestEnvironment::TEST_DB);
+  auto indexes    = get_indexes_ptr(GlobalTestEnvironment::TEST_DB);
   ErrorCode error = indexes->init();
   ASSERT_EQ(ErrorCode::OK, error);
 
@@ -420,7 +420,7 @@ TEST_F(ApiTestIndexMetadata, remove_index_metadata_by_name) {
   new_metadata.put(Index::NAME, index_name);
 
   // generate index metadata manager.
-  auto indexes    = get_index_metadata(GlobalTestEnvironment::TEST_DB);
+  auto indexes    = get_indexes_ptr(GlobalTestEnvironment::TEST_DB);
   ErrorCode error = indexes->init();
   ASSERT_EQ(ErrorCode::OK, error);
 
@@ -469,7 +469,7 @@ TEST_F(ApiTestIndexMetadata, add_name_duplicate) {
                                     "_" + std::to_string(__LINE__));
 
   // generate index metadata manager.
-  auto indexes    = get_index_metadata(GlobalTestEnvironment::TEST_DB);
+  auto indexes    = get_indexes_ptr(GlobalTestEnvironment::TEST_DB);
   ErrorCode error = indexes->init();
   ASSERT_EQ(ErrorCode::OK, error);
 
@@ -499,7 +499,7 @@ TEST_F(ApiTestIndexMetadata, add_name_duplicate) {
  */
 TEST_F(ApiTestIndexMetadata, all_invalid_parameter) {
   // generate index metadata manager.
-  auto indexes    = get_index_metadata(GlobalTestEnvironment::TEST_DB);
+  auto indexes    = get_indexes_ptr(GlobalTestEnvironment::TEST_DB);
   ErrorCode error = indexes->init();
   ASSERT_EQ(ErrorCode::OK, error);
 
@@ -567,7 +567,7 @@ TEST_F(ApiTestIndexMetadata, get_all_index_metadata_empty) {
   std::int64_t base_index_count = IndexMetadataHelper::get_record_count();
 
   // generate index metadata manager.
-  auto indexes    = get_index_metadata(GlobalTestEnvironment::TEST_DB);
+  auto indexes    = get_indexes_ptr(GlobalTestEnvironment::TEST_DB);
   ErrorCode error = indexes->init();
   EXPECT_EQ(ErrorCode::OK, error);
 
@@ -597,7 +597,7 @@ TEST_F(ApiTestIndexMetadata, add_get_remove_without_initialized) {
   UTUtils::print("-- add index metadata --");
   {
     // generate index metadata manager.
-    auto indexes = get_index_metadata(GlobalTestEnvironment::TEST_DB);
+    auto indexes = get_indexes_ptr(GlobalTestEnvironment::TEST_DB);
     // add index metadata.
     ErrorCode error = indexes->add(new_metadata, &inserted_id);
     EXPECT_EQ(ErrorCode::OK, error);
@@ -607,7 +607,7 @@ TEST_F(ApiTestIndexMetadata, add_get_remove_without_initialized) {
   {
     ptree metadata_inserted;
     // generate index metadata manager.
-    auto indexes = get_index_metadata(GlobalTestEnvironment::TEST_DB);
+    auto indexes = get_indexes_ptr(GlobalTestEnvironment::TEST_DB);
     // get index metadata by index id.
     ErrorCode error = indexes->get(inserted_id, metadata_inserted);
     EXPECT_EQ(ErrorCode::OK, error);
@@ -617,7 +617,7 @@ TEST_F(ApiTestIndexMetadata, add_get_remove_without_initialized) {
   {
     std::vector<boost::property_tree::ptree> container = {};
     // generate index metadata manager.
-    auto indexes = get_index_metadata(GlobalTestEnvironment::TEST_DB);
+    auto indexes = get_indexes_ptr(GlobalTestEnvironment::TEST_DB);
     // get index metadata by index id.
     ErrorCode error = indexes->get_all(container);
     EXPECT_EQ(ErrorCode::OK, error);
@@ -626,7 +626,7 @@ TEST_F(ApiTestIndexMetadata, add_get_remove_without_initialized) {
   UTUtils::print("-- remove index metadata --");
   {
     // generate index metadata manager.
-    auto indexes = get_index_metadata(GlobalTestEnvironment::TEST_DB);
+    auto indexes = get_indexes_ptr(GlobalTestEnvironment::TEST_DB);
     // remove index metadata by index id.
     ErrorCode error = indexes->remove(inserted_id);
     EXPECT_EQ(ErrorCode::OK, error);
@@ -656,7 +656,7 @@ TEST_F(ApiTestIndexMetadata, add_get_index_metadata_object_ptree) {
   new_metadata.name = new_metadata.name + "_" + std::to_string(__LINE__);
 
   // generate index metadata manager.
-  auto indexes    = get_index_metadata(GlobalTestEnvironment::TEST_DB);
+  auto indexes    = get_indexes_ptr(GlobalTestEnvironment::TEST_DB);
   ErrorCode error = indexes->init();
   ASSERT_EQ(ErrorCode::OK, error);
 
@@ -726,7 +726,7 @@ TEST_F(ApiTestIndexMetadata, add_get_index_metadata_ptree_object) {
                                     "_" + std::to_string(__LINE__));
 
   // generate index metadata manager.
-  auto indexes    = get_index_metadata(GlobalTestEnvironment::TEST_DB);
+  auto indexes    = get_indexes_ptr(GlobalTestEnvironment::TEST_DB);
   ErrorCode error = indexes->init();
   ASSERT_EQ(ErrorCode::OK, error);
 

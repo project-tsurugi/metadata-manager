@@ -16,19 +16,20 @@
 #include "manager/metadata/tables.h"
 
 #include <memory>
+
 #include <boost/foreach.hpp>
 #include <boost/format.hpp>
-#include <jwt-cpp/jwt.h>
+#include "jwt-cpp/jwt.h"
 
 #include "manager/metadata/common/config.h"
 #include "manager/metadata/common/jwt_claims.h"
 #include "manager/metadata/common/message.h"
 #include "manager/metadata/helper/logging_helper.h"
+#include "manager/metadata/helper/ptree_helper.h"
 #include "manager/metadata/helper/table_metadata_helper.h"
 #include "manager/metadata/provider/datatypes_provider.h"
 #include "manager/metadata/provider/roles_provider.h"
 #include "manager/metadata/provider/tables_provider.h"
-#include "manager/metadata/helper/ptree_helper.h"
 
 // =============================================================================
 namespace {
@@ -45,128 +46,103 @@ using helper::TableMetadataHelper;
 
 // ==========================================================================
 // Column struct methods.
-/** 
+/**
  * @brief  Transform column metadata from structure object to ptree object.
  * @return ptree object.
  */
-boost::property_tree::ptree Column::convert_to_ptree() const
-{
+boost::property_tree::ptree Column::convert_to_ptree() const {
   auto pt = Object::convert_to_ptree();
-  pt.put<ObjectId>(TABLE_ID,         this->table_id);
-  pt.put<int64_t>(ORDINAL_POSITION,  this->ordinal_position);
-  pt.put<ObjectId>(DATA_TYPE_ID,     this->data_type_id);
-  pt.put<int64_t>(DATA_LENGTH,       this->data_length);
-  pt.put<bool>(VARYING,              this->varying);
-  pt.put<bool>(NULLABLE,             this->nullable);
-  pt.put(DEFAULT_EXPR,               this->default_expr);
-//  ptree params = ptree_helper::make_array_ptree(this->data_lengths);
-//  pt.push_back(std::make_pair(DATA_LENGTHS, params));
+  pt.put(TABLE_ID,      this->table_id);
+  pt.put(COLUMN_NUMBER, this->column_number);
+  pt.put(DATA_TYPE_ID,  this->data_type_id);
+  pt.put(VARYING,       this->varying);
+  pt.put(IS_NOT_NULL,   this->is_not_null);
+  pt.put(DEFAULT_EXPR,  this->default_expression);
+  pt.push_back(std::make_pair(
+      DATA_LENGTH, ptree_helper::make_array_ptree(this->data_length)));
 
   return pt;
 }
 
 /**
  * @brief   Transform column metadata from ptree object to structure object.
- * @param   pt [in] ptree object of metdata.
+ * @param   pt [in] ptree object of metadata.
  * @return  structure object of metadata.
  */
-void Column::convert_from_ptree(const boost::property_tree::ptree& pt)
-{
+void Column::convert_from_ptree(const boost::property_tree::ptree& pt) {
   Object::convert_from_ptree(pt);
-  auto opt_id = pt.get_optional<ObjectId>(TABLE_ID);
-  this->table_id = opt_id ? opt_id.get() : INVALID_OBJECT_ID;
+  auto opt_table_id = pt.get_optional<ObjectId>(TABLE_ID);
+  this->table_id    = opt_table_id.get_value_or(INVALID_OBJECT_ID);
 
-  auto opt_int = pt.get_optional<int64_t>(ORDINAL_POSITION);
-  this->ordinal_position = opt_int ? opt_int.get() : INVALID_VALUE;
+  auto opt_column_number = pt.get_optional<int64_t>(COLUMN_NUMBER);
+  this->column_number    = opt_column_number.get_value_or(INVALID_VALUE);
 
-  opt_id = pt.get_optional<ObjectId>(DATA_TYPE_ID);
-  this->data_type_id = opt_id ? opt_id.get() : INVALID_OBJECT_ID;
+  auto opt_data_type_id = pt.get_optional<ObjectId>(DATA_TYPE_ID);
+  this->data_type_id    = opt_data_type_id.get_value_or(INVALID_OBJECT_ID);
 
-  opt_int = pt.get_optional<int64_t>(DATA_LENGTH);
-  this->data_length = opt_int ? opt_int.get() : INVALID_VALUE;
+  this->data_length = ptree_helper::make_vector_int(pt, DATA_LENGTH);
 
-//  this->data_lengths = ptree_helper::make_vector_int(pt, DATA_LENGTH);
+  auto opt_varying = pt.get_optional<bool>(VARYING);
+  this->varying    = opt_varying.get_value_or(false);
 
-  auto opt_bool = pt.get_optional<bool>(VARYING);
-  this->varying = opt_bool ? opt_bool.get() : INVALID_VALUE;
+  auto opt_is_not_null = pt.get_optional<bool>(IS_NOT_NULL);
+  this->is_not_null    = opt_is_not_null.get_value_or(false);
 
-  opt_bool = pt.get_optional<bool>(NULLABLE);
-  this->nullable = opt_bool ? opt_bool.get() : INVALID_VALUE;
-
-  auto opt_str = pt.get_optional<std::string>(DEFAULT_EXPR);
-  this->default_expr = opt_str ? opt_str.get() : "";
+  auto opt_default_expression = pt.get_optional<std::string>(DEFAULT_EXPR);
+  this->default_expression    = opt_default_expression.get_value_or("");
 }
 
 // ==========================================================================
 // Table struct methods.
-/** 
+/**
  * @brief  Transform table metadata from structure object to ptree object.
  * @return ptree object.
  */
-boost::property_tree::ptree Table::convert_to_ptree() const
-{
-  boost::property_tree::ptree pt = ClassObject::convert_to_ptree();
-  pt.put<int64_t>(Table::TUPLES, tuples);
-
- boost::property_tree::ptree child;
-
-  // primary keys
-  boost::property_tree::ptree keys;
-  for (const int64_t& ordinal_position : primary_keys) {
-    keys.put("", ordinal_position);
-    child.push_back(std::make_pair("", keys));
-  }
-  pt.add_child(Tables::PRIMARY_KEY_NODE, child);
+boost::property_tree::ptree Table::convert_to_ptree() const {
+  ptree pt = ClassObject::convert_to_ptree();
+  pt.put<int64_t>(Table::NUMBER_OF_TUPLES, this->number_of_tuples);
 
   // columns metadata
-  boost::property_tree::ptree ptree_columns;
+  ptree ptree_columns;
   for (const auto& column : columns) {
-    boost::property_tree::ptree ptree = column.convert_to_ptree();
-    ptree_columns.push_back(std::make_pair("", ptree));
+    ptree child = column.convert_to_ptree();
+    ptree_columns.push_back(std::make_pair("", child));
   }
-  pt.add_child(Tables::COLUMNS_NODE, ptree_columns);
+  pt.add_child(Table::COLUMNS_NODE, ptree_columns);
 
   // constraints metadata
-  boost::property_tree::ptree ptree_constraints;
+  ptree ptree_constraints;
   for (const auto& constraint : this->constraints) {
-    boost::property_tree::ptree ptree = constraint.convert_to_ptree();
-    ptree_constraints.push_back(std::make_pair("", ptree));
+    ptree child = constraint.convert_to_ptree();
+    ptree_constraints.push_back(std::make_pair("", child));
   }
-  pt.add_child(Tables::CONSTRAINTS_NODE, ptree_constraints);
+  pt.add_child(Table::CONSTRAINTS_NODE, ptree_constraints);
 
   return pt;
 }
 
 /**
  * @brief   Transform table metadata from ptree object to structure object.
- * @param   ptree [in] ptree object of metdata.
+ * @param   ptree [in] ptree object of metadata.
  * @return  structure object of metadata.
  */
-void Table::convert_from_ptree(const boost::property_tree::ptree& pt)
-{
+void Table::convert_from_ptree(const boost::property_tree::ptree& pt) {
   ClassObject::convert_from_ptree(pt);
 
-  auto tuples = pt.get_optional<int64_t>(Table::TUPLES);
-  this->tuples = tuples ? tuples.get() : INVALID_VALUE;
-
-  // primary keys
-  BOOST_FOREACH (const auto& node, pt.get_child(Tables::PRIMARY_KEY_NODE)) {
-    const boost::property_tree::ptree& key = node.second;
-    auto ordinal_position = key.get_optional<int64_t>("");
-    primary_keys.emplace_back(ordinal_position.get());
-  }
+  auto number_of_tuples  = pt.get_optional<int64_t>(Table::NUMBER_OF_TUPLES);
+  this->number_of_tuples = number_of_tuples.get_value_or(INVALID_VALUE);
 
   // columns metadata
-  BOOST_FOREACH (const auto& node, pt.get_child(Tables::COLUMNS_NODE)) {
-    const boost::property_tree::ptree& ptree_column = node.second;
+  BOOST_FOREACH (const auto& node, pt.get_child(Table::COLUMNS_NODE)) {
+    const ptree& ptree_column = node.second;
     Column column;
     column.convert_from_ptree(ptree_column);
     columns.emplace_back(column);
   }
 
   // constraints metadata
-  BOOST_FOREACH (const auto& node, pt.get_child(Tables::CONSTRAINTS_NODE)) {
-    const boost::property_tree::ptree& ptree_constraint = node.second;
+  BOOST_FOREACH (const auto& node, pt.get_child(Table::CONSTRAINTS_NODE)) {
+    const ptree& ptree_constraint = node.second;
 
     Constraint constraint;
     constraint.convert_from_ptree(ptree_constraint);
@@ -228,8 +204,7 @@ ErrorCode Tables::add(const boost::property_tree::ptree& object) const {
  * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode Tables::add(const boost::property_tree::ptree& object,
-                      ObjectIdType* object_id) const 
-{
+                      ObjectIdType* object_id) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   // Log of API function start.
@@ -284,7 +259,7 @@ ErrorCode Tables::get(const ObjectIdType object_id,
   if (error == ErrorCode::OK) {
     auto s_object_id = std::to_string(object_id);
 
-    error = provider->get_table_metadata(Tables::ID, s_object_id, object);
+    error = provider->get_table_metadata(Table::ID, s_object_id, object);
   }
 
   // Log of API function finish.
@@ -318,7 +293,7 @@ ErrorCode Tables::get(std::string_view object_name,
 
   // Get the table metadata through the provider.
   if (error == ErrorCode::OK) {
-    error = provider->get_table_metadata(Tables::NAME, object_name, object);
+    error = provider->get_table_metadata(Table::NAME, object_name, object);
   }
 
   // Log of API function finish.
@@ -350,9 +325,11 @@ ErrorCode Tables::get_all(
 }
 
 /**
- * @brief Gets one table statistic from the table metadata table based on the given table id.
+ * @brief Gets one table statistic from the table metadata table based on the
+ * given table id.
  * @param table_id         [in]  table id.
- * @param table_statistic  [out] one table statistic with the specified table id.
+ * @param table_statistic  [out] one table statistic with the specified table
+ * id.
  * @retval ErrorCode::OK if success,
  * @retval ErrorCode::ID_NOT_FOUND if the table id does not exist.
  * @retval otherwise an error code.
@@ -376,7 +353,7 @@ ErrorCode Tables::get_statistic(const ObjectIdType table_id,
 
   // Get the table statistic through the provider.
   if (error == ErrorCode::OK) {
-    error = provider->get_table_statistic(Tables::ID, std::to_string(table_id),
+    error = provider->get_table_statistic(Table::ID, std::to_string(table_id),
                                           object);
   }
 
@@ -387,9 +364,11 @@ ErrorCode Tables::get_statistic(const ObjectIdType table_id,
 }
 
 /**
- * @brief Gets one table statistic from the table metadata table based on the given table name.
+ * @brief Gets one table statistic from the table metadata table based on the
+ * given table name.
  * @param table_name       [in]  table name.
- * @param table_statistic  [out] one table statistic with the specified table name.
+ * @param table_statistic  [out] one table statistic with the specified table
+ * name.
  * @retval ErrorCode::OK if success,
  * @retval ErrorCode::NAME_NOT_FOUND if the table name does not exist.
  * @retval otherwise an error code.
@@ -411,7 +390,7 @@ ErrorCode Tables::get_statistic(std::string_view table_name,
 
   // Get the table statistic through the provider.
   if (error == ErrorCode::OK) {
-    error = provider->get_table_statistic(Tables::NAME, table_name, object);
+    error = provider->get_table_statistic(Table::NAME, table_name, object);
   }
 
   // Log of API function finish.
@@ -458,8 +437,11 @@ ErrorCode Tables::set_statistic(boost::property_tree::ptree& object) const {
  * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode Tables::update(const ObjectIdType object_id,
-                   const boost::property_tree::ptree& object) const {
+                         const boost::property_tree::ptree& object) const {
   ErrorCode error = ErrorCode::UNKNOWN;
+
+  // Log of API function start.
+  log::function_start("Tables::update()");
 
   // Parameter value check.
   if (object_id > 0) {
@@ -472,6 +454,9 @@ ErrorCode Tables::update(const ObjectIdType object_id,
   if (error == ErrorCode::OK) {
     error = provider->update_table_metadata(object_id, object);
   }
+
+  // Log of API function finish.
+  log::function_finish("Tables::update()", error);
 
   return error;
 }
@@ -505,8 +490,9 @@ ErrorCode Tables::remove(const ObjectIdType object_id) const {
   // Remove the table metadata through the provider.
   if (error == ErrorCode::OK) {
     ObjectIdType retval_object_id = 0;
+    // Remove the table metadata through the provider.
     error = provider->remove_table_metadata(
-        Tables::ID, std::to_string(object_id), retval_object_id);
+        Table::ID, std::to_string(object_id), retval_object_id);
   }
 
   // Log of API function finish.
@@ -516,9 +502,10 @@ ErrorCode Tables::remove(const ObjectIdType object_id) const {
 }
 
 /**
- * @brief Remove all metadata-object based on the given table name (table metadata, column metadata
- *   and column statistics) from metadata-table (the table metadata table, the column metadata table
- *   and the column statistics table).
+ * @brief Remove all metadata-object based on the given table name (table
+ * metadata, column metadata and column statistics) from metadata-table (the
+ * table metadata table, the column metadata table and the column statistics
+ * table).
  * @param object_name  [in]  table name.
  * @param object_id    [out] object id of table removed.
  * @retval ErrorCode::OK if success,
@@ -542,7 +529,7 @@ ErrorCode Tables::remove(std::string_view object_name,
 
   ObjectIdType retval_object_id = INVALID_OBJECT_ID;
   // Remove the table metadata through the provider.
-  error = provider->remove_table_metadata(Tables::NAME, object_name,
+  error = provider->remove_table_metadata(Table::NAME, object_name,
                                           retval_object_id);
 
   // Set a value if object_id is not null.
@@ -563,7 +550,8 @@ ErrorCode Tables::remove(std::string_view object_name,
  * @retval ErrorCode::OK if success.
  * @retval ErrorCode::INVALID_PARAMETER if an invalid token is specified.
  * @retval ErrorCode::NAME_NOT_FOUND if the role name does not exist.
- * @retval ErrorCode::DATABASE_ACCESS_FAILURE if there is an access error to the database.
+ * @retval ErrorCode::DATABASE_ACCESS_FAILURE if there is an access error to the
+ * database.
  * @retval otherwise an error code.
  * @see AutheticationManager
  */
@@ -641,19 +629,19 @@ ErrorCode Tables::get_acls(std::string_view token,
   if (error == ErrorCode::OK) {
     ptree table_acls;
     for (const auto& table_metadata : container) {
-      auto acl_list = table_metadata.get_child_optional(Tables::ACL);
+      auto acl_list = table_metadata.get_child_optional(Table::ACL);
       if (acl_list) {
         auto table_acl =
             TableMetadataHelper::get_table_acl(user_name, acl_list.get());
         if (!table_acl.empty()) {
-          table_acls.put(table_metadata.get<std::string>(Tables::NAME, ""),
-                        table_acl);
+          table_acls.put(table_metadata.get<std::string>(Table::NAME, ""),
+                         table_acl);
         }
       }
     }
     // Setting authorization information.
     acls.clear();
-    acls.add_child(Tables::TABLE_ACL_NODE, table_acls);
+    acls.add_child(Table::TABLE_ACL_NODE, table_acls);
   }
 
   // Log of API function finish.
@@ -694,7 +682,7 @@ ErrorCode Tables::confirm_permission_in_acls(const ObjectIdType object_id,
   if (error == ErrorCode::OK) {
     std::string s_object_id = std::to_string(object_id);
     error = provider->confirm_permission(Metadata::ID, s_object_id, permission,
-                                        check_result);
+                                         check_result);
   }
 
   // Log of API function finish.
@@ -752,13 +740,13 @@ ErrorCode Tables::confirm_permission_in_acls(std::string_view object_name,
  */
 ErrorCode Tables::param_check_metadata_add(
     const boost::property_tree::ptree& object) const {
-  ErrorCode error = ErrorCode::UNKNOWN;
+  ErrorCode error                        = ErrorCode::UNKNOWN;
   constexpr const char* const kLogFormat = R"("%s" => undefined or empty)";
 
-  auto table_name = object.get_optional<std::string>(Tables::NAME);
+  auto table_name = object.get_optional<std::string>(Table::NAME);
   if (!table_name || table_name.get().empty()) {
     LOG_ERROR << Message::PARAMETER_FAILED
-              << (boost::format(kLogFormat) % Tables::NAME).str();
+              << (boost::format(kLogFormat) % Table::NAME).str();
 
     error = ErrorCode::INVALID_PARAMETER;
     return error;
@@ -769,13 +757,13 @@ ErrorCode Tables::param_check_metadata_add(
   //
   error = ErrorCode::OK;
   BOOST_FOREACH (ptree::value_type node,
-                 object.get_child(Tables::COLUMNS_NODE)) {
+                 object.get_child(Table::COLUMNS_NODE)) {
     auto& column = node.second;
 
     // name
-    auto column_name = column.get_optional<std::string>(Tables::Column::NAME);
+    auto column_name = column.get_optional<std::string>(Column::NAME);
     if (!column_name || (column_name.get().empty())) {
-      std::string column_name = "Column." + std::string(Tables::Column::NAME);
+      std::string column_name = "Column." + std::string(Column::NAME);
       LOG_ERROR << Message::PARAMETER_FAILED
                 << (boost::format(kLogFormat) % column_name).str();
 
@@ -783,12 +771,11 @@ ErrorCode Tables::param_check_metadata_add(
       break;
     }
 
-    // ordinal position
-    boost::optional<std::int64_t> ordinal_position =
-        column.get_optional<std::int64_t>(Tables::Column::ORDINAL_POSITION);
-    if (!ordinal_position || (ordinal_position.get() <= 0)) {
-      std::string column_name =
-          "Column." + std::string(Tables::Column::ORDINAL_POSITION);
+    // column number
+    boost::optional<std::int64_t> column_number =
+        column.get_optional<std::int64_t>(metadata::Column::COLUMN_NUMBER);
+    if (!column_number || (column_number.get() <= 0)) {
+      std::string column_name = "Column." + std::string(metadata::Column::COLUMN_NUMBER);
       LOG_ERROR << Message::PARAMETER_FAILED
                 << (boost::format(kLogFormat) % column_name).str();
 
@@ -798,10 +785,9 @@ ErrorCode Tables::param_check_metadata_add(
 
     // datatype id
     boost::optional<ObjectIdType> datatype_id =
-        column.get_optional<ObjectIdType>(Tables::Column::DATA_TYPE_ID);
+        column.get_optional<ObjectIdType>(Column::DATA_TYPE_ID);
     if (!datatype_id || (datatype_id.get() < 0)) {
-      std::string column_name =
-          "Column." + std::string(Tables::Column::DATA_TYPE_ID);
+      std::string column_name = "Column." + std::string(Column::DATA_TYPE_ID);
       LOG_ERROR << Message::PARAMETER_FAILED
                 << (boost::format(kLogFormat) % column_name).str();
 
@@ -816,7 +802,7 @@ ErrorCode Tables::param_check_metadata_add(
     }
 
     // Check the data types.
-    boost::property_tree::ptree datatype_metadata;
+    ptree datatype_metadata;
     error = provider_data_types.get_datatype_metadata(
         DataTypes::ID, std::to_string(datatype_id.get()), datatype_metadata);
     if (error != ErrorCode::OK) {
@@ -831,10 +817,9 @@ ErrorCode Tables::param_check_metadata_add(
     }
 
     // nullable
-    auto nullable = column.get_optional<std::string>(Tables::Column::NULLABLE);
+    auto nullable = column.get_optional<std::string>(metadata::Column::IS_NOT_NULL);
     if (!nullable || (nullable.get().empty())) {
-      std::string column_name =
-          "Column." + std::string(Tables::Column::NULLABLE);
+      std::string column_name = "Column." + std::string(metadata::Column::IS_NOT_NULL);
       LOG_ERROR << Message::PARAMETER_FAILED
                 << (boost::format(kLogFormat) % column_name).str();
 
@@ -853,16 +838,15 @@ ErrorCode Tables::param_check_metadata_add(
  */
 ErrorCode Tables::param_check_statistic_update(
     const boost::property_tree::ptree& object) const {
-  ErrorCode error = ErrorCode::UNKNOWN;
+  ErrorCode error                        = ErrorCode::UNKNOWN;
   constexpr const char* const kLogFormat = "%s => undefined or empty";
 
   // id
-  auto optional_id = object.get_optional<std::string>(Tables::ID);
+  auto optional_id = object.get_optional<std::string>(Table::ID);
   // name
-  auto optional_name = object.get_optional<std::string>(Tables::NAME);
-  // tuples
-  boost::optional<float> optional_tuples =
-      object.get_optional<float>(Tables::TUPLES);
+  auto optional_name = object.get_optional<std::string>(Table::NAME);
+  // number_of_tuples
+  auto optional_tuples = object.get_optional<int64_t>(Table::NUMBER_OF_TUPLES);
 
   // Parameter value check.
   if ((optional_id || optional_name) && (optional_tuples)) {
@@ -871,12 +855,12 @@ ErrorCode Tables::param_check_statistic_update(
     if (optional_id || optional_name) {
       LOG_ERROR << Message::PARAMETER_FAILED
                 << (boost::format(R"("%s" or "%s" => undefined or empty)") %
-                    Tables::ID % Tables::NAME)
+                    Table::ID % Table::NAME)
                        .str();
     } else {
       LOG_ERROR << Message::PARAMETER_FAILED
                 << (boost::format(R"("%s" => undefined or empty)") %
-                    Tables::TUPLES)
+                    Table::NUMBER_OF_TUPLES)
                        .str();
     }
     error = ErrorCode::INVALID_PARAMETER;

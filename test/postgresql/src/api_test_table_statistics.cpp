@@ -85,12 +85,12 @@ TEST_P(ApiTestTableStatisticsByTableIdException,
   EXPECT_EQ(ErrorCode::OK, error);
 
   auto table_id_not_exists = GetParam();
-  float reltuples = 1000;
+  int64_t reltuples        = 1000;
 
   // set table metadata.
   ptree table_meta;
-  table_meta.put(Tables::ID, table_id_not_exists);
-  table_meta.put(Tables::TUPLES, reltuples);
+  table_meta.put(Table::ID, table_id_not_exists);
+  table_meta.put(Table::NUMBER_OF_TUPLES, reltuples);
 
   error = tables->set_statistic(table_meta);
   EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
@@ -108,12 +108,12 @@ TEST_P(ApiTestTableStatisticsByTableNameException,
   EXPECT_EQ(ErrorCode::OK, error);
 
   std::string table_name_not_exists = GetParam();
-  float reltuples = 1000;
+  int64_t reltuples                 = 1000;
 
   // set table statistic.
   ptree table_meta;
-  table_meta.put(Tables::NAME, table_name_not_exists);
-  table_meta.put(Tables::TUPLES, reltuples);
+  table_meta.put(Table::NAME, table_name_not_exists);
+  table_meta.put(Table::NUMBER_OF_TUPLES, reltuples);
 
   error = tables->set_statistic(table_meta);
   EXPECT_EQ(ErrorCode::NAME_NOT_FOUND, error);
@@ -166,7 +166,7 @@ TEST_P(ApiTestTableStatisticsByTableIdHappy,
   // prepare test data for adding table metadata.
   UTTableMetadata* testdata_table_metadata =
       global->testdata_table_metadata.get();
-  auto param = GetParam();
+  auto param             = GetParam();
   std::string table_name = testdata_table_metadata->name + std::get<0>(param);
 
   // add table metadata.
@@ -180,16 +180,16 @@ TEST_P(ApiTestTableStatisticsByTableIdHappy,
 
   // The number of rows is NULL in the table metadata table.
   // So, add the number of rows to the table metadata table.
-  float reltuples_to_add = std::get<1>(param);
+  int64_t reltuples_to_add = std::get<1>(param);
 
   ptree table_statistic;
-  table_statistic.put(Tables::ID, ret_table_id);
-  table_statistic.put(Tables::TUPLES, reltuples_to_add);
+  table_statistic.put(Table::ID, ret_table_id);
+  table_statistic.put(Table::NUMBER_OF_TUPLES, reltuples_to_add);
 
   error = tables->set_statistic(table_statistic);
 
   auto optional_tuples_add =
-      table_statistic.get_optional<float>(Tables::TUPLES);
+      table_statistic.get_optional<int64_t>(Table::NUMBER_OF_TUPLES);
   if (optional_tuples_add) {
     EXPECT_EQ(ErrorCode::OK, error);
   } else {
@@ -202,13 +202,13 @@ TEST_P(ApiTestTableStatisticsByTableIdHappy,
   EXPECT_EQ(ErrorCode::OK, error);
 
   auto add_metadata_id =
-      table_stats_added.get_optional<ObjectIdType>(Tables::ID);
+      table_stats_added.get_optional<ObjectIdType>(Table::ID);
   auto add_metadata_name =
-      table_stats_added.get_optional<std::string>(Tables::NAME);
+      table_stats_added.get_optional<std::string>(Table::NAME);
   auto add_metadata_namespace =
-      table_stats_added.get_optional<std::string>(Tables::NAMESPACE);
+      table_stats_added.get_optional<std::string>(Table::NAMESPACE);
   auto add_metadata_tuples =
-      table_stats_added.get_optional<float>(Tables::TUPLES);
+      table_stats_added.get_optional<int64_t>(Table::NUMBER_OF_TUPLES);
 
   // verifies that the returned table statistic is expected one.
   EXPECT_EQ(ret_table_id, add_metadata_id.get());
@@ -218,18 +218,18 @@ TEST_P(ApiTestTableStatisticsByTableIdHappy,
   if (!optional_tuples_add) {
     reltuples_to_add = 0;
   }
-  EXPECT_FLOAT_EQ(reltuples_to_add, add_metadata_tuples.get());
+  EXPECT_EQ(reltuples_to_add, add_metadata_tuples.get());
 
   TableMetadataHelper::print_table_statistics(table_stats_added);
 
   // update the number of rows.
-  float reltuples_to_update = std::get<2>(param);
-  table_statistic.put(Tables::TUPLES, reltuples_to_update);
+  int64_t reltuples_to_update = std::get<2>(param);
+  table_statistic.put(Table::NUMBER_OF_TUPLES, reltuples_to_update);
 
   error = tables->set_statistic(table_statistic);
 
   auto optional_tuples_upd =
-      table_statistic.get_optional<float>(Tables::TUPLES);
+      table_statistic.get_optional<int64_t>(Table::NUMBER_OF_TUPLES);
   if (optional_tuples_upd) {
     EXPECT_EQ(ErrorCode::OK, error);
   } else {
@@ -241,13 +241,13 @@ TEST_P(ApiTestTableStatisticsByTableIdHappy,
   EXPECT_EQ(ErrorCode::OK, error);
 
   auto upd_metadata_id =
-      table_stats_updated.get_optional<ObjectIdType>(Tables::ID);
+      table_stats_updated.get_optional<ObjectIdType>(Table::ID);
   auto upd_metadata_name =
-      table_stats_updated.get_optional<std::string>(Tables::NAME);
+      table_stats_updated.get_optional<std::string>(Table::NAME);
   auto upd_metadata_namespace =
-      table_stats_updated.get_optional<std::string>(Tables::NAMESPACE);
+      table_stats_updated.get_optional<std::string>(Table::NAMESPACE);
   auto upd_metadata_tuples =
-      table_stats_updated.get_optional<float>(Tables::TUPLES);
+      table_stats_updated.get_optional<int64_t>(Table::NUMBER_OF_TUPLES);
 
   // verifies that the returned table statistic is expected one.
   EXPECT_EQ(ret_table_id, upd_metadata_id.get());
@@ -255,9 +255,9 @@ TEST_P(ApiTestTableStatisticsByTableIdHappy,
   EXPECT_EQ(testdata_table_metadata->namespace_name,
             upd_metadata_namespace.get());
   if (optional_tuples_upd) {
-    EXPECT_FLOAT_EQ(reltuples_to_update, upd_metadata_tuples.get());
+    EXPECT_EQ(reltuples_to_update, upd_metadata_tuples.get());
   } else {
-    EXPECT_FLOAT_EQ(reltuples_to_add, upd_metadata_tuples.get());
+    EXPECT_EQ(reltuples_to_add, upd_metadata_tuples.get());
   }
 
   TableMetadataHelper::print_table_statistics(table_stats_updated);
@@ -276,7 +276,7 @@ TEST_P(ApiTestTableStatisticsByTableNameHappy,
   // prepare test data for adding table metadata.
   UTTableMetadata* testdata_table_metadata =
       global->testdata_table_metadata.get();
-  auto param = GetParam();
+  auto param             = GetParam();
   std::string table_name = testdata_table_metadata->name + std::get<0>(param);
 
   // add table metadata.
@@ -291,16 +291,16 @@ TEST_P(ApiTestTableStatisticsByTableNameHappy,
 
   // The number of rows is NULL in the table metadata table.
   // So, add the number of rows to the table metadata table.
-  float reltuples_to_add = std::get<1>(param);
+  int64_t reltuples_to_add = std::get<1>(param);
 
   ptree table_statistic;
-  table_statistic.put(Tables::NAME, table_name);
-  table_statistic.put(Tables::TUPLES, reltuples_to_add);
+  table_statistic.put(Table::NAME, table_name);
+  table_statistic.put(Table::NUMBER_OF_TUPLES, reltuples_to_add);
 
   error = tables->set_statistic(table_statistic);
 
   auto optional_tuples_add =
-      table_statistic.get_optional<float>(Tables::TUPLES);
+      table_statistic.get_optional<int64_t>(Table::NUMBER_OF_TUPLES);
   if (optional_tuples_add) {
     EXPECT_EQ(ErrorCode::OK, error);
   } else {
@@ -313,13 +313,13 @@ TEST_P(ApiTestTableStatisticsByTableNameHappy,
   EXPECT_EQ(ErrorCode::OK, error);
 
   auto add_metadata_id =
-      table_stats_added.get_optional<ObjectIdType>(Tables::ID);
+      table_stats_added.get_optional<ObjectIdType>(Table::ID);
   auto add_metadata_name =
-      table_stats_added.get_optional<std::string>(Tables::NAME);
+      table_stats_added.get_optional<std::string>(Table::NAME);
   auto add_metadata_namespace =
-      table_stats_added.get_optional<std::string>(Tables::NAMESPACE);
+      table_stats_added.get_optional<std::string>(Table::NAMESPACE);
   auto add_metadata_tuples =
-      table_stats_added.get_optional<float>(Tables::TUPLES);
+      table_stats_added.get_optional<int64_t>(Table::NUMBER_OF_TUPLES);
 
   // verifies that the returned table statistic is expected one.
   EXPECT_EQ(ret_table_id, add_metadata_id.get());
@@ -329,18 +329,18 @@ TEST_P(ApiTestTableStatisticsByTableNameHappy,
   if (!optional_tuples_add) {
     reltuples_to_add = 0;
   }
-  EXPECT_FLOAT_EQ(reltuples_to_add, add_metadata_tuples.get());
+  EXPECT_EQ(reltuples_to_add, add_metadata_tuples.get());
 
   TableMetadataHelper::print_table_statistics(table_stats_added);
 
   // update the number of rows.
-  float reltuples_to_update = std::get<2>(param);
-  table_statistic.put(Tables::TUPLES, reltuples_to_update);
+  int64_t reltuples_to_update = std::get<2>(param);
+  table_statistic.put(Table::NUMBER_OF_TUPLES, reltuples_to_update);
 
   error = tables->set_statistic(table_statistic);
 
   auto optional_tuples_upd =
-      table_statistic.get_optional<float>(Tables::TUPLES);
+      table_statistic.get_optional<int64_t>(Table::NUMBER_OF_TUPLES);
   if (optional_tuples_upd) {
     EXPECT_EQ(ErrorCode::OK, error);
   } else {
@@ -352,13 +352,13 @@ TEST_P(ApiTestTableStatisticsByTableNameHappy,
   error = tables->get_statistic(table_name, table_stats_updated);
 
   auto upd_metadata_id =
-      table_stats_updated.get_optional<ObjectIdType>(Tables::ID);
+      table_stats_updated.get_optional<ObjectIdType>(Table::ID);
   auto upd_metadata_name =
-      table_stats_updated.get_optional<std::string>(Tables::NAME);
+      table_stats_updated.get_optional<std::string>(Table::NAME);
   auto upd_metadata_namespace =
-      table_stats_updated.get_optional<std::string>(Tables::NAMESPACE);
+      table_stats_updated.get_optional<std::string>(Table::NAMESPACE);
   auto upd_metadata_tuples =
-      table_stats_updated.get_optional<float>(Tables::TUPLES);
+      table_stats_updated.get_optional<int64_t>(Table::NUMBER_OF_TUPLES);
 
   // verifies that the returned table statistic is expected one.
   EXPECT_EQ(ret_table_id, upd_metadata_id.get());
@@ -366,9 +366,9 @@ TEST_P(ApiTestTableStatisticsByTableNameHappy,
   EXPECT_EQ(testdata_table_metadata->namespace_name,
             upd_metadata_namespace.get());
   if (optional_tuples_upd) {
-    EXPECT_FLOAT_EQ(reltuples_to_update, upd_metadata_tuples.get());
+    EXPECT_EQ(reltuples_to_update, upd_metadata_tuples.get());
   } else {
-    EXPECT_FLOAT_EQ(reltuples_to_add, upd_metadata_tuples.get());
+    EXPECT_EQ(reltuples_to_add, upd_metadata_tuples.get());
   }
 
   TableMetadataHelper::print_table_statistics(table_stats_updated);

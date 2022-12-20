@@ -59,23 +59,23 @@ class DaoTestTableStatisticsByTableNameHappy
 };  // class DaoTestTableStatisticsByTableNameHappy
 
 INSTANTIATE_TEST_CASE_P(
-    ParamtererizedTest, DaoTestTableStatisticsByTableIdException,
+    ParameterizedTest, DaoTestTableStatisticsByTableIdException,
     ::testing::Values(-1, 0, INT64_MAX - 1, INT64_MAX,
                       std::numeric_limits<ObjectIdType>::infinity(),
                       -std::numeric_limits<ObjectIdType>::infinity(),
                       std::numeric_limits<ObjectIdType>::quiet_NaN()));
 
-INSTANTIATE_TEST_CASE_P(ParamtererizedTest,
+INSTANTIATE_TEST_CASE_P(ParameterizedTest,
                         DaoTestTableStatisticsByTableNameException,
                         ::testing::Values("table_name_not_exists", ""));
 
 INSTANTIATE_TEST_CASE_P(
-    ParamtererizedTest, DaoTestTableStatisticsByTableIdHappy,
+    ParameterizedTest, DaoTestTableStatisticsByTableIdHappy,
     ::testing::ValuesIn(
         TableStatisticsHelper::make_test_patterns_for_basic_tests("3")));
 
 INSTANTIATE_TEST_CASE_P(
-    ParamtererizedTest, DaoTestTableStatisticsByTableNameHappy,
+    ParameterizedTest, DaoTestTableStatisticsByTableNameHappy,
     ::testing::ValuesIn(
         TableStatisticsHelper::make_test_patterns_for_basic_tests("4")));
 
@@ -88,29 +88,31 @@ TEST_P(DaoTestTableStatisticsByTableIdException,
   std::shared_ptr<db::GenericDAO> t_gdao = nullptr;
   DBSessionManager db_session_manager;
 
+  // Run the API under test.
   ErrorCode error =
       db_session_manager.get_dao(db::GenericDAO::TableName::TABLES, t_gdao);
-
   EXPECT_EQ(ErrorCode::OK, error);
 
   std::shared_ptr<db::TablesDAO> tdao;
   tdao = std::static_pointer_cast<db::TablesDAO>(t_gdao);
 
+  // Run the API under test.
   error = db_session_manager.start_transaction();
-
   EXPECT_EQ(ErrorCode::OK, error);
 
-  float reltuples = 1000;
-  auto table_id_not_exists = GetParam();
+  int64_t reltuples            = 1000;
+  auto table_id_not_exists     = GetParam();
   ObjectIdType retval_table_id = -1;
+
+  // Run the API under test.
   error = tdao->update_reltuples(reltuples, Tables::ID,
                                  std::to_string(table_id_not_exists),
                                  retval_table_id);
   EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
   EXPECT_EQ(-1, retval_table_id);
 
+  // Run the API under test.
   error = db_session_manager.rollback();
-
   EXPECT_EQ(ErrorCode::OK, error);
 }
 
@@ -123,28 +125,29 @@ TEST_P(DaoTestTableStatisticsByTableNameException,
   std::shared_ptr<db::GenericDAO> t_gdao = nullptr;
   DBSessionManager db_session_manager;
 
+  // Run the API under test.
   ErrorCode error =
       db_session_manager.get_dao(db::GenericDAO::TableName::TABLES, t_gdao);
-
   EXPECT_EQ(ErrorCode::OK, error);
 
   std::shared_ptr<db::TablesDAO> tdao;
   tdao = std::static_pointer_cast<db::TablesDAO>(t_gdao);
 
+  // Run the API under test.
   error = db_session_manager.start_transaction();
-
   EXPECT_EQ(ErrorCode::OK, error);
 
-  float reltuples = 1000;
+  int64_t reltuples                 = 1000;
   std::string table_name_not_exists = GetParam();
-  ObjectIdType retval_table_id = -1;
+  ObjectIdType retval_table_id      = -1;
+  // Run the API under test.
   error = tdao->update_reltuples(reltuples, Tables::NAME, table_name_not_exists,
                                  retval_table_id);
   EXPECT_EQ(ErrorCode::NAME_NOT_FOUND, error);
   EXPECT_EQ(retval_table_id, -1);
 
+  // Run the API under test.
   error = db_session_manager.rollback();
-
   EXPECT_EQ(ErrorCode::OK, error);
 }
 
@@ -157,9 +160,9 @@ TEST_P(DaoTestTableStatisticsByTableIdException,
   std::shared_ptr<db::GenericDAO> t_gdao = nullptr;
   DBSessionManager db_session_manager;
 
+  // Run the API under test.
   ErrorCode error =
       db_session_manager.get_dao(db::GenericDAO::TableName::TABLES, t_gdao);
-
   EXPECT_EQ(ErrorCode::OK, error);
 
   std::shared_ptr<db::TablesDAO> tdao;
@@ -167,10 +170,11 @@ TEST_P(DaoTestTableStatisticsByTableIdException,
 
   auto table_id_not_exists = GetParam();
   ptree table_stats;
+  // Run the API under test.
   error = tdao->select_table_metadata(
       Tables::ID, std::to_string(table_id_not_exists), table_stats);
-
   EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
+
   TableMetadataHelper::print_table_statistics(table_stats);
 }
 
@@ -183,9 +187,9 @@ TEST_P(DaoTestTableStatisticsByTableNameException,
   std::shared_ptr<db::GenericDAO> t_gdao = nullptr;
   DBSessionManager db_session_manager;
 
+  // Run the API under test.
   ErrorCode error =
       db_session_manager.get_dao(db::GenericDAO::TableName::TABLES, t_gdao);
-
   EXPECT_EQ(ErrorCode::OK, error);
 
   std::shared_ptr<db::TablesDAO> tdao;
@@ -193,9 +197,9 @@ TEST_P(DaoTestTableStatisticsByTableNameException,
 
   std::string table_name_not_exists = GetParam();
   ptree table_stats;
+  // Run the API under test.
   error = tdao->select_table_metadata(Tables::NAME, table_name_not_exists,
                                       table_stats);
-
   EXPECT_EQ(ErrorCode::NAME_NOT_FOUND, error);
 }
 
@@ -208,7 +212,7 @@ TEST_P(DaoTestTableStatisticsByTableIdHappy,
   UTTableMetadata* testdata_table_metadata =
       global->testdata_table_metadata.get();
 
-  auto param = GetParam();
+  auto param             = GetParam();
   std::string table_name = testdata_table_metadata->name + std::get<0>(param);
 
   ObjectIdType ret_table_id;
@@ -217,6 +221,7 @@ TEST_P(DaoTestTableStatisticsByTableIdHappy,
   std::shared_ptr<db::GenericDAO> t_gdao = nullptr;
   DBSessionManager db_session_manager;
 
+  // Run the API under test.
   ErrorCode error =
       db_session_manager.get_dao(db::GenericDAO::TableName::TABLES, t_gdao);
   EXPECT_EQ(ErrorCode::OK, error);
@@ -229,29 +234,32 @@ TEST_P(DaoTestTableStatisticsByTableIdHappy,
   error = db_session_manager.start_transaction();
   EXPECT_EQ(ErrorCode::OK, error);
 
-  float reltuples_to_add = std::get<1>(param);
+  int64_t reltuples_to_add     = std::get<1>(param);
   ObjectIdType retval_table_id = -1;
+  // Run the API under test.
   error = tdao->update_reltuples(reltuples_to_add, Tables::ID,
                                  std::to_string(ret_table_id), retval_table_id);
   EXPECT_EQ(ErrorCode::OK, error);
   EXPECT_NE(-1, retval_table_id);
 
+  // Run the API under test.
   error = db_session_manager.commit();
   EXPECT_EQ(ErrorCode::OK, error);
 
   ptree table_stats_added;
+  // Run the API under test.
   error = tdao->select_table_metadata(Tables::ID, std::to_string(ret_table_id),
                                       table_stats_added);
   EXPECT_EQ(ErrorCode::OK, error);
 
-  boost::optional<ObjectIdType> add_metadata_id =
-      table_stats_added.get_optional<ObjectIdType>(Tables::ID);
-  boost::optional<std::string> add_metadata_name =
-      table_stats_added.get_optional<std::string>(Tables::NAME);
-  boost::optional<std::string> add_metadata_namespace =
-      table_stats_added.get_optional<std::string>(Tables::NAMESPACE);
-  boost::optional<float> add_metadata_tuples =
-      table_stats_added.get_optional<float>(Tables::TUPLES);
+  auto add_metadata_id =
+      table_stats_added.get_optional<ObjectIdType>(Table::ID);
+  auto add_metadata_name =
+      table_stats_added.get_optional<std::string>(Table::NAME);
+  auto add_metadata_namespace =
+      table_stats_added.get_optional<std::string>(Table::NAMESPACE);
+  auto add_metadata_tuples =
+      table_stats_added.get_optional<int64_t>(Table::NUMBER_OF_TUPLES);
 
   EXPECT_EQ(ret_table_id, add_metadata_id.get());
   EXPECT_EQ(table_name, add_metadata_name.get());
@@ -261,7 +269,7 @@ TEST_P(DaoTestTableStatisticsByTableIdHappy,
     if (std::isnan(add_metadata_tuples.get())) {
       EXPECT_TRUE(std::isnan(add_metadata_tuples.get()));
     } else {
-      EXPECT_FLOAT_EQ(reltuples_to_add, add_metadata_tuples.get());
+      EXPECT_EQ(reltuples_to_add, add_metadata_tuples.get());
     }
   }
 
@@ -271,29 +279,32 @@ TEST_P(DaoTestTableStatisticsByTableIdHappy,
   error = db_session_manager.start_transaction();
   EXPECT_EQ(ErrorCode::OK, error);
 
-  float reltuples_to_update = std::get<2>(param);
-  retval_table_id = -1;
-  error = tdao->update_reltuples(reltuples_to_update, Tables::ID,
+  int64_t tuples_to_update = std::get<2>(param);
+  retval_table_id          = -1;
+  // Run the API under test.
+  error = tdao->update_reltuples(tuples_to_update, Tables::ID,
                                  std::to_string(ret_table_id), retval_table_id);
   EXPECT_EQ(ErrorCode::OK, error);
   EXPECT_NE(-1, retval_table_id);
 
+  // Run the API under test.
   error = db_session_manager.commit();
   EXPECT_EQ(ErrorCode::OK, error);
 
   ptree table_stats_updated;
+  // Run the API under test.
   error = tdao->select_table_metadata(Tables::ID, std::to_string(ret_table_id),
                                       table_stats_updated);
   EXPECT_EQ(ErrorCode::OK, error);
 
-  boost::optional<ObjectIdType> upd_metadata_id =
-      table_stats_updated.get_optional<ObjectIdType>(Tables::ID);
-  boost::optional<std::string> upd_metadata_name =
-      table_stats_updated.get_optional<std::string>(Tables::NAME);
-  boost::optional<std::string> upd_metadata_namespace =
-      table_stats_updated.get_optional<std::string>(Tables::NAMESPACE);
-  boost::optional<float> upd_metadata_tuples =
-      table_stats_updated.get_optional<float>(Tables::TUPLES);
+  auto upd_metadata_id =
+      table_stats_updated.get_optional<ObjectIdType>(Table::ID);
+  auto upd_metadata_name =
+      table_stats_updated.get_optional<std::string>(Table::NAME);
+  auto upd_metadata_namespace =
+      table_stats_updated.get_optional<std::string>(Table::NAMESPACE);
+  auto upd_metadata_tuples =
+      table_stats_updated.get_optional<int64_t>(Table::NUMBER_OF_TUPLES);
 
   EXPECT_EQ(ret_table_id, upd_metadata_id.get());
   EXPECT_EQ(table_name, upd_metadata_name.get());
@@ -303,7 +314,7 @@ TEST_P(DaoTestTableStatisticsByTableIdHappy,
     if (std::isnan(upd_metadata_tuples.get())) {
       EXPECT_TRUE(std::isnan(upd_metadata_tuples.get()));
     } else {
-      EXPECT_FLOAT_EQ(reltuples_to_update, upd_metadata_tuples.get());
+      EXPECT_EQ(tuples_to_update, upd_metadata_tuples.get());
     }
   }
 
@@ -322,7 +333,7 @@ TEST_P(DaoTestTableStatisticsByTableNameHappy,
   UTTableMetadata* testdata_table_metadata =
       global->testdata_table_metadata.get();
 
-  auto param = GetParam();
+  auto param             = GetParam();
   std::string table_name = testdata_table_metadata->name + std::get<0>(param);
 
   ObjectIdType ret_table_id;
@@ -331,6 +342,7 @@ TEST_P(DaoTestTableStatisticsByTableNameHappy,
   std::shared_ptr<db::GenericDAO> t_gdao = nullptr;
   DBSessionManager db_session_manager;
 
+  // Run the API under test.
   ErrorCode error =
       db_session_manager.get_dao(db::GenericDAO::TableName::TABLES, t_gdao);
   EXPECT_EQ(ErrorCode::OK, error);
@@ -343,29 +355,32 @@ TEST_P(DaoTestTableStatisticsByTableNameHappy,
   error = db_session_manager.start_transaction();
   EXPECT_EQ(ErrorCode::OK, error);
 
-  float reltuples_to_add = std::get<1>(param);
+  int64_t reltuples_to_add         = std::get<1>(param);
   ObjectIdType ret_table_id_ts_add = -1;
+  // Run the API under test.
   error = tdao->update_reltuples(reltuples_to_add, Tables::NAME, table_name,
                                  ret_table_id_ts_add);
   EXPECT_EQ(ErrorCode::OK, error);
   EXPECT_EQ(ret_table_id_ts_add, ret_table_id);
 
+  // Run the API under test.
   error = db_session_manager.commit();
   EXPECT_EQ(ErrorCode::OK, error);
 
   ptree table_stats_added;
+  // Run the API under test.
   error =
       tdao->select_table_metadata(Tables::NAME, table_name, table_stats_added);
   EXPECT_EQ(ErrorCode::OK, error);
 
-  boost::optional<ObjectIdType> add_metadata_id =
-      table_stats_added.get_optional<ObjectIdType>(Tables::ID);
-  boost::optional<std::string> add_metadata_name =
-      table_stats_added.get_optional<std::string>(Tables::NAME);
-  boost::optional<std::string> add_metadata_namespace =
-      table_stats_added.get_optional<std::string>(Tables::NAMESPACE);
-  boost::optional<float> add_metadata_tuples =
-      table_stats_added.get_optional<float>(Tables::TUPLES);
+  auto add_metadata_id =
+      table_stats_added.get_optional<ObjectIdType>(Table::ID);
+  auto add_metadata_name =
+      table_stats_added.get_optional<std::string>(Table::NAME);
+  auto add_metadata_namespace =
+      table_stats_added.get_optional<std::string>(Table::NAMESPACE);
+  auto add_metadata_tuples =
+      table_stats_added.get_optional<int64_t>(Table::NUMBER_OF_TUPLES);
 
   EXPECT_EQ(ret_table_id, add_metadata_id.get());
   EXPECT_EQ(table_name, add_metadata_name.get());
@@ -375,7 +390,7 @@ TEST_P(DaoTestTableStatisticsByTableNameHappy,
     if (std::isnan(add_metadata_tuples.get())) {
       EXPECT_TRUE(std::isnan(add_metadata_tuples.get()));
     } else {
-      EXPECT_FLOAT_EQ(reltuples_to_add, add_metadata_tuples.get());
+      EXPECT_EQ(reltuples_to_add, add_metadata_tuples.get());
     }
   }
 
@@ -385,29 +400,32 @@ TEST_P(DaoTestTableStatisticsByTableNameHappy,
   error = db_session_manager.start_transaction();
   EXPECT_EQ(ErrorCode::OK, error);
 
-  float reltuples_to_update = std::get<2>(param);
+  int64_t tuples_to_update            = std::get<2>(param);
   ObjectIdType ret_table_id_ts_update = -1;
-  error = tdao->update_reltuples(reltuples_to_update, Tables::NAME, table_name,
+  // Run the API under test.
+  error = tdao->update_reltuples(tuples_to_update, Table::NAME, table_name,
                                  ret_table_id_ts_update);
   EXPECT_EQ(ErrorCode::OK, error);
   EXPECT_EQ(ret_table_id_ts_update, ret_table_id);
 
+  // Run the API under test.
   error = db_session_manager.commit();
   EXPECT_EQ(ErrorCode::OK, error);
 
   ptree table_stats_updated;
+  // Run the API under test.
   error = tdao->select_table_metadata(Tables::NAME, table_name,
                                       table_stats_updated);
   EXPECT_EQ(ErrorCode::OK, error);
 
-  boost::optional<ObjectIdType> upd_metadata_id =
-      table_stats_updated.get_optional<ObjectIdType>(Tables::ID);
-  boost::optional<std::string> upd_metadata_name =
-      table_stats_updated.get_optional<std::string>(Tables::NAME);
-  boost::optional<std::string> upd_metadata_namespace =
-      table_stats_updated.get_optional<std::string>(Tables::NAMESPACE);
-  boost::optional<float> upd_metadata_tuples =
-      table_stats_updated.get_optional<float>(Tables::TUPLES);
+  auto upd_metadata_id =
+      table_stats_updated.get_optional<ObjectIdType>(Table::ID);
+  auto upd_metadata_name =
+      table_stats_updated.get_optional<std::string>(Table::NAME);
+  auto upd_metadata_namespace =
+      table_stats_updated.get_optional<std::string>(Table::NAMESPACE);
+  auto upd_metadata_tuples =
+      table_stats_updated.get_optional<int64_t>(Table::NUMBER_OF_TUPLES);
 
   EXPECT_EQ(ret_table_id, upd_metadata_id.get());
   EXPECT_EQ(table_name, upd_metadata_name.get());
@@ -417,7 +435,7 @@ TEST_P(DaoTestTableStatisticsByTableNameHappy,
     if (std::isnan(upd_metadata_tuples.get())) {
       EXPECT_TRUE(std::isnan(upd_metadata_tuples.get()));
     } else {
-      EXPECT_FLOAT_EQ(reltuples_to_update, upd_metadata_tuples.get());
+      EXPECT_EQ(tuples_to_update, upd_metadata_tuples.get());
     }
   }
 

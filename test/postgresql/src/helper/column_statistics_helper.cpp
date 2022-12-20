@@ -65,8 +65,8 @@ std::vector<ColumnStatisticsHelper::UpdateTestParameter>
 ColumnStatisticsHelper::make_test_patterns_for_update_tests(
     std::string_view test_number) {
   std::vector<UpdateTestParameter> v;
-  std::vector<int> number_of_columns = {1, 2, 2, 3};
-  std::vector<ObjectIdType> ordinal_positions_to_remove = {1, 1, 2, 3};
+  std::vector<int64_t> number_of_columns        = {1, 2, 2, 3};
+  std::vector<int64_t> column_numbers_to_remove = {1, 1, 2, 3};
 
   int test_case_no = 0;
   for (int noc : number_of_columns) {
@@ -81,8 +81,7 @@ ColumnStatisticsHelper::make_test_patterns_for_update_tests(
     }
     v.emplace_back("_ColumnStatistic_" + std::string(test_number) + "_" +
                        std::to_string(test_case_no),
-                   cs, empty_columns,
-                   ordinal_positions_to_remove[test_case_no]);
+                   cs, empty_columns, column_numbers_to_remove[test_case_no]);
     test_case_no++;
   }
 
@@ -109,31 +108,31 @@ void ColumnStatisticsHelper::add_column_statistics(
 
   boost::property_tree::ptree statistic;
 
-  for (std::int64_t ordinal_position = 1;
-       static_cast<std::size_t>(ordinal_position) <= column_statistics.size();
-       ordinal_position++) {
+  for (std::int64_t column_number = 1;
+       static_cast<std::size_t>(column_number) <= column_statistics.size();
+       column_number++) {
     // clear
     statistic.clear();
     // name
     std::string statistic_name = "TestColumnStatistics_" +
                                  std::to_string(table_id) + "-" +
-                                 std::to_string(ordinal_position);
+                                 std::to_string(column_number);
     statistic.put(Statistics::NAME, statistic_name);
     // table_id
     statistic.put(Statistics::TABLE_ID, table_id);
-    // ordinal_position
-    statistic.put(Statistics::ORDINAL_POSITION, ordinal_position);
+    // column_number
+    statistic.put(Statistics::COLUMN_NUMBER, column_number);
     // column_statistic
     statistic.add_child(Statistics::COLUMN_STATISTIC,
-                        column_statistics[ordinal_position - 1]);
+                        column_statistics[column_number - 1]);
 
     error = stats->add(statistic);
     ASSERT_EQ(ErrorCode::OK, error);
 
-    UTUtils::print(" ordinal position: ", ordinal_position);
+    UTUtils::print(" column number: ", column_number);
     UTUtils::print(
         " column statistics:" +
-        UTUtils::get_tree_string(column_statistics[ordinal_position - 1]));
+        UTUtils::get_tree_string(column_statistics[column_number - 1]));
   }
 
   UTUtils::print("-- add column statistics by add_column_statistic end --\n");
@@ -147,9 +146,9 @@ ColumnStatisticsHelper::generate_column_statistic() {
   std::random_device rd;
   std::mt19937 random_mt(rd());
 
-  double null_frac = static_cast<double>(random_mt() / RAND_MAX);
-  int avg_width = random_mt() % UPPER_VALUE_100 + 1;
-  int n_distinct = random_mt() % UPPER_VALUE_100 + 1;
+  double null_frac   = static_cast<double>(random_mt() / RAND_MAX);
+  int avg_width      = random_mt() % UPPER_VALUE_100 + 1;
+  int n_distinct     = random_mt() % UPPER_VALUE_100 + 1;
   double correlation = -1 * static_cast<double>(random_mt() / RAND_MAX);
 
   ptree column_statistic;

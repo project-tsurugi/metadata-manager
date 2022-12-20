@@ -242,4 +242,17 @@ ErrorCode Metadata::get_all(
   return error;  
 }
 
+/**
+ * @brief Update the metadata-table with metadata-object.
+ * @param object_id [in]  ID of the metadata-object to update.
+ * @param object    [in]  metadata-object to update.
+ * @return ErrorCode::OK if success, otherwise an error code.
+ */
+ErrorCode Metadata::update(const manager::metadata::ObjectIdType object_id,
+                          const manager::metadata::Object& object) const {
+
+  ptree pt = object.convert_to_ptree();
+  return this->update(object_id, pt);
+}
+
 }  // namespace manager::metadata

@@ -46,8 +46,9 @@ ErrorCode ConstraintsDAO::prepare() const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   // Filename of the constraint metadata.
-  boost::format filename = boost::format("%s/%s.json") % Config::get_storage_dir_path() %
-                           std::string(ConstraintsDAO::CONSTRAINTS_METADATA_NAME);
+  boost::format filename =
+      boost::format("%s/%s.json") % Config::get_storage_dir_path() %
+      std::string(ConstraintsDAO::CONSTRAINTS_METADATA_NAME);
 
   // Connect to the constraint metadata file.
   error = session_manager_->connect(filename.str(), ConstraintsDAO::ROOT_NODE);
@@ -65,7 +66,8 @@ ErrorCode ConstraintsDAO::prepare() const {
  * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode ConstraintsDAO::insert_constraint_metadata(
-    const boost::property_tree::ptree& constraint_metadata, ObjectIdType& constraint_id) const {
+    const boost::property_tree::ptree& constraint_metadata,
+    ObjectIdType& constraint_id) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   // Load the metadata from the JSON file.
@@ -78,43 +80,51 @@ ErrorCode ConstraintsDAO::insert_constraint_metadata(
   ptree* container = session_manager_->get_container();
 
   // Getting a table id.
-  auto optional_table_id = constraint_metadata.get_optional<ObjectIdType>(Constraint::TABLE_ID);
-  std::string table_id   = std::to_string(optional_table_id.value());
+  auto optional_table_id =
+      constraint_metadata.get_optional<ObjectIdType>(Constraint::TABLE_ID);
+  std::string table_id = std::to_string(optional_table_id.value());
 
   ptree::iterator table_it;
   ptree& root_node = container->get_child(ConstraintsDAO::ROOT_NODE);
   for (table_it = root_node.begin(); table_it != root_node.end(); table_it++) {
-    auto value = table_it->second.get_optional<std::string>(Tables::ID);
+    auto value = table_it->second.get_optional<std::string>(Table::ID);
     if (value && (value.get() == table_id)) {
       break;
     }
   }
 
   if (table_it == root_node.end()) {
-    LOG_INFO << "Table metadata for the specified table ID does not exist.: " << table_id;
+    LOG_INFO << "Table metadata for the specified table ID does not exist.: "
+             << table_id;
     error == ErrorCode::NOT_FOUND;
     return error;
   }
 
   ptree empty_ptree;
   ptree& table_metadata = table_it->second;
-  if (table_metadata.find(Tables::CONSTRAINTS_NODE) == table_metadata.not_found()) {
-    table_metadata.add_child(Tables::CONSTRAINTS_NODE, empty_ptree);
+  if (table_metadata.find(Table::CONSTRAINTS_NODE) ==
+      table_metadata.not_found()) {
+    table_metadata.add_child(Table::CONSTRAINTS_NODE, empty_ptree);
   }
-  auto& constraints_node = table_metadata.get_child(Tables::CONSTRAINTS_NODE);
+  auto& constraints_node = table_metadata.get_child(Table::CONSTRAINTS_NODE);
 
   // Copy to the temporary area.
   ptree tmp_metadata = constraint_metadata;
 
   // Checks for INSERT execution with object-id specified.
-  auto optional_object_id = constraint_metadata.get_optional<ObjectIdType>(Constraint::ID);
+  auto optional_object_id =
+      constraint_metadata.get_optional<ObjectIdType>(Constraint::ID);
   if (optional_object_id.value_or(-1) > 0) {
-    // Constraint ID is specified, the metadata for that constraint ID is updated.
-    constraint_id = object_id->update(OID_KEY_NAME_CONSTRAINT, optional_object_id.value());
-    LOG_INFO << "Add constraint metadata with specified constraint ID. ConstraintID: "
+    // Constraint ID is specified, the metadata for that constraint ID is
+    // updated.
+    constraint_id =
+        object_id->update(OID_KEY_NAME_CONSTRAINT, optional_object_id.value());
+    LOG_INFO << "Add constraint metadata with specified constraint ID. "
+                "ConstraintID: "
              << optional_object_id.value();
   } else {
-    // Constraint ID is not specified, the constraint ID is generated and metadata is added.
+    // Constraint ID is not specified, the constraint ID is generated and
+    // metadata is added.
     constraint_id = object_id->generate(OID_KEY_NAME_CONSTRAINT);
     tmp_metadata.put(Constraint::ID, constraint_id);
   }
@@ -138,10 +148,11 @@ ErrorCode ConstraintsDAO::insert_constraint_metadata(
 
 /**
  * @brief Get metadata object from a metadata constraint file.
- * @param object_key           [in]  key. column name of a constraint metadata table.
+ * @param object_key           [in]  key. column name of a constraint metadata
+ * table.
  * @param object_value         [in]  value to be filtered.
- * @param constraint_metadata  [out] constraint metadata to get, where the given key equals the
- *   given value.
+ * @param constraint_metadata  [out] constraint metadata to get, where the given
+ * key equals the given value.
  * @retval ErrorCode::OK if success,
  * @retval ErrorCode::ID_NOT_FOUND if the constraint id does not exist.
  * @retval otherwise an error code.
@@ -161,11 +172,12 @@ ErrorCode ConstraintsDAO::select_constraint_metadata(
   ptree* container = session_manager_->get_container();
 
   // Getting a metadata object.
-  error = get_constraint_metadata_object(*container, object_key, object_value, constraint_metadata);
+  error = get_constraint_metadata_object(*container, object_key, object_value,
+                                         constraint_metadata);
 
   // Convert the error code.
   if (error == ErrorCode::NOT_FOUND) {
-    if (object_key == Tables::ID) {
+    if (object_key == Table::ID) {
       error = ErrorCode::ID_NOT_FOUND;
     } else {
       error = ErrorCode::NOT_FOUND;
@@ -198,11 +210,12 @@ ErrorCode ConstraintsDAO::select_constraint_metadata(
   ptree* container = session_manager_->get_container();
 
   // constraint metadata
-  BOOST_FOREACH (ptree::value_type& root_node, container->get_child(ConstraintsDAO::ROOT_NODE)) {
+  BOOST_FOREACH (ptree::value_type& root_node,
+                 container->get_child(ConstraintsDAO::ROOT_NODE)) {
     ptree& table = root_node.second;
 
     // Convert from ptree structure type to vector<ptree>.
-    auto constraint_node = table.get_child(Tables::CONSTRAINTS_NODE);
+    auto constraint_node = table.get_child(Table::CONSTRAINTS_NODE);
     std::transform(constraint_node.begin(), constraint_node.end(),
                    std::back_inserter(constraint_container),
                    [](ptree::value_type v) { return v.second; });
@@ -219,8 +232,8 @@ ErrorCode ConstraintsDAO::select_constraint_metadata(
  * @retval ErrorCode::ID_NOT_FOUND if the constraint id does not exist.
  * @retval otherwise an error code.
  */
-ErrorCode ConstraintsDAO::delete_constraint_metadata(std::string_view object_key,
-                                                     std::string_view object_value) const {
+ErrorCode ConstraintsDAO::delete_constraint_metadata(
+    std::string_view object_key, std::string_view object_value) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   // Load the meta data from the JSON file.
@@ -245,26 +258,29 @@ ErrorCode ConstraintsDAO::delete_constraint_metadata(std::string_view object_key
 /**
  * @brief Get metadata-object.
  * @param container            [in]  metadata container.
- * @param object_key           [in]  key. column name of a constraint metadata table.
+ * @param object_key           [in]  key. column name of a constraint metadata
+ * table.
  * @param object_value         [in]  value to be filtered.
  * @param constraint_metadata  [out] metadata-object with the specified name.
  * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode ConstraintsDAO::get_constraint_metadata_object(
     const boost::property_tree::ptree& container, std::string_view object_key,
-    std::string_view object_value, boost::property_tree::ptree& constraint_metadata) const {
+    std::string_view object_value,
+    boost::property_tree::ptree& constraint_metadata) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
-  LOG_DEBUG << "get_metadata metadata:" << (container.empty() ? "empty" : "exists") << " \""
-            << object_key << "\"=\"" << object_value << "\"";
+  LOG_DEBUG << "get_metadata metadata:"
+            << (container.empty() ? "empty" : "exists") << " \"" << object_key
+            << "\"=\"" << object_value << "\"";
 
   error = ErrorCode::NOT_FOUND;
   BOOST_FOREACH (const ptree::value_type& root_node,
                  container.get_child(ConstraintsDAO::ROOT_NODE)) {
     const ptree& table = root_node.second;
-    if (table.find(Tables::CONSTRAINTS_NODE) != table.not_found()) {
+    if (table.find(Table::CONSTRAINTS_NODE) != table.not_found()) {
       BOOST_FOREACH (const ptree::value_type& constraint_node,
-                     table.get_child(Tables::CONSTRAINTS_NODE)) {
+                     table.get_child(Table::CONSTRAINTS_NODE)) {
         const ptree& constraint = constraint_node.second;
 
         auto value = constraint.get_optional<std::string>(object_key.data());
@@ -286,19 +302,21 @@ ErrorCode ConstraintsDAO::get_constraint_metadata_object(
 /**
  * @brief Delete a metadata object from a metadata constraint file.
  * @param container     [in/out] metadata container.
- * @param object_key    [in]     key. column name of a constraint metadata table.
+ * @param object_key    [in]     key. column name of a constraint metadata
+ * table.
  * @param object_value  [in]     value to be filtered.
  * @retval ErrorCode::OK if success.
  * @retval ErrorCode::ID_NOT_FOUND if the constraint id does not exist.
  * @retval otherwise an error code.
  */
-ErrorCode ConstraintsDAO::delete_metadata_object(boost::property_tree::ptree& container,
-                                                 std::string_view object_key,
-                                                 std::string_view object_value) const {
+ErrorCode ConstraintsDAO::delete_metadata_object(
+    boost::property_tree::ptree& container, std::string_view object_key,
+    std::string_view object_value) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
-  LOG_DEBUG << "delete_metadata_object metadata:" << (container.empty() ? "empty" : "exists")
-            << " \"" << object_key << "\"=\"" << object_value << "\"";
+  LOG_DEBUG << "delete_metadata_object metadata:"
+            << (container.empty() ? "empty" : "exists") << " \"" << object_key
+            << "\"=\"" << object_value << "\"";
 
   // Initialize the error code.
   if (object_key == Constraint::ID) {
@@ -309,17 +327,21 @@ ErrorCode ConstraintsDAO::delete_metadata_object(boost::property_tree::ptree& co
 
   // Getting a metadata container.
   ptree& root_node = container.get_child(ConstraintsDAO::ROOT_NODE);
-  for (ptree::iterator table_it = root_node.begin(); table_it != root_node.end(); table_it++) {
-    auto optional_constraint = table_it->second.get_child_optional(Tables::CONSTRAINTS_NODE);
+  for (ptree::iterator table_it = root_node.begin();
+       table_it != root_node.end(); table_it++) {
+    auto optional_constraint =
+        table_it->second.get_child_optional(Table::CONSTRAINTS_NODE);
     if (!optional_constraint) {
       continue;
     }
 
     ptree& constraint = optional_constraint.get();
-    for (ptree::iterator constraint_it = constraint.begin(); constraint_it != constraint.end();) {
+    for (ptree::iterator constraint_it = constraint.begin();
+         constraint_it != constraint.end();) {
       const ptree& constraint_metadata = constraint_it->second;
 
-      auto optional_value = constraint_metadata.get_optional<std::string>(object_key.data());
+      auto optional_value =
+          constraint_metadata.get_optional<std::string>(object_key.data());
 
       // Delete metadata with constraint as a key.
       if (optional_value && (optional_value.value() == object_value)) {

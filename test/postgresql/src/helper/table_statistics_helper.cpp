@@ -21,16 +21,15 @@
 
 namespace manager::metadata::testing {
 
-std::vector<float> reltuples_list = {-1,
+std::vector<int64_t> reltuples_list = {-1,
                                      0,
                                      1,
                                      100000000,
-                                     FLT_MAX,
-                                     std::numeric_limits<float>::infinity(),
-                                     -std::numeric_limits<float>::infinity(),
-                                     std::numeric_limits<float>::quiet_NaN(),
-                                     static_cast<float>(DBL_MAX),
-                                     static_cast<float>(DBL_MIN)};
+                                     std::numeric_limits<int64_t>::infinity(),
+                                     -std::numeric_limits<int64_t>::infinity(),
+                                     std::numeric_limits<int64_t>::quiet_NaN(),
+                                     INT64_MAX,
+                                     INT64_MIN};
 
 /**
  * @brief Create a test pattern for the basic test.

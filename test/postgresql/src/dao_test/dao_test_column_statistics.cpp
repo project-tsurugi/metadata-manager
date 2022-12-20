@@ -171,7 +171,7 @@ ErrorCode DaoTestColumnStatistics::add_one_column_statistic(
 
   ObjectIdType ret_statistic_id;
   error = sdao->upsert_column_statistic(
-      table_id, Statistics::ORDINAL_POSITION, std::to_string(ordinal_position),
+      table_id, Statistics::COLUMN_NUMBER, std::to_string(ordinal_position),
       &statistic_name, column_statistic, ret_statistic_id);
 
   if (error == ErrorCode::OK) {
@@ -220,14 +220,14 @@ ErrorCode DaoTestColumnStatistics::get_one_column_statistic(
   sdao = std::static_pointer_cast<db::StatisticsDAO>(s_gdao);
 
   ptree column_statistic;
-  error = sdao->select_column_statistic(table_id, Statistics::ORDINAL_POSITION,
+  error = sdao->select_column_statistic(table_id, Statistics::COLUMN_NUMBER,
                                         std::to_string(ordinal_position),
                                         column_statistic);
 
   if (error == ErrorCode::OK) {
     auto optional_ordinal_position =
         column_statistic.get_optional<std::int64_t>(
-            Statistics::ORDINAL_POSITION);
+            Statistics::COLUMN_NUMBER);
     EXPECT_TRUE(optional_ordinal_position);
 
     auto optional_column_statistic =
@@ -285,7 +285,7 @@ ErrorCode DaoTestColumnStatistics::get_all_column_statistics(
       ptree c_cs_returned = column_statistics[ordinal_position - 1];
 
       auto optional_ordinal_position = c_cs_returned.get_optional<std::int64_t>(
-          Statistics::ORDINAL_POSITION);
+          Statistics::COLUMN_NUMBER);
       EXPECT_TRUE(optional_ordinal_position);
 
       auto optional_column_statistic =
@@ -352,7 +352,7 @@ ErrorCode DaoTestColumnStatistics::get_all_column_statistics(
       EXPECT_TRUE(optional_column_statistic);
 
       boost::optional<std::int64_t> optional_ordinal_position =
-          statistic.get_optional<std::int64_t>(Statistics::ORDINAL_POSITION);
+          statistic.get_optional<std::int64_t>(Statistics::COLUMN_NUMBER);
       EXPECT_NE(ordinal_position_removed, optional_ordinal_position.get());
 
       if (ordinal_position_removed == ordinal_position) {
@@ -408,7 +408,7 @@ ErrorCode DaoTestColumnStatistics::remove_one_column_statistic(
   EXPECT_EQ(ErrorCode::OK, error);
 
   ObjectIdType ret_statistic_id;
-  error = sdao->delete_column_statistic(table_id, Statistics::ORDINAL_POSITION,
+  error = sdao->delete_column_statistic(table_id, Statistics::COLUMN_NUMBER,
                                         std::to_string(ordinal_position),
                                         ret_statistic_id);
 
@@ -859,7 +859,7 @@ TEST_P(DaoTestColumnStatisticsAllAPIException, all_api_exception) {
    * based on non-existing column ordinal position
    * or non-existing table id.
    */
-  for (ObjectIdType ordinal_position : global->ordinal_position_not_exists) {
+  for (ObjectIdType ordinal_position : global->column_number_not_exists) {
     // ordinal position only not exists
     error = DaoTestColumnStatistics::add_one_column_statistic(
         ret_table_id, ordinal_position, column_statistics[0]);
@@ -899,7 +899,7 @@ TEST_P(DaoTestColumnStatisticsAllAPIException, all_api_exception) {
    * or non-existing table id.
    */
   ptree empty_column_statistic;
-  for (ObjectIdType ordinal_position : global->ordinal_position_not_exists) {
+  for (ObjectIdType ordinal_position : global->column_number_not_exists) {
     // ordinal position only not exists
     error = DaoTestColumnStatistics::get_one_column_statistic(
         ret_table_id, ordinal_position, empty_column_statistic);
@@ -925,7 +925,7 @@ TEST_P(DaoTestColumnStatisticsAllAPIException, all_api_exception) {
    * based on non-existing column ordinal position
    * or non-existing table id.
    */
-  for (ObjectIdType ordinal_position : global->ordinal_position_not_exists) {
+  for (ObjectIdType ordinal_position : global->column_number_not_exists) {
     // ordinal position only not exists
     error = DaoTestColumnStatistics::remove_one_column_statistic(
         ret_table_id, ordinal_position);
@@ -990,7 +990,7 @@ TEST_F(DaoTestColumnStatisticsAllAPIException,
   ObjectIdType ret_statistic_id;
 
   error = sdao->upsert_column_statistic(
-      ret_table_id, Statistics::ORDINAL_POSITION,
+      ret_table_id, Statistics::COLUMN_NUMBER,
       std::to_string(ordinal_position), &statistic_name, column_statistic,
       ret_statistic_id);
 

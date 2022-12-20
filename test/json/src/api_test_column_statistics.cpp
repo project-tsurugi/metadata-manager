@@ -49,7 +49,7 @@ TEST_F(ApiTestColumnStatistics, add) {
   // table_id
   column_statistic.put(Statistics::TABLE_ID, 99999);
   // ordinal_position
-  column_statistic.put(Statistics::ORDINAL_POSITION, 1);
+  column_statistic.put(Statistics::COLUMN_NUMBER, 1);
 
   UTUtils::print("-- add column statistics --");
   error = statistics->add(column_statistic);

@@ -79,7 +79,7 @@ INSTANTIATE_TEST_CASE_P(
  * @brief happy test for add/get_all/remove API.
  *
  * - add:
- *     based on existing table id and ordinal position.
+ *     based on existing table id and column number.
  * - get_all/remove_by_table_id:
  *     based on existing table id.
  */
@@ -102,7 +102,7 @@ TEST_P(ApiTestColumnStatisticsAllAPIHappy, get_all_api_by_table_id) {
 
   /**
    * add
-   * based on both existing table id and column ordinal position.
+   * based on both existing table id and column number.
    */
   std::vector<ptree> column_statistics = std::get<1>(param);
   ColumnStatisticsHelper::add_column_statistics(ret_table_id_1,
@@ -123,24 +123,24 @@ TEST_P(ApiTestColumnStatisticsAllAPIHappy, get_all_api_by_table_id) {
   error = stats->get_all(ret_table_id_1, ret_statistics);
   EXPECT_EQ(ErrorCode::OK, error);
 
-  for (std::size_t ordinal_position = 0;
-       ordinal_position < ret_statistics.size(); ordinal_position++) {
+  for (std::size_t column_number = 0; column_number < ret_statistics.size();
+       column_number++) {
     auto optional_column_statistic =
-        ret_statistics[ordinal_position].get_child_optional(
+        ret_statistics[column_number].get_child_optional(
             Statistics::COLUMN_STATISTIC);
     EXPECT_TRUE(optional_column_statistic);
 
     std::string s_statistics_expected =
-        UTUtils::get_tree_string(column_statistics[ordinal_position]);
+        UTUtils::get_tree_string(column_statistics[column_number]);
     std::string s_statistics_actual =
         UTUtils::get_tree_string(optional_column_statistic.get());
     EXPECT_EQ(s_statistics_expected, s_statistics_actual);
 
-    auto optional_ordinal_position =
-        ret_statistics[ordinal_position].get_optional<std::int64_t>(
-            Statistics::ORDINAL_POSITION);
+    auto optional_column_number =
+        ret_statistics[column_number].get_optional<std::int64_t>(
+            Statistics::COLUMN_NUMBER);
 
-    UTUtils::print(" ordinal position: ", optional_ordinal_position.get());
+    UTUtils::print(" column number: ", optional_column_number.get());
     UTUtils::print(" column statistic: ", s_statistics_actual);
   }
   UTUtils::print("-- get column statistics by get_all end --\n");
@@ -161,12 +161,12 @@ TEST_P(ApiTestColumnStatisticsAllAPIHappy, get_all_api_by_table_id) {
   EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
   EXPECT_EQ(all_column_statistics_removed.size(), 0);
 
-  for (ObjectIdType ordinal_position = 1;
-       static_cast<size_t>(ordinal_position) <= column_statistics.size();
-       ordinal_position++) {
+  for (ObjectIdType column_number = 1;
+       static_cast<size_t>(column_number) <= column_statistics.size();
+       column_number++) {
     ptree cs_returned;
-    error = stats->get_by_column_number(ret_table_id_1, ordinal_position,
-                                        cs_returned);
+    error =
+        stats->get_by_column_number(ret_table_id_1, column_number, cs_returned);
     EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
   }
   UTUtils::print("-- remove column statistics by remove_by_table_id end --\n");
@@ -180,7 +180,7 @@ TEST_P(ApiTestColumnStatisticsAllAPIHappy, get_all_api_by_table_id) {
  * @brief happy test for add/get_all/remove API.
  *
  * - add:
- *     based on existing table id and ordinal position.
+ *     based on existing table id and column number.
  * - get_all:
  *     all metadata.
  * - remove_by_table_id:
@@ -205,7 +205,7 @@ TEST_P(ApiTestColumnStatisticsAllAPIHappy, get_all_api) {
 
   /**
    * add
-   * based on both existing table id and column ordinal position.
+   * based on both existing table id and column number.
    */
   std::vector<ptree> column_statistics = std::get<1>(param);
   ColumnStatisticsHelper::add_column_statistics(ret_table_id_1,
@@ -257,11 +257,11 @@ TEST_P(ApiTestColumnStatisticsAllAPIHappy, get_all_api) {
         UTUtils::get_tree_string(optional_column_statistic.get());
     EXPECT_EQ(s_statistics_expected, s_statistics_actual);
 
-    auto optional_ordinal_position =
+    auto optional_column_number =
         ret_statistics[index].get_optional<std::int64_t>(
-            Statistics::ORDINAL_POSITION);
+            Statistics::COLUMN_NUMBER);
 
-    UTUtils::print(" ordinal position: ", optional_ordinal_position.get());
+    UTUtils::print(" column number: ", optional_column_number.get());
     UTUtils::print(" column statistic: ", s_statistics_actual);
   }
   UTUtils::print("-- get column statistics by get_all end --\n");
@@ -312,7 +312,7 @@ TEST_P(ApiTestColumnStatisticsAllAPIHappy, get_all_api) {
  *   add/get/remove one column statistic based on both existing statistic id.
  *
  * - add:
- *      based on existing ordinal position.
+ *      based on existing column number.
  * - get/remove:
  *      based on existing statistic id.
  */
@@ -331,15 +331,14 @@ TEST_P(ApiTestColumnStatisticsAllAPIHappy, get_remove_api_by_statistic_id) {
   TableMetadataHelper::add_table(table_name, &ret_table_id);
 
   auto stats = std::make_unique<Statistics>(GlobalTestEnvironment::TEST_DB);
-  error = stats->init();
+  error      = stats->init();
   EXPECT_EQ(ErrorCode::OK, error);
 
   /**
-   * add(by ordinal position)
-   * based on both existing table id and column ordinal position.
+   * add(by column number)
+   * based on both existing table id and column number.
    */
-  UTUtils::print(
-      "-- add column statistics by add (by ordinal position) start --");
+  UTUtils::print("-- add column statistics by add (by column number) start --");
   std::vector<ObjectIdType> statistic_ids = {};
   for (std::size_t index = 0; index < column_statistics.size(); index++) {
     boost::property_tree::ptree statistic;
@@ -349,8 +348,8 @@ TEST_P(ApiTestColumnStatisticsAllAPIHappy, get_remove_api_by_statistic_id) {
     statistic.put(Statistics::NAME, statistic_name);
     // table_id
     statistic.put(Statistics::TABLE_ID, ret_table_id);
-    // ordinal_position
-    statistic.put(Statistics::ORDINAL_POSITION, (index + 1));
+    // column_number
+    statistic.put(Statistics::COLUMN_NUMBER, (index + 1));
     // column_statistic
     statistic.add_child(Statistics::COLUMN_STATISTIC, column_statistics[index]);
 
@@ -360,8 +359,7 @@ TEST_P(ApiTestColumnStatisticsAllAPIHappy, get_remove_api_by_statistic_id) {
 
     statistic_ids.push_back(statistic_id);
   }
-  UTUtils::print(
-      "-- add column statistics by add (by ordinal position) end --\n");
+  UTUtils::print("-- add column statistics by add (by column number) end --\n");
 
   /**
    * get
@@ -374,10 +372,12 @@ TEST_P(ApiTestColumnStatisticsAllAPIHappy, get_remove_api_by_statistic_id) {
     error = stats->get(statistic_id, cs_returned);
     EXPECT_EQ(ErrorCode::OK, error);
 
-    // column metadata ordinal position
-    auto optional_ordinal_position = cs_returned.get_optional<std::int64_t>(
-        Tables::Column::ORDINAL_POSITION);
-    EXPECT_TRUE(optional_ordinal_position);
+    UTUtils::print("@@@@@", UTUtils::get_tree_string(cs_returned));
+
+    // column metadata column number
+    auto optional_column_number =
+        cs_returned.get_optional<std::int64_t>(Column::COLUMN_NUMBER);
+    EXPECT_TRUE(optional_column_number);
 
     // column metadata column statistic
     auto optional_column_statistic =
@@ -387,9 +387,9 @@ TEST_P(ApiTestColumnStatisticsAllAPIHappy, get_remove_api_by_statistic_id) {
     std::string s_cs_returned =
         UTUtils::get_tree_string(optional_column_statistic.get());
     std::string s_cs_expected = UTUtils::get_tree_string(
-        column_statistics[optional_ordinal_position.get() - 1]);
+        column_statistics[optional_column_number.get() - 1]);
 
-    UTUtils::print(" ordinal position: ", optional_ordinal_position.get());
+    UTUtils::print(" column number: ", optional_column_number.get());
     UTUtils::print(" column statistic: ", s_cs_returned);
 
     EXPECT_EQ(s_cs_returned, s_cs_expected);
@@ -425,7 +425,7 @@ TEST_P(ApiTestColumnStatisticsAllAPIHappy, get_remove_api_by_statistic_id) {
  *   add/get/remove one column statistic based on both existing statistic name.
  *
  * - add:
- *      based on existing ordinal position.
+ *      based on existing column number.
  * - get/remove:
  *      based on existing statistic name.
  */
@@ -444,27 +444,28 @@ TEST_P(ApiTestColumnStatisticsAllAPIHappy, get_remove_api_by_statistic_name) {
   TableMetadataHelper::add_table(table_name, &ret_table_id);
 
   auto stats = std::make_unique<Statistics>(GlobalTestEnvironment::TEST_DB);
-  error = stats->init();
+  error      = stats->init();
   EXPECT_EQ(ErrorCode::OK, error);
 
   /**
-   * add(by ordinal position)
-   * based on both existing table id and column ordinal position.
+   * add(by column number)
+   * based on both existing table id and column number.
    */
-  UTUtils::print(
-      "-- add column statistics by add (by ordinal position) start --");
-  std::vector<ObjectIdType> statistic_ids = {};
+  UTUtils::print("-- add column statistics by add (by column number) start --");
+  std::vector<ObjectIdType> statistic_ids  = {};
   std::vector<std::string> statistic_names = {};
+  std::string statistic_name_prefix =
+      "ApiTestColumnStatistics-" + std::to_string(time(NULL)) + "-";
+
   for (std::size_t index = 0; index < column_statistics.size(); index++) {
     boost::property_tree::ptree statistic;
     // name
-    std::string statistic_name =
-        "ApiTestColumnStatistics_" + std::to_string(index);
+    std::string statistic_name = statistic_name_prefix + std::to_string(index);
     statistic.put(Statistics::NAME, statistic_name);
     // table_id
     statistic.put(Statistics::TABLE_ID, ret_table_id);
-    // ordinal_position
-    statistic.put(Statistics::ORDINAL_POSITION, (index + 1));
+    // column_number
+    statistic.put(Statistics::COLUMN_NUMBER, (index + 1));
     // column_statistic
     statistic.add_child(Statistics::COLUMN_STATISTIC, column_statistics[index]);
 
@@ -475,8 +476,7 @@ TEST_P(ApiTestColumnStatisticsAllAPIHappy, get_remove_api_by_statistic_name) {
     statistic_ids.push_back(statistic_id);
     statistic_names.push_back(statistic_name);
   }
-  UTUtils::print(
-      "-- add column statistics by add (by ordinal position) end --\n");
+  UTUtils::print("-- add column statistics by add (by column number) end --\n");
 
   /**
    * get
@@ -490,10 +490,10 @@ TEST_P(ApiTestColumnStatisticsAllAPIHappy, get_remove_api_by_statistic_name) {
     error = stats->get(statistic_name, cs_returned);
     EXPECT_EQ(ErrorCode::OK, error);
 
-    // column metadata ordinal position
-    auto optional_ordinal_position = cs_returned.get_optional<std::int64_t>(
-        Tables::Column::ORDINAL_POSITION);
-    EXPECT_TRUE(optional_ordinal_position);
+    // column metadata column number
+    auto optional_column_number =
+        cs_returned.get_optional<std::int64_t>(Column::COLUMN_NUMBER);
+    EXPECT_TRUE(optional_column_number);
 
     // column metadata column statistic
     auto optional_column_statistic =
@@ -503,9 +503,9 @@ TEST_P(ApiTestColumnStatisticsAllAPIHappy, get_remove_api_by_statistic_name) {
     std::string s_cs_returned =
         UTUtils::get_tree_string(optional_column_statistic.get());
     std::string s_cs_expected = UTUtils::get_tree_string(
-        column_statistics[optional_ordinal_position.get() - 1]);
+        column_statistics[optional_column_number.get() - 1]);
 
-    UTUtils::print(" ordinal position: ", optional_ordinal_position.get());
+    UTUtils::print(" column number: ", optional_column_number.get());
     UTUtils::print(" column statistic: ", s_cs_returned);
 
     EXPECT_EQ(s_cs_returned, s_cs_expected);
@@ -561,7 +561,7 @@ TEST_P(ApiTestColumnStatisticsAllAPIHappy, get_remove_api_by_column_id) {
   TableMetadataHelper::add_table(table_name, &ret_table_id);
 
   auto tables = std::make_unique<Tables>(GlobalTestEnvironment::TEST_DB);
-  error = tables->init();
+  error       = tables->init();
   EXPECT_EQ(ErrorCode::OK, error);
 
   // get table metadata.
@@ -570,7 +570,7 @@ TEST_P(ApiTestColumnStatisticsAllAPIHappy, get_remove_api_by_column_id) {
   EXPECT_EQ(ErrorCode::OK, error);
 
   // get column metadata.
-  auto o_columns = table_metadata.get_child_optional(Tables::COLUMNS_NODE);
+  auto o_columns = table_metadata.get_child_optional(Table::COLUMNS_NODE);
   if (!o_columns) {
     GTEST_FAIL();
   }
@@ -581,15 +581,14 @@ TEST_P(ApiTestColumnStatisticsAllAPIHappy, get_remove_api_by_column_id) {
   for (auto node : o_columns.value()) {
     ptree column_metadata = node.second;
     // column metadata id
-    auto column_id =
-        column_metadata.get_optional<ObjectIdType>(Tables::Column::ID);
+    auto column_id = column_metadata.get_optional<ObjectIdType>(Column::ID);
     EXPECT_TRUE(column_id);
 
     column_ids.push_back(column_id.get());
   }
 
   auto stats = std::make_unique<Statistics>(GlobalTestEnvironment::TEST_DB);
-  error = stats->init();
+  error      = stats->init();
   EXPECT_EQ(ErrorCode::OK, error);
 
   /**
@@ -626,10 +625,10 @@ TEST_P(ApiTestColumnStatisticsAllAPIHappy, get_remove_api_by_column_id) {
     error = stats->get_by_column_id(column_id, cs_returned);
     EXPECT_EQ(ErrorCode::OK, error);
 
-    // column metadata ordinal position
-    auto optional_ordinal_position = cs_returned.get_optional<std::int64_t>(
-        Tables::Column::ORDINAL_POSITION);
-    EXPECT_TRUE(optional_ordinal_position);
+    // column metadata column number
+    auto optional_column_number =
+        cs_returned.get_optional<std::int64_t>(Column::COLUMN_NUMBER);
+    EXPECT_TRUE(optional_column_number);
 
     // column metadata column statistic
     auto optional_column_statistic =
@@ -639,9 +638,9 @@ TEST_P(ApiTestColumnStatisticsAllAPIHappy, get_remove_api_by_column_id) {
     std::string s_cs_returned =
         UTUtils::get_tree_string(optional_column_statistic.get());
     std::string s_cs_expected = UTUtils::get_tree_string(
-        column_statistics[optional_ordinal_position.get() - 1]);
+        column_statistics[optional_column_number.get() - 1]);
 
-    UTUtils::print(" ordinal position: ", optional_ordinal_position.get());
+    UTUtils::print(" column number: ", optional_column_number.get());
     UTUtils::print(" column statistic: ", s_cs_returned);
 
     EXPECT_EQ(s_cs_returned, s_cs_expected);
@@ -692,15 +691,14 @@ TEST_P(ApiTestColumnStatisticsAllAPIHappy, get_remove_api_by_column_number) {
   TableMetadataHelper::add_table(table_name, &ret_table_id);
 
   auto stats = std::make_unique<Statistics>(GlobalTestEnvironment::TEST_DB);
-  error = stats->init();
+  error      = stats->init();
   EXPECT_EQ(ErrorCode::OK, error);
 
   /**
-   * add(by ordinal position)
-   * based on both existing table id and column ordinal position.
+   * add(by column number)
+   * based on both existing table id and column number.
    */
-  UTUtils::print(
-      "-- add column statistics by add (by ordinal position) start --");
+  UTUtils::print("-- add column statistics by add (by column number) start --");
   for (std::size_t index = 0; index < column_statistics.size(); index++) {
     boost::property_tree::ptree statistic;
     // name
@@ -709,29 +707,28 @@ TEST_P(ApiTestColumnStatisticsAllAPIHappy, get_remove_api_by_column_number) {
     statistic.put(Statistics::NAME, statistic_name);
     // table_id
     statistic.put(Statistics::TABLE_ID, ret_table_id);
-    // ordinal_position
-    statistic.put(Statistics::ORDINAL_POSITION, (index + 1));
+    // column_number
+    statistic.put(Statistics::COLUMN_NUMBER, (index + 1));
     // column_statistic
     statistic.add_child(Statistics::COLUMN_STATISTIC, column_statistics[index]);
 
     error = stats->add(statistic);
     EXPECT_EQ(ErrorCode::OK, error);
   }
-  UTUtils::print(
-      "-- add column statistics by add (by ordinal position) end --\n");
+  UTUtils::print("-- add column statistics by add (by column number) end --\n");
 
   /**
    * get_by_column_number
-   * based on both existing table id and ordinal position.
+   * based on both existing table id and column number.
    */
   UTUtils::print("-- get column statistics by get_by_column_number start --");
-  for (std::int64_t ordinal_position = 1;
-       static_cast<std::size_t>(ordinal_position) <= column_statistics.size();
-       ordinal_position++) {
+  for (std::int64_t column_number = 1;
+       static_cast<std::size_t>(column_number) <= column_statistics.size();
+       column_number++) {
     ptree cs_returned;
 
-    error = stats->get_by_column_number(ret_table_id, ordinal_position,
-                                        cs_returned);
+    error =
+        stats->get_by_column_number(ret_table_id, column_number, cs_returned);
     EXPECT_EQ(ErrorCode::OK, error);
 
     // column metadata column statistic
@@ -742,9 +739,9 @@ TEST_P(ApiTestColumnStatisticsAllAPIHappy, get_remove_api_by_column_number) {
     std::string s_cs_returned =
         UTUtils::get_tree_string(optional_column_statistic.get());
     std::string s_cs_expected =
-        UTUtils::get_tree_string(column_statistics[ordinal_position - 1]);
+        UTUtils::get_tree_string(column_statistics[column_number - 1]);
 
-    UTUtils::print(" ordinal position: ", ordinal_position);
+    UTUtils::print(" column number: ", column_number);
     UTUtils::print(" column statistic: ", s_cs_returned);
 
     EXPECT_EQ(s_cs_returned, s_cs_expected);
@@ -757,17 +754,17 @@ TEST_P(ApiTestColumnStatisticsAllAPIHappy, get_remove_api_by_column_number) {
    */
   UTUtils::print(
       "-- remove column statistics by remove_by_column_number start --");
-  for (std::size_t ordinal_position = 1;
-       ordinal_position <= column_statistics.size(); ordinal_position++) {
-    error = stats->remove_by_column_number(ret_table_id, ordinal_position);
+  for (std::size_t column_number = 1; column_number <= column_statistics.size();
+       column_number++) {
+    error = stats->remove_by_column_number(ret_table_id, column_number);
     EXPECT_EQ(ErrorCode::OK, error);
 
-    error = stats->remove_by_column_number(ret_table_id, ordinal_position);
+    error = stats->remove_by_column_number(ret_table_id, column_number);
     EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
 
     ptree cs_returned;
-    error = stats->get_by_column_number(ret_table_id, ordinal_position,
-                                        cs_returned);
+    error =
+        stats->get_by_column_number(ret_table_id, column_number, cs_returned);
     EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
   }
   UTUtils::print(
@@ -799,7 +796,7 @@ TEST_P(ApiTestColumnStatisticsAllAPIHappy, get_remove_api_by_column_name) {
   TableMetadataHelper::add_table(table_name, &ret_table_id);
 
   auto tables = std::make_unique<Tables>(GlobalTestEnvironment::TEST_DB);
-  error = tables->init();
+  error       = tables->init();
   EXPECT_EQ(ErrorCode::OK, error);
 
   // get table metadata.
@@ -808,7 +805,7 @@ TEST_P(ApiTestColumnStatisticsAllAPIHappy, get_remove_api_by_column_name) {
   EXPECT_EQ(ErrorCode::OK, error);
 
   // get column metadata.
-  auto o_columns = table_metadata.get_child_optional(Tables::COLUMNS_NODE);
+  auto o_columns = table_metadata.get_child_optional(Table::COLUMNS_NODE);
   if (!o_columns) {
     GTEST_FAIL();
   }
@@ -819,15 +816,14 @@ TEST_P(ApiTestColumnStatisticsAllAPIHappy, get_remove_api_by_column_name) {
   for (auto node : o_columns.value()) {
     ptree column_metadata = node.second;
     // column metadata name
-    auto column_name =
-        column_metadata.get_optional<std::string>(Tables::Column::NAME);
+    auto column_name = column_metadata.get_optional<std::string>(Column::NAME);
     EXPECT_TRUE(column_name);
 
     column_names.push_back(column_name.get());
   }
 
   auto stats = std::make_unique<Statistics>(GlobalTestEnvironment::TEST_DB);
-  error = stats->init();
+  error      = stats->init();
   EXPECT_EQ(ErrorCode::OK, error);
 
   /**
@@ -866,10 +862,10 @@ TEST_P(ApiTestColumnStatisticsAllAPIHappy, get_remove_api_by_column_name) {
     error = stats->get_by_column_name(ret_table_id, column_name, cs_returned);
     EXPECT_EQ(ErrorCode::OK, error);
 
-    // column metadata ordinal position
-    auto optional_ordinal_position = cs_returned.get_optional<std::int64_t>(
-        Tables::Column::ORDINAL_POSITION);
-    EXPECT_TRUE(optional_ordinal_position);
+    // column metadata column number
+    auto optional_column_number =
+        cs_returned.get_optional<std::int64_t>(Column::COLUMN_NUMBER);
+    EXPECT_TRUE(optional_column_number);
 
     // column metadata column statistic
     auto optional_column_statistic =
@@ -879,9 +875,9 @@ TEST_P(ApiTestColumnStatisticsAllAPIHappy, get_remove_api_by_column_name) {
     std::string s_cs_returned =
         UTUtils::get_tree_string(optional_column_statistic.get());
     std::string s_cs_expected = UTUtils::get_tree_string(
-        column_statistics[optional_ordinal_position.get() - 1]);
+        column_statistics[optional_column_number.get() - 1]);
 
-    UTUtils::print(" ordinal position: ", optional_ordinal_position.get());
+    UTUtils::print(" column number: ", optional_column_number.get());
     UTUtils::print(" column statistic: ", s_cs_returned);
 
     EXPECT_EQ(s_cs_returned, s_cs_expected);
@@ -914,11 +910,11 @@ TEST_P(ApiTestColumnStatisticsAllAPIHappy, get_remove_api_by_column_name) {
 
 /**
  * @brief happy test to update column statistics
- * based on both existing table id and column ordinal position.
+ * based on both existing table id and column number.
  *
  * - add:
  *      update column statistics
- *      based on both existing table id and column ordinal position.
+ *      based on both existing table id and column number.
  */
 TEST_P(ApiTestColumnStatisticsUpdateHappy, update_column_statistics) {
   auto param = GetParam();
@@ -932,7 +928,7 @@ TEST_P(ApiTestColumnStatisticsUpdateHappy, update_column_statistics) {
 
   /**
    * add new column statistics
-   * based on both existing table id and column ordinal position.
+   * based on both existing table id and column number.
    */
   std::vector<ptree> column_statistics = std::get<1>(param);
   ColumnStatisticsHelper::add_column_statistics(ret_table_id,
@@ -949,13 +945,13 @@ TEST_P(ApiTestColumnStatisticsUpdateHappy, update_column_statistics) {
 
   UTUtils::print("-- get column statistics by get_by_column_number start --");
 
-  for (ObjectIdType ordinal_position = 1;
-       static_cast<size_t>(ordinal_position) <= column_statistics.size();
-       ordinal_position++) {
+  for (ObjectIdType column_number = 1;
+       static_cast<size_t>(column_number) <= column_statistics.size();
+       column_number++) {
     ptree cs_returned;
 
-    error = stats->get_by_column_number(ret_table_id, ordinal_position,
-                                        cs_returned);
+    error =
+        stats->get_by_column_number(ret_table_id, column_number, cs_returned);
     EXPECT_EQ(ErrorCode::OK, error);
 
     auto optional_column_statistic =
@@ -965,14 +961,14 @@ TEST_P(ApiTestColumnStatisticsUpdateHappy, update_column_statistics) {
     std::string s_cs_returned =
         UTUtils::get_tree_string(optional_column_statistic.get());
     std::string s_cs_expected =
-        UTUtils::get_tree_string(column_statistics[ordinal_position - 1]);
+        UTUtils::get_tree_string(column_statistics[column_number - 1]);
 
     EXPECT_EQ(s_cs_returned, s_cs_expected);
 
-    auto optional_ordinal_position =
-        cs_returned.get_optional<std::int64_t>(Statistics::ORDINAL_POSITION);
+    auto optional_column_number =
+        cs_returned.get_optional<std::int64_t>(Statistics::COLUMN_NUMBER);
 
-    UTUtils::print(" ordinal position: ", optional_ordinal_position.get());
+    UTUtils::print(" column number: ", optional_column_number.get());
     UTUtils::print(" column statistic: " + s_cs_returned);
   }
 
@@ -985,10 +981,10 @@ TEST_P(ApiTestColumnStatisticsUpdateHappy, update_column_statistics) {
 
   UTUtils::print("-- get column statistics by get_all start --");
 
-  for (ObjectIdType ordinal_position = 1;
-       static_cast<size_t>(ordinal_position) <= vector_cs_returned.size();
-       ordinal_position++) {
-    ptree c_cs_returned = vector_cs_returned[ordinal_position - 1];
+  for (ObjectIdType column_number = 1;
+       static_cast<size_t>(column_number) <= vector_cs_returned.size();
+       column_number++) {
+    ptree c_cs_returned = vector_cs_returned[column_number - 1];
 
     auto optional_column_statistic =
         c_cs_returned.get_child_optional(Statistics::COLUMN_STATISTIC);
@@ -997,14 +993,14 @@ TEST_P(ApiTestColumnStatisticsUpdateHappy, update_column_statistics) {
     std::string s_cs_returned =
         UTUtils::get_tree_string(optional_column_statistic.get());
     std::string s_cs_expected =
-        UTUtils::get_tree_string(column_statistics[ordinal_position - 1]);
+        UTUtils::get_tree_string(column_statistics[column_number - 1]);
 
     EXPECT_EQ(s_cs_expected, s_cs_returned);
 
-    auto optional_ordinal_position =
-        c_cs_returned.get_optional<std::int64_t>(Statistics::ORDINAL_POSITION);
+    auto optional_column_number =
+        c_cs_returned.get_optional<std::int64_t>(Statistics::COLUMN_NUMBER);
 
-    UTUtils::print(" ordinal position: ", optional_ordinal_position.get());
+    UTUtils::print(" column number: ", optional_column_number.get());
     UTUtils::print(" column statistic: " + s_cs_returned);
   }
 
@@ -1012,7 +1008,7 @@ TEST_P(ApiTestColumnStatisticsUpdateHappy, update_column_statistics) {
 
   /**
    * update column statistics
-   * based on both existing table id and column ordinal position.
+   * based on both existing table id and column number.
    */
   std::vector<ptree> column_statistics_to_update = std::get<2>(param);
   ColumnStatisticsHelper::add_column_statistics(ret_table_id,
@@ -1026,14 +1022,13 @@ TEST_P(ApiTestColumnStatisticsUpdateHappy, update_column_statistics) {
       "-- After updating all column statistics, get column statistics by ",
       "get_by_column_number start --");
 
-  for (ObjectIdType ordinal_position = 1;
-       static_cast<size_t>(ordinal_position) <=
-       column_statistics_to_update.size();
-       ordinal_position++) {
+  for (ObjectIdType column_number = 1;
+       static_cast<size_t>(column_number) <= column_statistics_to_update.size();
+       column_number++) {
     ptree cs_returned;
 
-    error = stats->get_by_column_number(ret_table_id, ordinal_position,
-                                        cs_returned);
+    error =
+        stats->get_by_column_number(ret_table_id, column_number, cs_returned);
     EXPECT_EQ(ErrorCode::OK, error);
 
     auto optional_column_statistic =
@@ -1043,14 +1038,14 @@ TEST_P(ApiTestColumnStatisticsUpdateHappy, update_column_statistics) {
     std::string s_cs_returned =
         UTUtils::get_tree_string(optional_column_statistic.get());
     std::string s_cs_expected = UTUtils::get_tree_string(
-        column_statistics_to_update[ordinal_position - 1]);
+        column_statistics_to_update[column_number - 1]);
 
     EXPECT_EQ(s_cs_returned, s_cs_expected);
 
-    auto optional_ordinal_position =
-        cs_returned.get_optional<std::int64_t>(Statistics::ORDINAL_POSITION);
+    auto optional_column_number =
+        cs_returned.get_optional<std::int64_t>(Statistics::COLUMN_NUMBER);
 
-    UTUtils::print(" ordinal position: ", optional_ordinal_position.get());
+    UTUtils::print(" column number: ", optional_column_number.get());
     UTUtils::print(" column statistic: ", s_cs_returned);
   }
 
@@ -1068,11 +1063,10 @@ TEST_P(ApiTestColumnStatisticsUpdateHappy, update_column_statistics) {
       "-- After updating all column statistics, get column statistics by ",
       "get_all start --");
 
-  for (ObjectIdType ordinal_position = 1;
-       static_cast<size_t>(ordinal_position) <=
-       vector_cs_updated_returned.size();
-       ordinal_position++) {
-    ptree c_cs_returned = vector_cs_updated_returned[ordinal_position - 1];
+  for (ObjectIdType column_number = 1;
+       static_cast<size_t>(column_number) <= vector_cs_updated_returned.size();
+       column_number++) {
+    ptree c_cs_returned = vector_cs_updated_returned[column_number - 1];
 
     auto optional_column_statistic =
         c_cs_returned.get_child_optional(Statistics::COLUMN_STATISTIC);
@@ -1081,14 +1075,14 @@ TEST_P(ApiTestColumnStatisticsUpdateHappy, update_column_statistics) {
     std::string s_cs_returned =
         UTUtils::get_tree_string(optional_column_statistic.get());
     std::string s_cs_expected = UTUtils::get_tree_string(
-        column_statistics_to_update[ordinal_position - 1]);
+        column_statistics_to_update[column_number - 1]);
 
     EXPECT_EQ(s_cs_expected, s_cs_returned);
 
-    auto optional_ordinal_position =
-        c_cs_returned.get_optional<std::int64_t>(Statistics::ORDINAL_POSITION);
+    auto optional_column_number =
+        c_cs_returned.get_optional<std::int64_t>(Statistics::COLUMN_NUMBER);
 
-    UTUtils::print(" ordinal position: ", optional_ordinal_position.get());
+    UTUtils::print(" column number: ", optional_column_number.get());
     UTUtils::print(" column statistic: ", s_cs_returned);
   }
 
@@ -1098,27 +1092,24 @@ TEST_P(ApiTestColumnStatisticsUpdateHappy, update_column_statistics) {
 
   /**
    * remove_by_column_number
-   * based on both existing table id and column ordinal position.
+   * based on both existing table id and column number.
    */
-  ObjectIdType ordinal_position_to_remove = std::get<3>(param);
-  error =
-      stats->remove_by_column_number(ret_table_id, ordinal_position_to_remove);
+  ObjectIdType column_number_to_remove = std::get<3>(param);
+  error = stats->remove_by_column_number(ret_table_id, column_number_to_remove);
   EXPECT_EQ(ErrorCode::OK, error);
 
-  UTUtils::print(
-      "-- After removing ordinal position=", ordinal_position_to_remove,
-      " get column statistics by get_by_column_number start --");
+  UTUtils::print("-- After removing column number=", column_number_to_remove,
+                 " get column statistics by get_by_column_number start --");
 
-  for (ObjectIdType ordinal_position = 1;
-       static_cast<size_t>(ordinal_position) <=
-       column_statistics_to_update.size();
-       ordinal_position++) {
+  for (ObjectIdType column_number = 1;
+       static_cast<size_t>(column_number) <= column_statistics_to_update.size();
+       column_number++) {
     ptree cs_returned;
 
-    error = stats->get_by_column_number(ret_table_id, ordinal_position,
-                                        cs_returned);
+    error =
+        stats->get_by_column_number(ret_table_id, column_number, cs_returned);
 
-    if (ordinal_position_to_remove == ordinal_position) {
+    if (column_number_to_remove == column_number) {
       EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
     } else {
       EXPECT_EQ(ErrorCode::OK, error);
@@ -1130,21 +1121,20 @@ TEST_P(ApiTestColumnStatisticsUpdateHappy, update_column_statistics) {
       std::string s_cs_returned =
           UTUtils::get_tree_string(optional_column_statistic.get());
       std::string s_cs_expected = UTUtils::get_tree_string(
-          column_statistics_to_update[ordinal_position - 1]);
+          column_statistics_to_update[column_number - 1]);
 
       EXPECT_EQ(s_cs_returned, s_cs_expected);
 
-      auto optional_ordinal_position =
-          cs_returned.get_optional<std::int64_t>(Statistics::ORDINAL_POSITION);
+      auto optional_column_number =
+          cs_returned.get_optional<std::int64_t>(Statistics::COLUMN_NUMBER);
 
-      UTUtils::print(" ordinal position: ", optional_ordinal_position.get());
+      UTUtils::print(" column number: ", optional_column_number.get());
       UTUtils::print(" column statistic: ", s_cs_returned);
     }
   }
 
-  UTUtils::print(
-      "-- After removing ordinal position=", ordinal_position_to_remove,
-      " get column statistics by get_by_column_number end -- \n");
+  UTUtils::print("-- After removing column number=", column_number_to_remove,
+                 " get column statistics by get_by_column_number end -- \n");
 
   std::vector<ptree> vector_cs_removed_returned;
   error = stats->get_all(ret_table_id, vector_cs_removed_returned);
@@ -1158,38 +1148,36 @@ TEST_P(ApiTestColumnStatisticsUpdateHappy, update_column_statistics) {
   EXPECT_EQ(column_statistics_to_update.size() - 1,
             vector_cs_removed_returned.size());
 
-  UTUtils::print(
-      "-- After removing ordinal position=", ordinal_position_to_remove,
-      " get column statistics by get_all start --");
+  UTUtils::print("-- After removing column number=", column_number_to_remove,
+                 " get column statistics by get_all start --");
 
-  int ordinal_position = 1;
+  int column_number = 1;
   for (ptree statistic : vector_cs_removed_returned) {
     auto optional_column_statistic =
         statistic.get_child_optional(Statistics::COLUMN_STATISTIC);
     EXPECT_TRUE(optional_column_statistic);
 
-    auto optional_ordinal_position =
-        statistic.get_optional<std::int64_t>(Statistics::ORDINAL_POSITION);
-    EXPECT_NE(ordinal_position_to_remove, optional_ordinal_position.get());
+    auto optional_column_number =
+        statistic.get_optional<std::int64_t>(Statistics::COLUMN_NUMBER);
+    EXPECT_NE(column_number_to_remove, optional_column_number.get());
 
-    if (ordinal_position_to_remove == ordinal_position) {
-      ordinal_position++;
+    if (column_number_to_remove == column_number) {
+      column_number++;
     }
     std::string s_cs_returned =
         UTUtils::get_tree_string(optional_column_statistic.get());
     std::string s_cs_expected = UTUtils::get_tree_string(
-        column_statistics_to_update[ordinal_position - 1]);
-    ordinal_position++;
+        column_statistics_to_update[column_number - 1]);
+    column_number++;
 
     EXPECT_EQ(s_cs_expected, s_cs_returned);
 
-    UTUtils::print(" ordinal position: ", optional_ordinal_position.get());
+    UTUtils::print(" column number: ", optional_column_number.get());
     UTUtils::print(" column statistic: ", s_cs_returned);
   }
 
-  UTUtils::print(
-      "-- After removing ordinal position=", ordinal_position_to_remove,
-      " get column statistics by get_all end --");
+  UTUtils::print("-- After removing column number=", column_number_to_remove,
+                 " get column statistics by get_all end --");
 
   /**
    * remove_by_table_id
@@ -1208,14 +1196,13 @@ TEST_P(ApiTestColumnStatisticsUpdateHappy, update_column_statistics) {
   EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
   EXPECT_EQ(all_column_statistics_removed.size(), 0);
 
-  for (ObjectIdType ordinal_position = 1;
-       static_cast<size_t>(ordinal_position) <=
-       column_statistics_to_update.size();
-       ordinal_position++) {
+  for (ObjectIdType column_number = 1;
+       static_cast<size_t>(column_number) <= column_statistics_to_update.size();
+       column_number++) {
     ptree cs_returned;
 
-    error = stats->get_by_column_number(ret_table_id, ordinal_position,
-                                        cs_returned);
+    error =
+        stats->get_by_column_number(ret_table_id, column_number, cs_returned);
     EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
   }
 
@@ -1243,7 +1230,7 @@ TEST_P(ApiTestColumnStatisticsRemoveAllHappy, remove_by_table_id) {
 
   /**
    * add new column statistics
-   * based on both existing table id and column ordinal position.
+   * based on both existing table id and column number.
    */
   std::vector<ptree> column_statistics = global->column_statistics;
   ColumnStatisticsHelper::add_column_statistics(ret_table_id,
@@ -1260,13 +1247,13 @@ TEST_P(ApiTestColumnStatisticsRemoveAllHappy, remove_by_table_id) {
 
   UTUtils::print("-- get column statistics by get_by_column_number start --");
 
-  for (ObjectIdType ordinal_position = 1;
-       static_cast<size_t>(ordinal_position) <= column_statistics.size();
-       ordinal_position++) {
+  for (ObjectIdType column_number = 1;
+       static_cast<size_t>(column_number) <= column_statistics.size();
+       column_number++) {
     ptree cs_returned;
 
-    error = stats->get_by_column_number(ret_table_id, ordinal_position,
-                                        cs_returned);
+    error =
+        stats->get_by_column_number(ret_table_id, column_number, cs_returned);
     EXPECT_EQ(ErrorCode::OK, error);
 
     auto optional_column_statistic =
@@ -1276,14 +1263,14 @@ TEST_P(ApiTestColumnStatisticsRemoveAllHappy, remove_by_table_id) {
     std::string s_cs_returned =
         UTUtils::get_tree_string(optional_column_statistic.get());
     std::string s_cs_expected =
-        UTUtils::get_tree_string(column_statistics[ordinal_position - 1]);
+        UTUtils::get_tree_string(column_statistics[column_number - 1]);
 
     EXPECT_EQ(s_cs_returned, s_cs_expected);
 
-    auto optional_ordinal_position =
-        cs_returned.get_optional<std::int64_t>(Statistics::ORDINAL_POSITION);
+    auto optional_column_number =
+        cs_returned.get_optional<std::int64_t>(Statistics::COLUMN_NUMBER);
 
-    UTUtils::print(" ordinal position: ", optional_ordinal_position.get());
+    UTUtils::print(" column number: ", optional_column_number.get());
     UTUtils::print(" column statistic: ", s_cs_returned);
   }
 
@@ -1296,10 +1283,10 @@ TEST_P(ApiTestColumnStatisticsRemoveAllHappy, remove_by_table_id) {
 
   UTUtils::print("-- get column statistics by get_all start --");
 
-  for (ObjectIdType ordinal_position = 1;
-       static_cast<size_t>(ordinal_position) <= vector_cs_returned.size();
-       ordinal_position++) {
-    ptree c_cs_returned = vector_cs_returned[ordinal_position - 1];
+  for (ObjectIdType column_number = 1;
+       static_cast<size_t>(column_number) <= vector_cs_returned.size();
+       column_number++) {
+    ptree c_cs_returned = vector_cs_returned[column_number - 1];
 
     auto optional_column_statistic =
         c_cs_returned.get_child_optional(Statistics::COLUMN_STATISTIC);
@@ -1308,14 +1295,14 @@ TEST_P(ApiTestColumnStatisticsRemoveAllHappy, remove_by_table_id) {
     std::string s_cs_returned =
         UTUtils::get_tree_string(optional_column_statistic.get());
     std::string s_cs_expected =
-        UTUtils::get_tree_string(column_statistics[ordinal_position - 1]);
+        UTUtils::get_tree_string(column_statistics[column_number - 1]);
 
     EXPECT_EQ(s_cs_expected, s_cs_returned);
 
-    auto optional_ordinal_position =
-        c_cs_returned.get_optional<std::int64_t>(Statistics::ORDINAL_POSITION);
+    auto optional_column_number =
+        c_cs_returned.get_optional<std::int64_t>(Statistics::COLUMN_NUMBER);
 
-    UTUtils::print(" ordinal position: ", optional_ordinal_position.get());
+    UTUtils::print(" column number: ", optional_column_number.get());
     UTUtils::print(" column statistic: ", s_cs_returned);
   }
 
@@ -1333,13 +1320,13 @@ TEST_P(ApiTestColumnStatisticsRemoveAllHappy, remove_by_table_id) {
   EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
   EXPECT_EQ(all_column_statistics_removed.size(), 0);
 
-  for (ObjectIdType ordinal_position = 1;
-       static_cast<size_t>(ordinal_position) <= column_statistics.size();
-       ordinal_position++) {
+  for (ObjectIdType column_number = 1;
+       static_cast<size_t>(column_number) <= column_statistics.size();
+       column_number++) {
     ptree cs_returned;
 
-    error = stats->get_by_column_number(ret_table_id, ordinal_position,
-                                        cs_returned);
+    error =
+        stats->get_by_column_number(ret_table_id, column_number, cs_returned);
     EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
   }
 
@@ -1351,18 +1338,18 @@ TEST_P(ApiTestColumnStatisticsRemoveAllHappy, remove_by_table_id) {
  * @brief Exception path test for all API.
  * 1. add/get/remove one column statistic
  * based on non-existing table id or
- * non-existing column ordinal position.
+ * non-existing column number.
  *
  * 2. get/remove all column statistics
  * based on non-existing table id.
  *
  * -
  * add/get_by_column_number/remove_by_column_number:
- *      - based on non-existing column ordinal position
+ *      - based on non-existing column number
  *                 and existing table id.
  *      - based on non-existing table id
- *                 and existing column ordinal position.
- *      - based on both non-existing table id and column ordinal position.
+ *                 and existing column number.
+ *      - based on both non-existing table id and column number.
  * -  get_all/remove_by_table_id:
  *      - based on non-existing table id.
  */
@@ -1384,13 +1371,13 @@ TEST_P(ApiTestColumnStatisticsAllAPIException, all_api_exception) {
   ErrorCode error = stats->init();
   EXPECT_EQ(ErrorCode::OK, error);
 
-  for (ObjectIdType ordinal_position = 1;
-       static_cast<size_t>(ordinal_position) <= column_statistics.size();
-       ordinal_position++) {
+  for (ObjectIdType column_number = 1;
+       static_cast<size_t>(column_number) <= column_statistics.size();
+       column_number++) {
     ptree cs_returned;
 
-    error = stats->get_by_column_number(ret_table_id, ordinal_position,
-                                        cs_returned);
+    error =
+        stats->get_by_column_number(ret_table_id, column_number, cs_returned);
     EXPECT_EQ(ErrorCode::OK, error);
 
     auto optional_column_statistic =
@@ -1400,29 +1387,29 @@ TEST_P(ApiTestColumnStatisticsAllAPIException, all_api_exception) {
     std::string s_cs_returned =
         UTUtils::get_tree_string(optional_column_statistic.get());
     std::string s_cs_expected =
-        UTUtils::get_tree_string(column_statistics[ordinal_position - 1]);
+        UTUtils::get_tree_string(column_statistics[column_number - 1]);
 
     EXPECT_EQ(s_cs_returned, s_cs_expected);
   }
 
   /**
    * add
-   * based on non-existing column ordinal position
+   * based on non-existing column number
    * or non-existing table id.
    */
-  for (ObjectIdType ordinal_position : global->ordinal_position_not_exists) {
-    // ordinal position only not exists
+  for (ObjectIdType column_number : global->column_number_not_exists) {
+    // column number only not exists
     {
       ptree statistic;
       // name
       std::string statistic_name = "ApiTestColumnStatisticsAllAPIException_" +
                                    std::to_string(ret_table_id) + "-" +
-                                   std::to_string(ordinal_position);
+                                   std::to_string(column_number);
       statistic.put(Statistics::NAME, statistic_name);
       // table_id
       statistic.put(Statistics::TABLE_ID, ret_table_id);
-      // ordinal_position
-      statistic.put(Statistics::ORDINAL_POSITION, ordinal_position);
+      // column_number
+      statistic.put(Statistics::COLUMN_NUMBER, column_number);
       // column_statistic
       statistic.add_child(Statistics::COLUMN_STATISTIC, column_statistics[0]);
 
@@ -1430,18 +1417,18 @@ TEST_P(ApiTestColumnStatisticsAllAPIException, all_api_exception) {
       EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);
     }
 
-    // table id and ordinal position not exists
+    // table id and column number not exists
     for (ObjectIdType table_id : global->table_id_not_exists) {
       ptree statistic;
       // name
       std::string statistic_name = "ApiTestColumnStatisticsAllAPIException_" +
                                    std::to_string(table_id) + "-" +
-                                   std::to_string(ordinal_position);
+                                   std::to_string(column_number);
       statistic.put(Statistics::NAME, statistic_name);
       // table_id
       statistic.put(Statistics::TABLE_ID, table_id);
-      // ordinal_position
-      statistic.put(Statistics::ORDINAL_POSITION, ordinal_position);
+      // column_number
+      statistic.put(Statistics::COLUMN_NUMBER, column_number);
       // column_statistic
       statistic.add_child(Statistics::COLUMN_STATISTIC, column_statistics[0]);
 
@@ -1451,18 +1438,18 @@ TEST_P(ApiTestColumnStatisticsAllAPIException, all_api_exception) {
   }
 
   // table id only not exists
-  ObjectIdType ordinal_position_exists = 1;
+  ObjectIdType column_number_exists = 1;
   for (ObjectIdType table_id : global->table_id_not_exists) {
     ptree statistic;
     // name
     std::string statistic_name = "ApiTestColumnStatisticsAllAPIException_" +
                                  std::to_string(table_id) + "-" +
-                                 std::to_string(ordinal_position_exists);
+                                 std::to_string(column_number_exists);
     statistic.put(Statistics::NAME, statistic_name);
     // table_id
     statistic.put(Statistics::TABLE_ID, table_id);
-    // ordinal_position
-    statistic.put(Statistics::ORDINAL_POSITION, ordinal_position_exists);
+    // column_number
+    statistic.put(Statistics::COLUMN_NUMBER, column_number_exists);
     // column_statistic
     statistic.add_child(Statistics::COLUMN_STATISTIC, column_statistics[0]);
 
@@ -1484,55 +1471,54 @@ TEST_P(ApiTestColumnStatisticsAllAPIException, all_api_exception) {
 
   /**
    * get_by_column_number
-   * based on non-existing column ordinal position
+   * based on non-existing column number
    * or non-existing table id.
    */
   ptree cs_returned;
-  for (std::int64_t ordinal_position : global->ordinal_position_not_exists) {
-    // ordinal position only not exists
-    error = stats->get_by_column_number(ret_table_id, ordinal_position,
-                                        cs_returned);
-    // if (ordinal_position >= INT64_MAX) {
+  for (std::int64_t column_number : global->column_number_not_exists) {
+    // column number only not exists
+    error =
+        stats->get_by_column_number(ret_table_id, column_number, cs_returned);
+    // if (column_number >= INT64_MAX) {
     //   EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);
     // } else {
     EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
     // }
 
     for (ObjectIdType table_id : global->table_id_not_exists) {
-      // table id and ordinal position not exists
-      error =
-          stats->get_by_column_number(table_id, ordinal_position, cs_returned);
+      // table id and column number not exists
+      error = stats->get_by_column_number(table_id, column_number, cs_returned);
       EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
     }
   }
 
   for (ObjectIdType table_id : global->table_id_not_exists) {
     // table id only not exists
-    error = stats->get_by_column_number(table_id, ordinal_position_exists,
+    error = stats->get_by_column_number(table_id, column_number_exists,
                                         cs_returned);
     EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
   }
 
   /**
    * remove_by_column_number
-   * based on non-existing column ordinal position
+   * based on non-existing column number
    * or non-existing table id.
    */
-  for (ObjectIdType ordinal_position : global->ordinal_position_not_exists) {
-    // ordinal position only not exists
-    error = stats->remove_by_column_number(ret_table_id, ordinal_position);
+  for (ObjectIdType column_number : global->column_number_not_exists) {
+    // column number only not exists
+    error = stats->remove_by_column_number(ret_table_id, column_number);
     EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
 
     for (ObjectIdType table_id : global->table_id_not_exists) {
-      // table id and ordinal position not exists
-      error = stats->remove_by_column_number(table_id, ordinal_position);
+      // table id and column number not exists
+      error = stats->remove_by_column_number(table_id, column_number);
       EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
     }
   }
 
   for (ObjectIdType table_id : global->table_id_not_exists) {
     // table id only not exists
-    error = stats->remove_by_column_number(table_id, ordinal_position_exists);
+    error = stats->remove_by_column_number(table_id, column_number_exists);
     EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
   }
 
@@ -1553,14 +1539,14 @@ TEST_P(ApiTestColumnStatisticsAllAPIException, all_api_exception) {
 /**
  * @brief happy test for all API without init().
  * 1. add/get/remove one column statistic without init()
- * based on both existing table id and column ordinal position.
+ * based on both existing table id and column number.
  *
  * 2. get/remove all column statistics without init()
  * based on existing table id.
  *
  * -
  * add/get_by_column_number/remove_by_column_number
- * : based on both existing table id and column ordinal position.
+ * : based on both existing table id and column number.
  * - get_all/remove_by_table_id :
  *      based on existing table id.
  */
@@ -1577,7 +1563,7 @@ TEST_P(ApiTestColumnStatisticsAllAPIHappyWithoutInit,
 
   /**
    * add without init()
-   * based on both existing table id and column ordinal position.
+   * based on both existing table id and column number.
    */
   auto stats_add = std::make_unique<Statistics>(GlobalTestEnvironment::TEST_DB);
 
@@ -1586,51 +1572,51 @@ TEST_P(ApiTestColumnStatisticsAllAPIHappyWithoutInit,
 
   ErrorCode error;
   std::vector<ptree> column_statistics = std::get<1>(param);
-  for (std::int64_t ordinal_position = 1;
-       static_cast<std::size_t>(ordinal_position) <= column_statistics.size();
-       ordinal_position++) {
+  for (std::int64_t column_number = 1;
+       static_cast<std::size_t>(column_number) <= column_statistics.size();
+       column_number++) {
     ptree statistic;
     // name
     std::string statistic_name = "ApiTestColumnStatisticsAllAPIException_" +
                                  std::to_string(ret_table_id) + "-" +
-                                 std::to_string(ordinal_position);
+                                 std::to_string(column_number);
     statistic.put(Statistics::NAME, statistic_name);
     // table_id
     statistic.put(Statistics::TABLE_ID, ret_table_id);
-    // ordinal_position
-    statistic.put(Statistics::ORDINAL_POSITION, ordinal_position);
+    // column_number
+    statistic.put(Statistics::COLUMN_NUMBER, column_number);
     // column_statistic
     statistic.add_child(Statistics::COLUMN_STATISTIC,
-                        column_statistics[ordinal_position - 1]);
+                        column_statistics[column_number - 1]);
 
     error = stats_add->add(statistic);
 
     EXPECT_EQ(ErrorCode::OK, error);
 
-    UTUtils::print(" ordinal position: ", ordinal_position);
+    UTUtils::print(" column number: ", column_number);
     UTUtils::print(
         " column statistics:",
-        UTUtils::get_tree_string(column_statistics[ordinal_position - 1]));
+        UTUtils::get_tree_string(column_statistics[column_number - 1]));
   }
 
   UTUtils::print("-- add column statistics by add end -- \n");
 
   /**
    * get_by_column_number without init()
-   * based on both existing table id and column ordinal position.
+   * based on both existing table id and column number.
    */
   auto stats_get_one_cs =
       std::make_unique<Statistics>(GlobalTestEnvironment::TEST_DB);
 
   UTUtils::print("-- get column statistics by get_by_column_number start --");
 
-  for (ObjectIdType ordinal_position = 1;
-       static_cast<size_t>(ordinal_position) <= column_statistics.size();
-       ordinal_position++) {
+  for (ObjectIdType column_number = 1;
+       static_cast<size_t>(column_number) <= column_statistics.size();
+       column_number++) {
     ptree cs_returned;
 
-    error = stats_get_one_cs->get_by_column_number(
-        ret_table_id, ordinal_position, cs_returned);
+    error = stats_get_one_cs->get_by_column_number(ret_table_id, column_number,
+                                                   cs_returned);
     EXPECT_EQ(ErrorCode::OK, error);
 
     auto optional_column_statistic =
@@ -1640,14 +1626,14 @@ TEST_P(ApiTestColumnStatisticsAllAPIHappyWithoutInit,
     std::string s_cs_returned =
         UTUtils::get_tree_string(optional_column_statistic.get());
     std::string s_cs_expected =
-        UTUtils::get_tree_string(column_statistics[ordinal_position - 1]);
+        UTUtils::get_tree_string(column_statistics[column_number - 1]);
 
     EXPECT_EQ(s_cs_returned, s_cs_expected);
 
-    auto optional_ordinal_position =
-        cs_returned.get_optional<std::int64_t>(Statistics::ORDINAL_POSITION);
+    auto optional_column_number =
+        cs_returned.get_optional<std::int64_t>(Statistics::COLUMN_NUMBER);
 
-    UTUtils::print(" ordinal position: ", optional_ordinal_position.get());
+    UTUtils::print(" column number: ", optional_column_number.get());
     UTUtils::print(" column statistic: ", s_cs_returned);
   }
 
@@ -1666,10 +1652,10 @@ TEST_P(ApiTestColumnStatisticsAllAPIHappyWithoutInit,
 
   UTUtils::print("-- get column statistics by get_all start --");
 
-  for (ObjectIdType ordinal_position = 1;
-       static_cast<size_t>(ordinal_position) <= vector_cs_returned.size();
-       ordinal_position++) {
-    ptree c_cs_returned = vector_cs_returned[ordinal_position - 1];
+  for (ObjectIdType column_number = 1;
+       static_cast<size_t>(column_number) <= vector_cs_returned.size();
+       column_number++) {
+    ptree c_cs_returned = vector_cs_returned[column_number - 1];
 
     auto optional_column_statistic =
         c_cs_returned.get_child_optional(Statistics::COLUMN_STATISTIC);
@@ -1678,14 +1664,14 @@ TEST_P(ApiTestColumnStatisticsAllAPIHappyWithoutInit,
     std::string s_cs_returned =
         UTUtils::get_tree_string(optional_column_statistic.get());
     std::string s_cs_expected =
-        UTUtils::get_tree_string(column_statistics[ordinal_position - 1]);
+        UTUtils::get_tree_string(column_statistics[column_number - 1]);
 
     EXPECT_EQ(s_cs_expected, s_cs_returned);
 
-    auto optional_ordinal_position =
-        c_cs_returned.get_optional<std::int64_t>(Statistics::ORDINAL_POSITION);
+    auto optional_column_number =
+        c_cs_returned.get_optional<std::int64_t>(Statistics::COLUMN_NUMBER);
 
-    UTUtils::print(" ordinal position: ", optional_ordinal_position.get());
+    UTUtils::print(" column number: ", optional_column_number.get());
     UTUtils::print(" column statistic: ", s_cs_returned);
   }
 
@@ -1693,29 +1679,28 @@ TEST_P(ApiTestColumnStatisticsAllAPIHappyWithoutInit,
 
   /**
    * remove_by_column_number without init()
-   * based on both existing table id and column ordinal position.
+   * based on both existing table id and column number.
    */
   auto stats_remove_one_cs =
       std::make_unique<Statistics>(GlobalTestEnvironment::TEST_DB);
 
-  ObjectIdType ordinal_position_to_remove = std::get<2>(param);
-  error = stats_remove_one_cs->remove_by_column_number(
-      ret_table_id, ordinal_position_to_remove);
+  ObjectIdType column_number_to_remove = std::get<2>(param);
+  error = stats_remove_one_cs->remove_by_column_number(ret_table_id,
+                                                       column_number_to_remove);
   EXPECT_EQ(ErrorCode::OK, error);
 
-  UTUtils::print(
-      "-- After removing ordinal position=", ordinal_position_to_remove,
-      " get column statistics by get_by_column_number start --");
+  UTUtils::print("-- After removing column number=", column_number_to_remove,
+                 " get column statistics by get_by_column_number start --");
 
-  for (ObjectIdType ordinal_position = 1;
-       static_cast<size_t>(ordinal_position) <= column_statistics.size();
-       ordinal_position++) {
+  for (ObjectIdType column_number = 1;
+       static_cast<size_t>(column_number) <= column_statistics.size();
+       column_number++) {
     ptree cs_returned;
 
     error = stats_remove_one_cs->get_by_column_number(
-        ret_table_id, ordinal_position, cs_returned);
+        ret_table_id, column_number, cs_returned);
 
-    if (ordinal_position_to_remove == ordinal_position) {
+    if (column_number_to_remove == column_number) {
       EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
     } else {
       EXPECT_EQ(ErrorCode::OK, error);
@@ -1727,21 +1712,20 @@ TEST_P(ApiTestColumnStatisticsAllAPIHappyWithoutInit,
       std::string s_cs_returned =
           UTUtils::get_tree_string(optional_column_statistic.get());
       std::string s_cs_expected =
-          UTUtils::get_tree_string(column_statistics[ordinal_position - 1]);
+          UTUtils::get_tree_string(column_statistics[column_number - 1]);
 
       EXPECT_EQ(s_cs_returned, s_cs_expected);
 
-      auto optional_ordinal_position =
-          cs_returned.get_optional<std::int64_t>(Statistics::ORDINAL_POSITION);
+      auto optional_column_number =
+          cs_returned.get_optional<std::int64_t>(Statistics::COLUMN_NUMBER);
 
-      UTUtils::print(" ordinal position: ", optional_ordinal_position.get());
+      UTUtils::print(" column number: ", optional_column_number.get());
       UTUtils::print(" column statistic: ", s_cs_returned);
     }
   }
 
-  UTUtils::print(
-      "-- After removing ordinal position=", ordinal_position_to_remove,
-      " get column statistics by get_by_column_number end -- \n");
+  UTUtils::print("-- After removing column number=", column_number_to_remove,
+                 " get column statistics by get_by_column_number end -- \n");
 
   std::vector<ptree> vector_cs_removed_returned;
   error =
@@ -1749,38 +1733,36 @@ TEST_P(ApiTestColumnStatisticsAllAPIHappyWithoutInit,
   EXPECT_EQ(ErrorCode::OK, error);
   EXPECT_EQ(column_statistics.size() - 1, vector_cs_removed_returned.size());
 
-  UTUtils::print(
-      "-- After removing ordinal position=", ordinal_position_to_remove,
-      " get column statistics by get_all start --");
+  UTUtils::print("-- After removing column number=", column_number_to_remove,
+                 " get column statistics by get_all start --");
 
-  int ordinal_position = 1;
+  int column_number = 1;
   for (ptree statistic : vector_cs_removed_returned) {
     auto optional_column_statistic =
         statistic.get_child_optional(Statistics::COLUMN_STATISTIC);
     EXPECT_TRUE(optional_column_statistic);
 
-    if (ordinal_position_to_remove == ordinal_position) {
-      ordinal_position++;
+    if (column_number_to_remove == column_number) {
+      column_number++;
     }
     std::string s_cs_returned =
         UTUtils::get_tree_string(optional_column_statistic.get());
     std::string s_cs_expected =
-        UTUtils::get_tree_string(column_statistics[ordinal_position - 1]);
-    ordinal_position++;
+        UTUtils::get_tree_string(column_statistics[column_number - 1]);
+    column_number++;
 
     EXPECT_EQ(s_cs_expected, s_cs_returned);
 
-    auto optional_ordinal_position =
-        statistic.get_optional<std::int64_t>(Statistics::ORDINAL_POSITION);
-    EXPECT_NE(ordinal_position_to_remove, optional_ordinal_position.get());
+    auto optional_column_number =
+        statistic.get_optional<std::int64_t>(Statistics::COLUMN_NUMBER);
+    EXPECT_NE(column_number_to_remove, optional_column_number.get());
 
-    UTUtils::print(" ordinal position: ", optional_ordinal_position.get());
+    UTUtils::print(" column number: ", optional_column_number.get());
     UTUtils::print(" column statistic: ", s_cs_returned);
   }
 
-  UTUtils::print(
-      "-- After removing ordinal position=", ordinal_position_to_remove,
-      " get column statistics by get_all end --");
+  UTUtils::print("-- After removing column number=", column_number_to_remove,
+                 " get column statistics by get_all end --");
 
   /**
    * remove_by_table_id without init()
@@ -1798,13 +1780,13 @@ TEST_P(ApiTestColumnStatisticsAllAPIHappyWithoutInit,
   EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
   EXPECT_EQ(all_column_statistics_removed.size(), 0);
 
-  for (ObjectIdType ordinal_position = 1;
-       static_cast<size_t>(ordinal_position) <= column_statistics.size();
-       ordinal_position++) {
+  for (ObjectIdType column_number = 1;
+       static_cast<size_t>(column_number) <= column_statistics.size();
+       column_number++) {
     ptree cs_returned;
 
     error = stats_remove_all_cs->get_by_column_number(
-        ret_table_id, ordinal_position, cs_returned);
+        ret_table_id, column_number, cs_returned);
     EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
   }
 

@@ -20,8 +20,8 @@
 
 #include <boost/foreach.hpp>
 #include <boost/property_tree/json_parser.hpp>
-
 #include "jwt-cpp/jwt.h"
+
 #include "manager/metadata/common/config.h"
 #include "manager/metadata/error_code.h"
 #include "manager/metadata/roles.h"
@@ -122,19 +122,22 @@ class ApiTestTableAcls : public ::testing::Test {
     role_3::role_id = RoleMetadataHelper::create_role(role_3::role_name, "");
 
     // (role-1) create dummy data for TABLE.
-    foreign_table_1::table_id =
-        ForeignTableHelper::create_table(foreign_table_1::table_name, role_1::role_name, "SELECT");
+    foreign_table_1::table_id = ForeignTableHelper::create_table(
+        foreign_table_1::table_name, role_1::role_name, "SELECT");
     foreign_table_2::table_id = ForeignTableHelper::create_table(
-        foreign_table_2::table_name, role_1::role_name, "SELECT,INSERT,UPDATE,DELETE");
-    foreign_table_3::table_id =
-        ForeignTableHelper::create_table(foreign_table_3::table_name, role_1::role_name, "");
+        foreign_table_2::table_name, role_1::role_name,
+        "SELECT,INSERT,UPDATE,DELETE");
+    foreign_table_3::table_id = ForeignTableHelper::create_table(
+        foreign_table_3::table_name, role_1::role_name, "");
 
     // (role-2) grant dummy data for TABLE.
-    ForeignTableHelper::grant_table(foreign_table_1::table_name, role_2::role_name,
+    ForeignTableHelper::grant_table(foreign_table_1::table_name,
+                                    role_2::role_name,
                                     "SELECT,INSERT,UPDATE,DELETE");
-    ForeignTableHelper::grant_table(foreign_table_2::table_name, role_2::role_name, "SELECT");
-    ForeignTableHelper::grant_table(foreign_table_3::table_name, role_2::role_name,
-                                    "SELECT,UPDATE");
+    ForeignTableHelper::grant_table(foreign_table_2::table_name,
+                                    role_2::role_name, "SELECT");
+    ForeignTableHelper::grant_table(foreign_table_3::table_name,
+                                    role_2::role_name, "SELECT,UPDATE");
 
     // create dummy data for pg_foreign_table.
     foreign_table_1::foreign_table_id =
@@ -175,7 +178,8 @@ class ApiTestTableAcls : public ::testing::Test {
     RoleMetadataHelper::drop_role(role_3::role_name);
   }
 
-  static std::string generate_token(std::string_view user_name, std::int32_t exp = 300) {
+  static std::string generate_token(std::string_view user_name,
+                                    std::int32_t exp = 300) {
     // Cryptographic algorithms.
     auto algorithm = jwt::algorithm::hs256{Config::get_jwt_secret_key()};
 
@@ -192,8 +196,10 @@ class ApiTestTableAcls : public ::testing::Test {
             .set_issued_at(now_time)
             .set_expires_at(exp_time)
             .set_payload_claim("tsurugi/exp/refresh", jwt::claim(exp_ref_time))
-            .set_payload_claim("tsurugi/exp/available", jwt::claim(exp_use_time))
-            .set_payload_claim("tsurugi/auth/name", jwt::claim(std::string(user_name)));
+            .set_payload_claim("tsurugi/exp/available",
+                               jwt::claim(exp_use_time))
+            .set_payload_claim("tsurugi/auth/name",
+                               jwt::claim(std::string(user_name)));
     // Sign the JWT token.
     auto signed_token = jwt_builder.sign(algorithm);
 
@@ -207,16 +213,18 @@ class ApiTestTableAcls : public ::testing::Test {
  */
 TEST_F(ApiTestTableMetadata, add_get_table_metadata_by_table_name) {
   // prepare test data for adding table metadata.
-  UTTableMetadata testdata_table_metadata = *(global->testdata_table_metadata.get());
-  ptree new_table                         = testdata_table_metadata.tables;
-  std::string new_table_name =
-      new_table.get<std::string>(Tables::NAME) + "_ApiTestTableMetadata" + std::to_string(__LINE__);
-  new_table.put(Tables::NAME, new_table_name);
+  UTTableMetadata testdata_table_metadata =
+      *(global->testdata_table_metadata.get());
+  ptree new_table            = testdata_table_metadata.tables;
+  std::string new_table_name = new_table.get<std::string>(Table::NAME) +
+                               "_ApiTestTableMetadata" +
+                               std::to_string(__LINE__);
+  new_table.put(Table::NAME, new_table_name);
 
   // add table metadata.
   ObjectIdType ret_table_id = -1;
   TableMetadataHelper::add_table(new_table, &ret_table_id);
-  new_table.put(Tables::ID, ret_table_id);
+  new_table.put(Table::ID, ret_table_id);
 
   // get table metadata by table name.
   auto tables     = std::make_unique<Tables>(GlobalTestEnvironment::TEST_DB);
@@ -231,7 +239,8 @@ TEST_F(ApiTestTableMetadata, add_get_table_metadata_by_table_name) {
   UTUtils::print(UTUtils::get_tree_string(table_metadata_inserted));
 
   // verifies that the returned table metadata is expected one.
-  TableMetadataHelper::check_table_metadata_expected(new_table, table_metadata_inserted);
+  TableMetadataHelper::check_table_metadata_expected(new_table,
+                                                     table_metadata_inserted);
 
   // remove table metadata.
   TableMetadataHelper::remove_table(ret_table_id);
@@ -241,13 +250,16 @@ TEST_F(ApiTestTableMetadata, add_get_table_metadata_by_table_name) {
  * @brief happy test for adding one new table metadata without returned table
  * id and getting it by table name.
  */
-TEST_F(ApiTestTableMetadata, add_without_returned_table_id_get_table_metadata_by_table_name) {
+TEST_F(ApiTestTableMetadata,
+       add_without_returned_table_id_get_table_metadata_by_table_name) {
   // prepare test data for adding table metadata.
-  UTTableMetadata testdata_table_metadata = *(global->testdata_table_metadata.get());
-  ptree new_table                         = testdata_table_metadata.tables;
-  std::string new_table_name =
-      new_table.get<std::string>(Tables::NAME) + "_ApiTestTableMetadata" + std::to_string(__LINE__);
-  new_table.put(Tables::NAME, new_table_name);
+  UTTableMetadata testdata_table_metadata =
+      *(global->testdata_table_metadata.get());
+  ptree new_table            = testdata_table_metadata.tables;
+  std::string new_table_name = new_table.get<std::string>(Table::NAME) +
+                               "_ApiTestTableMetadata" +
+                               std::to_string(__LINE__);
+  new_table.put(Table::NAME, new_table_name);
 
   // add table metadata.
   auto tables = std::make_unique<Tables>(GlobalTestEnvironment::TEST_DB);
@@ -270,8 +282,10 @@ TEST_F(ApiTestTableMetadata, add_without_returned_table_id_get_table_metadata_by
   UTUtils::print(UTUtils::get_tree_string(table_metadata_inserted));
 
   // verifies that the returned table metadata is expected one.
-  new_table.put(Tables::ID, table_metadata_inserted.get<ObjectIdType>(Tables::ID));
-  TableMetadataHelper::check_table_metadata_expected(new_table, table_metadata_inserted);
+  new_table.put(Table::ID,
+                table_metadata_inserted.get<ObjectIdType>(Table::ID));
+  TableMetadataHelper::check_table_metadata_expected(new_table,
+                                                     table_metadata_inserted);
 
   // remove table metadata.
   TableMetadataHelper::remove_table(new_table_name);
@@ -283,11 +297,13 @@ TEST_F(ApiTestTableMetadata, add_without_returned_table_id_get_table_metadata_by
  */
 TEST_F(ApiTestTableMetadata, get_two_table_metadata_by_table_name) {
   // prepare test data for adding table metadata.
-  UTTableMetadata testdata_table_metadata = *(global->testdata_table_metadata.get());
-  ptree new_table                         = testdata_table_metadata.tables;
-  std::string new_table_name =
-      new_table.get<std::string>(Tables::NAME) + "_ApiTestTableMetadata" + std::to_string(__LINE__);
-  new_table.put(Tables::NAME, new_table_name);
+  UTTableMetadata testdata_table_metadata =
+      *(global->testdata_table_metadata.get());
+  ptree new_table            = testdata_table_metadata.tables;
+  std::string new_table_name = new_table.get<std::string>(Table::NAME) +
+                               "_ApiTestTableMetadata" +
+                               std::to_string(__LINE__);
+  new_table.put(Table::NAME, new_table_name);
 
   auto tables = std::make_unique<Tables>(GlobalTestEnvironment::TEST_DB);
 
@@ -322,16 +338,18 @@ TEST_F(ApiTestTableMetadata, get_two_table_metadata_by_table_name) {
  */
 TEST_F(ApiTestTableMetadata, add_get_table_metadata_by_table_id) {
   // prepare test data for adding table metadata.
-  UTTableMetadata testdata_table_metadata = *(global->testdata_table_metadata.get());
-  ptree new_table                         = testdata_table_metadata.tables;
-  std::string new_table_name =
-      new_table.get<std::string>(Tables::NAME) + "_ApiTestTableMetadata" + std::to_string(__LINE__);
-  new_table.put(Tables::NAME, new_table_name);
+  UTTableMetadata testdata_table_metadata =
+      *(global->testdata_table_metadata.get());
+  ptree new_table            = testdata_table_metadata.tables;
+  std::string new_table_name = new_table.get<std::string>(Table::NAME) +
+                               "_ApiTestTableMetadata" +
+                               std::to_string(__LINE__);
+  new_table.put(Table::NAME, new_table_name);
 
   // add table metadata.
   ObjectIdType ret_table_id = -1;
   TableMetadataHelper::add_table(new_table, &ret_table_id);
-  new_table.put(Tables::ID, ret_table_id);
+  new_table.put(Table::ID, ret_table_id);
 
   // get table metadata by table id.
   auto tables     = std::make_unique<Tables>(GlobalTestEnvironment::TEST_DB);
@@ -346,7 +364,8 @@ TEST_F(ApiTestTableMetadata, add_get_table_metadata_by_table_id) {
   UTUtils::print(UTUtils::get_tree_string(table_metadata_inserted));
 
   // verifies that the returned table metadata is expected one.
-  TableMetadataHelper::check_table_metadata_expected(new_table, table_metadata_inserted);
+  TableMetadataHelper::check_table_metadata_expected(new_table,
+                                                     table_metadata_inserted);
 
   // remove table metadata.
   TableMetadataHelper::remove_table(ret_table_id);
@@ -356,8 +375,9 @@ TEST_F(ApiTestTableMetadata, add_get_table_metadata_by_table_id) {
  * @brief happy test for all table metadata getting.
  */
 TEST_F(ApiTestTableMetadata, get_all_table_metadata) {
-  constexpr int test_table_count      = 5;
-  std::string table_name_prefix       = "ApiTestTableMetadata-GetAll-" + std::to_string(time(NULL));
+  constexpr int test_table_count = 5;
+  std::string table_name_prefix =
+      "ApiTestTableMetadata-GetAll-" + std::to_string(time(NULL));
   std::vector<ObjectIdType> table_ids = {};
 
   // get base count
@@ -369,8 +389,9 @@ TEST_F(ApiTestTableMetadata, get_all_table_metadata) {
   EXPECT_EQ(ErrorCode::OK, error);
 
   // prepare test data for adding table metadata.
-  UTTableMetadata testdata_table_metadata = *(global->testdata_table_metadata.get());
-  ptree expected_table                    = testdata_table_metadata.tables;
+  UTTableMetadata testdata_table_metadata =
+      *(global->testdata_table_metadata.get());
+  ptree expected_table = testdata_table_metadata.tables;
 
   // add table metadata.
   for (int count = 1; count <= test_table_count; count++) {
@@ -392,11 +413,12 @@ TEST_F(ApiTestTableMetadata, get_all_table_metadata) {
     UTUtils::print(UTUtils::get_tree_string(table_metadata));
 
     std::string table_name = table_name_prefix + std::to_string(index + 1);
-    expected_table.put(Tables::ID, table_ids[index]);
-    expected_table.put(Tables::NAME, table_name);
+    expected_table.put(Table::ID, table_ids[index]);
+    expected_table.put(Table::NAME, table_name);
 
     // verifies that the returned table metadata is expected one.
-    TableMetadataHelper::check_table_metadata_expected(expected_table, table_metadata);
+    TableMetadataHelper::check_table_metadata_expected(expected_table,
+                                                       table_metadata);
   }
 
   // cleanup
@@ -419,7 +441,7 @@ TEST_F(ApiTestTableMetadata, get_all_table_metadata_empty) {
   EXPECT_EQ(ErrorCode::OK, error);
 
   std::vector<boost::property_tree::ptree> container = {};
-  error                                              = tables->get_all(container);
+  error = tables->get_all(container);
   EXPECT_EQ(ErrorCode::OK, error);
   EXPECT_EQ(base_table_count, container.size());
 }
@@ -430,16 +452,18 @@ TEST_F(ApiTestTableMetadata, get_all_table_metadata_empty) {
  */
 TEST_F(ApiTestTableMetadata, update_table_metadata) {
   // prepare test data for adding table metadata.
-  UTTableMetadata testdata_table_metadata = *(global->testdata_table_metadata.get());
-  ptree new_table                         = testdata_table_metadata.tables;
-  std::string new_table_name =
-      new_table.get<std::string>(Tables::NAME) + "_ApiTestTableMetadata" + std::to_string(__LINE__);
-  new_table.put(Tables::NAME, new_table_name);
+  UTTableMetadata testdata_table_metadata =
+      *(global->testdata_table_metadata.get());
+  ptree new_table            = testdata_table_metadata.tables;
+  std::string new_table_name = new_table.get<std::string>(Table::NAME) +
+                               "_ApiTestTableMetadata" +
+                               std::to_string(__LINE__);
+  new_table.put(Table::NAME, new_table_name);
 
   // add table metadata.
   ObjectIdType ret_table_id = -1;
   TableMetadataHelper::add_table(new_table, &ret_table_id);
-  new_table.put(Tables::ID, ret_table_id);
+  new_table.put(Table::ID, ret_table_id);
 
   // generate Tables object.
   auto tables     = std::make_unique<Tables>(GlobalTestEnvironment::TEST_DB);
@@ -455,45 +479,42 @@ TEST_F(ApiTestTableMetadata, update_table_metadata) {
 
   // update table metadata.
   ptree update_table = table_metadata_inserted;
-  update_table.put(Tables::NAME, "table_name-update");
-  update_table.put(Tables::NAMESPACE, "namespace-update");
-  update_table.put(Tables::TUPLES, 5.67f);
-
-  update_table.erase(Tables::PRIMARY_KEY_NODE);
-  ptree primary_key;
-  ptree primary_keys;
-  primary_key.put("", 2);
-  primary_keys.push_back(std::make_pair("", primary_key));
-  update_table.add_child(Tables::PRIMARY_KEY_NODE, primary_keys);
+  update_table.put(Table::NAME, "table_name-update");
+  update_table.put(Table::NAMESPACE, "namespace-update");
+  update_table.put(Table::NUMBER_OF_TUPLES, 567);
 
   // columns
-  update_table.erase(Tables::COLUMNS_NODE);
+  update_table.erase(Table::COLUMNS_NODE);
   ptree columns;
   {
-    auto columns_node = table_metadata_inserted.get_child(Tables::COLUMNS_NODE);
+    auto columns_node = table_metadata_inserted.get_child(Table::COLUMNS_NODE);
     auto it           = columns_node.begin();
 
     ptree column;
     // 1 item skip.
     // 2 item update.
     column = (++it)->second;
-    column.put(Tables::Column::NAME,
-               it->second.get_optional<std::string>(Tables::Column::NAME).value_or("unknown-1") +
-                   "-update");
-    column.put(Tables::Column::ORDINAL_POSITION, 1);
-    column.put(Tables::Column::DIRECTION, static_cast<int>(Tables::Column::Direction::DESCENDANT));
+    column.put(Column::NAME, it->second.get_optional<std::string>(Column::NAME)
+                                     .value_or("unknown-1") +
+                                 "-update");
+    column.put(Column::COLUMN_NUMBER, 1);
     columns.push_back(std::make_pair("", column));
 
     // new column
     column.clear();
-    column.put(Tables::Column::NAME, "new-col");
-    column.put(Tables::Column::ORDINAL_POSITION, 2);
-    column.put<ObjectIdType>(Tables::Column::DATA_TYPE_ID, 13);
-    column.put<bool>(Tables::Column::VARYING, false);
-    column.put(Tables::Column::DATA_LENGTH, 32);
-    column.put<bool>(Tables::Column::NULLABLE, false);
-    column.put(Tables::Column::DEFAULT, "default-value");
-    column.put(Tables::Column::DIRECTION, static_cast<int>(Tables::Column::Direction::ASCENDANT));
+    column.put(Column::NAME, "new-col");
+    column.put(Column::COLUMN_NUMBER, 2);
+    column.put<ObjectIdType>(Column::DATA_TYPE_ID, 13);
+    column.put<bool>(Column::VARYING, false);
+    {
+      ptree elements;
+      ptree element;
+      element.put("", 32);
+      elements.push_back(std::make_pair("", element));
+      column.add_child(Column::DATA_LENGTH, elements);
+    }
+    column.put<bool>(Column::IS_NOT_NULL, false);
+    column.put(Column::DEFAULT_EXPR, "default-value");
     columns.push_back(std::make_pair("", column));
 
     // 3 item copy.
@@ -501,10 +522,10 @@ TEST_F(ApiTestTableMetadata, update_table_metadata) {
     column = (++it)->second;
     columns.push_back(std::make_pair("", column));
   }
-  update_table.add_child(Tables::COLUMNS_NODE, columns);
+  update_table.add_child(Table::COLUMNS_NODE, columns);
 
   // constraint
-  update_table.erase(Tables::CONSTRAINTS_NODE);
+  update_table.erase(Table::CONSTRAINTS_NODE);
   ptree constraints;
   {
     ptree constraint;
@@ -513,15 +534,17 @@ TEST_F(ApiTestTableMetadata, update_table_metadata) {
     ptree columns_id;
     ptree columns_id_value;
 
-    auto constraints_node = table_metadata_inserted.get_child(Tables::CONSTRAINTS_NODE);
-    auto it               = constraints_node.begin();
+    auto constraints_node =
+        table_metadata_inserted.get_child(Table::CONSTRAINTS_NODE);
+    auto it = constraints_node.begin();
 
     // 1 item skip.
     constraint = (++it)->second;
     // 2 item update.
-    constraint.put(
-        Constraint::NAME,
-        it->second.get_optional<std::string>(Constraint::NAME).value_or("unknown-1") + "-update");
+    constraint.put(Constraint::NAME,
+                   it->second.get_optional<std::string>(Constraint::NAME)
+                           .value_or("unknown-1") +
+                       "-update");
     // columns
     columns_num_value.put("", 3);
     columns_num.push_back(std::make_pair("", columns_num_value));
@@ -542,7 +565,8 @@ TEST_F(ApiTestTableMetadata, update_table_metadata) {
     // name
     constraint.put(Constraint::NAME, "new unique constraint");
     // type
-    constraint.put(Constraint::TYPE, static_cast<int32_t>(Constraint::ConstraintType::UNIQUE));
+    constraint.put(Constraint::TYPE,
+                   static_cast<int64_t>(Constraint::ConstraintType::UNIQUE));
     // columns
     columns_num_value.put("", 9);
     columns_num.push_back(std::make_pair("", columns_num_value));
@@ -556,7 +580,7 @@ TEST_F(ApiTestTableMetadata, update_table_metadata) {
     // constraints
     constraints.push_back(std::make_pair("", constraint));
   }
-  update_table.add_child(Tables::CONSTRAINTS_NODE, constraints);
+  update_table.add_child(Table::CONSTRAINTS_NODE, constraints);
 
   // update table metadata.
   error = tables->update(ret_table_id, update_table);
@@ -570,7 +594,8 @@ TEST_F(ApiTestTableMetadata, update_table_metadata) {
   UTUtils::print(UTUtils::get_tree_string(table_metadata_updated));
 
   // verifies that the returned table metadata is expected one.
-  TableMetadataHelper::check_table_metadata_expected(update_table, table_metadata_updated);
+  TableMetadataHelper::check_table_metadata_expected(update_table,
+                                                     table_metadata_updated);
 
   // remove table metadata.
   TableMetadataHelper::remove_table(ret_table_id);
@@ -581,11 +606,13 @@ TEST_F(ApiTestTableMetadata, update_table_metadata) {
  */
 TEST_F(ApiTestTableMetadata, remove_table_metadata_by_table_name) {
   // prepare test data for adding table metadata.
-  UTTableMetadata testdata_table_metadata = *(global->testdata_table_metadata.get());
-  ptree new_table                         = testdata_table_metadata.tables;
-  std::string new_table_name =
-      new_table.get<std::string>(Tables::NAME) + "_ApiTestTableMetadata" + std::to_string(__LINE__);
-  new_table.put(Tables::NAME, new_table_name);
+  UTTableMetadata testdata_table_metadata =
+      *(global->testdata_table_metadata.get());
+  ptree new_table            = testdata_table_metadata.tables;
+  std::string new_table_name = new_table.get<std::string>(Table::NAME) +
+                               "_ApiTestTableMetadata" +
+                               std::to_string(__LINE__);
+  new_table.put(Table::NAME, new_table_name);
 
   // add table metadata.
   ObjectIdType ret_table_id = -1;
@@ -597,7 +624,7 @@ TEST_F(ApiTestTableMetadata, remove_table_metadata_by_table_name) {
   EXPECT_EQ(ErrorCode::OK, error);
 
   ObjectIdType table_id_to_remove = -1;
-  error                           = tables->remove(new_table_name.c_str(), &table_id_to_remove);
+  error = tables->remove(new_table_name.c_str(), &table_id_to_remove);
   EXPECT_EQ(ErrorCode::OK, error);
   EXPECT_EQ(ret_table_id, table_id_to_remove);
 
@@ -615,11 +642,13 @@ TEST_F(ApiTestTableMetadata, remove_table_metadata_by_table_name) {
  */
 TEST_F(ApiTestTableMetadata, remove_table_metadata_by_table_id) {
   // prepare test data for adding table metadata.
-  UTTableMetadata testdata_table_metadata = *(global->testdata_table_metadata.get());
-  ptree new_table                         = testdata_table_metadata.tables;
-  std::string new_table_name =
-      new_table.get<std::string>(Tables::NAME) + "_ApiTestTableMetadata" + std::to_string(__LINE__);
-  new_table.put(Tables::NAME, new_table_name);
+  UTTableMetadata testdata_table_metadata =
+      *(global->testdata_table_metadata.get());
+  ptree new_table            = testdata_table_metadata.tables;
+  std::string new_table_name = new_table.get<std::string>(Table::NAME) +
+                               "_ApiTestTableMetadata" +
+                               std::to_string(__LINE__);
+  new_table.put(Table::NAME, new_table_name);
 
   // add table metadata.
   ObjectIdType ret_table_id = -1;
@@ -646,13 +675,16 @@ TEST_F(ApiTestTableMetadata, remove_table_metadata_by_table_id) {
  * @brief happy test for adding, getting and removing
  *   one new table metadata without initialization of all api.
  */
-TEST_F(ApiTestTableMetadata, add_get_remove_table_metadata_without_initialized) {
+TEST_F(ApiTestTableMetadata,
+       add_get_remove_table_metadata_without_initialized) {
   // prepare test data for adding table metadata.
-  UTTableMetadata testdata_table_metadata = *(global->testdata_table_metadata.get());
-  ptree new_table                         = testdata_table_metadata.tables;
-  std::string new_table_name =
-      new_table.get<std::string>(Tables::NAME) + "_ApiTestTableMetadata" + std::to_string(__LINE__);
-  new_table.put(Tables::NAME, new_table_name);
+  UTTableMetadata testdata_table_metadata =
+      *(global->testdata_table_metadata.get());
+  ptree new_table            = testdata_table_metadata.tables;
+  std::string new_table_name = new_table.get<std::string>(Table::NAME) +
+                               "_ApiTestTableMetadata" +
+                               std::to_string(__LINE__);
+  new_table.put(Table::NAME, new_table_name);
 
   // add table metadata without initialized.
   auto tables_add = std::make_unique<Tables>(GlobalTestEnvironment::TEST_DB);
@@ -660,13 +692,14 @@ TEST_F(ApiTestTableMetadata, add_get_remove_table_metadata_without_initialized) 
   UTUtils::print("-- add table metadata --");
   ObjectIdType ret_table_id = -1;
   ErrorCode error           = tables_add->add(new_table, &ret_table_id);
-  new_table.put(Tables::ID, ret_table_id);
+  new_table.put(Table::ID, ret_table_id);
 
   EXPECT_EQ(ErrorCode::OK, error);
   EXPECT_GT(ret_table_id, 0);
 
   // get table metadata by table id without initialized.
-  auto tables_get_by_id = std::make_unique<Tables>(GlobalTestEnvironment::TEST_DB);
+  auto tables_get_by_id =
+      std::make_unique<Tables>(GlobalTestEnvironment::TEST_DB);
 
   ptree table_metadata_inserted_by_id;
   error = tables_get_by_id->get(ret_table_id, table_metadata_inserted_by_id);
@@ -676,28 +709,33 @@ TEST_F(ApiTestTableMetadata, add_get_remove_table_metadata_without_initialized) 
   UTUtils::print(UTUtils::get_tree_string(table_metadata_inserted_by_id));
 
   // verifies that the returned table metadata is expected one.
-  TableMetadataHelper::check_table_metadata_expected(new_table, table_metadata_inserted_by_id);
+  TableMetadataHelper::check_table_metadata_expected(
+      new_table, table_metadata_inserted_by_id);
 
   // get table metadata by table name without initialized.
-  auto tables_get_by_name = std::make_unique<Tables>(GlobalTestEnvironment::TEST_DB);
+  auto tables_get_by_name =
+      std::make_unique<Tables>(GlobalTestEnvironment::TEST_DB);
 
   ptree table_metadata_inserted_by_name;
-  error = tables_get_by_name->get(new_table_name, table_metadata_inserted_by_name);
+  error =
+      tables_get_by_name->get(new_table_name, table_metadata_inserted_by_name);
   EXPECT_EQ(ErrorCode::OK, error);
 
   UTUtils::print("-- get table metadata by table-name --");
   UTUtils::print(UTUtils::get_tree_string(table_metadata_inserted_by_name));
 
   // verifies that the returned table metadata is expected one.
-  TableMetadataHelper::check_table_metadata_expected(new_table, table_metadata_inserted_by_name);
+  TableMetadataHelper::check_table_metadata_expected(
+      new_table, table_metadata_inserted_by_name);
 
   // update table metadata without initialized.
   auto tables_update = std::make_unique<Tables>(GlobalTestEnvironment::TEST_DB);
 
   // update valid table metadata.
-  auto update_table      = new_table;
-  std::string table_name = new_table.get_optional<std::string>(Tables::NAME).value() + "-update";
-  update_table.put(Tables::NAME, table_name);
+  auto update_table = new_table;
+  std::string table_name =
+      new_table.get_optional<std::string>(Table::NAME).value() + "-update";
+  update_table.put(Table::NAME, table_name);
 
   UTUtils::print("-- update table metadata --");
   error = tables_update->update(ret_table_id, update_table);
@@ -711,10 +749,12 @@ TEST_F(ApiTestTableMetadata, add_get_remove_table_metadata_without_initialized) 
   UTUtils::print(UTUtils::get_tree_string(table_metadata_updated));
 
   // verifies that the returned table metadata is expected one.
-  TableMetadataHelper::check_table_metadata_expected(update_table, table_metadata_updated);
+  TableMetadataHelper::check_table_metadata_expected(update_table,
+                                                     table_metadata_updated);
 
   // remove table metadata by table id without initialized.
-  auto tables_remove_by_id = std::make_unique<Tables>(GlobalTestEnvironment::TEST_DB);
+  auto tables_remove_by_id =
+      std::make_unique<Tables>(GlobalTestEnvironment::TEST_DB);
 
   UTUtils::print("-- remove table metadata by table-id  --");
   error = tables_remove_by_id->remove(ret_table_id);
@@ -725,10 +765,12 @@ TEST_F(ApiTestTableMetadata, add_get_remove_table_metadata_without_initialized) 
 
   // remove table metadata by table name without initialized.
   ObjectIdType table_id_to_remove = -1;
-  auto tables_remove_by_name      = std::make_unique<Tables>(GlobalTestEnvironment::TEST_DB);
+  auto tables_remove_by_name =
+      std::make_unique<Tables>(GlobalTestEnvironment::TEST_DB);
 
   UTUtils::print("-- remove table metadata by table-name  --");
-  error = tables_remove_by_name->remove(new_table_name.c_str(), &table_id_to_remove);
+  error = tables_remove_by_name->remove(new_table_name.c_str(),
+                                        &table_id_to_remove);
   EXPECT_EQ(ErrorCode::OK, error);
   EXPECT_EQ(ret_table_id, table_id_to_remove);
 }
@@ -759,7 +801,8 @@ TEST_F(ApiTestTableAcls, get_acl) {
       acls_expected[foreign_table_2::table_name] = "arwd";
       acls_expected[foreign_table_3::table_name] = "";
 
-      TableMetadataHelper::check_table_acls_expected(acls_expected, table_metadata);
+      TableMetadataHelper::check_table_acls_expected(acls_expected,
+                                                     table_metadata);
     }
   }
 
@@ -780,7 +823,8 @@ TEST_F(ApiTestTableAcls, get_acl) {
       acls_expected[foreign_table_2::table_name] = "r";
       acls_expected[foreign_table_3::table_name] = "rw";
 
-      TableMetadataHelper::check_table_acls_expected(acls_expected, table_metadata);
+      TableMetadataHelper::check_table_acls_expected(acls_expected,
+                                                     table_metadata);
     }
   }
 
@@ -801,7 +845,8 @@ TEST_F(ApiTestTableAcls, get_acl) {
       acls_expected[foreign_table_2::table_name] = "";
       acls_expected[foreign_table_3::table_name] = "";
 
-      TableMetadataHelper::check_table_acls_expected(acls_expected, table_metadata);
+      TableMetadataHelper::check_table_acls_expected(acls_expected,
+                                                     table_metadata);
     }
   }
 }
@@ -841,8 +886,9 @@ TEST_F(ApiTestTableAcls, get_acl_token_invalid) {
     std::string token_string = "";
 
     UTUtils::print("-- get acls -- [", role_1::role_name, "]");
-    token_string = ApiTestTableAcls::generate_token(role_1::role_name) + "invalid";
-    error        = tables->get_acls(token_string, table_metadata);
+    token_string =
+        ApiTestTableAcls::generate_token(role_1::role_name) + "invalid";
+    error = tables->get_acls(token_string, table_metadata);
     EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);
   }
 }

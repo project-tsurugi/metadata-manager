@@ -37,13 +37,12 @@ class ColumnsDAO : public manager::metadata::db::ColumnsDAO {
     static constexpr const char* const kId = "id";
     static constexpr const char* const kName = "name";
     static constexpr const char* const kTableId = "table_id";
-    static constexpr const char* const kOrdinalPosition = "ordinal_position";
+    static constexpr const char* const kColumnNumber = "column_number";
     static constexpr const char* const kDataTypeId = "data_type_id";
     static constexpr const char* const kDataLength = "data_length";
     static constexpr const char* const kVarying = "varying";
-    static constexpr const char* const kNullable = "nullable";
-    static constexpr const char* const kDefaultExpr = "default_expr";
-    static constexpr const char* const kDirection = "direction";
+    static constexpr const char* const kIsNotNull = "is_not_null";
+    static constexpr const char* const kDefaultExpr = "default_expression";
   };  // class ColumnName
 
   /**
@@ -56,13 +55,12 @@ class ColumnsDAO : public manager::metadata::db::ColumnsDAO {
     kId,
     kName,
     kTableId,
-    kOrdinalPosition,
+    kColumnNumber,
     kDataTypeId,
     kDataLength,
     kVarying,
-    kNullable,
+    kIsNotNull,
     kDefaultExpr,
-    kDirection
   };  // enum class OrdinalPosition
 
   /**

@@ -128,7 +128,7 @@ std::string select_column_statistic(std::string_view column_name) {
       StatisticsDAO::ColumnName::kName % StatisticsDAO::ColumnName::kColumnId %
       StatisticsDAO::ColumnName::kColumnStatistic % ColumnsDAO::kTableName %
       ColumnsDAO::ColumnName::kId % ColumnsDAO::ColumnName::kTableId %
-      ColumnsDAO::ColumnName::kOrdinalPosition % ColumnsDAO::ColumnName::kName %
+      ColumnsDAO::ColumnName::kColumnNumber % ColumnsDAO::ColumnName::kName %
       column_name.data();
 
   return query.str();
@@ -156,7 +156,7 @@ std::string select_column_statistic_by_table_id_column_info(
       StatisticsDAO::ColumnName::kName % StatisticsDAO::ColumnName::kColumnId %
       StatisticsDAO::ColumnName::kColumnStatistic % ColumnsDAO::kTableName %
       ColumnsDAO::ColumnName::kId % ColumnsDAO::ColumnName::kTableId %
-      ColumnsDAO::ColumnName::kOrdinalPosition % ColumnsDAO::ColumnName::kName %
+      ColumnsDAO::ColumnName::kColumnNumber % ColumnsDAO::ColumnName::kName %
       column_name.data();
 
   return query.str();
@@ -181,7 +181,7 @@ std::string select_all_column_statistics() {
       StatisticsDAO::ColumnName::kName % StatisticsDAO::ColumnName::kColumnId %
       StatisticsDAO::ColumnName::kColumnStatistic % ColumnsDAO::kTableName %
       ColumnsDAO::ColumnName::kId % ColumnsDAO::ColumnName::kTableId %
-      ColumnsDAO::ColumnName::kOrdinalPosition % ColumnsDAO::ColumnName::kName;
+      ColumnsDAO::ColumnName::kColumnNumber % ColumnsDAO::ColumnName::kName;
 
   return query.str();
 }
@@ -208,7 +208,7 @@ std::string select_all_column_statistics_by_table_id() {
       StatisticsDAO::ColumnName::kName % StatisticsDAO::ColumnName::kColumnId %
       StatisticsDAO::ColumnName::kColumnStatistic % ColumnsDAO::kTableName %
       ColumnsDAO::ColumnName::kId % ColumnsDAO::ColumnName::kTableId %
-      ColumnsDAO::ColumnName::kOrdinalPosition % ColumnsDAO::ColumnName::kName;
+      ColumnsDAO::ColumnName::kColumnNumber % ColumnsDAO::ColumnName::kName;
 
   return query.str();
 }
@@ -331,8 +331,8 @@ StatisticsDAO::StatisticsDAO(DBSessionManager* session_manager)
 
   column_names_columns.emplace(Statistics::COLUMN_NAME,
                                ColumnsDAO::ColumnName::kName);
-  column_names_columns.emplace(Statistics::ORDINAL_POSITION,
-                               ColumnsDAO::ColumnName::kOrdinalPosition);
+  column_names_columns.emplace(Statistics::COLUMN_NUMBER,
+                               ColumnsDAO::ColumnName::kColumnNumber);
   for (auto column : column_names_columns) {
     // Creates unique name for the new prepared statement.
     boost::format statement_name_insert =
@@ -766,7 +766,7 @@ ErrorCode StatisticsDAO::select_column_statistic(
       object = container[0];
     } else if (container.size() == 0) {
       // Convert the error code.
-      if (object_key == Statistics::ORDINAL_POSITION) {
+      if (object_key == Statistics::COLUMN_NUMBER) {
         error = ErrorCode::ID_NOT_FOUND;
       } else if (object_key == Statistics::COLUMN_NAME) {
         error = ErrorCode::NAME_NOT_FOUND;
@@ -931,7 +931,7 @@ ErrorCode StatisticsDAO::delete_column_statistic(
           PQgetvalue(res, ordinal_position, 0), statistic_id);
     } else if (number_of_rows_affected == 0) {
       // Convert the error code.
-      if (object_key == Statistics::ORDINAL_POSITION) {
+      if (object_key == Statistics::COLUMN_NUMBER) {
         error = ErrorCode::ID_NOT_FOUND;
       } else if (object_key == Statistics::COLUMN_NAME) {
         error = ErrorCode::NAME_NOT_FOUND;
@@ -1035,9 +1035,9 @@ ErrorCode StatisticsDAO::convert_pgresult_to_ptree(
 
   // Set the value of the ordinal position column to ptree.
   statistic.put(
-      Statistics::ORDINAL_POSITION,
+      Statistics::COLUMN_NUMBER,
       PQgetvalue(res, ordinal_position,
-                 static_cast<int>(OrdinalPosition::kOrdinalPosition)));
+                 static_cast<int>(OrdinalPosition::kColumnNumber)));
 
   // Set the value of the column id column to ptree.
   statistic.put(Statistics::COLUMN_ID,

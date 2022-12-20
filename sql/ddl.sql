@@ -11,12 +11,10 @@ CREATE TABLE tsurugi_catalog.tsurugi_class
     id bigserial NOT NULL,
     name text NOT NULL,
     namespace text,
-    primary_key json,
-    tuples real,
+    number_of_tuples bigint,
     PRIMARY KEY(id),
     UNIQUE(namespace, name)
 );
-
 CREATE INDEX ON tsurugi_catalog.tsurugi_class ( name );
 
 CREATE TABLE tsurugi_catalog.tsurugi_type
@@ -38,18 +36,16 @@ CREATE TABLE tsurugi_catalog.tsurugi_attribute
     id bigserial NOT NULL,
     name text NOT NULL,
     table_id bigint NOT NULL REFERENCES tsurugi_catalog.tsurugi_class (id) ON DELETE CASCADE,
-    ordinal_position bigint NOT NULL,
+    column_number bigint NOT NULL,
     data_type_id bigint NOT NULL REFERENCES tsurugi_catalog.tsurugi_type (id),
     data_length json,
     varying bool,
-    nullable bool NOT NULL,
-    default_expr text,
-    direction bigint,
+    is_not_null bool NOT NULL,
+    default_expression text,
     PRIMARY KEY(id),
     UNIQUE(table_id, name),
-    UNIQUE(table_id, ordinal_position)
+    UNIQUE(table_id, column_number)
 );
-
 CREATE INDEX ON tsurugi_catalog.tsurugi_attribute ( table_id );
 
 CREATE TABLE tsurugi_catalog.tsurugi_index
@@ -62,9 +58,9 @@ CREATE TABLE tsurugi_catalog.tsurugi_index
     owner_id bigint,
     acl text,
     table_id bigint NOT NULL REFERENCES tsurugi_catalog.tsurugi_class (id) ON DELETE CASCADE,
-    access_method bigint,
-    is_unique bool,
-    is_primary bool,
+    access_method bigint NOT NULL,
+    is_unique bool NOT NULL,
+    is_primary bool NOT NULL,
     number_of_key_column bigint,
     columns json,
     columns_id json,
@@ -72,7 +68,6 @@ CREATE TABLE tsurugi_catalog.tsurugi_index
     PRIMARY KEY(id),
     UNIQUE(table_id, name)
 );
-
 CREATE INDEX ON tsurugi_catalog.tsurugi_index ( table_id );
 
 CREATE TABLE tsurugi_catalog.tsurugi_constraint
@@ -95,7 +90,6 @@ CREATE TABLE tsurugi_catalog.tsurugi_constraint
     fk_update_action bigint,
     PRIMARY KEY(id)
 );
-
 CREATE INDEX ON tsurugi_catalog.tsurugi_constraint ( table_id );
 
 CREATE TABLE tsurugi_catalog.tsurugi_statistic
@@ -108,14 +102,6 @@ CREATE TABLE tsurugi_catalog.tsurugi_statistic
     column_statistic json,
     PRIMARY KEY (id),
     UNIQUE(column_id)
-);
-
-CREATE TABLE tsurugi_catalog.indexes
-(
-    format_version integer NOT NULL,
-    generation bigint NOT NULL,
-    id bigserial NOT NULL,
-    name text
 );
 
 -- INT32

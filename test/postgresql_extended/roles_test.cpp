@@ -35,10 +35,11 @@ using manager::metadata::FormatVersionType;
 using manager::metadata::GenerationType;
 using manager::metadata::ObjectIdType;
 using manager::metadata::Roles;
+using manager::metadata::Table;
 using manager::metadata::Tables;
 using manager::metadata::db::postgresql::ConnectionSPtr;
 
-static constexpr const char* const TEST_DB = "test";
+static constexpr const char* const TEST_DB   = "test";
 static constexpr const char* const ROLE_NAME = "tsurugi_ut_role_user_1";
 
 ConnectionSPtr connection;
@@ -166,8 +167,8 @@ void db_connection() {
   if (PQstatus(connection.get()) != CONNECTION_OK) {
     // db connection.
     PGconn* pgconn = PQconnectdb(Config::get_connection_string().c_str());
-    db::postgresql::ConnectionSPtr conn(
-        pgconn, [](PGconn* c) { ::PQfinish(c); });
+    db::postgresql::ConnectionSPtr conn(pgconn,
+                                        [](PGconn* c) { ::PQfinish(c); });
     connection = conn;
   }
 }
@@ -185,13 +186,13 @@ ObjectIdType create_role(std::string_view role_name, std::string_view options) {
   // db connection.
   db_connection();
 
-  statement = boost::format("CREATE ROLE %s %s") % role_name % options;
+  statement     = boost::format("CREATE ROLE %s %s") % role_name % options;
   PGresult* res = PQexec(connection.get(), statement.str().c_str());
   PQclear(res);
 
   statement =
       boost::format("SELECT oid FROM pg_authid WHERE rolname='%s'") % role_name;
-  res = PQexec(connection.get(), statement.str().c_str());
+  res     = PQexec(connection.get(), statement.str().c_str());
   role_id = std::stol(PQgetvalue(res, 0, 0));
   PQclear(res);
 
@@ -208,7 +209,7 @@ void drop_role(std::string_view role_name) {
 
   // remove dummy data for ROLE.
   boost::format statement = boost::format("DROP ROLE %s") % role_name;
-  PGresult* res = PQexec(connection.get(), statement.str().c_str());
+  PGresult* res           = PQexec(connection.get(), statement.str().c_str());
   PQclear(res);
 }
 
@@ -349,7 +350,7 @@ void roles_test() {
       "NOINHERIT CREATEROLE CREATEDB REPLICATION CONNECTION LIMIT 10");
 
   auto roles = std::make_unique<Roles>(TEST_DB);
-  result = roles->init();
+  result     = roles->init();
   EXPECT_EQ(ErrorCode::OK, result);
 
   ptree role_metadata;
@@ -403,7 +404,7 @@ void get_role_metadata(std::string_view role_name) {
   ErrorCode result = ErrorCode::UNKNOWN;
 
   auto roles = std::make_unique<Roles>(TEST_DB);
-  result = roles->init();
+  result     = roles->init();
   if (result != ErrorCode::OK) {
     std::cout << "Failed to initialize the metadata management object."
               << std::endl
@@ -433,7 +434,7 @@ void get_table_metadata(std::string_view role_name,
   ErrorCode result = ErrorCode::UNKNOWN;
 
   auto tables = std::make_unique<Tables>(TEST_DB);
-  result = tables->init();
+  result      = tables->init();
   if (result != ErrorCode::OK) {
     std::cout << "ERR: Failed to initialize the metadata management object."
               << std::endl
@@ -445,10 +446,10 @@ void get_table_metadata(std::string_view role_name,
   ptree table_metadata;
   result = tables->get(table_name, table_metadata);
   if (result == ErrorCode::OK) {
-    auto acls = table_metadata.get_child_optional(Tables::ACL);
+    auto acls = table_metadata.get_child_optional(Table::ACL);
     if (!acls) {
       std::cout << "ERR: Failed to get table metadata." << std::endl
-                << "  There is no " << Tables::ACL << " in the metadata."
+                << "  There is no " << Table::ACL << " in the metadata."
                 << std::endl
                 << std::endl;
       return;
@@ -458,7 +459,7 @@ void get_table_metadata(std::string_view role_name,
     std::string role_name_esc = std::regex_replace(
         std::string(role_name), std::regex(R"(\\)"), R"(\\)");
 
-    std::string acl_value = "";
+    std::string acl_value  = "";
     std::string permission = "";
     BOOST_FOREACH (const ptree::value_type& node, acls.get()) {
       std::string acl_data =
@@ -473,7 +474,7 @@ void get_table_metadata(std::string_view role_name,
                   << std::endl;
         continue;
       }
-      std::string acl_role_name = results[1].str();
+      std::string acl_role_name  = results[1].str();
       std::string acl_permission = results[2].str();
 
       // Conversion of record value (\\ -> \).
@@ -488,7 +489,7 @@ void get_table_metadata(std::string_view role_name,
 
       if ((acl_role_name.empty()) ||
           (std::regex_match(acl_role_name, std::regex(role_name_esc)))) {
-        acl_value = acl_data;
+        acl_value  = acl_data;
         permission = acl_permission;
         break;
       }
@@ -520,7 +521,7 @@ void confirm_permission_in_acls(std::string_view role_name,
   ErrorCode result = ErrorCode::UNKNOWN;
 
   auto tables = std::make_unique<Tables>(TEST_DB);
-  result = tables->init();
+  result      = tables->init();
   if (result != ErrorCode::OK) {
     std::cout << "Failed to initialize the metadata management object."
               << std::endl

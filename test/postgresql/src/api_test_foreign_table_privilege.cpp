@@ -298,8 +298,8 @@ TEST_F(ApiTestForeignTable, get_table_metadata) {
   UTUtils::print("-- get an foreign table metadata --");
   UTUtils::print(UTUtils::get_tree_string(object));
 
-  auto res_role_id = object.get_optional<Oid>(Tables::OWNER_ROLE_ID);
-  auto res_acl = object.get_child(Tables::ACL);
+  auto res_role_id = object.get_optional<Oid>(Table::OWNER_ROLE_ID);
+  auto res_acl = object.get_child(Table::ACL);
   EXPECT_GT(res_role_id.value(), 0);
   EXPECT_GT(res_acl.size(), 0);
 }

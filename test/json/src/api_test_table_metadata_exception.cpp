@@ -48,51 +48,51 @@ class ApiTestAddTableMetadataException
 
     // remove table name
     ptree new_table = global->testdata_table_metadata->tables;
-    new_table.erase(Tables::NAME);
+    new_table.erase(Table::NAME);
     invalid_table_metadata.emplace_back(new_table);
 
     // remove all column name
     new_table = global->testdata_table_metadata->tables;
     BOOST_FOREACH (ptree::value_type& node,
-                   new_table.get_child(Tables::COLUMNS_NODE)) {
+                   new_table.get_child(Table::COLUMNS_NODE)) {
       ptree& column = node.second;
-      column.erase(Tables::Column::NAME);
+      column.erase(Column::NAME);
     }
     invalid_table_metadata.emplace_back(new_table);
 
-    // remove all ordinal position
+    // remove all column number
     new_table = global->testdata_table_metadata->tables;
     BOOST_FOREACH (ptree::value_type& node,
-                   new_table.get_child(Tables::COLUMNS_NODE)) {
+                   new_table.get_child(Table::COLUMNS_NODE)) {
       ptree& column = node.second;
-      column.erase(Tables::Column::ORDINAL_POSITION);
+      column.erase(Column::COLUMN_NUMBER);
     }
     invalid_table_metadata.emplace_back(new_table);
 
     // remove all data type id
     new_table = global->testdata_table_metadata->tables;
     BOOST_FOREACH (ptree::value_type& node,
-                   new_table.get_child(Tables::COLUMNS_NODE)) {
+                   new_table.get_child(Table::COLUMNS_NODE)) {
       ptree& column = node.second;
-      column.erase(Tables::Column::DATA_TYPE_ID);
+      column.erase(Column::DATA_TYPE_ID);
     }
     invalid_table_metadata.emplace_back(new_table);
 
     // add invalid data type id
     BOOST_FOREACH (ptree::value_type& node,
-                   new_table.get_child(Tables::COLUMNS_NODE)) {
+                   new_table.get_child(Table::COLUMNS_NODE)) {
       ptree& column = node.second;
       int invalid_data_type_id = -1;
-      column.put(Tables::Column::DATA_TYPE_ID, invalid_data_type_id);
+      column.put(Column::DATA_TYPE_ID, invalid_data_type_id);
     }
     invalid_table_metadata.emplace_back(new_table);
 
     // remove all not null constraint
     new_table = global->testdata_table_metadata->tables;
     BOOST_FOREACH (ptree::value_type& node,
-                   new_table.get_child(Tables::COLUMNS_NODE)) {
+                   new_table.get_child(Table::COLUMNS_NODE)) {
       ptree& column = node.second;
-      column.erase(Tables::Column::NULLABLE);
+      column.erase(Column::IS_NOT_NULL);
     }
     invalid_table_metadata.emplace_back(new_table);
 
@@ -117,13 +117,13 @@ class ApiTestTableMetadataByTableNameException
 };
 
 INSTANTIATE_TEST_CASE_P(
-    ParamtererizedTest, ApiTestTableMetadataByTableIdException,
+    ParameterizedTest, ApiTestTableMetadataByTableIdException,
     ::testing::Values(-1, 0, INT64_MAX - 1, INT64_MAX,
                       std::numeric_limits<ObjectIdType>::infinity(),
                       -std::numeric_limits<ObjectIdType>::infinity(),
                       std::numeric_limits<ObjectIdType>::quiet_NaN()));
 
-INSTANTIATE_TEST_CASE_P(ParamtererizedTest,
+INSTANTIATE_TEST_CASE_P(ParameterizedTest,
                         ApiTestTableMetadataByTableNameException,
                         ::testing::Values("table_name_not_exists", ""));
 

@@ -21,6 +21,7 @@
 
 #include "manager/metadata/common/message.h"
 #include "manager/metadata/helper/logging_helper.h"
+#include "manager/metadata/helper/ptree_helper.h"
 #include "manager/metadata/provider/constraints_provider.h"
 
 // =============================================================================
@@ -34,41 +35,6 @@ std::unique_ptr<manager::metadata::db::ConstraintsProvider> provider = nullptr;
 namespace manager::metadata {
 
 using boost::property_tree::ptree;
-
-// ==========================================================================
-// File local functions.
-/**
- * @brief Transform from a std::vector object to a ptree object.
- * @tparam T Type of variable to convert.
- * @param vector_object  [in]  Object to be converted.
- * @param ptree_object   [out] Converted object.
- */
-template <typename T>
-void transform_object(const std::vector<T>& vector_object,
-                      boost::property_tree::ptree& ptree_object) {
-  ptree_object.clear();
-  for (const T& value : vector_object) {
-    boost::property_tree::ptree child_ptree;
-
-    child_ptree.put("", value);
-    ptree_object.push_back(std::make_pair("", child_ptree));
-  }
-}
-
-/**
- * @brief Transform from a ptree object to a std::vector object.
- * @tparam T Type of variable to convert.
- * @param ptree_object   [in]  Object to be converted.
- * @param vector_object  [out] Converted object.
- */
-template <typename T>
-void transform_object(const boost::property_tree::ptree& ptree_object,
-                      std::vector<T>& vector_object) {
-  vector_object.clear();
-  std::transform(
-      ptree_object.begin(), ptree_object.end(), std::back_inserter(vector_object),
-      [](boost::property_tree::ptree::value_type v) { return v.second.get_optional<T>("").get(); });
-}
 
 // ==========================================================================
 // Constraint class methods.
@@ -92,16 +58,14 @@ boost::property_tree::ptree Constraint::convert_to_ptree() const {
   }
 
   // constraint type.
-  metadata.put(TYPE, static_cast<int32_t>(this->type));
+  metadata.put(TYPE, static_cast<int64_t>(this->type));
 
   // column numbers.
-  ptree columns_node;
-  transform_object(this->columns, columns_node);
+  ptree columns_node = ptree_helper::make_array_ptree(this->columns);
   metadata.add_child(COLUMNS, columns_node);
 
   // column IDs.
-  ptree columns_id_node;
-  transform_object(this->columns_id, columns_id_node);
+  ptree columns_id_node = ptree_helper::make_array_ptree(this->columns_id);
   metadata.add_child(COLUMNS_ID, columns_id_node);
 
   // index ID.
@@ -109,6 +73,26 @@ boost::property_tree::ptree Constraint::convert_to_ptree() const {
 
   // constraint expression.
   metadata.put(EXPRESSION, this->expression);
+
+  // referenced table name.
+  metadata.put(PK_TABLE, this->pk_table);
+
+  // referenced column numbers.
+  ptree pk_columns_node = ptree_helper::make_array_ptree(this->pk_columns);
+  metadata.add_child(PK_COLUMNS, pk_columns_node);
+
+  // referenced column IDs.
+  ptree pk_columns_id_node = ptree_helper::make_array_ptree(this->pk_columns_id);
+  metadata.add_child(PK_COLUMNS_ID, pk_columns_id_node);
+
+  // referenced rows match type.
+  metadata.put(FK_MATCH_TYPE, static_cast<int64_t>(this->fk_match_type));
+
+  // referenced row delete action.
+  metadata.put(FK_DELETE_ACTION, static_cast<int64_t>(this->fk_delete_action));
+
+  // referenced row update action.
+  metadata.put(FK_UPDATE_ACTION, static_cast<int64_t>(this->fk_update_action));
 
   return metadata;
 }
@@ -122,22 +106,46 @@ void Constraint::convert_from_ptree(const boost::property_tree::ptree& ptree) {
   Object::convert_from_ptree(ptree);
 
   // table ID.
-  this->table_id = ptree.get_optional<ObjectId>(TABLE_ID).value_or(INVALID_OBJECT_ID);
+  this->table_id =
+      ptree.get_optional<ObjectId>(TABLE_ID).value_or(INVALID_OBJECT_ID);
 
   // constraint type.
-  this->type = static_cast<ConstraintType>(ptree.get_optional<int32_t>(TYPE).value_or(-1));
+  this->type = static_cast<ConstraintType>(
+      ptree.get_optional<int64_t>(TYPE).value_or(-1));
 
   // column numbers.
-  transform_object(ptree.get_child(COLUMNS), this->columns);
+  this->columns = ptree_helper::make_vector_int(ptree, COLUMNS);
 
   // column IDs.
-  transform_object(ptree.get_child(COLUMNS_ID), this->columns_id);
+  this->columns_id = ptree_helper::make_vector_int(ptree, COLUMNS_ID);
 
   // index ID.
-  this->index_id = ptree.get_optional<int64_t>(INDEX_ID).value_or(INVALID_VALUE);
+  this->index_id =
+      ptree.get_optional<int64_t>(INDEX_ID).value_or(INVALID_VALUE);
 
   // constraint expression.
   this->expression = ptree.get_optional<std::string>(EXPRESSION).value_or("");
+
+  // referenced table name.
+  this->pk_table = ptree.get_optional<std::string>(PK_TABLE).value_or("");
+
+  // referenced column numbers.
+  this->pk_columns = ptree_helper::make_vector_int(ptree, PK_COLUMNS);
+
+  // referenced column IDs.
+  this->pk_columns_id = ptree_helper::make_vector_int(ptree, PK_COLUMNS_ID);
+
+  // referenced rows match type.
+  this->fk_match_type = static_cast<MatchType>(
+      ptree.get_optional<int64_t>(FK_MATCH_TYPE).value_or(-1));
+
+  // referenced row delete action.
+  this->fk_delete_action = static_cast<ActionType>(
+      ptree.get_optional<int64_t>(FK_DELETE_ACTION).value_or(-1));
+
+  // referenced row update action.
+  this->fk_update_action = static_cast<ActionType>(
+      ptree.get_optional<int64_t>(FK_UPDATE_ACTION).value_or(-1));
 }
 
 // ==========================================================================
@@ -193,7 +201,8 @@ ErrorCode Constraints::add(const boost::property_tree::ptree& object) const {
  * @param object_id  [out] ID of the added constraint metadata.
  * @return ErrorCode::OK if success, otherwise an error code.
  */
-ErrorCode Constraints::add(const boost::property_tree::ptree& object, ObjectId* object_id) const {
+ErrorCode Constraints::add(const boost::property_tree::ptree& object,
+                           ObjectId* object_id) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   // Log of API function start.
@@ -227,7 +236,8 @@ ErrorCode Constraints::add(const boost::property_tree::ptree& object, ObjectId* 
  * @retval ErrorCode::ID_NOT_FOUND if the constraint id does not exist.
  * @retval otherwise an error code.
  */
-ErrorCode Constraints::get(const ObjectId object_id, boost::property_tree::ptree& object) const {
+ErrorCode Constraints::get(const ObjectId object_id,
+                           boost::property_tree::ptree& object) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   // Log of API function start.
@@ -237,8 +247,9 @@ ErrorCode Constraints::get(const ObjectId object_id, boost::property_tree::ptree
   if (object_id > 0) {
     error = ErrorCode::OK;
   } else {
-    LOG_WARNING << "An out-of-range value (0 or less) was specified for ConstraintId.: "
-                << object_id;
+    LOG_WARNING
+        << "An out-of-range value (0 or less) was specified for ConstraintId.: "
+        << object_id;
     error = ErrorCode::ID_NOT_FOUND;
   }
 
@@ -254,12 +265,14 @@ ErrorCode Constraints::get(const ObjectId object_id, boost::property_tree::ptree
 }
 
 /**
- * @brief Gets all constraint metadata object from the constraint metadata table.
- *   If the constraint metadata does not exist, return the container as empty.
+ * @brief Gets all constraint metadata object from the constraint metadata
+ * table. If the constraint metadata does not exist, return the container as
+ * empty.
  * @param container  [out] Container for metadata-objects.
  * @return ErrorCode::OK if success, otherwise an error code.
  */
-ErrorCode Constraints::get_all(std::vector<boost::property_tree::ptree>& container) const {
+ErrorCode Constraints::get_all(
+    std::vector<boost::property_tree::ptree>& container) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   // Log of API function start.
@@ -275,7 +288,8 @@ ErrorCode Constraints::get_all(std::vector<boost::property_tree::ptree>& contain
 }
 
 /**
- * @brief Remove all metadata-object based on the given constraint id from metadata-constraint.
+ * @brief Remove all metadata-object based on the given constraint id from
+ * metadata-constraint.
  * @param object_id  [in]  constraint id.
  * @retval ErrorCode::OK if success,
  * @retval ErrorCode::ID_NOT_FOUND if the constraint id does not exist.
@@ -291,8 +305,9 @@ ErrorCode Constraints::remove(const ObjectId object_id) const {
   if (object_id > 0) {
     error = ErrorCode::OK;
   } else {
-    LOG_WARNING << "An out-of-range value (0 or less) was specified for ConstraintId.: "
-                << object_id;
+    LOG_WARNING
+        << "An out-of-range value (0 or less) was specified for ConstraintId.: "
+        << object_id;
     error = ErrorCode::ID_NOT_FOUND;
   }
 
@@ -335,7 +350,8 @@ ErrorCode Constraints::add(const manager::metadata::Constraint& constraint,
  * @param object  [in]  constraint metadata to add.
  * @return ErrorCode::OK if success, otherwise an error code.
  */
-ErrorCode Constraints::add(const manager::metadata::Constraint& constraint) const {
+ErrorCode Constraints::add(
+    const manager::metadata::Constraint& constraint) const {
   ErrorCode error    = ErrorCode::UNKNOWN;
   ObjectId object_id = INVALID_OBJECT_ID;
 
@@ -378,7 +394,8 @@ ErrorCode Constraints::get(const ObjectId object_id,
  * @param object  [in]  metadata-object
  * @return ErrorCode::OK if success, otherwise an error code.
  */
-ErrorCode Constraints::param_check_metadata_add(const boost::property_tree::ptree& object) const {
+ErrorCode Constraints::param_check_metadata_add(
+    const boost::property_tree::ptree& object) const {
   ErrorCode error                        = ErrorCode::UNKNOWN;
   constexpr const char* const kLogFormat = R"("%s" => undefined or empty)";
 

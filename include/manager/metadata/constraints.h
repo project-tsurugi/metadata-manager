@@ -53,11 +53,35 @@ struct Constraint : public Object {
    *   the metadata.
    */
   static constexpr const char* const EXPRESSION = "expression";
+  /**
+   * @brief Field name constant indicating the referenced table name of the foreign key constraint.
+   */
+  static constexpr const char* const PK_TABLE = "pkTable";
+  /**
+   * @brief Field name constant indicating the list of referenced column numbers for foreign key constraint.
+   */
+  static constexpr const char* const PK_COLUMNS = "pkColumns";
+  /**
+   * @brief Field name constant indicating the list of referenced column IDs for foreign key constraint.
+   */
+  static constexpr const char* const PK_COLUMNS_ID = "pkColumnsId";
+  /**
+   * @brief Field name constant indicating the match type for referenced rows in foreign key constraint.
+   */
+  static constexpr const char* const FK_MATCH_TYPE = "fkMatchType";
+  /**
+   * @brief Field name constant indicating the delete action of referenced row in foreign key constraint.
+   */
+  static constexpr const char* const FK_DELETE_ACTION = "fkDeleteAction";
+  /**
+   * @brief Field name constant indicating the update action of referenced row in foreign key constraint.
+   */
+  static constexpr const char* const FK_UPDATE_ACTION = "fkUpdateAction";
 
   /**
    * @brief Represents the type of constraint.
    */
-  enum class ConstraintType {
+  enum class ConstraintType : int64_t {
     PRIMARY_KEY = 0,          //!< @brief Primary Key Constraints.
     UNIQUE,                   //!< @brief Uniqueness Constraints.
     CHECK,                    //!< @brief Check Constraints.
@@ -67,13 +91,55 @@ struct Constraint : public Object {
     UNKNOWN = INVALID_VALUE,  //!< @brief Unknown Constraints.
   };
 
-  Constraint() {}
-  ObjectId table_id;                 //!< @brief Table id of the metadata.
-  ConstraintType type;               //!< @brief Constraint TYPE of the metadata.
-  std::vector<int64_t> columns;      //!< @brief List of column numbers subject to constraints.
-  std::vector<ObjectId> columns_id;  //!< @brief Column IDs subject to constraints.
-  int64_t index_id;                  //!< @brief Index ID.
-  std::string expression;            //!< @brief Expression of constraint (CHECK).
+  /**
+   * @brief Represents the match type for refrerenced rows.
+   */
+  enum class MatchType : int64_t {
+    SIMPLE = 0,               //!< @brief MATCH SIMPLE.
+    FULL,                     //!< @brief MATCH FULL.
+    PARTIAL,                  //!< @brief MATCH PARTIAL.
+    UNKNOWN = INVALID_VALUE,  //!< @brief Unknown.
+  };
+
+  /**
+   * @brief Represents the match type for refrerenced rows.
+   */
+  enum class ActionType : int64_t {
+    NO_ACTION = 0,            //!< @brief NO ACTION.
+    RESTRICT,                 //!< @brief RESTRICT.
+    CASCADE,                  //!< @brief CASCADE.
+    SET_NULL,                 //!< @brief SET NULL.
+    SET_DEFAULT,              //!< @brief SET DEFAULT.
+    UNKNOWN = INVALID_VALUE,  //!< @brief Unknown.
+  };
+
+  Constraint()
+      : Object(),
+        table_id(INVALID_OBJECT_ID),
+        type(ConstraintType::UNKNOWN),
+        columns({}),
+        columns_id({}),
+        index_id(INVALID_VALUE),
+        expression(""),
+        pk_table(""),
+        pk_columns({}),
+        pk_columns_id({}),
+        fk_match_type(MatchType::UNKNOWN),
+        fk_delete_action(ActionType::UNKNOWN),
+        fk_update_action(ActionType::UNKNOWN) {}
+
+  ObjectId table_id;                    //!< @brief Table id of the metadata.
+  ConstraintType type;                  //!< @brief Constraint TYPE of the metadata.
+  std::vector<int64_t> columns;         //!< @brief List of column numbers subject to constraints.
+  std::vector<ObjectId> columns_id;     //!< @brief Column IDs subject to constraints.
+  int64_t index_id;                     //!< @brief Index ID.
+  std::string expression;               //!< @brief Expression of constraint (CHECK).
+  std::string pk_table;                 //!< @brief Referenced table name.
+  std::vector<int64_t> pk_columns;      //!< @brief List of referenced column numbers.
+  std::vector<ObjectId> pk_columns_id;  //!< @brief List of referenced column IDs.
+  MatchType fk_match_type;              //!< @brief Match type for referenced rows.
+  ActionType fk_delete_action;          //!< @brief Delete action of referenced row.
+  ActionType fk_update_action;          //!< @brief Update action of referenced row.
 
   boost::property_tree::ptree convert_to_ptree() const override;
   void convert_from_ptree(const boost::property_tree::ptree& ptree) override;
