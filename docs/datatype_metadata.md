@@ -3,6 +3,7 @@
 
 2020.04.03 NEC  
 2022.10.28 NEC  
+2022.12.28 NEC  
 
 ## Metadata::DataTypesクラス
 
@@ -50,6 +51,11 @@ Tsurugiで使用するデータ型に関するメタデータを管理する。
 |9| FLOAT64     | 701   | double precision  | float8    |
 |13| CHAR       | 1042  | char              | bpchar    |
 |14| VARCHAR    | 1043  | varchar           | varchar   |
+|16| NUMERIC    | 1700  | numeric           | numeric   |
+|17| DATE       | 1082  | date              | date      |
+|18| TIME       | 1083  | time              | time      |
+|19| TIMESTAMP  | 1114  | timestamp         | timestamp |
+|20| INTERVAL   | 1186  | interval          | interval  |
 
 ### pg_dataTypeQualifiedNameを追加する理由
 
@@ -65,5 +71,11 @@ Tsurugiで使用するデータ型に関するメタデータを管理する。
 |TEXT|[text] **xor** textのoid|TEXT |
 |CHAR[(n)],CHARACTER[(n)]|([pg_catalog,bpchar] **xor** bpcharのoid) |CHAR|
 |VARCHAR[(n)],CHARACTER VARYING[(n)]|([pg_catalog,varchar] **xor** varcharのoid) |VARCHAR|
+|NUMERIC[(p [,s])]|([pg_catalog,numeric] **xor** numericのoid) |NUMERIC|
+|DECIMAL[(p [,s])]|([pg_catalog,numeric] **xor** numericのoid) |NUMERIC|
+|DATE|([pg_catalog,date] **xor** dateのoid) |DATE|
+|TIME[(p)]|([pg_catalog,time] **xor** timeのoid) |TIME|
+|TIMESTAMP[(p)]|([pg_catalog,timestamp] **xor** timestampのoid) |TIMESTAMP|
+|INTERVAL[fields] [(p)]|([pg_catalog,interval] **xor** intervalのoid) |INTERVAL|
 
 以上

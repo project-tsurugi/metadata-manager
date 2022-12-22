@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 tsurugi project.
+ * Copyright 2020-2022 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -77,7 +77,12 @@ class DataTypes : public Metadata {
     FLOAT32 = 8,  //!< @brief FLOAT32.
     FLOAT64 = 9,  //!< @brief FLOAT64.
     CHAR    = 13, //!< @brief CHAR.
-    VARCHAR = 14  //!< @brief VARCHAR.
+    VARCHAR = 14, //!< @brief VARCHAR.
+    NUMERIC = 16, //!< @brief NUMERIC.
+    DATE    = 17, //!< @brief DATE.
+    TIME    = 18, //!< @brief TIME.
+    TIMESTAMP   = 19, //!< @brief TIMESTAMP.
+    INTERVAL    = 20  //!< @brief INTERVAL.
   };
 
   explicit DataTypes(std::string_view database)

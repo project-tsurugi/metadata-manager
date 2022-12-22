@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 tsurugi project.
+ * Copyright 2021-2022 tsurugi project.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,6 +33,11 @@ class PgType {
     static constexpr std::uint32_t kFloat8 = 701;
     static constexpr std::uint32_t kBpchar = 1042;
     static constexpr std::uint32_t kVarchar = 1043;
+    static constexpr std::uint32_t kNumeric = 1700;
+    static constexpr std::uint32_t kDate = 1082;
+    static constexpr std::uint32_t kTime = 1083;
+    static constexpr std::uint32_t kTimestamp = 1114;
+    static constexpr std::uint32_t kInterval = 1186;
   };
 
   /**
@@ -46,6 +51,11 @@ class PgType {
     static constexpr const char* const kFloat8 = "float8";
     static constexpr const char* const kBpchar = "bpchar";
     static constexpr const char* const kVarchar = "varchar";
+    static constexpr const char* const kNumeric = "numeric";
+    static constexpr const char* const kDate = "date";
+    static constexpr const char* const kTime = "time";
+    static constexpr const char* const kTimestamp = "timestamp";
+    static constexpr const char* const kInterval = "interval";
   };
 };
 
