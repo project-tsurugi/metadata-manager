@@ -59,6 +59,41 @@ Tsurugiで使用するデータ型に関するメタデータを管理する。
 |21| TIMESTAMPTZ| 1184  | timestamptz       | timestamptz |
 |22| INTERVAL   | 1186  | interval          | interval    |
 
+### データ型オプション
+
+SQLで指定されたデータ型のオプションは、Columnメタデータオブジェクトのdata_lengthsの配列に登録する。  
+
+* char [ (n) ](またはcharacter [ (n) ])で(n)が指定された場合、配列の1番目にnを登録する。(n)が省略された場合、配列は空となる。  
+
+* varchar [ (n) ](またはcharacter varying [ (n) ])で(n)が指定された場合、配列の1番目にnを登録する。(n)が省略された場合、配列は空となる。
+
+* numeric [ (p [, s ]) ](またはdecimal [ (p [, s]) ])で(p, s)が指定された場合、配列の1番目にp、配列の2番目にsを登録する。, s が省略された場合、配列の1番目にpのみ登録する。(p, s)が省略された場合、配列は空となる。
+
+* time [ (p) ](またはtimetz [ (p) ])で(p)が指定された場合、配列の1番目にpを登録する。(p)が省略された場合、配列は空となる。
+
+* timestamp [ (p) ](またはtimestamptz [ (p) ])で(p)が指定された場合、配列の1番目にpを登録する。(p)が省略された場合、配列は空となる。
+
+* interval [ fields ] [ (p) ]は、fieldsまたは(p)のいずれかが指定された場合、配列の1番目にfields、配列の2番目にpを登録する。(p)のみ省略された場合、配列の1番目にpのみ登録する。fieldsと(p)が省略された場合、配列は空となる。配列の1番目に登録するfields値は[IntervalFields](#intervalfields)を参照のこと。
+
+#### IntervalFields
+
+  | 値 | エイリアス | 説明 | 備考 |
+  |---|---|---|---|
+  | 0x00007FFF | IntervalFields::OMITTED           | (p)のみ省略された | - |
+  | 0x00000004 | IntervalFields::YEAR              | YEAR | - |
+  | 0x00000002 | IntervalFields::MONTH             | MONTH | - |
+  | 0x00000008 | IntervalFields::DAY               | DAY | - |
+  | 0x00000400 | IntervalFields::HOUR              | HOUR | - |
+  | 0x00000800 | IntervalFields::MINUTE            | MINUTE | - |
+  | 0x00001000 | IntervalFields::SECOND            | SECOND | - |
+  | 0x00000006 | IntervalFields::YEAR_TO_MONTH     | YEAR TO MONTH | - |
+  | 0x00000408 | IntervalFields::DAY_TO_HOUR       | DAY TO HOUR | - |
+  | 0x00000C08 | IntervalFields::DAY_TO_MINUTE     | DAY TO MINUTE | - |
+  | 0x00001C08 | IntervalFields::DAY_TO_SECOND     | DAY TO SECOND | - |
+  | 0x00000C00 | IntervalFields::HOUR_TO_MINUTE    | HOUR TO MINUTE | - |
+  | 0x00001C00 | IntervalFields::HOUR_TO_SECOND    | HOUR TO SECOND | - |
+  | 0x00001800 | IntervalFields::MINUTE_TO_SECOND  | MINUTE TO SECOND | - |
+
 ### pg_dataTypeQualifiedNameを追加する理由
 
 * PostgreSQLのCreateStmtクエリツリーから取得できる型名が次の表になっており、型変換を実施するため。
@@ -77,9 +112,9 @@ Tsurugiで使用するデータ型に関するメタデータを管理する。
 |DECIMAL[(p [,s])]|([pg_catalog,numeric] **xor** numericのoid) |DECIMAL|
 |DATE|([pg_catalog,date] **xor** dateのoid) |DATE|
 |TIME[(p)] [without time zone]|([pg_catalog,time] **xor** timeのoid) |TIME|
-|TIME[(p)] with time zone|([pg_catalog,timetz] **xor** timeのoid) |TIMETZ|
+|TIME[(p)] with time zone, TIMETZ[(p)]|([pg_catalog,timetz] **xor** timeのoid) |TIMETZ|
 |TIMESTAMP[(p)] [without time zone]|([pg_catalog,timestamp] **xor** timestampのoid) |TIMESTAMP|
-|TIMESTAMP[(p)] with time zone|([pg_catalog,timestamptz] **xor** timestampのoid) |TIMESTAMPTZ|
+|TIMESTAMP[(p)] with time zone, TIMESTAMPTZ[(p)]|([pg_catalog,timestamptz] **xor** timestampのoid) |TIMESTAMPTZ|
 |INTERVAL[fields] [(p)]|([pg_catalog,interval] **xor** intervalのoid) |INTERVAL|
 
 以上
