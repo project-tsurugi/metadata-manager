@@ -45,17 +45,19 @@ Tsurugiで使用するデータ型に関するメタデータを管理する。
 
 | id | name | pg_dataType | pg_dataTypeName | pg_dataTypeQualifiedName |
 |----|----|----|----|----|
-|4| INT32       | 23    | integer           | int4      |
-|6| INT64       | 20    | bigint            | int8      |
-|8| FLOAT32     | 700   | real              | float4    |
-|9| FLOAT64     | 701   | double precision  | float8    |
-|13| CHAR       | 1042  | char              | bpchar    |
-|14| VARCHAR    | 1043  | varchar           | varchar   |
-|16| NUMERIC    | 1700  | numeric           | numeric   |
-|17| DATE       | 1082  | date              | date      |
-|18| TIME       | 1083  | time              | time      |
-|19| TIMESTAMP  | 1114  | timestamp         | timestamp |
-|20| INTERVAL   | 1186  | interval          | interval  |
+|4| INT32       | 23    | integer           | int4        |
+|6| INT64       | 20    | bigint            | int8        |
+|8| FLOAT32     | 700   | real              | float4      |
+|9| FLOAT64     | 701   | double precision  | float8      |
+|13| CHAR       | 1042  | char              | bpchar      |
+|14| VARCHAR    | 1043  | varchar           | varchar     |
+|16| NUMERIC    | 1700  | numeric           | numeric     |
+|17| DATE       | 1082  | date              | date        |
+|18| TIME       | 1083  | time              | time        |
+|19| TIMETZ     | 1266  | timetz            | timetz      |
+|20| TIMESTAMP  | 1114  | timestamp         | timestamp   |
+|21| TIMESTAMPTZ| 1184  | timestamptz       | timestamptz |
+|22| INTERVAL   | 1186  | interval          | interval    |
 
 ### pg_dataTypeQualifiedNameを追加する理由
 
@@ -72,10 +74,12 @@ Tsurugiで使用するデータ型に関するメタデータを管理する。
 |CHAR[(n)],CHARACTER[(n)]|([pg_catalog,bpchar] **xor** bpcharのoid) |CHAR|
 |VARCHAR[(n)],CHARACTER VARYING[(n)]|([pg_catalog,varchar] **xor** varcharのoid) |VARCHAR|
 |NUMERIC[(p [,s])]|([pg_catalog,numeric] **xor** numericのoid) |NUMERIC|
-|DECIMAL[(p [,s])]|([pg_catalog,numeric] **xor** numericのoid) |NUMERIC|
+|DECIMAL[(p [,s])]|([pg_catalog,numeric] **xor** numericのoid) |DECIMAL|
 |DATE|([pg_catalog,date] **xor** dateのoid) |DATE|
-|TIME[(p)]|([pg_catalog,time] **xor** timeのoid) |TIME|
-|TIMESTAMP[(p)]|([pg_catalog,timestamp] **xor** timestampのoid) |TIMESTAMP|
+|TIME[(p)] [without time zone]|([pg_catalog,time] **xor** timeのoid) |TIME|
+|TIME[(p)] with time zone|([pg_catalog,timetz] **xor** timeのoid) |TIMETZ|
+|TIMESTAMP[(p)] [without time zone]|([pg_catalog,timestamp] **xor** timestampのoid) |TIMESTAMP|
+|TIMESTAMP[(p)] with time zone|([pg_catalog,timestamptz] **xor** timestampのoid) |TIMESTAMPTZ|
 |INTERVAL[fields] [(p)]|([pg_catalog,interval] **xor** intervalのoid) |INTERVAL|
 
 以上

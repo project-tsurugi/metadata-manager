@@ -81,8 +81,31 @@ class DataTypes : public Metadata {
     NUMERIC = 16, //!< @brief NUMERIC.
     DATE    = 17, //!< @brief DATE.
     TIME    = 18, //!< @brief TIME.
-    TIMESTAMP   = 19, //!< @brief TIMESTAMP.
-    INTERVAL    = 20  //!< @brief INTERVAL.
+    TIMETZ  = 19, //!< @brief TIMETZ.
+    TIMESTAMP   = 20, //!< @brief TIMESTAMP.
+    TIMESTAMPTZ = 21, //!< @brief TIMESTAMPTZ.
+    INTERVAL    = 22  //!< @brief INTERVAL.
+  };
+
+  /**
+   * @brief Interval Fields option.
+   */
+  enum class IntervalFields : int64_t {
+    OMITTED = 0x7FFF,           //!< @brief fields parameter omitted.
+    YEAR = 0x0004,              //!< @brief YEAR.
+    MONTH = 0x0002,             //!< @brief MONTH.
+    DAY = 0x0008,               //!< @brief DAY.
+    HOUR = 0x0400,              //!< @brief HOUR.
+    MINUTE = 0x0800,            //!< @brief MIUNTE.
+    SECOND = 0x1000,            //!< @brief SECOND.
+    YEAR_TO_MONTH = 0x0006,     //!< @brief YEAR TO MONTH.
+    DAY_TO_HOUR = 0x0408,       //!< @brief DAY TO HOUR.
+    DAY_TO_MINUTE = 0x0C08,     //!< @brief DAY TO MINUTE.
+    DAY_TO_SECOND = 0x1C08,     //!< @brief DAY TO SECOND.
+    HOUR_TO_MINUTE = 0x0C00,    //!< @brief HOUR TO MINUTE.
+    HOUR_TO_SECOND = 0x1C00,    //!< @brief HOUR TO SECOND.
+    MINUTE_TO_SECOND = 0x1800,  //!< @brief MINUTE TO SECOND.
+    UNKNOWN = INVALID_VALUE,    //!< @brief Unknown.
   };
 
   explicit DataTypes(std::string_view database)

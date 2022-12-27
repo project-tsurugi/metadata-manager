@@ -148,6 +148,18 @@ ErrorCode DataTypesDAO::prepare() const {
                  PgType::TypeName::kTime);
     datatypes.push_back(std::make_pair("", datatype));
 
+    // TIMETZ : 
+    datatype.put(DataTypes::FORMAT_VERSION, DataTypes::format_version());
+    datatype.put(DataTypes::GENERATION, DataTypes::generation());
+    datatype.put(DataTypes::ID,
+                 static_cast<ObjectIdType>(DataTypes::DataTypesId::TIMETZ));
+    datatype.put(DataTypes::NAME, "TIMETZ");
+    datatype.put(DataTypes::PG_DATA_TYPE, PgType::TypeOid::kTimetz);
+    datatype.put(DataTypes::PG_DATA_TYPE_NAME, "timetz");
+    datatype.put(DataTypes::PG_DATA_TYPE_QUALIFIED_NAME,
+                 PgType::TypeName::kTimetz);
+    datatypes.push_back(std::make_pair("", datatype));
+
     // TIMESTAMP : 
     datatype.put(DataTypes::FORMAT_VERSION, DataTypes::format_version());
     datatype.put(DataTypes::GENERATION, DataTypes::generation());
@@ -158,6 +170,18 @@ ErrorCode DataTypesDAO::prepare() const {
     datatype.put(DataTypes::PG_DATA_TYPE_NAME, "timestamp");
     datatype.put(DataTypes::PG_DATA_TYPE_QUALIFIED_NAME,
                  PgType::TypeName::kTimestamp);
+    datatypes.push_back(std::make_pair("", datatype));
+
+    // TIMESTAMPTZ : 
+    datatype.put(DataTypes::FORMAT_VERSION, DataTypes::format_version());
+    datatype.put(DataTypes::GENERATION, DataTypes::generation());
+    datatype.put(DataTypes::ID,
+                 static_cast<ObjectIdType>(DataTypes::DataTypesId::TIMESTAMPTZ));
+    datatype.put(DataTypes::NAME, "TIMESTAMPTZ");
+    datatype.put(DataTypes::PG_DATA_TYPE, PgType::TypeOid::kTimestamptz);
+    datatype.put(DataTypes::PG_DATA_TYPE_NAME, "timestamptz");
+    datatype.put(DataTypes::PG_DATA_TYPE_QUALIFIED_NAME,
+                 PgType::TypeName::kTimestamptz);
     datatypes.push_back(std::make_pair("", datatype));
 
     // INTERVAL : 

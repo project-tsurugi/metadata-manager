@@ -36,7 +36,9 @@ class PgType {
     static constexpr std::uint32_t kNumeric = 1700;
     static constexpr std::uint32_t kDate = 1082;
     static constexpr std::uint32_t kTime = 1083;
+    static constexpr std::uint32_t kTimetz = 1266;
     static constexpr std::uint32_t kTimestamp = 1114;
+    static constexpr std::uint32_t kTimestamptz = 1184;
     static constexpr std::uint32_t kInterval = 1186;
   };
 
@@ -54,7 +56,9 @@ class PgType {
     static constexpr const char* const kNumeric = "numeric";
     static constexpr const char* const kDate = "date";
     static constexpr const char* const kTime = "time";
+    static constexpr const char* const kTimetz = "timetz";
     static constexpr const char* const kTimestamp = "timestamp";
+    static constexpr const char* const kTimestamptz = "timestamptz";
     static constexpr const char* const kInterval = "interval";
   };
 };

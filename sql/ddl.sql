@@ -122,9 +122,13 @@ INSERT INTO tsurugi_catalog.tsurugi_type (format_version, generation, id, name, 
 INSERT INTO tsurugi_catalog.tsurugi_type (format_version, generation, id, name, pg_data_type, pg_data_type_name, pg_data_type_qualified_name) values (1, 1, 17, 'DATE', 1082,'date','date');
 -- TIME
 INSERT INTO tsurugi_catalog.tsurugi_type (format_version, generation, id, name, pg_data_type, pg_data_type_name, pg_data_type_qualified_name) values (1, 1, 18, 'TIME', 1083,'time','time');
+-- TIMETZ
+INSERT INTO tsurugi_catalog.tsurugi_type (format_version, generation, id, name, pg_data_type, pg_data_type_name, pg_data_type_qualified_name) values (1, 1, 19, 'TIMETZ', 1266,'timetz','timetz');
 -- TIMESTAMP
-INSERT INTO tsurugi_catalog.tsurugi_type (format_version, generation, id, name, pg_data_type, pg_data_type_name, pg_data_type_qualified_name) values (1, 1, 19, 'TIMESTAMP', 1114,'timestamp','timestamp');
+INSERT INTO tsurugi_catalog.tsurugi_type (format_version, generation, id, name, pg_data_type, pg_data_type_name, pg_data_type_qualified_name) values (1, 1, 20, 'TIMESTAMP', 1114,'timestamp','timestamp');
+-- TIMESTAMPTZ
+INSERT INTO tsurugi_catalog.tsurugi_type (format_version, generation, id, name, pg_data_type, pg_data_type_name, pg_data_type_qualified_name) values (1, 1, 21, 'TIMESTAMPTZ', 1184,'timestamptz','timestamptz');
 -- INTERVAL
-INSERT INTO tsurugi_catalog.tsurugi_type (format_version, generation, id, name, pg_data_type, pg_data_type_name, pg_data_type_qualified_name) values (1, 1, 20, 'INTERVAL', 1186,'interval','interval');
+INSERT INTO tsurugi_catalog.tsurugi_type (format_version, generation, id, name, pg_data_type, pg_data_type_name, pg_data_type_qualified_name) values (1, 1, 22, 'INTERVAL', 1186,'interval','interval');
 
 GRANT ALL ON ALL TABLES IN SCHEMA tsurugi_catalog To current_user;
