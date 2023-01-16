@@ -4,6 +4,7 @@
 2020.04.03 NEC  
 2022.10.28 NEC  
 2022.12.28 NEC  
+2023.01.16 NEC  
 
 ## Metadata::Tablesクラス
 
@@ -61,6 +62,7 @@
 | "varying"             | bool        | 文字列長の可変有無 | varchar [ (n) ](またはcharacter varying [ (n) ])の場合、true。<br>char [ (n) ](またはcharacter [ (n) ])の場合、false。<br>それ以外の場合、keyを作成しない。 |
 | "is_not_null"         | bool        | 非NULL制約の有無 | このカラムが非NULL制約または主キー制約の場合、true。<br>それ以外の場合、false。|
 | "default_expression"  | std::string | デフォルト制約のデフォルトデータ値 | デフォルト制約がある場合のみ存在。 |
+| "is_funcexpr"         | bool        | デフォルト制約の関数式判定 | このカラムのデフォルト制約が関数式の場合、true。<br>それ以外の場合、false。|
 
 ## Constraintメタデータオブジェクト
 

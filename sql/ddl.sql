@@ -42,6 +42,7 @@ CREATE TABLE tsurugi_catalog.tsurugi_attribute
     varying bool,
     is_not_null bool NOT NULL,
     default_expression text,
+    is_funcexpr bool,
     PRIMARY KEY(id),
     UNIQUE(table_id, name),
     UNIQUE(table_id, column_number)

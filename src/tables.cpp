@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2022 tsurugi project.
+ * Copyright 2020-2023 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -58,6 +58,7 @@ boost::property_tree::ptree Column::convert_to_ptree() const {
   pt.put(VARYING,       this->varying);
   pt.put(IS_NOT_NULL,   this->is_not_null);
   pt.put(DEFAULT_EXPR,  this->default_expression);
+  pt.put(IS_FUNCEXPR,   this->is_funcexpr);
   pt.push_back(std::make_pair(
       DATA_LENGTH, ptree_helper::make_array_ptree(this->data_length)));
 
@@ -90,6 +91,9 @@ void Column::convert_from_ptree(const boost::property_tree::ptree& pt) {
 
   auto opt_default_expression = pt.get_optional<std::string>(DEFAULT_EXPR);
   this->default_expression    = opt_default_expression.get_value_or("");
+
+  auto opt_is_funcexpr = pt.get_optional<bool>(IS_FUNCEXPR);
+  this->is_funcexpr    = opt_is_funcexpr.get_value_or(false);
 }
 
 // ==========================================================================
