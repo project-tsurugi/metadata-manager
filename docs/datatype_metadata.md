@@ -4,6 +4,7 @@
 2020.04.03 NEC  
 2022.10.28 NEC  
 2022.12.28 NEC  
+2023.01.30 NEC  
 
 ## Metadata::DataTypesクラス
 
@@ -51,13 +52,13 @@ Tsurugiで使用するデータ型に関するメタデータを管理する。
 |9| FLOAT64     | 701   | double precision  | float8      |
 |13| CHAR       | 1042  | char              | bpchar      |
 |14| VARCHAR    | 1043  | varchar           | varchar     |
-|16| NUMERIC    | 1700  | numeric           | numeric     |
+|~~16~~| ~~NUMERIC~~ <br>(将来拡張用)    | ~~1700~~  | ~~numeric~~           | ~~numeric~~     |
 |17| DATE       | 1082  | date              | date        |
 |18| TIME       | 1083  | time              | time        |
-|19| TIMETZ     | 1266  | timetz            | timetz      |
+|~~19~~| ~~TIMETZ~~ <br>(将来拡張用)     | ~~1266~~  | ~~timetz~~            | ~~timetz~~      |
 |20| TIMESTAMP  | 1114  | timestamp         | timestamp   |
-|21| TIMESTAMPTZ| 1184  | timestamptz       | timestamptz |
-|22| INTERVAL   | 1186  | interval          | interval    |
+|~~21~~| ~~TIMESTAMPTZ~~ <br>(将来拡張用)| ~~1184~~  | ~~timestamptz~~       | ~~timestamptz~~ |
+|~~22~~| ~~INTERVAL~~ <br>(将来拡張用)   | ~~1186~~  | ~~interval~~          | ~~interval~~    |
 
 ### データ型オプション
 
@@ -116,5 +117,40 @@ SQLで指定されたデータ型のオプションは、Columnメタデータ�
 |TIMESTAMP[(p)] [without time zone]|([pg_catalog,timestamp] **xor** timestampのoid) |TIMESTAMP|
 |TIMESTAMP[(p)] with time zone, TIMESTAMPTZ[(p)]|([pg_catalog,timestamptz] **xor** timestampのoid) |TIMESTAMPTZ|
 |INTERVAL[fields] [(p)]|([pg_catalog,interval] **xor** intervalのoid) |INTERVAL|
+
+### 日付・時刻データ型の内部構造
+
+#### timestamp型の構造
+
+* timestamp型のサイズは、int64（typedef int64 Timestamp;）である
+* 値が0の場合、「2000-01-01 09:00:00.000000」を示す
+* 0から999999の値は、1秒未満(精度：マイクロ秒)を示す（999999は「2000-01-01 09:00:00.999999」）
+* 1000000以降の値は、2000/1/1 9:00:00以降の日時が1秒単位で昇順する（1000000は「2000-01-01 09:00:01.000000」）
+* 2000/1/1 9:00:00以前の日時は、マイナス値となり1秒単位で降順する（-1000000は「2000-01-01 08:59:59.000000」）
+* timestamp型の範囲（最遠の過去および最遠の未来）は、[PostgreSQLの仕様](https://www.postgresql.jp/document/12/html/datatype-datetime.html)に準じる
+
+#### date型の構造
+
+* date型のサイズは、int32（typedef int32 DateADT;）である
+* 値が0の場合、「2000-01-01」を示す
+* 値の精度は1日であり、-1が1999/12/31となる
+* date型の範囲（最遠の過去および最遠の未来）は、[PostgreSQLの仕様](https://www.postgresql.jp/document/12/html/datatype-datetime.html)に準じる
+
+#### time型の構造
+
+* time型のサイズは、int64（typedef int64 TimeADT;）である
+* 値が0の場合、「00:00:00.000000」を示す
+* 0から999999の値は、1秒未満(精度：マイクロ秒)を示す（999999は「00:00:00.999999」）
+* time型の範囲（最遠の過去および最遠の未来）は、[PostgreSQLの仕様](https://www.postgresql.jp/document/12/html/datatype-datetime.html)に準じる
+
+#### 時間帯付きデータ型について
+
+PostgreSQLは、日付と時刻をすべてUTCで保持し、クライアントに表示される前にTimeZone設定パラメータで指定された時間帯に変換を行っているため、時間帯付きデータ型（TimestampTz型、TimeTz型）は、Tsuirugiにおいて非サポート（将来拡張用）とする。  
+　https://www.postgresql.jp/document/12/html/datatype-datetime.html#DATATYPE-TIMEZONES
+
+#### OLTPがサポートしてないデータ型について
+
+OLTPがサポートしてないInterval型（Numeric型も同様）は、Tsurugiにおいても非サポート（将来拡張用）とする。
+
 
 以上
