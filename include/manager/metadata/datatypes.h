@@ -72,19 +72,19 @@ class DataTypes : public Metadata {
    * @brief represents data types id.
    */
   enum class DataTypesId : ObjectIdType {
-    INT32   = 4,  //!< @brief INT32.
-    INT64   = 6,  //!< @brief INT64.
-    FLOAT32 = 8,  //!< @brief FLOAT32.
-    FLOAT64 = 9,  //!< @brief FLOAT64.
-    CHAR    = 13, //!< @brief CHAR.
-    VARCHAR = 14, //!< @brief VARCHAR.
-    NUMERIC = 16, //!< @brief NUMERIC.
-    DATE    = 17, //!< @brief DATE.
-    TIME    = 18, //!< @brief TIME.
-    TIMETZ  = 19, //!< @brief TIMETZ.
-    TIMESTAMP   = 20, //!< @brief TIMESTAMP.
-    TIMESTAMPTZ = 21, //!< @brief TIMESTAMPTZ.
-    INTERVAL    = 22  //!< @brief INTERVAL.
+    INT64       = 20,   //!< @brief INT64.
+    INT32       = 23,   //!< @brief INT32.
+    FLOAT32     = 700,  //!< @brief FLOAT32.
+    FLOAT64     = 701,  //!< @brief FLOAT64.
+    CHAR        = 1042, //!< @brief CHAR.
+    VARCHAR     = 1043, //!< @brief VARCHAR.
+    DATE        = 1082, //!< @brief DATE.
+    TIME        = 1083, //!< @brief TIME.
+    TIMESTAMP   = 1114, //!< @brief TIMESTAMP.
+    TIMESTAMPTZ = 1184, //!< @brief TIMESTAMPTZ.
+    INTERVAL    = 1186, //!< @brief INTERVAL.
+    TIMETZ      = 1266, //!< @brief TIMETZ.
+    NUMERIC     = 1700  //!< @brief NUMERIC.
   };
 
   /**

@@ -5,6 +5,7 @@
 2022.10.28 NEC  
 2022.12.28 NEC  
 2023.01.30 NEC  
+2023.02.15 NEC  
 
 ## Metadata::DataTypesクラス
 
@@ -46,19 +47,19 @@ Tsurugiで使用するデータ型に関するメタデータを管理する。
 
 | id | name | pg_dataType | pg_dataTypeName | pg_dataTypeQualifiedName |
 |----|----|----|----|----|
-|4| INT32       | 23    | integer           | int4        |
-|6| INT64       | 20    | bigint            | int8        |
-|8| FLOAT32     | 700   | real              | float4      |
-|9| FLOAT64     | 701   | double precision  | float8      |
-|13| CHAR       | 1042  | char              | bpchar      |
-|14| VARCHAR    | 1043  | varchar           | varchar     |
-|~~16~~| ~~NUMERIC~~ <br>(将来拡張用)    | ~~1700~~  | ~~numeric~~           | ~~numeric~~     |
-|17| DATE       | 1082  | date              | date        |
-|18| TIME       | 1083  | time              | time        |
-|~~19~~| ~~TIMETZ~~ <br>(将来拡張用)     | ~~1266~~  | ~~timetz~~            | ~~timetz~~      |
-|20| TIMESTAMP  | 1114  | timestamp         | timestamp   |
-|~~21~~| ~~TIMESTAMPTZ~~ <br>(将来拡張用)| ~~1184~~  | ~~timestamptz~~       | ~~timestamptz~~ |
-|~~22~~| ~~INTERVAL~~ <br>(将来拡張用)   | ~~1186~~  | ~~interval~~          | ~~interval~~    |
+|20| INT64       | 20    | bigint            | int8        |
+|23| INT32       | 23    | integer           | int4        |
+|700| FLOAT32     | 700   | real              | float4      |
+|701| FLOAT64     | 701   | double precision  | float8      |
+|1042| CHAR       | 1042  | char              | bpchar      |
+|1043| VARCHAR    | 1043  | varchar           | varchar     |
+|1082| DATE       | 1082  | date              | date        |
+|1083| TIME       | 1083  | time              | time        |
+|1114| TIMESTAMP  | 1114  | timestamp         | timestamp   |
+|~~1184~~| ~~TIMESTAMPTZ~~ <br>(将来拡張用)| ~~1184~~  | ~~timestamptz~~       | ~~timestamptz~~ |
+|~~1186~~| ~~INTERVAL~~ <br>(将来拡張用)   | ~~1186~~  | ~~interval~~          | ~~interval~~    |
+|~~1266~~| ~~TIMETZ~~ <br>(将来拡張用)     | ~~1266~~  | ~~timetz~~            | ~~timetz~~      |
+|~~1700~~| ~~NUMERIC~~ <br>(将来拡張用)    | ~~1700~~  | ~~numeric~~           | ~~numeric~~     |
 
 ### データ型オプション
 
@@ -68,13 +69,13 @@ SQLで指定されたデータ型のオプションは、Columnメタデータ�
 
 * varchar [ (n) ](またはcharacter varying [ (n) ])で(n)が指定された場合、配列の1番目にnを登録する。(n)が省略された場合、配列は空となる。
 
-* numeric [ (p [, s ]) ](またはdecimal [ (p [, s]) ])で(p, s)が指定された場合、配列の1番目にp、配列の2番目にsを登録する。, s が省略された場合、配列の1番目にpのみ登録する。(p, s)が省略された場合、配列は空となる。
-
 * time [ (p) ](またはtimetz [ (p) ])で(p)が指定された場合、配列の1番目にpを登録する。(p)が省略された場合、配列は空となる。
 
 * timestamp [ (p) ](またはtimestamptz [ (p) ])で(p)が指定された場合、配列の1番目にpを登録する。(p)が省略された場合、配列は空となる。
 
 * interval [ fields ] [ (p) ]は、fieldsまたは(p)のいずれかが指定された場合、配列の1番目にfields、配列の2番目にpを登録する。(p)のみ省略された場合、配列の1番目にpのみ登録する。fieldsと(p)が省略された場合、配列は空となる。配列の1番目に登録するfields値は[IntervalFields](#intervalfields)を参照のこと。
+
+* numeric [ (p [, s ]) ](またはdecimal [ (p [, s]) ])で(p, s)が指定された場合、配列の1番目にp、配列の2番目にsを登録する。, s が省略された場合、配列の1番目にpのみ登録する。(p, s)が省略された場合、配列は空となる。
 
 #### IntervalFields
 
@@ -107,16 +108,16 @@ SQLで指定されたデータ型のオプションは、Columnメタデータ�
 |REAL|[pg_catalog,float4] **xor** float4のoid|FLOAT32 |
 |DOUBLE PRECISION|[pg_catalog,float8] **xor** float8のoid|FLOAT64 |
 |TEXT|[text] **xor** textのoid|TEXT |
-|CHAR[(n)],CHARACTER[(n)]|([pg_catalog,bpchar] **xor** bpcharのoid) |CHAR|
-|VARCHAR[(n)],CHARACTER VARYING[(n)]|([pg_catalog,varchar] **xor** varcharのoid) |VARCHAR|
-|NUMERIC[(p [,s])]|([pg_catalog,numeric] **xor** numericのoid) |NUMERIC|
-|DECIMAL[(p [,s])]|([pg_catalog,numeric] **xor** numericのoid) |DECIMAL|
+|CHAR[(n)],CHARACTER[(n)]|([pg_catalog,bpchar] **xor** bpcharのoid) |TEXT|
+|VARCHAR[(n)],CHARACTER VARYING[(n)]|([pg_catalog,varchar] **xor** varcharのoid) |TEXT|
 |DATE|([pg_catalog,date] **xor** dateのoid) |DATE|
 |TIME[(p)] [without time zone]|([pg_catalog,time] **xor** timeのoid) |TIME|
-|TIME[(p)] with time zone, TIMETZ[(p)]|([pg_catalog,timetz] **xor** timeのoid) |TIMETZ|
 |TIMESTAMP[(p)] [without time zone]|([pg_catalog,timestamp] **xor** timestampのoid) |TIMESTAMP|
+|INTERVAL[fields] [(p)]|([pg_catalog,interval] **xor** intervalのoid) |-|
+|TIME[(p)] with time zone, TIMETZ[(p)]|([pg_catalog,timetz] **xor** timeのoid) |TIMETZ|
 |TIMESTAMP[(p)] with time zone, TIMESTAMPTZ[(p)]|([pg_catalog,timestamptz] **xor** timestampのoid) |TIMESTAMPTZ|
-|INTERVAL[fields] [(p)]|([pg_catalog,interval] **xor** intervalのoid) |INTERVAL|
+|NUMERIC[(p [,s])]|([pg_catalog,numeric] **xor** numericのoid) |-|
+|DECIMAL[(p [,s])]|([pg_catalog,numeric] **xor** numericのoid) |-|
 
 ### 日付・時刻データ型の内部構造
 
