@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2022 tsurugi project.
+ * Copyright 2020-2023 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -65,6 +65,11 @@ struct Column : public Object {
    *   metadata.
    */
   static constexpr const char* const DEFAULT_EXPR = "defaultExpression";
+  /**
+   * @brief Field name constant indicating the function expression of the
+   *   metadata.
+   */
+  static constexpr const char* const IS_FUNCEXPR = "isFuncExpr";
 
   /**
    * @brief Table ID to which the column belongs.
@@ -94,6 +99,10 @@ struct Column : public Object {
    * @brief Default value of the default constraint.
    */
   std::string default_expression;
+  /**
+   * @brief Function expression constraints.
+   */
+  bool is_funcexpr;
 
   Column()
       : Object(),
@@ -102,7 +111,8 @@ struct Column : public Object {
         data_type_id(INVALID_OBJECT_ID),
         data_length({}),
         varying(false),
-        is_not_null(false) {}
+        is_not_null(false),
+        is_funcexpr(false) {}
   boost::property_tree::ptree convert_to_ptree() const override;
   void convert_from_ptree(const boost::property_tree::ptree& ptree) override;
 };

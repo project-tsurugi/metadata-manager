@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 tsurugi project.
+ * Copyright 2020-2023 tsurugi project.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,6 +43,7 @@ class ColumnsDAO : public manager::metadata::db::ColumnsDAO {
     static constexpr const char* const kVarying = "varying";
     static constexpr const char* const kIsNotNull = "is_not_null";
     static constexpr const char* const kDefaultExpr = "default_expression";
+    static constexpr const char* const kIsFuncExpr = "is_funcexpr";
   };  // class ColumnName
 
   /**
@@ -61,6 +62,7 @@ class ColumnsDAO : public manager::metadata::db::ColumnsDAO {
     kVarying,
     kIsNotNull,
     kDefaultExpr,
+    kIsFuncExpr,
   };  // enum class OrdinalPosition
 
   /**

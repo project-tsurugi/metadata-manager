@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2022 tsurugi project.
+ * Copyright 2020-2023 tsurugi project.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,15 +56,16 @@ std::string insert_one_column_metadata() {
   boost::format query =
       boost::format(
           "INSERT INTO %1%.%2%"
-          " (%3%, %4%, %5%, %6%, %7%, %8%, %9%, %10%, %11%, %12%)"
-          " VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)") %
+          " (%3%, %4%, %5%, %6%, %7%, %8%, %9%, %10%, %11%, %12%, %13%)"
+          " VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)") %
       SCHEMA_NAME % ColumnsDAO::kTableName %
       ColumnsDAO::ColumnName::kFormatVersion %
       ColumnsDAO::ColumnName::kGeneration % ColumnsDAO::ColumnName::kTableId %
       ColumnsDAO::ColumnName::kName % ColumnsDAO::ColumnName::kColumnNumber %
       ColumnsDAO::ColumnName::kDataTypeId %
       ColumnsDAO::ColumnName::kDataLength % ColumnsDAO::ColumnName::kVarying %
-      ColumnsDAO::ColumnName::kIsNotNull % ColumnsDAO::ColumnName::kDefaultExpr;
+      ColumnsDAO::ColumnName::kIsNotNull % ColumnsDAO::ColumnName::kDefaultExpr %
+      ColumnsDAO::ColumnName::kIsFuncExpr;
 
   return query.str();
 }
@@ -80,8 +81,8 @@ std::string insert_one_column_metadata_id() {
   boost::format query =
       boost::format(
           "INSERT INTO %1%.%2%"
-          " (%3%, %4%, %5%, %6%, %7%, %8%, %9%, %10%, %11%, %12%, %13%)"
-          " VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)") %
+          " (%3%, %4%, %5%, %6%, %7%, %8%, %9%, %10%, %11%, %12%, %13%, %14%)"
+          " VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)") %
       SCHEMA_NAME % ColumnsDAO::kTableName %
       ColumnsDAO::ColumnName::kFormatVersion %
       ColumnsDAO::ColumnName::kGeneration % ColumnsDAO::ColumnName::kId %
@@ -89,7 +90,8 @@ std::string insert_one_column_metadata_id() {
       ColumnsDAO::ColumnName::kColumnNumber %
       ColumnsDAO::ColumnName::kDataTypeId %
       ColumnsDAO::ColumnName::kDataLength % ColumnsDAO::ColumnName::kVarying %
-      ColumnsDAO::ColumnName::kIsNotNull % ColumnsDAO::ColumnName::kDefaultExpr;
+      ColumnsDAO::ColumnName::kIsNotNull % ColumnsDAO::ColumnName::kDefaultExpr %
+      ColumnsDAO::ColumnName::kIsFuncExpr;
 
   return query.str();
 }
@@ -105,8 +107,8 @@ std::string select_all_column_metadata(std::string_view column_name) {
   // SQL statement
   boost::format query =
       boost::format(
-          "SELECT %3%, %4%, %5%, %6%, %7%, %8%, %9%, %10%, %11%, %12%, %13%"
-          " FROM %1%.%2% WHERE %14% = $1 ORDER BY %8%") %
+          "SELECT %3%, %4%, %5%, %6%, %7%, %8%, %9%, %10%, %11%, %12%, %13%, %14%"
+          " FROM %1%.%2% WHERE %15% = $1 ORDER BY %8%") %
       SCHEMA_NAME % ColumnsDAO::kTableName %
       ColumnsDAO::ColumnName::kFormatVersion %
       ColumnsDAO::ColumnName::kGeneration % ColumnsDAO::ColumnName::kId %
@@ -115,7 +117,8 @@ std::string select_all_column_metadata(std::string_view column_name) {
       ColumnsDAO::ColumnName::kDataTypeId %
       ColumnsDAO::ColumnName::kDataLength % ColumnsDAO::ColumnName::kVarying %
       ColumnsDAO::ColumnName::kIsNotNull %
-      ColumnsDAO::ColumnName::kDefaultExpr % column_name.data();
+      ColumnsDAO::ColumnName::kDefaultExpr % ColumnsDAO::ColumnName::kIsFuncExpr %
+      column_name.data();
 
   return query.str();
 }
@@ -344,6 +347,10 @@ ErrorCode ColumnsDAO::insert_column_metadata(
       columns_metadata.get_optional<std::string>(Column::DEFAULT_EXPR);
   param_values.emplace_back(
       (default_expr ? default_expr.value().c_str() : nullptr));
+
+  // is_funcexpr
+  auto is_funcexpr = columns_metadata.get_optional<std::string>(Column::IS_FUNCEXPR);
+  param_values.emplace_back((is_funcexpr ? is_funcexpr.value().c_str() : nullptr));
 
   // Set INSERT statement.
   if (object_id) {
@@ -577,6 +584,13 @@ ErrorCode ColumnsDAO::convert_pgresult_to_ptree(
       res, ordinal_position, static_cast<int>(OrdinalPosition::kDefaultExpr));
   if (!default_expr.empty()) {
     columns_metadata.put(Column::DEFAULT_EXPR, default_expr);
+  }
+
+  // Set the value of the is_funcexpr to ptree.
+  std::string is_funcexpr = DbcUtils::convert_boolean_expression(PQgetvalue(
+      res, ordinal_position, static_cast<int>(OrdinalPosition::kIsFuncExpr)));
+  if (!is_funcexpr.empty()) {
+    columns_metadata.put(Column::IS_FUNCEXPR, is_funcexpr);
   }
 
   error = ErrorCode::OK;

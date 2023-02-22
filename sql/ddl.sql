@@ -42,6 +42,7 @@ CREATE TABLE tsurugi_catalog.tsurugi_attribute
     varying bool,
     is_not_null bool NOT NULL,
     default_expression text,
+    is_funcexpr bool,
     PRIMARY KEY(id),
     UNIQUE(table_id, name),
     UNIQUE(table_id, column_number)
@@ -105,16 +106,30 @@ CREATE TABLE tsurugi_catalog.tsurugi_statistic
 );
 
 -- INT32
-INSERT INTO tsurugi_catalog.tsurugi_type (format_version, generation, id, name, pg_data_type, pg_data_type_name, pg_data_type_qualified_name) values (1, 1, 4, 'INT32', 23,'integer','int4');
+INSERT INTO tsurugi_catalog.tsurugi_type (format_version, generation, id, name, pg_data_type, pg_data_type_name, pg_data_type_qualified_name) values (1, 1, 23, 'INT32', 23,'integer','int4');
 -- INT64
-INSERT INTO tsurugi_catalog.tsurugi_type (format_version, generation, id, name, pg_data_type, pg_data_type_name, pg_data_type_qualified_name) values (1, 1, 6, 'INT64', 20,'bigint','int8');
+INSERT INTO tsurugi_catalog.tsurugi_type (format_version, generation, id, name, pg_data_type, pg_data_type_name, pg_data_type_qualified_name) values (1, 1, 20, 'INT64', 20,'bigint','int8');
 -- FLOAT32
-INSERT INTO tsurugi_catalog.tsurugi_type (format_version, generation, id, name, pg_data_type, pg_data_type_name, pg_data_type_qualified_name) values (1, 1, 8, 'FLOAT32', 700,'real','float4');
+INSERT INTO tsurugi_catalog.tsurugi_type (format_version, generation, id, name, pg_data_type, pg_data_type_name, pg_data_type_qualified_name) values (1, 1, 700, 'FLOAT32', 700,'real','float4');
 -- FLOAT64
-INSERT INTO tsurugi_catalog.tsurugi_type (format_version, generation, id, name, pg_data_type, pg_data_type_name, pg_data_type_qualified_name) values (1, 1, 9, 'FLOAT64', 701,'double precision','float8');
+INSERT INTO tsurugi_catalog.tsurugi_type (format_version, generation, id, name, pg_data_type, pg_data_type_name, pg_data_type_qualified_name) values (1, 1, 701, 'FLOAT64', 701,'double precision','float8');
 -- CHAR : character, char
-INSERT INTO tsurugi_catalog.tsurugi_type (format_version, generation, id, name, pg_data_type, pg_data_type_name, pg_data_type_qualified_name) values (1, 1, 13, 'CHAR', 1042,'char','bpchar');
+INSERT INTO tsurugi_catalog.tsurugi_type (format_version, generation, id, name, pg_data_type, pg_data_type_name, pg_data_type_qualified_name) values (1, 1, 1042, 'CHAR', 1042,'char','bpchar');
 -- VARCHAR : character varying, varchar
-INSERT INTO tsurugi_catalog.tsurugi_type (format_version, generation, id, name, pg_data_type, pg_data_type_name, pg_data_type_qualified_name) values (1, 1, 14, 'VARCHAR', 1043,'varchar','varchar');
+INSERT INTO tsurugi_catalog.tsurugi_type (format_version, generation, id, name, pg_data_type, pg_data_type_name, pg_data_type_qualified_name) values (1, 1, 1043, 'VARCHAR', 1043,'varchar','varchar');
+-- NUMERIC : numeric, decimal
+INSERT INTO tsurugi_catalog.tsurugi_type (format_version, generation, id, name, pg_data_type, pg_data_type_name, pg_data_type_qualified_name) values (1, 1, 1700, 'NUMERIC', 1700,'numeric','numeric');
+-- DATE
+INSERT INTO tsurugi_catalog.tsurugi_type (format_version, generation, id, name, pg_data_type, pg_data_type_name, pg_data_type_qualified_name) values (1, 1, 1082, 'DATE', 1082,'date','date');
+-- TIME
+INSERT INTO tsurugi_catalog.tsurugi_type (format_version, generation, id, name, pg_data_type, pg_data_type_name, pg_data_type_qualified_name) values (1, 1, 1083, 'TIME', 1083,'time','time');
+-- TIMETZ
+INSERT INTO tsurugi_catalog.tsurugi_type (format_version, generation, id, name, pg_data_type, pg_data_type_name, pg_data_type_qualified_name) values (1, 1, 1266, 'TIMETZ', 1266,'timetz','timetz');
+-- TIMESTAMP
+INSERT INTO tsurugi_catalog.tsurugi_type (format_version, generation, id, name, pg_data_type, pg_data_type_name, pg_data_type_qualified_name) values (1, 1, 1114, 'TIMESTAMP', 1114,'timestamp','timestamp');
+-- TIMESTAMPTZ
+INSERT INTO tsurugi_catalog.tsurugi_type (format_version, generation, id, name, pg_data_type, pg_data_type_name, pg_data_type_qualified_name) values (1, 1, 1184, 'TIMESTAMPTZ', 1184,'timestamptz','timestamptz');
+-- INTERVAL
+INSERT INTO tsurugi_catalog.tsurugi_type (format_version, generation, id, name, pg_data_type, pg_data_type_name, pg_data_type_qualified_name) values (1, 1, 1186, 'INTERVAL', 1186,'interval','interval');
 
 GRANT ALL ON ALL TABLES IN SCHEMA tsurugi_catalog To current_user;

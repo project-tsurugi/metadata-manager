@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 tsurugi project.
+ * Copyright 2020-2022 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -72,12 +72,40 @@ class DataTypes : public Metadata {
    * @brief represents data types id.
    */
   enum class DataTypesId : ObjectIdType {
-    INT32   = 4,  //!< @brief INT32.
-    INT64   = 6,  //!< @brief INT64.
-    FLOAT32 = 8,  //!< @brief FLOAT32.
-    FLOAT64 = 9,  //!< @brief FLOAT64.
-    CHAR    = 13, //!< @brief CHAR.
-    VARCHAR = 14  //!< @brief VARCHAR.
+    INT64       = 20,   //!< @brief INT64.
+    INT32       = 23,   //!< @brief INT32.
+    FLOAT32     = 700,  //!< @brief FLOAT32.
+    FLOAT64     = 701,  //!< @brief FLOAT64.
+    CHAR        = 1042, //!< @brief CHAR.
+    VARCHAR     = 1043, //!< @brief VARCHAR.
+    DATE        = 1082, //!< @brief DATE.
+    TIME        = 1083, //!< @brief TIME.
+    TIMESTAMP   = 1114, //!< @brief TIMESTAMP.
+    TIMESTAMPTZ = 1184, //!< @brief TIMESTAMPTZ.
+    INTERVAL    = 1186, //!< @brief INTERVAL.
+    TIMETZ      = 1266, //!< @brief TIMETZ.
+    NUMERIC     = 1700  //!< @brief NUMERIC.
+  };
+
+  /**
+   * @brief Interval Fields option.
+   */
+  enum class IntervalFields : int64_t {
+    OMITTED = 0x7FFF,           //!< @brief fields parameter omitted.
+    YEAR = 0x0004,              //!< @brief YEAR.
+    MONTH = 0x0002,             //!< @brief MONTH.
+    DAY = 0x0008,               //!< @brief DAY.
+    HOUR = 0x0400,              //!< @brief HOUR.
+    MINUTE = 0x0800,            //!< @brief MIUNTE.
+    SECOND = 0x1000,            //!< @brief SECOND.
+    YEAR_TO_MONTH = 0x0006,     //!< @brief YEAR TO MONTH.
+    DAY_TO_HOUR = 0x0408,       //!< @brief DAY TO HOUR.
+    DAY_TO_MINUTE = 0x0C08,     //!< @brief DAY TO MINUTE.
+    DAY_TO_SECOND = 0x1C08,     //!< @brief DAY TO SECOND.
+    HOUR_TO_MINUTE = 0x0C00,    //!< @brief HOUR TO MINUTE.
+    HOUR_TO_SECOND = 0x1C00,    //!< @brief HOUR TO SECOND.
+    MINUTE_TO_SECOND = 0x1800,  //!< @brief MINUTE TO SECOND.
+    UNKNOWN = INVALID_VALUE,    //!< @brief Unknown.
   };
 
   explicit DataTypes(std::string_view database)

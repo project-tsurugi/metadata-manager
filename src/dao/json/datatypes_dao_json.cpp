@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 tsurugi project.
+ * Copyright 2021-2022 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -110,6 +110,90 @@ ErrorCode DataTypesDAO::prepare() const {
     datatype.put(DataTypes::PG_DATA_TYPE_NAME, "varchar");
     datatype.put(DataTypes::PG_DATA_TYPE_QUALIFIED_NAME,
                  PgType::TypeName::kVarchar);
+    datatypes.push_back(std::make_pair("", datatype));
+
+    // NUMERIC : numeric, decimal
+    datatype.put(DataTypes::FORMAT_VERSION, DataTypes::format_version());
+    datatype.put(DataTypes::GENERATION, DataTypes::generation());
+    datatype.put(DataTypes::ID,
+                 static_cast<ObjectIdType>(DataTypes::DataTypesId::NUMERIC));
+    datatype.put(DataTypes::NAME, "NUMERIC");
+    datatype.put(DataTypes::PG_DATA_TYPE, PgType::TypeOid::kNumeric);
+    datatype.put(DataTypes::PG_DATA_TYPE_NAME, "numeric");
+    datatype.put(DataTypes::PG_DATA_TYPE_QUALIFIED_NAME,
+                 PgType::TypeName::kNumeric);
+    datatypes.push_back(std::make_pair("", datatype));
+
+    // DATE : 
+    datatype.put(DataTypes::FORMAT_VERSION, DataTypes::format_version());
+    datatype.put(DataTypes::GENERATION, DataTypes::generation());
+    datatype.put(DataTypes::ID,
+                 static_cast<ObjectIdType>(DataTypes::DataTypesId::DATE));
+    datatype.put(DataTypes::NAME, "DATE");
+    datatype.put(DataTypes::PG_DATA_TYPE, PgType::TypeOid::kDate);
+    datatype.put(DataTypes::PG_DATA_TYPE_NAME, "date");
+    datatype.put(DataTypes::PG_DATA_TYPE_QUALIFIED_NAME,
+                 PgType::TypeName::kDate);
+    datatypes.push_back(std::make_pair("", datatype));
+
+    // TIME : 
+    datatype.put(DataTypes::FORMAT_VERSION, DataTypes::format_version());
+    datatype.put(DataTypes::GENERATION, DataTypes::generation());
+    datatype.put(DataTypes::ID,
+                 static_cast<ObjectIdType>(DataTypes::DataTypesId::TIME));
+    datatype.put(DataTypes::NAME, "TIME");
+    datatype.put(DataTypes::PG_DATA_TYPE, PgType::TypeOid::kTime);
+    datatype.put(DataTypes::PG_DATA_TYPE_NAME, "time");
+    datatype.put(DataTypes::PG_DATA_TYPE_QUALIFIED_NAME,
+                 PgType::TypeName::kTime);
+    datatypes.push_back(std::make_pair("", datatype));
+
+    // TIMETZ : 
+    datatype.put(DataTypes::FORMAT_VERSION, DataTypes::format_version());
+    datatype.put(DataTypes::GENERATION, DataTypes::generation());
+    datatype.put(DataTypes::ID,
+                 static_cast<ObjectIdType>(DataTypes::DataTypesId::TIMETZ));
+    datatype.put(DataTypes::NAME, "TIMETZ");
+    datatype.put(DataTypes::PG_DATA_TYPE, PgType::TypeOid::kTimetz);
+    datatype.put(DataTypes::PG_DATA_TYPE_NAME, "timetz");
+    datatype.put(DataTypes::PG_DATA_TYPE_QUALIFIED_NAME,
+                 PgType::TypeName::kTimetz);
+    datatypes.push_back(std::make_pair("", datatype));
+
+    // TIMESTAMP : 
+    datatype.put(DataTypes::FORMAT_VERSION, DataTypes::format_version());
+    datatype.put(DataTypes::GENERATION, DataTypes::generation());
+    datatype.put(DataTypes::ID,
+                 static_cast<ObjectIdType>(DataTypes::DataTypesId::TIMESTAMP));
+    datatype.put(DataTypes::NAME, "TIMESTAMP");
+    datatype.put(DataTypes::PG_DATA_TYPE, PgType::TypeOid::kTimestamp);
+    datatype.put(DataTypes::PG_DATA_TYPE_NAME, "timestamp");
+    datatype.put(DataTypes::PG_DATA_TYPE_QUALIFIED_NAME,
+                 PgType::TypeName::kTimestamp);
+    datatypes.push_back(std::make_pair("", datatype));
+
+    // TIMESTAMPTZ : 
+    datatype.put(DataTypes::FORMAT_VERSION, DataTypes::format_version());
+    datatype.put(DataTypes::GENERATION, DataTypes::generation());
+    datatype.put(DataTypes::ID,
+                 static_cast<ObjectIdType>(DataTypes::DataTypesId::TIMESTAMPTZ));
+    datatype.put(DataTypes::NAME, "TIMESTAMPTZ");
+    datatype.put(DataTypes::PG_DATA_TYPE, PgType::TypeOid::kTimestamptz);
+    datatype.put(DataTypes::PG_DATA_TYPE_NAME, "timestamptz");
+    datatype.put(DataTypes::PG_DATA_TYPE_QUALIFIED_NAME,
+                 PgType::TypeName::kTimestamptz);
+    datatypes.push_back(std::make_pair("", datatype));
+
+    // INTERVAL : 
+    datatype.put(DataTypes::FORMAT_VERSION, DataTypes::format_version());
+    datatype.put(DataTypes::GENERATION, DataTypes::generation());
+    datatype.put(DataTypes::ID,
+                 static_cast<ObjectIdType>(DataTypes::DataTypesId::INTERVAL));
+    datatype.put(DataTypes::NAME, "INTERVAL");
+    datatype.put(DataTypes::PG_DATA_TYPE, PgType::TypeOid::kInterval);
+    datatype.put(DataTypes::PG_DATA_TYPE_NAME, "interval");
+    datatype.put(DataTypes::PG_DATA_TYPE_QUALIFIED_NAME,
+                 PgType::TypeName::kInterval);
     datatypes.push_back(std::make_pair("", datatype));
   }
 
