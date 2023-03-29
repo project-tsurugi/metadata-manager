@@ -469,7 +469,7 @@ ErrorCode StatisticsDAO::upsert_column_statistic(
     const boost::property_tree::ptree& column_statistic,
     ObjectIdType& statistic_id) const {
   ErrorCode error = ErrorCode::UNKNOWN;
-  std::vector<char const*> param_values;
+  std::vector<const char*> param_values;
 
   // format_version
   std::string s_format_version = std::to_string(Statistics::format_version());
@@ -548,7 +548,7 @@ ErrorCode StatisticsDAO::upsert_column_statistic(
     const boost::property_tree::ptree& column_statistic,
     ObjectIdType& statistic_id) const {
   ErrorCode error = ErrorCode::UNKNOWN;
-  std::vector<char const*> param_values;
+  std::vector<const char*> param_values;
 
   std::string s_table_id = std::to_string(table_id);
 

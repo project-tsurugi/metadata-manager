@@ -57,14 +57,13 @@ class DbcUtils {
 
   static manager::metadata::ErrorCode exec_prepared(
       const ConnectionSPtr& connection, const StatementName& statement_name,
-      const std::vector<char const*>& param_values, PGresult*& res);
+      const std::vector<const char*>& param_values, PGresult*& res);
   static manager::metadata::ErrorCode exec_prepared(
       const ConnectionSPtr& connection, std::string_view statement_name,
-      const std::vector<char const*>& param_values, PGresult*& res);
-  static ErrorCode execute_statement(const ConnectionSPtr& connection,
-                                    std::string_view statement_name,
-                                    const std::vector<char const*>& param_values,
-                                    PGresult*& res);
+      const std::vector<const char*>& param_values, PGresult*& res);
+  static ErrorCode execute_statement(
+      const ConnectionSPtr& connection, std::string_view statement_name,
+      const std::vector<const char*>& param_values, PGresult*& res);
 
   static manager::metadata::ErrorCode find_statement_name(
       const std::unordered_map<std::string, std::string>& statement_names_map,

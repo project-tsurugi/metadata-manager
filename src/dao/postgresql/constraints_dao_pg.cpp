@@ -276,7 +276,7 @@ ErrorCode ConstraintsDAO::prepare() const {
 ErrorCode ConstraintsDAO::insert_constraint_metadata(
     const boost::property_tree::ptree& constraint_metadata, ObjectId& constraint_id) const {
   ErrorCode error = ErrorCode::UNKNOWN;
-  std::vector<char const*> param_values;
+  std::vector<const char*> param_values;
 
   // Checks for INSERT execution with object-id specified.
   auto object_id = constraint_metadata.get_optional<ObjectIdType>(Constraint::ID);
