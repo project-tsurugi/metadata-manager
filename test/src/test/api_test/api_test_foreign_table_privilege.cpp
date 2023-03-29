@@ -261,7 +261,7 @@ TEST_P(ApiTestTablePrivilegesSinglePg, confirm_tables_permission) {
     UTUtils::print("  Test pattern: [", permission, "]");
 
     // check the table permissions by role id.
-    error = tables->confirm_permission_in_acls(kRoleName, permission, actual);
+    error = tables->confirm_permission_in_acls(role_id, permission, actual);
     EXPECT_EQ(ErrorCode::OK, error);
     EXPECT_EQ(expected, actual);
 
@@ -294,7 +294,7 @@ TEST_P(ApiTestTablePrivilegesMultiplePg, confirm_tables_permission) {
     UTUtils::print("  Test pattern: [", permission, "]");
 
     // check the table permissions by role id.
-    error = tables->confirm_permission_in_acls(kRoleName, permission, actual);
+    error = tables->confirm_permission_in_acls(role_id, permission, actual);
     EXPECT_EQ(ErrorCode::OK, error);
     EXPECT_EQ(expected, actual);
 
@@ -345,7 +345,7 @@ TEST_F(ApiTestForeignTableNotExistsPg, table_metadata_does_not_exist) {
   EXPECT_EQ(ErrorCode::OK, error);
 
   UTUtils::print("-- confirm permission by role id --");
-  error = tables->confirm_permission_in_acls(kRoleName, "r", res_permission);
+  error = tables->confirm_permission_in_acls(role_id, "r", res_permission);
   EXPECT_EQ(ErrorCode::NOT_FOUND, error);
 
   UTUtils::print("-- confirm permission by role name --");
@@ -371,7 +371,7 @@ TEST_F(ApiTestForeignTableNotExistsPg, foreign_table_does_not_exist) {
   TableMetadataHelper::add_table(kForeignTableNameNone);
 
   UTUtils::print("-- confirm permission by role id --");
-  error = tables->confirm_permission_in_acls(kRoleName, "r", res_permission);
+  error = tables->confirm_permission_in_acls(role_id, "r", res_permission);
   EXPECT_EQ(ErrorCode::NOT_FOUND, error);
 
   UTUtils::print("-- confirm permission by role name --");
@@ -399,19 +399,19 @@ TEST_F(ApiTestForeignTableNotExistsPg, role_does_not_exist) {
   // add read-write table metadata.
   TableMetadataHelper::add_table(kForeignTableNameRw);
 
-  ObjectIdType role_id;
+  ObjectIdType invalid_role_id;
   std::string role_name;
 
   // the role id (0) does not exist.
-  role_id = 0;
-  UTUtils::print("  Test pattern: [", role_id, "]");
+  invalid_role_id = 0;
+  UTUtils::print("  Test pattern: [", invalid_role_id, "]");
   error = tables->confirm_permission_in_acls(0, "r", res_permission);
   EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
 
   // the role id (9999999) does not exist.
-  role_id = 9999999L;
-  UTUtils::print("  Test pattern: [", role_id, "]");
-  error = tables->confirm_permission_in_acls(role_id, "r", res_permission);
+  invalid_role_id = 9999999L;
+  UTUtils::print("  Test pattern: [", invalid_role_id, "]");
+  error = tables->confirm_permission_in_acls(invalid_role_id, "r", res_permission);
   EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
 
   // the role name is empty.
