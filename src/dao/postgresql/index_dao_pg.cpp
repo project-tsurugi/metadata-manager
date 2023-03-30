@@ -436,7 +436,7 @@ ErrorCode IndexDaoPg::insert(
     int64_t number_of_tuples = PQntuples(res);
     if (number_of_tuples == 1) {
       // Obtain the object ID of the added metadata object.
-      std::string str = PQgetvalue(res, FIRST_TUPLE, FIRST_COLUMN);
+      std::string str = PQgetvalue(res, FIRST_ROW, FIRST_COLUMN);
       error = DbcUtils::str_to_integral<ObjectIdType>(str.data(), object_id);
     } else {
       error = ErrorCode::RESULT_MULTIPLE_ROWS;
@@ -486,7 +486,7 @@ ErrorCode IndexDaoPg::select(
     int64_t number_of_tuples = PQntuples(res);
     if (number_of_tuples == 1) {
       // Obtain data.
-      error = this->convert_pgresult_to_ptree(res, FIRST_TUPLE, object);
+      error = this->convert_pgresult_to_ptree(res, FIRST_ROW, object);
     } else if (number_of_tuples == 0) {
       // Not found.
       error = Dao::get_not_found_error_code(key);
@@ -696,9 +696,8 @@ ErrorCode IndexDaoPg::remove(std::string_view key,
     if (error_get != ErrorCode::OK) {
       error = error_get;
     } else if (number_of_rows_affected == 1) {
-      int ordinal_position = 0;
       // Obtain the object ID of the deleted metadata object.
-      std::string str = PQgetvalue(res, FIRST_TUPLE, FIRST_COLUMN);
+      std::string str = PQgetvalue(res, FIRST_ROW, FIRST_COLUMN);
       error = DbcUtils::str_to_integral<ObjectIdType>(str.data(), object_id);
     } else if (number_of_rows_affected == 0) {
       // Not found.
@@ -716,48 +715,48 @@ ErrorCode IndexDaoPg::remove(std::string_view key,
  * @brief Gets the ptree type table metadata
  *   converted from the given PGresult type value.
  * @param res         [in]  pointer to PGresult.
- * @param tuple_num   [in]  row number of PGresult.
+ * @param row_number  [in]  row number of the PGresult.
  * @param object      [out] metadata object.
  * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode IndexDaoPg::convert_pgresult_to_ptree(
-    const PGresult* res, const int tuple_num,
+    const PGresult* res, const int row_number,
     boost::property_tree::ptree& object) const {
 
   ErrorCode error = ErrorCode::UNKNOWN;
   object.clear();
 
   object.put(Object::FORMAT_VERSION,
-      PQgetvalue(res, tuple_num, static_cast<int>(OrdinalPosition::kFormatVersion)));
+      PQgetvalue(res, row_number, static_cast<int>(OrdinalPosition::kFormatVersion)));
 
   object.put(Object::GENERATION,
-      PQgetvalue(res, tuple_num, static_cast<int>(OrdinalPosition::kGeneration)));
+      PQgetvalue(res, row_number, static_cast<int>(OrdinalPosition::kGeneration)));
 
   object.put(Object::ID,
-      PQgetvalue(res, tuple_num, static_cast<int>(OrdinalPosition::kId)));
+      PQgetvalue(res, row_number, static_cast<int>(OrdinalPosition::kId)));
 
   object.put(Object::NAME,
-      PQgetvalue(res, tuple_num, static_cast<int>(OrdinalPosition::kName)));
+      PQgetvalue(res, row_number, static_cast<int>(OrdinalPosition::kName)));
 
   object.put(Index::NAMESPACE,
-      PQgetvalue(res, tuple_num, static_cast<int>(OrdinalPosition::kNamespace)));
+      PQgetvalue(res, row_number, static_cast<int>(OrdinalPosition::kNamespace)));
 
   object.put(Index::OWNER_ID,
-      PQgetvalue(res, tuple_num, static_cast<int>(OrdinalPosition::kOwnerId)));
+      PQgetvalue(res, row_number, static_cast<int>(OrdinalPosition::kOwnerId)));
 
   object.put(Index::ACL,
-      PQgetvalue(res, tuple_num, static_cast<int>(OrdinalPosition::kAcl)));
+      PQgetvalue(res, row_number, static_cast<int>(OrdinalPosition::kAcl)));
 
   object.put(Index::TABLE_ID,
-      PQgetvalue(res, tuple_num, static_cast<int>(OrdinalPosition::kTableId)));
+      PQgetvalue(res, row_number, static_cast<int>(OrdinalPosition::kTableId)));
 
   object.put(Index::ACCESS_METHOD,
-      PQgetvalue(res, tuple_num, static_cast<int>(OrdinalPosition::kAccessMethod)));
+      PQgetvalue(res, row_number, static_cast<int>(OrdinalPosition::kAccessMethod)));
 
   // Set the boolean value converted to a string to property_tree.
   std::string is_unique =
       DbcUtils::convert_boolean_expression(
-          PQgetvalue(res, tuple_num, static_cast<int>(OrdinalPosition::kIsUnique)));
+          PQgetvalue(res, row_number, static_cast<int>(OrdinalPosition::kIsUnique)));
   if (!is_unique.empty()) {
     object.put(Index::IS_UNIQUE, is_unique);
   }
@@ -765,33 +764,33 @@ ErrorCode IndexDaoPg::convert_pgresult_to_ptree(
   // Set the boolean value converted to a string to property_tree.
   std::string is_primary =
       DbcUtils::convert_boolean_expression(
-          PQgetvalue(res, tuple_num, static_cast<int>(OrdinalPosition::kIsPrimary)));
+          PQgetvalue(res, row_number, static_cast<int>(OrdinalPosition::kIsPrimary)));
   if (!is_primary.empty()) {
     object.put(Index::IS_PRIMARY, is_primary);
   }
 
   object.put(Index::NUMBER_OF_KEY_COLUMNS,
-      PQgetvalue(res, tuple_num, static_cast<int>(OrdinalPosition::kNumKeyColumn)));
+      PQgetvalue(res, row_number, static_cast<int>(OrdinalPosition::kNumKeyColumn)));
 
   ptree columns;
   // Converts a JSON string to a property_tree.
   // Set the boolean value converted to a string to property_tree.
   Utility::json_to_ptree(
-      PQgetvalue(res, tuple_num, static_cast<int>(OrdinalPosition::kColumns)),
+      PQgetvalue(res, row_number, static_cast<int>(OrdinalPosition::kColumns)),
       columns);
   object.add_child(Index::KEYS, columns);
 
   ptree columns_id;
   // Converts a JSON string to a property_tree.
   Utility::json_to_ptree(
-      PQgetvalue(res, tuple_num, static_cast<int>(OrdinalPosition::kColumnsId)),
+      PQgetvalue(res, row_number, static_cast<int>(OrdinalPosition::kColumnsId)),
       columns_id);
   object.add_child(Index::KEYS_ID, columns_id);
 
   ptree options;
   // Converts a JSON string to a property_tree.
   Utility::json_to_ptree(
-      PQgetvalue(res, tuple_num, static_cast<int>(OrdinalPosition::kOptions)),
+      PQgetvalue(res, row_number, static_cast<int>(OrdinalPosition::kOptions)),
       options);
   object.add_child(Index::OPTIONS, options);
 

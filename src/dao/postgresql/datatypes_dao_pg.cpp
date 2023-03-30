@@ -176,8 +176,7 @@ ErrorCode DataTypesDAO::select_one_data_type_metadata(
   if (error == ErrorCode::OK) {
     int nrows = PQntuples(res);
     if (nrows == 1) {
-      int ordinal_position = 0;
-      error = convert_pgresult_to_ptree(res, ordinal_position, object);
+      error = convert_pgresult_to_ptree(res, FIRST_ROW, object);
     } else if (nrows == 0) {
       // Convert the error code.
       if (object_key == DataTypes::ID) {
@@ -203,13 +202,13 @@ ErrorCode DataTypesDAO::select_one_data_type_metadata(
 /**
  * @brief Gets the ptree type data types metadata
  *  converted from the given PGresult type value.
- * @param (res)               [in]  the result of a query.
- * @param (ordinal_position)  [in]  column ordinal position of PGresult.
- * @param (object)            [out] one data type metadata.
+ * @param (res)         [in]  the result of a query.
+ * @param (row_number)  [in]  row number of the PGresult.
+ * @param (object)      [out] one data type metadata.
  * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode DataTypesDAO::convert_pgresult_to_ptree(
-    const PGresult* res, const int ordinal_position,
+    const PGresult* res, const int row_number,
     boost::property_tree::ptree& object) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
@@ -218,19 +217,18 @@ ErrorCode DataTypesDAO::convert_pgresult_to_ptree(
 
   // Set the value of the format_version column to ptree.
   object.put(DataTypes::FORMAT_VERSION,
-             PQgetvalue(res, ordinal_position,
+             PQgetvalue(res, row_number,
                         static_cast<int>(OrdinalPosition::kFormatVersion)));
 
   // Set the value of the generation column to ptree.
   object.put(DataTypes::GENERATION,
-             PQgetvalue(res, ordinal_position,
+             PQgetvalue(res, row_number,
                         static_cast<int>(OrdinalPosition::kGeneration)));
 
   // Set the value of the id to ptree.
   ObjectIdType id = -1;
   error = DbcUtils::str_to_integral<ObjectIdType>(
-      PQgetvalue(res, ordinal_position, static_cast<int>(OrdinalPosition::kId)),
-      id);
+      PQgetvalue(res, row_number, static_cast<int>(OrdinalPosition::kId)), id);
   if (error != ErrorCode::OK) {
     return error;
   }
@@ -238,13 +236,13 @@ ErrorCode DataTypesDAO::convert_pgresult_to_ptree(
 
   // Set the value of the name column to ptree.
   object.put(DataTypes::NAME,
-             std::string(PQgetvalue(res, ordinal_position,
+             std::string(PQgetvalue(res, row_number,
                                     static_cast<int>(OrdinalPosition::kName))));
 
   // Set the value of the pg_data_type column to ptree.
   int64_t pg_data_type = -1;
   error = DbcUtils::str_to_integral<int64_t>(
-      PQgetvalue(res, ordinal_position,
+      PQgetvalue(res, row_number,
                  static_cast<int>(OrdinalPosition::kPgDataType)),
       pg_data_type);
   if (error != ErrorCode::OK) {
@@ -255,13 +253,13 @@ ErrorCode DataTypesDAO::convert_pgresult_to_ptree(
   // Set the value of the pg_data_type_name column to ptree.
   object.put(DataTypes::PG_DATA_TYPE_NAME,
              std::string(PQgetvalue(
-                 res, ordinal_position,
+                 res, row_number,
                  static_cast<int>(OrdinalPosition::kPgDataTypeName))));
 
   // Set the value of the pg_data_type_qualified_name column to ptree.
   object.put(DataTypes::PG_DATA_TYPE_QUALIFIED_NAME,
              std::string(PQgetvalue(
-                 res, ordinal_position,
+                 res, row_number,
                  static_cast<int>(OrdinalPosition::kPgDataTypeQualifiedName))));
   error = ErrorCode::OK;
 

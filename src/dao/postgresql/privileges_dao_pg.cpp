@@ -240,9 +240,8 @@ ErrorCode PrivilegesDAO::confirm_tables_permission(
       }
 
       std::string privilege = matcher[2].str();
-      for (int ordinal_position = 0; ordinal_position < nrows;
-           ordinal_position++) {
-        error = check_of_privilege(res, ordinal_position, privilege.c_str(),
+      for (int row_number = 0; row_number < nrows; row_number++) {
+        error = check_of_privilege(res, row_number, privilege.c_str(),
                                    check_result);
         // Finish if an error occurs or if do not have permission.
         if ((error != ErrorCode::OK) || (check_result == false)) {
@@ -273,15 +272,15 @@ ErrorCode PrivilegesDAO::confirm_tables_permission(
 
 /**
  * @brief Checks for the presence of the specified permissions.
- * @param (res)               [in]  the result of a query.
- * @param (ordinal_position)  [in]  column ordinal position of PGresult.
- * @param (permission)        [in]  permissions.
- * @param (check_result)      [out] presence or absence of the
+ * @param (res)           [in]  the result of a query.
+ * @param (row_number)    [in]  row number of the PGresult.
+ * @param (permission)    [in]  permissions.
+ * @param (check_result)  [out] presence or absence of the
  *   specified permissions.
  * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode PrivilegesDAO::check_of_privilege(const PGresult* res,
-                                            const int ordinal_position,
+                                            const int row_number,
                                             const char* permission,
                                             bool& check_result) const {
   ErrorCode error = ErrorCode::UNKNOWN;
@@ -290,8 +289,8 @@ ErrorCode PrivilegesDAO::check_of_privilege(const PGresult* res,
   for (; *permission != 0x00; permission++) {
     std::size_t find_position = kValidPrivileges.find(*permission);
     if (find_position != std::string_view::npos) {
-      check_result = DbcUtils::str_to_boolean(
-          PQgetvalue(res, ordinal_position, find_position));
+      check_result =
+          DbcUtils::str_to_boolean(PQgetvalue(res, row_number, find_position));
       if (!check_result) {
         break;
       }
@@ -324,10 +323,8 @@ ErrorCode PrivilegesDAO::check_exists_authid(std::string_view auth_id,
   if (error == ErrorCode::OK) {
     int nrows = PQntuples(res);
     if (nrows == 1) {
-      int ordinal_position = 0;
-      int column_position = 0;
-      exists_result = DbcUtils::str_to_boolean(
-          PQgetvalue(res, ordinal_position, column_position));
+      exists_result =
+          DbcUtils::str_to_boolean(PQgetvalue(res, FIRST_ROW, FIRST_COLUMN));
     }
   }
 
