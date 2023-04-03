@@ -174,8 +174,7 @@ ErrorCode RolesDAO::select_role_metadata(
     int nrows = PQntuples(res);
 
     if (nrows == 1) {
-      int ordinal_position = 0;
-      error = convert_pgresult_to_ptree(res, ordinal_position, object);
+      error = convert_pgresult_to_ptree(res, FIRST_ROW, object);
     } else if (nrows == 0) {
       // Convert the error code.
       if (object_key == Roles::ROLE_OID) {
@@ -203,13 +202,13 @@ ErrorCode RolesDAO::select_role_metadata(
  *   it from type PGresult to type ptree.
  * @brief Gets the ptree type role metadata
  *   converted from the given PGresult type value.
- * @param (res)               [in]  the result of a query.
- * @param (ordinal_position)  [in]  column ordinal position of PGresult.
- * @param (role)              [out] one role metadata.
+ * @param (res)         [in]  the result of a query.
+ * @param (row_number)  [in]  row number of the PGresult.
+ * @param (role)        [out] one role metadata.
  * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode RolesDAO::convert_pgresult_to_ptree(
-    const PGresult* res, const int ordinal_position,
+    const PGresult* res, const int row_number,
     boost::property_tree::ptree& role) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
@@ -224,69 +223,69 @@ ErrorCode RolesDAO::convert_pgresult_to_ptree(
 
   // Set the value of the oid column to ptree.
   role.put(Roles::ROLE_OID,
-           PQgetvalue(res, ordinal_position,
+           PQgetvalue(res, row_number,
                       static_cast<int>(OrdinalPosition::kOid)));
 
   // Set the value of the rolname column to ptree.
   role.put(Roles::ROLE_ROLNAME,
-           PQgetvalue(res, ordinal_position,
+           PQgetvalue(res, row_number,
                       static_cast<int>(OrdinalPosition::kName)));
 
   // Set the value of the rolsuper column to ptree.
   role.put(
       Roles::ROLE_ROLSUPER,
       DbcUtils::convert_boolean_expression(PQgetvalue(
-          res, ordinal_position, static_cast<int>(OrdinalPosition::kSuper))));
+          res, row_number, static_cast<int>(OrdinalPosition::kSuper))));
 
   // Set the value of the rolinherit column to ptree.
   role.put(
       Roles::ROLE_ROLINHERIT,
       DbcUtils::convert_boolean_expression(PQgetvalue(
-          res, ordinal_position, static_cast<int>(OrdinalPosition::kInherit))));
+          res, row_number, static_cast<int>(OrdinalPosition::kInherit))));
 
   // Set the value of the rolcreaterole column to ptree.
   role.put(Roles::ROLE_ROLCREATEROLE,
            DbcUtils::convert_boolean_expression(
-               PQgetvalue(res, ordinal_position,
+               PQgetvalue(res, row_number,
                           static_cast<int>(OrdinalPosition::kCreateRole))));
 
   // Set the value of the rolcreatedb column to ptree.
   role.put(Roles::ROLE_ROLCREATEDB,
            DbcUtils::convert_boolean_expression(
-               PQgetvalue(res, ordinal_position,
+               PQgetvalue(res, row_number,
                           static_cast<int>(OrdinalPosition::kCreateDb))));
 
   // Set the value of the rolcanlogin column to ptree.
   role.put(Roles::ROLE_ROLCANLOGIN,
            DbcUtils::convert_boolean_expression(
-               PQgetvalue(res, ordinal_position,
+               PQgetvalue(res, row_number,
                           static_cast<int>(OrdinalPosition::kCanLogin))));
 
   // Set the value of the rolreplication column to ptree.
   role.put(Roles::ROLE_ROLREPLICATION,
            DbcUtils::convert_boolean_expression(
-               PQgetvalue(res, ordinal_position,
+               PQgetvalue(res, row_number,
                           static_cast<int>(OrdinalPosition::kReplication))));
 
   // Set the value of the rolbypassrls column to ptree.
   role.put(Roles::ROLE_ROLBYPASSRLS,
            DbcUtils::convert_boolean_expression(
-               PQgetvalue(res, ordinal_position,
+               PQgetvalue(res, row_number,
                           static_cast<int>(OrdinalPosition::kBypassRls))));
 
   // Set the value of the rolconnlimit column to ptree.
   role.put(Roles::ROLE_ROLCONNLIMIT,
-           PQgetvalue(res, ordinal_position,
+           PQgetvalue(res, row_number,
                       static_cast<int>(OrdinalPosition::kConnLimit)));
 
   // Set the value of the rolpassword column to ptree.
   role.put(Roles::ROLE_ROLPASSWORD,
-           PQgetvalue(res, ordinal_position,
+           PQgetvalue(res, row_number,
                       static_cast<int>(OrdinalPosition::kPassword)));
 
   // Set the value of the rolvaliduntil column to ptree.
   role.put(Roles::ROLE_ROLVALIDUNTIL,
-           PQgetvalue(res, ordinal_position,
+           PQgetvalue(res, row_number,
                       static_cast<int>(OrdinalPosition::kValidUntil)));
 
   error = ErrorCode::OK;
