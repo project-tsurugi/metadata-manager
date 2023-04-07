@@ -40,7 +40,7 @@ class ApiTestTableMetadataEx
     : public ::testing::TestWithParam<std::vector<UtTableMetadata>> {
  public:
   static void SetUpTestCase() {
-    if (global->is_open()) {
+    if (g_environment_->is_open()) {
       UTUtils::print(">> gtest::SetUpTestCase()");
 
       // If metadata repository is opened,
@@ -53,7 +53,7 @@ class ApiTestTableMetadataEx
 
   void SetUp() override {
     UTUtils::skip_if_connection_not_opened();
-    if (!global->is_open()) {
+    if (!g_environment_->is_open()) {
       GTEST_SKIP();
     }
     // If valid test data could not be made, skip this test.

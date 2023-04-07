@@ -37,7 +37,7 @@ class ScenarioTest
     : public ::testing::TestWithParam<scenario_test::ScenarioTestParam> {
  public:
   static void SetUpTestCase() {
-    if (global->is_open()) {
+    if (g_environment_->is_open()) {
       UTUtils::print(">> gtest::SetUpTestCase()");
 
       // Change to a unique table name.
@@ -51,7 +51,7 @@ class ScenarioTest
   }
 
   static void TearDownTestCase() {
-    if (global->is_open()) {
+    if (g_environment_->is_open()) {
       UTUtils::print(">> gtest::TearDownTestCase()");
 
       // Remove table metadata.
@@ -63,7 +63,7 @@ class ScenarioTest
 
   void SetUp() override {
     UTUtils::skip_if_connection_not_opened();
-    if (!global->is_open()) {
+    if (!g_environment_->is_open()) {
       GTEST_SKIP();
     }
   }

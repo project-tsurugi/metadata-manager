@@ -30,9 +30,9 @@ namespace manager::metadata::testing {
  * @brief GlobalTestEnvironment instance that is a global variable.
  */
 #if defined(STORAGE_POSTGRESQL)
-extern TestEnvironmentPg* const global;
+extern TestEnvironmentPg* const g_environment_;
 #elif defined(STORAGE_JSON)
-extern TestEnvironmentJson* const global;
+extern TestEnvironmentJson* const g_environment_;
 #endif
 
 class GlobalTestEnvironment : public ::testing::Environment {

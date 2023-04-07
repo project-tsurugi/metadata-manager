@@ -36,7 +36,7 @@ std::string UTUtils::generate_narrow_uid() {
  * @brief Skip tests if a connection to metadata repository is not opened.
  */
 void UTUtils::skip_if_connection_not_opened() {
-  if (!global->is_open()) {
+  if (!g_environment_->is_open()) {
     GTEST_SKIP_("  Skipped: Metadata repository is not started.");
   }
 }
@@ -45,7 +45,7 @@ void UTUtils::skip_if_connection_not_opened() {
  * @brief Skip tests if a connection to metadata repository is opened.
  */
 void UTUtils::skip_if_connection_opened() {
-  if (global->is_open()) {
+  if (g_environment_->is_open()) {
     GTEST_SKIP_("  Skipped: Metadata repository is started.");
   }
 }

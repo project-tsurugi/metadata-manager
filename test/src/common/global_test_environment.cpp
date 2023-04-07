@@ -22,10 +22,10 @@
 namespace manager::metadata::testing {
 
 #if defined(STORAGE_POSTGRESQL)
-TestEnvironmentPg* const global = reinterpret_cast<TestEnvironmentPg*>(
+TestEnvironmentPg* const g_environment_ = reinterpret_cast<TestEnvironmentPg*>(
     ::testing::AddGlobalTestEnvironment(new TestEnvironmentPg));
 #elif defined(STORAGE_JSON)
-TestEnvironmentJson* const global = reinterpret_cast<TestEnvironmentJson*>(
+TestEnvironmentJson* const g_environment_ = reinterpret_cast<TestEnvironmentJson*>(
     ::testing::AddGlobalTestEnvironment(new TestEnvironmentJson));
 #endif
 

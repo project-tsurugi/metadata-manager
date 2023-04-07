@@ -26,7 +26,7 @@ int main(int argc, char** argv) {
   ::testing::InitGoogleTest(&argc, argv);
 
   if (argc == 2 && boost::filesystem::exists(argv[1])) {
-    manager::metadata::testing::global->set_json_schema_file_name(argv[1]);
+    manager::metadata::testing::g_environment_->set_json_schema_file_name(argv[1]);
   }
 
   return RUN_ALL_TESTS();
