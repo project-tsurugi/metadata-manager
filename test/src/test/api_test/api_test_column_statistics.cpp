@@ -64,7 +64,7 @@ class ApiTestColumnStatisticsPg : public ::testing::Test {
   void TearDown() override {
     UTUtils::skip_if_json();
 
-    if (global->is_open()) {
+    if (g_environment_->is_open()) {
       UTUtils::print(">> gtest::TearDown()");
 
       // Remove table metadata.
@@ -405,7 +405,7 @@ TEST_F(ApiTestColumnStatisticsPg, test_invalid_ids) {
   EXPECT_EQ(ErrorCode::OK, error);
 
   // Test of add to a table ID that does not exist.
-  for (auto invalid_id : global->invalid_ids) {
+  for (auto invalid_id : g_environment_->invalid_ids) {
     UtColumnStatistics ut_statistic(invalid_id, 1);
     ptree statistic = ut_statistic.get_metadata_ptree();
 
@@ -413,7 +413,7 @@ TEST_F(ApiTestColumnStatisticsPg, test_invalid_ids) {
   }
 
   // Test of get to a statistic ID that does not exist.
-  for (auto invalid_id : global->invalid_ids) {
+  for (auto invalid_id : g_environment_->invalid_ids) {
     ptree statistic;
     ApiTestHelper::test_get(manager.get(), invalid_id, ErrorCode::ID_NOT_FOUND,
                             statistic);
@@ -427,14 +427,14 @@ TEST_F(ApiTestColumnStatisticsPg, test_invalid_ids) {
   }
 
   // Test of get to a column ID that does not exist.
-  for (auto invalid_id : global->invalid_ids) {
+  for (auto invalid_id : g_environment_->invalid_ids) {
     ptree statistic;
     error = manager->get_by_column_id(invalid_id, statistic);
     EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
   }
 
   // Test of get to a column number that does not exist.
-  for (auto invalid_id : global->invalid_ids) {
+  for (auto invalid_id : g_environment_->invalid_ids) {
     ptree statistic;
     error = manager->get_by_column_number(table_id_, invalid_id, statistic);
     EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
@@ -448,7 +448,7 @@ TEST_F(ApiTestColumnStatisticsPg, test_invalid_ids) {
   }
 
   // Test of get_all to a table ID that does not exist.
-  for (auto invalid_id : global->invalid_ids) {
+  for (auto invalid_id : g_environment_->invalid_ids) {
     std::vector<ptree> container{};
 
     error = manager->get_all(invalid_id, container);
@@ -457,7 +457,7 @@ TEST_F(ApiTestColumnStatisticsPg, test_invalid_ids) {
   }
 
   // Test of remove to a statistic ID that does not exist.
-  for (auto invalid_id : global->invalid_ids) {
+  for (auto invalid_id : g_environment_->invalid_ids) {
     ApiTestHelper::test_remove(manager.get(), invalid_id, ErrorCode::ID_NOT_FOUND);
   }
 
@@ -468,19 +468,19 @@ TEST_F(ApiTestColumnStatisticsPg, test_invalid_ids) {
   }
 
   // Test of remove to a table ID that does not exist.
-  for (auto invalid_id : global->invalid_ids) {
+  for (auto invalid_id : g_environment_->invalid_ids) {
     error = manager->remove_by_table_id(invalid_id);
     EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
   }
 
   // Test of remove to a column ID that does not exist.
-  for (auto invalid_id : global->invalid_ids) {
+  for (auto invalid_id : g_environment_->invalid_ids) {
     error = manager->remove_by_column_id(invalid_id);
     EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
   }
 
   // Test of remove to a column number that does not exist.
-  for (auto invalid_id : global->invalid_ids) {
+  for (auto invalid_id : g_environment_->invalid_ids) {
     error = manager->remove_by_column_number(table_id_, invalid_id);
     EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
   }

@@ -47,7 +47,7 @@ class ApiTestConstraintMetadata : public ::testing::Test {
   }
 
   void TearDown() override {
-    if (global->is_open()) {
+    if (g_environment_->is_open()) {
       UTUtils::print(">> gtest::TearDown()");
 
       // Remove table metadata.
