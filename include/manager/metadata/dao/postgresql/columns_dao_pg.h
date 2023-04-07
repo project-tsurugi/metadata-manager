@@ -88,7 +88,7 @@ class ColumnsDAO : public manager::metadata::db::ColumnsDAO {
   ConnectionSPtr connection_;
 
   manager::metadata::ErrorCode convert_pgresult_to_ptree(
-      const PGresult* res, const int ordinal_position,
+      const PGresult* res, const int row_number,
       boost::property_tree::ptree& columns_metadata) const;
 };  // class ColumnsDAO
 

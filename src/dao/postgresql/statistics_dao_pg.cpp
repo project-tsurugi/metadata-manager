@@ -469,7 +469,7 @@ ErrorCode StatisticsDAO::upsert_column_statistic(
     const boost::property_tree::ptree& column_statistic,
     ObjectIdType& statistic_id) const {
   ErrorCode error = ErrorCode::UNKNOWN;
-  std::vector<char const*> param_values;
+  std::vector<const char*> param_values;
 
   // format_version
   std::string s_format_version = std::to_string(Statistics::format_version());
@@ -515,9 +515,8 @@ ErrorCode StatisticsDAO::upsert_column_statistic(
   if (error == ErrorCode::OK) {
     int nrows = PQntuples(res);
     if (nrows == 1) {
-      int ordinal_position = 0;
       error = DbcUtils::str_to_integral<ObjectIdType>(
-          PQgetvalue(res, ordinal_position, 0), statistic_id);
+          PQgetvalue(res, FIRST_ROW, FIRST_COLUMN), statistic_id);
     } else {
       error = ErrorCode::INVALID_PARAMETER;
     }
@@ -548,7 +547,7 @@ ErrorCode StatisticsDAO::upsert_column_statistic(
     const boost::property_tree::ptree& column_statistic,
     ObjectIdType& statistic_id) const {
   ErrorCode error = ErrorCode::UNKNOWN;
-  std::vector<char const*> param_values;
+  std::vector<const char*> param_values;
 
   std::string s_table_id = std::to_string(table_id);
 
@@ -604,9 +603,8 @@ ErrorCode StatisticsDAO::upsert_column_statistic(
   if (error == ErrorCode::OK) {
     int nrows = PQntuples(res);
     if (nrows == 1) {
-      int ordinal_position = 0;
       error = DbcUtils::str_to_integral<ObjectIdType>(
-          PQgetvalue(res, ordinal_position, 0), statistic_id);
+          PQgetvalue(res, FIRST_ROW, FIRST_COLUMN), statistic_id);
     } else {
       error = ErrorCode::INVALID_PARAMETER;
     }
@@ -819,9 +817,8 @@ ErrorCode StatisticsDAO::delete_column_statistic(
     if (error_get != ErrorCode::OK) {
       error = error_get;
     } else if (number_of_rows_affected == 1) {
-      int ordinal_position = 0;
       error = DbcUtils::str_to_integral<ObjectIdType>(
-          PQgetvalue(res, ordinal_position, 0), statistic_id);
+          PQgetvalue(res, FIRST_ROW, FIRST_COLUMN), statistic_id);
     } else if (number_of_rows_affected == 0) {
       // Convert the error code.
       if (object_key == Statistics::ID) {
@@ -926,9 +923,8 @@ ErrorCode StatisticsDAO::delete_column_statistic(
     if (error_get != ErrorCode::OK) {
       error = error_get;
     } else if (number_of_rows_affected == 1) {
-      int ordinal_position = 0;
       error = DbcUtils::str_to_integral<ObjectIdType>(
-          PQgetvalue(res, ordinal_position, 0), statistic_id);
+          PQgetvalue(res, FIRST_ROW, FIRST_COLUMN), statistic_id);
     } else if (number_of_rows_affected == 0) {
       // Convert the error code.
       if (object_key == Statistics::COLUMN_NUMBER) {
@@ -972,11 +968,10 @@ ErrorCode StatisticsDAO::get_column_statistics_rows(
     int nrows = PQntuples(res);
 
     if (nrows >= 0) {
-      for (int ordinal_position = 0; ordinal_position < nrows;
-           ordinal_position++) {
+      for (int row_number = 0; row_number < nrows; row_number++) {
         ptree table;
         ErrorCode error_internal =
-            convert_pgresult_to_ptree(res, ordinal_position, table);
+            convert_pgresult_to_ptree(res, row_number, table);
         if (error_internal != ErrorCode::OK) {
           error = error_internal;
           break;
@@ -995,13 +990,13 @@ ErrorCode StatisticsDAO::get_column_statistics_rows(
 /**
  * @brief Gets the ptree type column statistics
  *   converted from the given PGresult type value.
- * @param (res)               [in]  the result of a query.
- * @param (ordinal_position)  [in]  column ordinal position of PGresult.
- * @param (statistic)         [out] one column statistic.
+ * @param (res)         [in]  the result of a query.
+ * @param (row_number)  [in]  row number of the PGresult.
+ * @param (statistic)   [out] one column statistic.
  * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode StatisticsDAO::convert_pgresult_to_ptree(
-    const PGresult* res, const int ordinal_position,
+    const PGresult* res, const int row_number,
     boost::property_tree::ptree& statistic) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
@@ -1010,49 +1005,49 @@ ErrorCode StatisticsDAO::convert_pgresult_to_ptree(
 
   // Set the value of the format_version column to ptree.
   statistic.put(Statistics::FORMAT_VERSION,
-                PQgetvalue(res, ordinal_position,
+                PQgetvalue(res, row_number,
                            static_cast<int>(OrdinalPosition::kFormatVersion)));
 
   // Set the value of the generation column to ptree.
   statistic.put(Statistics::GENERATION,
-                PQgetvalue(res, ordinal_position,
+                PQgetvalue(res, row_number,
                            static_cast<int>(OrdinalPosition::kGeneration)));
 
   // Set the value of the id column to ptree.
   statistic.put(Statistics::ID,
-                PQgetvalue(res, ordinal_position,
+                PQgetvalue(res, row_number,
                            static_cast<int>(OrdinalPosition::kId)));
 
   // Set the value of the name column to ptree.
   statistic.put(Statistics::NAME,
-                PQgetvalue(res, ordinal_position,
+                PQgetvalue(res, row_number,
                            static_cast<int>(OrdinalPosition::kName)));
 
   // Set the value of the table id column to ptree.
   statistic.put(Statistics::TABLE_ID,
-                PQgetvalue(res, ordinal_position,
+                PQgetvalue(res, row_number,
                            static_cast<int>(OrdinalPosition::kTableId)));
 
   // Set the value of the ordinal position column to ptree.
   statistic.put(
       Statistics::COLUMN_NUMBER,
-      PQgetvalue(res, ordinal_position,
+      PQgetvalue(res, row_number,
                  static_cast<int>(OrdinalPosition::kColumnNumber)));
 
   // Set the value of the column id column to ptree.
   statistic.put(Statistics::COLUMN_ID,
-                PQgetvalue(res, ordinal_position,
+                PQgetvalue(res, row_number,
                            static_cast<int>(OrdinalPosition::kColumnId)));
 
   // Set the value of the column name column to ptree.
   statistic.put(Statistics::COLUMN_NAME,
-                PQgetvalue(res, ordinal_position,
+                PQgetvalue(res, row_number,
                            static_cast<int>(OrdinalPosition::kColumnName)));
 
   // Set the value of the column statistic column column to ptree.
   ptree column_statistic;
   std::string s_column_statistic =
-      PQgetvalue(res, ordinal_position,
+      PQgetvalue(res, row_number,
                  static_cast<int>(OrdinalPosition::kColumnStatistic));
   if (!s_column_statistic.empty()) {
     std::stringstream ss;

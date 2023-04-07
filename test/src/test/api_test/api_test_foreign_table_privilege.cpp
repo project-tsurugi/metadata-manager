@@ -57,7 +57,7 @@ class TablePrivilegesPg {
     UTUtils::skip_if_json();
     UTUtils::skip_if_connection_not_opened();
 
-    if (UTUtils::is_postgresql() && global->is_open()) {
+    if (UTUtils::is_postgresql() && g_environment_->is_open()) {
       boost::format statement;
 
       // create an instance of the Tables class.
@@ -87,7 +87,7 @@ class TablePrivilegesPg {
   static void test_teardown() {
     UTUtils::skip_if_json();
 
-    if (UTUtils::is_postgresql() && global->is_open()) {
+    if (UTUtils::is_postgresql() && g_environment_->is_open()) {
       // remove dummy data for pg_foreign_table.
       ForeignTableHelper::delete_foreign_table(foreign_table_id_ro);
       ForeignTableHelper::delete_foreign_table(foreign_table_id_rw);
@@ -112,13 +112,13 @@ class ApiTestTablePrivilegesSinglePg
   void SetUp() override {
     TablePrivilegesPg::test_setup();
 
-    if (UTUtils::is_postgresql() && global->is_open()) {
+    if (UTUtils::is_postgresql() && g_environment_->is_open()) {
       // add read-write table metadata.
       TableMetadataHelper::add_table(kForeignTableNameRw);
     }
   }
   void TearDown() override {
-    if (UTUtils::is_postgresql() && global->is_open()) {
+    if (UTUtils::is_postgresql() && g_environment_->is_open()) {
       // remove table metadata.
       TableMetadataHelper::remove_table(kForeignTableNameRw);
     }
@@ -136,7 +136,7 @@ class ApiTestTablePrivilegesMultiplePg
   void SetUp() override {
     TablePrivilegesPg::test_setup();
 
-    if (UTUtils::is_postgresql() && global->is_open()) {
+    if (UTUtils::is_postgresql() && g_environment_->is_open()) {
       // add read-write table metadata.
       TableMetadataHelper::add_table(kForeignTableNameRw);
       // add read-only table metadata.
@@ -146,7 +146,7 @@ class ApiTestTablePrivilegesMultiplePg
   void TearDown() override {
     UTUtils::skip_if_json();
 
-    if (UTUtils::is_postgresql() && global->is_open()) {
+    if (UTUtils::is_postgresql() && g_environment_->is_open()) {
       // remove table metadata.
       TableMetadataHelper::remove_table(kForeignTableNameRw);
       TableMetadataHelper::remove_table(kForeignTableNameRo);
@@ -165,7 +165,7 @@ class ApiTestForeignTablePg : public ::testing::Test {
 
     TablePrivilegesPg::test_setup();
 
-    if (UTUtils::is_postgresql() && global->is_open()) {
+    if (UTUtils::is_postgresql() && g_environment_->is_open()) {
       // add read-write table metadata.
       TableMetadataHelper::add_table(kForeignTableNameRw);
     }
@@ -173,7 +173,7 @@ class ApiTestForeignTablePg : public ::testing::Test {
   void TearDown() override {
     UTUtils::skip_if_json();
 
-    if (UTUtils::is_postgresql() && global->is_open()) {
+    if (UTUtils::is_postgresql() && g_environment_->is_open()) {
       // remove table metadata.
       TableMetadataHelper::remove_table(kForeignTableNameRw);
     }
@@ -199,7 +199,7 @@ class ApiTestTablePrivilegesInvalidPg
   void SetUp() override {
     TablePrivilegesPg::test_setup();
 
-    if (UTUtils::is_postgresql() && global->is_open()) {
+    if (UTUtils::is_postgresql() && g_environment_->is_open()) {
       // add read-write table metadata.
       TableMetadataHelper::add_table(kForeignTableNameRw);
     }
@@ -207,7 +207,7 @@ class ApiTestTablePrivilegesInvalidPg
   void TearDown() override {
     UTUtils::skip_if_json();
 
-    if (UTUtils::is_postgresql() && global->is_open()) {
+    if (UTUtils::is_postgresql() && g_environment_->is_open()) {
       // remove table metadata.
       TableMetadataHelper::remove_table(kForeignTableNameRw);
     }
@@ -261,7 +261,7 @@ TEST_P(ApiTestTablePrivilegesSinglePg, confirm_tables_permission) {
     UTUtils::print("  Test pattern: [", permission, "]");
 
     // check the table permissions by role id.
-    error = tables->confirm_permission_in_acls(kRoleName, permission, actual);
+    error = tables->confirm_permission_in_acls(role_id, permission, actual);
     EXPECT_EQ(ErrorCode::OK, error);
     EXPECT_EQ(expected, actual);
 
@@ -294,7 +294,7 @@ TEST_P(ApiTestTablePrivilegesMultiplePg, confirm_tables_permission) {
     UTUtils::print("  Test pattern: [", permission, "]");
 
     // check the table permissions by role id.
-    error = tables->confirm_permission_in_acls(kRoleName, permission, actual);
+    error = tables->confirm_permission_in_acls(role_id, permission, actual);
     EXPECT_EQ(ErrorCode::OK, error);
     EXPECT_EQ(expected, actual);
 
@@ -345,7 +345,7 @@ TEST_F(ApiTestForeignTableNotExistsPg, table_metadata_does_not_exist) {
   EXPECT_EQ(ErrorCode::OK, error);
 
   UTUtils::print("-- confirm permission by role id --");
-  error = tables->confirm_permission_in_acls(kRoleName, "r", res_permission);
+  error = tables->confirm_permission_in_acls(role_id, "r", res_permission);
   EXPECT_EQ(ErrorCode::NOT_FOUND, error);
 
   UTUtils::print("-- confirm permission by role name --");
@@ -371,7 +371,7 @@ TEST_F(ApiTestForeignTableNotExistsPg, foreign_table_does_not_exist) {
   TableMetadataHelper::add_table(kForeignTableNameNone);
 
   UTUtils::print("-- confirm permission by role id --");
-  error = tables->confirm_permission_in_acls(kRoleName, "r", res_permission);
+  error = tables->confirm_permission_in_acls(role_id, "r", res_permission);
   EXPECT_EQ(ErrorCode::NOT_FOUND, error);
 
   UTUtils::print("-- confirm permission by role name --");
@@ -399,19 +399,19 @@ TEST_F(ApiTestForeignTableNotExistsPg, role_does_not_exist) {
   // add read-write table metadata.
   TableMetadataHelper::add_table(kForeignTableNameRw);
 
-  ObjectIdType role_id;
+  ObjectIdType invalid_role_id;
   std::string role_name;
 
   // the role id (0) does not exist.
-  role_id = 0;
-  UTUtils::print("  Test pattern: [", role_id, "]");
+  invalid_role_id = 0;
+  UTUtils::print("  Test pattern: [", invalid_role_id, "]");
   error = tables->confirm_permission_in_acls(0, "r", res_permission);
   EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
 
   // the role id (9999999) does not exist.
-  role_id = 9999999L;
-  UTUtils::print("  Test pattern: [", role_id, "]");
-  error = tables->confirm_permission_in_acls(role_id, "r", res_permission);
+  invalid_role_id = 9999999L;
+  UTUtils::print("  Test pattern: [", invalid_role_id, "]");
+  error = tables->confirm_permission_in_acls(invalid_role_id, "r", res_permission);
   EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
 
   // the role name is empty.

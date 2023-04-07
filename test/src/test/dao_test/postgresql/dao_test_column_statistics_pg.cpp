@@ -936,13 +936,13 @@ TEST_P(DaoTestColumnStatisticsAllAPIException, all_api_exception) {
    * based on non-existing column ordinal position
    * or non-existing table id.
    */
-  for (ObjectIdType ordinal_position : global->invalid_ids) {
+  for (ObjectIdType ordinal_position : g_environment_->invalid_ids) {
     // ordinal position only not exists
     error = DaoTestColumnStatistics::add_one_column_statistic(
         ret_table_id, ordinal_position, column_statistics[0]);
     EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);
 
-    for (ObjectIdType table_id : global->invalid_ids) {
+    for (ObjectIdType table_id : g_environment_->invalid_ids) {
       // table id and ordinal position not exists
       error = DaoTestColumnStatistics::add_one_column_statistic(
           table_id, ordinal_position, column_statistics[0]);
@@ -951,7 +951,7 @@ TEST_P(DaoTestColumnStatisticsAllAPIException, all_api_exception) {
   }
 
   ObjectIdType ordinal_position_exists = 1;
-  for (ObjectIdType table_id : global->invalid_ids) {
+  for (ObjectIdType table_id : g_environment_->invalid_ids) {
     // table id only not exists
     error = DaoTestColumnStatistics::add_one_column_statistic(
         table_id, ordinal_position_exists, column_statistics[0]);
@@ -963,7 +963,7 @@ TEST_P(DaoTestColumnStatisticsAllAPIException, all_api_exception) {
    * based on non-existing table id.
    */
   std::vector<ptree> empty_column_statistics;
-  for (ObjectIdType table_id : global->invalid_ids) {
+  for (ObjectIdType table_id : g_environment_->invalid_ids) {
     // table id only not exists
     error = DaoTestColumnStatistics::get_all_column_statistics(
         table_id, empty_column_statistics);
@@ -976,13 +976,13 @@ TEST_P(DaoTestColumnStatisticsAllAPIException, all_api_exception) {
    * or non-existing table id.
    */
   ptree empty_column_statistic;
-  for (ObjectIdType ordinal_position : global->invalid_ids) {
+  for (ObjectIdType ordinal_position : g_environment_->invalid_ids) {
     // ordinal position only not exists
     error = DaoTestColumnStatistics::get_one_column_statistic(
         ret_table_id, ordinal_position, empty_column_statistic);
     EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
 
-    for (ObjectIdType table_id : global->invalid_ids) {
+    for (ObjectIdType table_id : g_environment_->invalid_ids) {
       // table id and ordinal position not exists
       error = DaoTestColumnStatistics::get_one_column_statistic(
           table_id, ordinal_position, empty_column_statistic);
@@ -990,7 +990,7 @@ TEST_P(DaoTestColumnStatisticsAllAPIException, all_api_exception) {
     }
   }
 
-  for (ObjectIdType table_id : global->invalid_ids) {
+  for (ObjectIdType table_id : g_environment_->invalid_ids) {
     // table id only not exists
     error = DaoTestColumnStatistics::get_one_column_statistic(
         table_id, ordinal_position_exists, empty_column_statistic);
@@ -1002,13 +1002,13 @@ TEST_P(DaoTestColumnStatisticsAllAPIException, all_api_exception) {
    * based on non-existing column ordinal position
    * or non-existing table id.
    */
-  for (ObjectIdType ordinal_position : global->invalid_ids) {
+  for (ObjectIdType ordinal_position : g_environment_->invalid_ids) {
     // ordinal position only not exists
     error = DaoTestColumnStatistics::remove_one_column_statistic(
         ret_table_id, ordinal_position);
     EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
 
-    for (ObjectIdType table_id : global->invalid_ids) {
+    for (ObjectIdType table_id : g_environment_->invalid_ids) {
       // table id and ordinal position not exists
       error = DaoTestColumnStatistics::remove_one_column_statistic(
           table_id, ordinal_position);
@@ -1016,7 +1016,7 @@ TEST_P(DaoTestColumnStatisticsAllAPIException, all_api_exception) {
     }
   }
 
-  for (ObjectIdType table_id : global->invalid_ids) {
+  for (ObjectIdType table_id : g_environment_->invalid_ids) {
     // table id only not exists
     error = DaoTestColumnStatistics::remove_one_column_statistic(
         table_id, ordinal_position_exists);
@@ -1027,7 +1027,7 @@ TEST_P(DaoTestColumnStatisticsAllAPIException, all_api_exception) {
    * remove_all_column_statistics
    * based on non-existing table id.
    */
-  for (ObjectIdType table_id : global->invalid_ids) {
+  for (ObjectIdType table_id : g_environment_->invalid_ids) {
     // table id not exists
     error = DaoTestColumnStatistics::remove_all_column_statistics(table_id);
     EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);

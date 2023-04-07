@@ -131,7 +131,7 @@ ObjectIdType ForeignTableHelperPg::insert_foreign_table(
   ObjectIdType table_id;
 
   std::string ft_statement_sub =
-      "SELECT CAST(MAX(ftrelid) AS INTEGER) num FROM pg_foreign_table";
+      "SELECT CAST(COALESCE(MAX(ftrelid), 0) AS INTEGER) num FROM pg_foreign_table";
   boost::format statement =
       boost::format(
           "INSERT into pg_foreign_table VALUES"

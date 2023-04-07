@@ -307,7 +307,7 @@ ErrorCode TablesDAO::insert_table_metadata(
     const boost::property_tree::ptree& table_metadata,
     ObjectIdType& table_id) const {
   ErrorCode error = ErrorCode::UNKNOWN;
-  std::vector<char const*> param_values;
+  std::vector<const char*> param_values;
 
   // format_version
   std::string s_format_version = std::to_string(Tables::format_version());
@@ -333,15 +333,14 @@ ErrorCode TablesDAO::insert_table_metadata(
   param_values.emplace_back((reltuples ? reltuples.value().c_str() : nullptr));
 
   PGresult* res = nullptr;
-  error         = DbcUtils::exec_prepared(
-              connection_, StatementName::TABLES_DAO_INSERT_TABLE_METADATA,
-              param_values, res);
+  error = DbcUtils::exec_prepared(
+      connection_, StatementName::TABLES_DAO_INSERT_TABLE_METADATA,
+      param_values, res);
   if (error == ErrorCode::OK) {
     int nrows = PQntuples(res);
     if (nrows == 1) {
-      int ordinal_position = 0;
-      error                = DbcUtils::str_to_integral<ObjectIdType>(
-          PQgetvalue(res, ordinal_position, 0), table_id);
+      error = DbcUtils::str_to_integral<ObjectIdType>(
+          PQgetvalue(res, FIRST_ROW, FIRST_COLUMN), table_id);
     } else {
       error = ErrorCode::INVALID_PARAMETER;
     }
@@ -387,8 +386,7 @@ ErrorCode TablesDAO::select_table_metadata(
   if (error == ErrorCode::OK) {
     int nrows = PQntuples(res);
     if (nrows == 1) {
-      int ordinal_position = 0;
-      error = convert_pgresult_to_ptree(res, ordinal_position, table_metadata);
+      error = convert_pgresult_to_ptree(res, FIRST_ROW, table_metadata);
     } else if (nrows == 0) {
       // Convert the error code.
       if (object_key == Table::ID) {
@@ -420,17 +418,16 @@ ErrorCode TablesDAO::select_table_metadata(
   std::vector<const char*> param_values;
 
   PGresult* res = nullptr;
-  error         = DbcUtils::exec_prepared(
-              connection_, StatementName::TABLES_DAO_SELECT_TABLE_METADATA_ALL,
-              param_values, res);
+  error = DbcUtils::exec_prepared(
+      connection_, StatementName::TABLES_DAO_SELECT_TABLE_METADATA_ALL,
+      param_values, res);
 
   if (error == ErrorCode::OK) {
     int nrows = PQntuples(res);
     if (nrows >= 0) {
-      for (int ordinal_position = 0; ordinal_position < nrows;
-           ordinal_position++) {
+      for (int row_number = 0; row_number < nrows; row_number++) {
         ptree table;
-        error = convert_pgresult_to_ptree(res, ordinal_position, table);
+        error = convert_pgresult_to_ptree(res, row_number, table);
         if (error != ErrorCode::OK) {
           break;
         }
@@ -456,7 +453,7 @@ ErrorCode TablesDAO::update_table_metadata(
     const ObjectIdType table_id,
     const boost::property_tree::ptree& table_metadata) const {
   ErrorCode error = ErrorCode::UNKNOWN;
-  std::vector<char const*> param_values;
+  std::vector<const char*> param_values;
 
   // name
   boost::optional<std::string> name =
@@ -480,9 +477,9 @@ ErrorCode TablesDAO::update_table_metadata(
 
   // Execute SQL.
   PGresult* res = nullptr;
-  error         = DbcUtils::exec_prepared(
-              connection_, StatementName::TABLES_DAO_UPDATE_TABLE_METADATA,
-              param_values, res);
+  error = DbcUtils::exec_prepared(
+      connection_, StatementName::TABLES_DAO_UPDATE_TABLE_METADATA,
+      param_values, res);
   if (error == ErrorCode::OK) {
     uint64_t number_of_rows_affected = 0;
     ErrorCode error_get =
@@ -515,7 +512,7 @@ ErrorCode TablesDAO::update_reltuples(int64_t number_of_tuples,
                                       std::string_view object_value,
                                       ObjectIdType& table_id) const {
   ErrorCode error = ErrorCode::UNKNOWN;
-  std::vector<char const*> param_values;
+  std::vector<const char*> param_values;
 
   // tuples
   std::string s_reltuples = std::to_string(number_of_tuples);
@@ -537,9 +534,8 @@ ErrorCode TablesDAO::update_reltuples(int64_t number_of_tuples,
   if (error == ErrorCode::OK) {
     int nrows = PQntuples(res);
     if (nrows == 1) {
-      int ordinal_position = 0;
-      error                = DbcUtils::str_to_integral<ObjectIdType>(
-          PQgetvalue(res, ordinal_position, 0), table_id);
+      error = DbcUtils::str_to_integral<ObjectIdType>(
+          PQgetvalue(res, FIRST_ROW, FIRST_COLUMN), table_id);
     } else if (nrows == 0) {
       // Convert the error code.
       if (object_key == Table::ID) {
@@ -597,9 +593,8 @@ ErrorCode TablesDAO::delete_table_metadata(std::string_view object_key,
     if (error_get != ErrorCode::OK) {
       error = error_get;
     } else if (number_of_rows_affected == 1) {
-      int ordinal_position = 0;
-      error                = DbcUtils::str_to_integral<ObjectIdType>(
-          PQgetvalue(res, ordinal_position, 0), table_id);
+      error = DbcUtils::str_to_integral<ObjectIdType>(
+          PQgetvalue(res, FIRST_ROW, FIRST_COLUMN), table_id);
     } else if (number_of_rows_affected == 0) {
       // Convert the error code.
       if (object_key == Table::ID) {
@@ -625,13 +620,13 @@ ErrorCode TablesDAO::delete_table_metadata(std::string_view object_key,
 /**
  * @brief Gets the ptree type table metadata
  *   converted from the given PGresult type value.
- * @param (res)               [in]  the result of a query.
- * @param (ordinal_position)  [in]  column ordinal position of PGresult.
- * @param (table_metadata)    [out] one table metadata.
+ * @param (res)             [in]  the result of a query.
+ * @param (row_number)      [in]  row number of the PGresult.
+ * @param (table_metadata)  [out] one table metadata.
  * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode TablesDAO::convert_pgresult_to_ptree(
-    const PGresult* res, const int ordinal_position,
+    const PGresult* res, const int row_number,
     boost::property_tree::ptree& table_metadata) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
@@ -641,32 +636,32 @@ ErrorCode TablesDAO::convert_pgresult_to_ptree(
   // Set the value of the format_version column to ptree.
   table_metadata.put(
       Table::FORMAT_VERSION,
-      PQgetvalue(res, ordinal_position,
+      PQgetvalue(res, row_number,
                  static_cast<int>(OrdinalPosition::kFormatVersion)));
 
   // Set the value of the generation column to ptree.
   table_metadata.put(
       Table::GENERATION,
-      PQgetvalue(res, ordinal_position,
+      PQgetvalue(res, row_number,
                  static_cast<int>(OrdinalPosition::kGeneration)));
 
   // Set the value of the id column to ptree.
   table_metadata.put(Table::ID,
-                     PQgetvalue(res, ordinal_position,
+                     PQgetvalue(res, row_number,
                                 static_cast<int>(OrdinalPosition::kId)));
 
   // Set the value of the name column to ptree.
   table_metadata.put(Table::NAME,
-                     PQgetvalue(res, ordinal_position,
+                     PQgetvalue(res, row_number,
                                 static_cast<int>(OrdinalPosition::kName)));
 
   // Set the value of the namespace column to ptree.
   table_metadata.put(Table::NAMESPACE,
-                     PQgetvalue(res, ordinal_position,
+                     PQgetvalue(res, row_number,
                                 static_cast<int>(OrdinalPosition::kNamespace)));
 
   // Set the value of the number of tuples column to ptree.
-  std::string tuples = PQgetvalue(res, ordinal_position,
+  std::string tuples = PQgetvalue(res, row_number,
                                   static_cast<int>(OrdinalPosition::kTuples));
   table_metadata.put(Table::NUMBER_OF_TUPLES,
                      (tuples.empty() ? "0" : tuples.c_str()));
@@ -674,12 +669,12 @@ ErrorCode TablesDAO::convert_pgresult_to_ptree(
   // Set the value of the owner_role_id column to ptree.
   table_metadata.put(
       Table::OWNER_ROLE_ID,
-      PQgetvalue(res, ordinal_position,
+      PQgetvalue(res, row_number,
                  static_cast<int>(OrdinalPosition::kOwnerRoleId)));
 
   // Set the value of the acl column to ptree.
   std::string acl_db_array = PQgetvalue(
-      res, ordinal_position, static_cast<int>(OrdinalPosition::kAcl));
+      res, row_number, static_cast<int>(OrdinalPosition::kAcl));
   std::regex regex("[{}]");
   acl_db_array = std::regex_replace(acl_db_array, regex, "");
 
