@@ -17,6 +17,7 @@
 #define MANAGER_METADATA_LOG_LOGGING_H_
 
 #include <memory>
+#include <string_view>
 
 namespace manager::metadata::log::logging {
 
