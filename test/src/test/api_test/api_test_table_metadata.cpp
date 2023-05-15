@@ -40,6 +40,8 @@ class ApiTestTableMetadataEx
     : public ::testing::TestWithParam<std::vector<UtTableMetadata>> {
  public:
   static void SetUpTestCase() {
+    UTUtils::skip_if_connection_not_opened();
+
     if (global->is_open()) {
       UTUtils::print(">> gtest::SetUpTestCase()");
 
@@ -53,12 +55,12 @@ class ApiTestTableMetadataEx
 
   void SetUp() override {
     UTUtils::skip_if_connection_not_opened();
-    if (!global->is_open()) {
-      GTEST_SKIP();
-    }
-    // If valid test data could not be made, skip this test.
-    if (valid_table_metadata.empty()) {
-      GTEST_SKIP_("  Skipped: Could not read a json file with table metadata.");
+
+    if (global->is_open()) {
+      // If valid test data could not be made, skip this test.
+      if (valid_table_metadata.empty()) {
+        GTEST_SKIP_("  Skipped: Could not read a json file with table metadata.");
+      }
     }
   }
 };
@@ -70,7 +72,7 @@ TEST_F(ApiTestTableMetadata, test_duplicate_table_name) {
   CALL_TRACE;
 
   // Generate tables metadata manager.
-  auto managers = get_table_metadata(GlobalTestEnvironment::TEST_DB);
+  auto managers = get_tables_ptr(GlobalTestEnvironment::TEST_DB);
 
   // Generate test metadata.
   UtTableMetadata ut_metadata;
@@ -110,7 +112,7 @@ TEST_F(ApiTestTableMetadata, test_without_initialized) {
   // Add table metadata.
   {
     // Generate tables metadata manager.
-    auto managers = get_table_metadata(GlobalTestEnvironment::TEST_DB);
+    auto managers = get_tables_ptr(GlobalTestEnvironment::TEST_DB);
 
     object_id = ApiTestHelper::test_add(managers.get(), inserted_metadata,
                                         ErrorCode::OK);
@@ -119,7 +121,7 @@ TEST_F(ApiTestTableMetadata, test_without_initialized) {
   // Get table metadata by table id with ptree.
   {
     // Generate tables metadata manager.
-    auto managers = get_table_metadata(GlobalTestEnvironment::TEST_DB);
+    auto managers = get_tables_ptr(GlobalTestEnvironment::TEST_DB);
 
     ptree retrieved_metadata;
     ApiTestHelper::test_get(managers.get(), object_id, ErrorCode::OK,
@@ -129,7 +131,7 @@ TEST_F(ApiTestTableMetadata, test_without_initialized) {
   // Get table metadata by table name with ptree.
   {
     // Generate tables metadata manager.
-    auto managers = get_table_metadata(GlobalTestEnvironment::TEST_DB);
+    auto managers = get_tables_ptr(GlobalTestEnvironment::TEST_DB);
 
     ptree retrieved_metadata;
     ApiTestHelper::test_get(managers.get(), object_name, ErrorCode::OK,
@@ -139,7 +141,7 @@ TEST_F(ApiTestTableMetadata, test_without_initialized) {
   // Get table metadata by table id with structure.
   {
     // Generate tables metadata manager.
-    auto managers = get_table_metadata(GlobalTestEnvironment::TEST_DB);
+    auto managers = get_tables_ptr(GlobalTestEnvironment::TEST_DB);
 
     Table retrieved_metadata;
     ApiTestHelper::test_get(managers.get(), object_id, ErrorCode::OK,
@@ -149,7 +151,7 @@ TEST_F(ApiTestTableMetadata, test_without_initialized) {
   // Get table metadata by table name with structure.
   {
     // Generate tables metadata manager.
-    auto managers = get_table_metadata(GlobalTestEnvironment::TEST_DB);
+    auto managers = get_tables_ptr(GlobalTestEnvironment::TEST_DB);
 
     Table retrieved_metadata;
     ApiTestHelper::test_get(managers.get(), object_name, ErrorCode::OK,
@@ -159,7 +161,7 @@ TEST_F(ApiTestTableMetadata, test_without_initialized) {
   // Get all table metadata with ptree.
   {
     // Generate tables metadata manager.
-    auto managers = get_table_metadata(GlobalTestEnvironment::TEST_DB);
+    auto managers = get_tables_ptr(GlobalTestEnvironment::TEST_DB);
 
     std::vector<ptree> container = {};
     // Get all table metadata.
@@ -169,7 +171,7 @@ TEST_F(ApiTestTableMetadata, test_without_initialized) {
   // Update table metadata.
   {
     // Generate tables metadata manager.
-    auto managers = get_table_metadata(GlobalTestEnvironment::TEST_DB);
+    auto managers = get_tables_ptr(GlobalTestEnvironment::TEST_DB);
 
     // Execute the test.
     ApiTestHelper::test_update(managers.get(), object_id, inserted_metadata,
@@ -179,7 +181,7 @@ TEST_F(ApiTestTableMetadata, test_without_initialized) {
   // Remove table metadata by table id.
   {
     // Generate tables metadata manager.
-    auto managers = get_table_metadata(GlobalTestEnvironment::TEST_DB);
+    auto managers = get_tables_ptr(GlobalTestEnvironment::TEST_DB);
 
     // Remove table metadata by table id.
     ApiTestHelper::test_remove(managers.get(), object_id, ErrorCode::OK);
@@ -188,7 +190,7 @@ TEST_F(ApiTestTableMetadata, test_without_initialized) {
   // Add table metadata.
   {
     // Generate tables metadata manager.
-    auto managers = get_table_metadata(GlobalTestEnvironment::TEST_DB);
+    auto managers = get_tables_ptr(GlobalTestEnvironment::TEST_DB);
 
     object_id = ApiTestHelper::test_add(managers.get(), inserted_metadata,
                                         ErrorCode::OK);
@@ -197,7 +199,7 @@ TEST_F(ApiTestTableMetadata, test_without_initialized) {
   // Remove table metadata by table name.
   {
     // Generate tables metadata manager.
-    auto managers = get_table_metadata(GlobalTestEnvironment::TEST_DB);
+    auto managers = get_tables_ptr(GlobalTestEnvironment::TEST_DB);
 
     // Remove table metadata by table id.
     ApiTestHelper::test_remove(managers.get(), object_name, ErrorCode::OK);
@@ -221,7 +223,7 @@ TEST_F(ApiTestTableMetadataEx, add_get_remove_table_metadata_by_table_name) {
     TableMetadataHelper::add_table(table_expected, &ret_table_id);
 
     // Generate tables metadata manager.
-    auto tables = get_table_metadata(GlobalTestEnvironment::TEST_DB);
+    auto tables = get_tables_ptr(GlobalTestEnvironment::TEST_DB);
 
     // Test initialization.
     ApiTestHelper::test_init(tables.get(), ErrorCode::OK);
@@ -266,7 +268,7 @@ TEST_F(ApiTestTableMetadataEx,
     TableMetadataHelper::add_table(table_expected, &ret_table_id);
 
     // get valid table metadata by table id.
-    auto tables = std::make_unique<Tables>(GlobalTestEnvironment::TEST_DB);
+    auto tables = get_tables_ptr(GlobalTestEnvironment::TEST_DB);
 
     // Test initialization.
     ApiTestHelper::test_init(tables.get(), ErrorCode::OK);
