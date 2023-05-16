@@ -16,6 +16,7 @@
 #pragma once
 
 #include <libpq-fe.h>
+
 #include <functional>
 #include <memory>
 
@@ -26,8 +27,8 @@ typedef struct pg_result PGresult;
 
 namespace manager::metadata::db {
 
-static constexpr const int64_t FIRST_ROW = 0;    // zero origin.
-static constexpr const int64_t FIRST_COLUMN = 0;   // zero origin.
+static constexpr const int64_t kFirstRow    = 0;  // zero origin.
+static constexpr const int64_t kFirstColumn = 0;  // zero origin.
 
 // Shared smart pointer for DB connection. Just an alias for user convenience.
 using PgConnectionPtr = std::shared_ptr<PGconn>;
@@ -35,8 +36,9 @@ using PgConnectionPtr = std::shared_ptr<PGconn>;
 // Unique smart pointer for DB result. Just an alias for user convenience.
 using ResultPtr = std::unique_ptr<PGresult, std::function<void(PGresult*)>>;
 
-static constexpr const char* const SCHEMA_PUBLIC = "public";
-static constexpr const char* const SCHEMA_TSURUGI_CATALOG = "tsurugi_catalog";
+static constexpr const char* const kSchemaPublic         = "public";
+static constexpr const char* const kSchemaTsurugiCatalog = "tsurugi_catalog";
+static constexpr const char* const kEmptyStringJson      = "{}";
 
 class PgErrorCode {
  public:
@@ -53,9 +55,9 @@ class PgCatalog {
      */
     class ColumnName {
      public:
-      static constexpr const char* const kName = "relname";
+      static constexpr const char* const kName  = "relname";
       static constexpr const char* const kOwner = "relowner";
-      static constexpr const char* const kAcl = "relacl";
+      static constexpr const char* const kAcl   = "relacl";
     };  // class ColumnName
 
     /**
@@ -71,18 +73,18 @@ class PgCatalog {
      */
     class ColumnName {
      public:
-      static constexpr const char* const kOid = "oid";
-      static constexpr const char* const kName = "rolname";
-      static constexpr const char* const kSuper = "rolsuper";
-      static constexpr const char* const kInherit = "rolinherit";
-      static constexpr const char* const kCreateRole = "rolcreaterole";
-      static constexpr const char* const kCreateDb = "rolcreatedb";
-      static constexpr const char* const kCanLogin = "rolcanlogin";
+      static constexpr const char* const kOid         = "oid";
+      static constexpr const char* const kName        = "rolname";
+      static constexpr const char* const kSuper       = "rolsuper";
+      static constexpr const char* const kInherit     = "rolinherit";
+      static constexpr const char* const kCreateRole  = "rolcreaterole";
+      static constexpr const char* const kCreateDb    = "rolcreatedb";
+      static constexpr const char* const kCanLogin    = "rolcanlogin";
       static constexpr const char* const kReplication = "rolreplication";
-      static constexpr const char* const kBypassRls = "rolbypassrls";
-      static constexpr const char* const kConnLimit = "rolconnlimit";
-      static constexpr const char* const kPassword = "rolpassword";
-      static constexpr const char* const kValidUntil = "rolvaliduntil";
+      static constexpr const char* const kBypassRls   = "rolbypassrls";
+      static constexpr const char* const kConnLimit   = "rolconnlimit";
+      static constexpr const char* const kPassword    = "rolpassword";
+      static constexpr const char* const kValidUntil  = "rolvaliduntil";
     };  // class ColumnName
 
     /**
@@ -107,6 +109,6 @@ class PgCatalog {
      */
     static constexpr const char* const kTableName = "pg_foreign_table";
   };  // class PgForeignTable
-};  // class PgCatalog
+};    // class PgCatalog
 
 }  // namespace manager::metadata::db

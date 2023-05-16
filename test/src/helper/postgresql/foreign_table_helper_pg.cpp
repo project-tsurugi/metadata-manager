@@ -23,17 +23,18 @@
 #include <boost/format.hpp>
 
 #include "manager/metadata/common/config.h"
+#include "manager/metadata/common/utility.h"
 #include "manager/metadata/dao/postgresql/dbc_utils_pg.h"
 
 namespace {
 
-manager::metadata::db::postgresql::ConnectionSPtr connection;
+manager::metadata::db::PgConnectionPtr connection;
 
 }  // namespace
 
 namespace manager::metadata::testing {
 
-using db::postgresql::DbcUtils;
+using db::DbcUtils;
 
 /**
  * @brief create a table metadata for testing.
@@ -74,7 +75,7 @@ ObjectIdType ForeignTableHelperPg::create_table(std::string_view table_name,
   statement =
       boost::format("SELECT oid FROM pg_class WHERE relname='%s'") % table_name;
   res = PQexec(connection.get(), statement.str().c_str());
-  DbcUtils::str_to_integral(PQgetvalue(res, 0, 0), table_id);
+  Utility::str_to_numeric(PQgetvalue(res, 0, 0), table_id);
   PQclear(res);
 
   return table_id;
@@ -131,15 +132,16 @@ ObjectIdType ForeignTableHelperPg::insert_foreign_table(
   ObjectIdType table_id;
 
   std::string ft_statement_sub =
-      "SELECT CAST(COALESCE(MAX(ftrelid), 0) AS INTEGER) num FROM pg_foreign_table";
+      "SELECT CAST(COALESCE(MAX(ftrelid), 0) AS INTEGER) num"
+      " FROM pg_foreign_table";
   boost::format statement =
       boost::format(
-          "INSERT into pg_foreign_table VALUES"
-          " ((%s) + 1, 1, '{schema_name=public,table_name=%s}')"
+          "INSERT into pg_foreign_table"
+          " VALUES ((%s) + 1, 1, '{schema_name=public,table_name=%s}')"
           " RETURNING ftrelid") %
       ft_statement_sub % table_name;
   PGresult* res = PQexec(connection.get(), statement.str().c_str());
-  DbcUtils::str_to_integral(PQgetvalue(res, 0, 0), table_id);
+  Utility::str_to_numeric(PQgetvalue(res, 0, 0), table_id);
   PQclear(res);
 
   return table_id;

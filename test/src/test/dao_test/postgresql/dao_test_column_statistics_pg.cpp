@@ -22,7 +22,7 @@
 
 #include "manager/metadata/common/message.h"
 #include "manager/metadata/dao/postgresql/db_session_manager_pg.h"
-#include "manager/metadata/dao/statistics_dao.h"
+#include "manager/metadata/dao/postgresql/statistics_dao_pg.h"
 #include "test/common/global_test_environment.h"
 #include "test/common/ut_utils.h"
 #include "test/helper/column_statistics_helper.h"
@@ -34,7 +34,6 @@ namespace manager::metadata::testing {
 namespace json_parser = boost::property_tree::json_parser;
 
 using boost::property_tree::ptree;
-using db::postgresql::DBSessionManager;
 
 using BasicTestParameter =
     std::tuple<std::string, std::vector<boost::property_tree::ptree>,
@@ -202,18 +201,17 @@ ErrorCode DaoTestColumnStatistics::add_one_column_statistic(
     boost::property_tree::ptree& column_statistic) {
   ErrorCode error = ErrorCode::INTERNAL_ERROR;
 
-  std::shared_ptr<db::GenericDAO> s_gdao = nullptr;
-  DBSessionManager db_session_manager;
+  db::DbSessionManagerPg db_session_manager;
 
-  error =
-      db_session_manager.get_dao(db::GenericDAO::TableName::STATISTICS, s_gdao);
+  auto statistics_dao = std::static_pointer_cast<db::StatisticsDaoPg>(
+      db_session_manager.get_statistics_dao());
+  EXPECT_NE(nullptr, statistics_dao);
+  error = statistics_dao->prepare();
   EXPECT_EQ(ErrorCode::OK, error);
-
-  std::shared_ptr<db::StatisticsDAO> sdao;
-  sdao = std::static_pointer_cast<db::StatisticsDAO>(s_gdao);
 
   std::string statistic_name = "statistic-name";
 
+  // column_statistic
   std::string s_column_statistic;
   if (!column_statistic.empty()) {
     std::stringstream ss;
@@ -230,13 +228,19 @@ ErrorCode DaoTestColumnStatistics::add_one_column_statistic(
     s_column_statistic = ss.str();
   }
 
+  ptree object;
+  object.put(Statistics::TABLE_ID, table_id);
+  object.put(Statistics::COLUMN_NUMBER, ordinal_position);
+  object.put(Statistics::NAME, statistic_name);
+  object.put_child(Statistics::COLUMN_STATISTIC, column_statistic);
+
+  UTUtils::print(" " + UTUtils::get_tree_string(object));
+
   error = db_session_manager.start_transaction();
   EXPECT_EQ(ErrorCode::OK, error);
 
   ObjectIdType ret_statistic_id;
-  error = sdao->upsert_column_statistic(
-      table_id, Statistics::COLUMN_NUMBER, std::to_string(ordinal_position),
-      &statistic_name, column_statistic, ret_statistic_id);
+  error = statistics_dao->insert(object, ret_statistic_id);
 
   if (error == ErrorCode::OK) {
     ErrorCode commit_error = db_session_manager.commit();
@@ -244,9 +248,6 @@ ErrorCode DaoTestColumnStatistics::add_one_column_statistic(
     EXPECT_GT(ret_statistic_id, 0);
 
     UTUtils::print(" statistic id: ", ret_statistic_id);
-    UTUtils::print(" ordinal position: ", ordinal_position);
-    UTUtils::print(" column statistics: " + s_column_statistic);
-
   } else {
     ErrorCode rollback_error = db_session_manager.rollback();
     EXPECT_EQ(ErrorCode::OK, rollback_error);
@@ -273,20 +274,18 @@ ErrorCode DaoTestColumnStatistics::get_one_column_statistic(
     const ptree& expected_column_statistic) {
   ErrorCode error = ErrorCode::INTERNAL_ERROR;
 
-  std::shared_ptr<db::GenericDAO> s_gdao = nullptr;
-  DBSessionManager db_session_manager;
+  db::DbSessionManagerPg db_session_manager;
 
-  error =
-      db_session_manager.get_dao(db::GenericDAO::TableName::STATISTICS, s_gdao);
+  auto statistics_dao = std::static_pointer_cast<db::StatisticsDaoPg>(
+      db_session_manager.get_statistics_dao());
+  EXPECT_NE(nullptr, statistics_dao);
+  error = statistics_dao->prepare();
   EXPECT_EQ(ErrorCode::OK, error);
 
-  std::shared_ptr<db::StatisticsDAO> sdao;
-  sdao = std::static_pointer_cast<db::StatisticsDAO>(s_gdao);
-
   ptree column_statistic;
-  error = sdao->select_column_statistic(table_id, Statistics::COLUMN_NUMBER,
-                                        std::to_string(ordinal_position),
-                                        column_statistic);
+  error = statistics_dao->select(table_id, Statistics::COLUMN_NUMBER,
+                                 std::to_string(ordinal_position),
+                                 column_statistic);
 
   if (error == ErrorCode::OK) {
     auto optional_ordinal_position =
@@ -323,18 +322,16 @@ ErrorCode DaoTestColumnStatistics::get_all_column_statistics(
     ObjectIdType table_id, std::vector<ptree> column_statistics_expected) {
   ErrorCode error = ErrorCode::INTERNAL_ERROR;
 
-  std::shared_ptr<db::GenericDAO> s_gdao = nullptr;
-  DBSessionManager db_session_manager;
+  db::DbSessionManagerPg db_session_manager;
 
-  error =
-      db_session_manager.get_dao(db::GenericDAO::TableName::STATISTICS, s_gdao);
+  auto statistics_dao = std::static_pointer_cast<db::StatisticsDaoPg>(
+      db_session_manager.get_statistics_dao());
+  EXPECT_NE(nullptr, statistics_dao);
+  error = statistics_dao->prepare();
   EXPECT_EQ(ErrorCode::OK, error);
 
-  std::shared_ptr<db::StatisticsDAO> sdao;
-  sdao = std::static_pointer_cast<db::StatisticsDAO>(s_gdao);
-
   std::vector<ptree> column_statistics;
-  error = sdao->select_column_statistic(table_id, column_statistics);
+  error = statistics_dao->select_all(table_id, column_statistics);
 
   if (error == ErrorCode::OK) {
     UTUtils::print(
@@ -390,18 +387,16 @@ ErrorCode DaoTestColumnStatistics::get_all_column_statistics(
     ObjectIdType ordinal_position_removed) {
   ErrorCode error = ErrorCode::INTERNAL_ERROR;
 
-  std::shared_ptr<db::GenericDAO> s_gdao = nullptr;
-  DBSessionManager db_session_manager;
+  db::DbSessionManagerPg db_session_manager;
 
-  error =
-      db_session_manager.get_dao(db::GenericDAO::TableName::STATISTICS, s_gdao);
+  auto statistics_dao = std::static_pointer_cast<db::StatisticsDaoPg>(
+      db_session_manager.get_statistics_dao());
+  EXPECT_NE(nullptr, statistics_dao);
+  error = statistics_dao->prepare();
   EXPECT_EQ(ErrorCode::OK, error);
 
-  std::shared_ptr<db::StatisticsDAO> sdao;
-  sdao = std::static_pointer_cast<db::StatisticsDAO>(s_gdao);
-
   std::vector<ptree> column_statistics;
-  error = sdao->select_column_statistic(table_id, column_statistics);
+  error = statistics_dao->select_all(table_id, column_statistics);
 
   if (error == ErrorCode::OK) {
     UTUtils::print(
@@ -457,23 +452,21 @@ ErrorCode DaoTestColumnStatistics::remove_one_column_statistic(
     ObjectIdType table_id, ObjectIdType ordinal_position) {
   ErrorCode error = ErrorCode::INTERNAL_ERROR;
 
-  std::shared_ptr<db::GenericDAO> s_gdao = nullptr;
-  DBSessionManager db_session_manager;
+  db::DbSessionManagerPg db_session_manager;
 
-  error =
-      db_session_manager.get_dao(db::GenericDAO::TableName::STATISTICS, s_gdao);
+  auto statistics_dao = std::static_pointer_cast<db::StatisticsDaoPg>(
+      db_session_manager.get_statistics_dao());
+  EXPECT_NE(nullptr, statistics_dao);
+  error = statistics_dao->prepare();
   EXPECT_EQ(ErrorCode::OK, error);
-
-  std::shared_ptr<db::StatisticsDAO> sdao;
-  sdao = std::static_pointer_cast<db::StatisticsDAO>(s_gdao);
 
   error = db_session_manager.start_transaction();
   EXPECT_EQ(ErrorCode::OK, error);
 
   ObjectIdType ret_statistic_id;
-  error = sdao->delete_column_statistic(table_id, Statistics::COLUMN_NUMBER,
-                                        std::to_string(ordinal_position),
-                                        ret_statistic_id);
+  error = statistics_dao->remove(table_id, Statistics::COLUMN_NUMBER,
+                                 std::to_string(ordinal_position),
+                                 ret_statistic_id);
 
   if (error == ErrorCode::OK) {
     ErrorCode commit_error = db_session_manager.commit();
@@ -503,25 +496,25 @@ ErrorCode DaoTestColumnStatistics::remove_all_column_statistics(
     ObjectIdType table_id) {
   ErrorCode error = ErrorCode::INTERNAL_ERROR;
 
-  std::shared_ptr<db::GenericDAO> s_gdao = nullptr;
-  DBSessionManager db_session_manager;
+  db::DbSessionManagerPg db_session_manager;
 
-  error =
-      db_session_manager.get_dao(db::GenericDAO::TableName::STATISTICS, s_gdao);
+  auto statistics_dao = std::static_pointer_cast<db::StatisticsDaoPg>(
+      db_session_manager.get_statistics_dao());
+  EXPECT_NE(nullptr, statistics_dao);
+  error = statistics_dao->prepare();
   EXPECT_EQ(ErrorCode::OK, error);
-
-  std::shared_ptr<db::StatisticsDAO> sdao;
-  sdao = std::static_pointer_cast<db::StatisticsDAO>(s_gdao);
 
   error = db_session_manager.start_transaction();
   EXPECT_EQ(ErrorCode::OK, error);
 
-  error = sdao->delete_column_statistic(table_id);
+  ObjectIdType ret_statistic_id;
+  error = statistics_dao->remove(Statistics::TABLE_ID, std::to_string(table_id),
+                                 ret_statistic_id);
 
   if (error == ErrorCode::OK) {
     ErrorCode commit_error = db_session_manager.commit();
     EXPECT_EQ(ErrorCode::OK, commit_error);
-
+    EXPECT_GT(ret_statistic_id, 0);
   } else {
     ErrorCode rollback_error = db_session_manager.rollback();
     EXPECT_EQ(ErrorCode::OK, rollback_error);
@@ -1048,15 +1041,13 @@ TEST_F(DaoTestColumnStatisticsAllAPIException,
   ObjectIdType ret_table_id;
   TableMetadataHelper::add_table(table_name, &ret_table_id);
 
-  std::shared_ptr<db::GenericDAO> s_gdao = nullptr;
-  DBSessionManager db_session_manager;
+  db::DbSessionManagerPg db_session_manager;
 
-  error =
-      db_session_manager.get_dao(db::GenericDAO::TableName::STATISTICS, s_gdao);
+  auto statistics_dao = std::static_pointer_cast<db::StatisticsDaoPg>(
+      db_session_manager.get_statistics_dao());
+  EXPECT_NE(nullptr, statistics_dao);
+  error = statistics_dao->prepare();
   EXPECT_EQ(ErrorCode::OK, error);
-
-  std::shared_ptr<db::StatisticsDAO> sdao;
-  sdao = std::static_pointer_cast<db::StatisticsDAO>(s_gdao);
 
   error = db_session_manager.start_transaction();
   EXPECT_EQ(ErrorCode::OK, error);
@@ -1065,9 +1056,11 @@ TEST_F(DaoTestColumnStatisticsAllAPIException,
   std::int64_t ordinal_position = 1;
   ObjectIdType ret_statistic_id;
 
-  error = sdao->upsert_column_statistic(
-      ret_table_id, Statistics::COLUMN_NUMBER, std::to_string(ordinal_position),
-      &statistic_name, column_statistic, ret_statistic_id);
+  column_statistic.put(Statistics::TABLE_ID, ret_table_id);
+  column_statistic.put(Statistics::COLUMN_NUMBER, ordinal_position);
+  column_statistic.put(Statistics::NAME, statistic_name);
+
+  error = statistics_dao->insert(column_statistic, ret_statistic_id);
 
   EXPECT_EQ(ErrorCode::OK, error);
   EXPECT_GT(ret_statistic_id, 0);

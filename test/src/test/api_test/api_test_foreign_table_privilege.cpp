@@ -85,8 +85,6 @@ class TablePrivilegesPg {
    * @brief discard the data for testing.
    */
   static void test_teardown() {
-    UTUtils::skip_if_json();
-
     if (UTUtils::is_postgresql() && global->is_open()) {
       // remove dummy data for pg_foreign_table.
       ForeignTableHelper::delete_foreign_table(foreign_table_id_ro);

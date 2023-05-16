@@ -15,7 +15,7 @@
  */
 #include <gtest/gtest.h>
 
-#include "manager/metadata/roles.h"
+#include "manager/metadata/metadata_factory.h"
 #include "test/common/global_test_environment.h"
 #include "test/common/ut_utils.h"
 #include "test/helper/api_test_helper.h"
@@ -47,8 +47,6 @@ class ApiTestRolesMetadataPg : public ::testing::Test {
   }
 
   void TearDown() override {
-    UTUtils::skip_if_json();
-
     if (UTUtils::is_postgresql() && global->is_open()) {
       UTUtils::print(">> gtest::TearDown()");
 
@@ -71,7 +69,7 @@ TEST_F(ApiTestRolesMetadataPg, test_add) {
   CALL_TRACE;
 
   // Generate roles metadata manager.
-  auto managers = std::make_unique<Roles>(GlobalTestEnvironment::TEST_DB);
+  auto managers = get_roles_ptr(GlobalTestEnvironment::TEST_DB);
 
   ptree inserted_metadata;
 
@@ -90,7 +88,7 @@ TEST_F(ApiTestRolesMetadataPg, test_get_by_id) {
   CALL_TRACE;
 
   // Generate roles metadata manager.
-  auto managers = std::make_unique<Roles>(GlobalTestEnvironment::TEST_DB);
+  auto managers = get_roles_ptr(GlobalTestEnvironment::TEST_DB);
 
   // Test to initialize the manager.
   ApiTestHelper::test_init(managers.get(), ErrorCode::OK);
@@ -115,7 +113,7 @@ TEST_F(ApiTestRolesMetadataPg, test_get_by_name) {
   CALL_TRACE;
 
   // Generate roles metadata manager.
-  auto managers = std::make_unique<Roles>(GlobalTestEnvironment::TEST_DB);
+  auto managers = get_roles_ptr(GlobalTestEnvironment::TEST_DB);
 
   // Test to initialize the manager.
   ApiTestHelper::test_init(managers.get(), ErrorCode::OK);
@@ -140,7 +138,7 @@ TEST_F(ApiTestRolesMetadataPg, test_getall) {
   CALL_TRACE;
 
   // Generate roles metadata manager.
-  auto managers = std::make_unique<Roles>(GlobalTestEnvironment::TEST_DB);
+  auto managers = get_roles_ptr(GlobalTestEnvironment::TEST_DB);
 
   // Test to initialize the manager.
   ApiTestHelper::test_init(managers.get(), ErrorCode::OK);
@@ -159,7 +157,7 @@ TEST_F(ApiTestRolesMetadataPg, test_remove_by_id) {
   CALL_TRACE;
 
   // Generate roles metadata manager.
-  auto managers = std::make_unique<Roles>(GlobalTestEnvironment::TEST_DB);
+  auto managers = get_roles_ptr(GlobalTestEnvironment::TEST_DB);
 
   // Test to initialize the manager.
   ApiTestHelper::test_init(managers.get(), ErrorCode::OK);
@@ -175,7 +173,7 @@ TEST_F(ApiTestRolesMetadataPg, test_remove_by_name) {
   CALL_TRACE;
 
   // Generate roles metadata manager.
-  auto managers = std::make_unique<Roles>(GlobalTestEnvironment::TEST_DB);
+  auto managers = get_roles_ptr(GlobalTestEnvironment::TEST_DB);
 
   // Test to initialize the manager.
   ApiTestHelper::test_init(managers.get(), ErrorCode::OK);
@@ -192,7 +190,7 @@ TEST_F(ApiTestRolesMetadataPg, test_not_found) {
   CALL_TRACE;
 
   // Generate roles metadata manager.
-  auto managers = std::make_unique<Roles>(GlobalTestEnvironment::TEST_DB);
+  auto managers = get_roles_ptr(GlobalTestEnvironment::TEST_DB);
 
   // Test to initialize the manager.
   ApiTestHelper::test_init(managers.get(), ErrorCode::OK);
@@ -249,7 +247,7 @@ TEST_F(ApiTestRolesMetadataPg, test_invalid_parameter) {
   CALL_TRACE;
 
   // Generate roles metadata manager.
-  auto managers = std::make_unique<Roles>(GlobalTestEnvironment::TEST_DB);
+  auto managers = get_roles_ptr(GlobalTestEnvironment::TEST_DB);
 
   // Test to initialize the manager.
   ApiTestHelper::test_init(managers.get(), ErrorCode::OK);
@@ -274,7 +272,7 @@ TEST_F(ApiTestRolesMetadataJson, test_add) {
   CALL_TRACE;
 
   // Generate roles metadata manager.
-  auto managers = std::make_unique<Roles>(GlobalTestEnvironment::TEST_DB);
+  auto managers = get_roles_ptr(GlobalTestEnvironment::TEST_DB);
 
   // Test to initialize the manager.
   ApiTestHelper::test_init(managers.get(), ErrorCode::NOT_SUPPORTED);
@@ -293,7 +291,7 @@ TEST_F(ApiTestRolesMetadataJson, test_get) {
   CALL_TRACE;
 
   // Generate roles metadata manager.
-  auto managers = std::make_unique<Roles>(GlobalTestEnvironment::TEST_DB);
+  auto managers = get_roles_ptr(GlobalTestEnvironment::TEST_DB);
 
   // Test to initialize the manager.
   ApiTestHelper::test_init(managers.get(), ErrorCode::NOT_SUPPORTED);
@@ -316,7 +314,7 @@ TEST_F(ApiTestRolesMetadataJson, test_getall) {
   CALL_TRACE;
 
   // Generate roles metadata manager.
-  auto managers = std::make_unique<Roles>(GlobalTestEnvironment::TEST_DB);
+  auto managers = get_roles_ptr(GlobalTestEnvironment::TEST_DB);
 
   // Test to initialize the manager.
   ApiTestHelper::test_init(managers.get(), ErrorCode::NOT_SUPPORTED);
@@ -335,7 +333,7 @@ TEST_F(ApiTestRolesMetadataJson, remove_role_metadata) {
   CALL_TRACE;
 
   // Generate roles metadata manager.
-  auto managers = std::make_unique<Roles>(GlobalTestEnvironment::TEST_DB);
+  auto managers = get_roles_ptr(GlobalTestEnvironment::TEST_DB);
 
   // Test to initialize the manager.
   ApiTestHelper::test_init(managers.get(), ErrorCode::NOT_SUPPORTED);

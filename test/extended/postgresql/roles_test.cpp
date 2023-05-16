@@ -23,7 +23,7 @@
 #include <boost/property_tree/ptree.hpp>
 
 #include "manager/metadata/common/config.h"
-#include "manager/metadata/dao/postgresql/common_pg.h"
+#include "manager/metadata/dao/postgresql/pg_common.h"
 #include "manager/metadata/roles.h"
 #include "manager/metadata/tables.h"
 
@@ -37,12 +37,12 @@ using manager::metadata::ObjectIdType;
 using manager::metadata::Roles;
 using manager::metadata::Table;
 using manager::metadata::Tables;
-using manager::metadata::db::postgresql::ConnectionSPtr;
+using manager::metadata::db::PgConnectionPtr;
 
 static constexpr const char* const TEST_DB   = "test";
 static constexpr const char* const ROLE_NAME = "tsurugi_ut_role_user_1";
 
-ConnectionSPtr connection;
+PgConnectionPtr connection;
 bool test_succeed = true;
 
 #define EXPECT_EQ(expected, actual) \
@@ -167,8 +167,7 @@ void db_connection() {
   if (PQstatus(connection.get()) != CONNECTION_OK) {
     // db connection.
     PGconn* pgconn = PQconnectdb(Config::get_connection_string().c_str());
-    db::postgresql::ConnectionSPtr conn(pgconn,
-                                        [](PGconn* c) { ::PQfinish(c); });
+    PgConnectionPtr conn(pgconn, [](PGconn* c) { ::PQfinish(c); });
     connection = conn;
   }
 }

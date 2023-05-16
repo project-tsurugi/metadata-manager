@@ -15,181 +15,50 @@
  */
 #include "manager/metadata/dao/postgresql/roles_dao_pg.h"
 
-#include <libpq-fe.h>
-
-#include <iostream>
-#include <string>
-#include <string_view>
-
 #include <boost/format.hpp>
 
 #include "manager/metadata/common/message.h"
-#include "manager/metadata/dao/common/statement_name.h"
-#include "manager/metadata/dao/postgresql/common_pg.h"
 #include "manager/metadata/dao/postgresql/dbc_utils_pg.h"
+#include "manager/metadata/helper/logging_helper.h"
 
 // =============================================================================
-namespace {
+namespace manager::metadata::db {
 
-std::unordered_map<std::string, std::string> role_column_names;
-std::unordered_map<std::string, std::string> statement_names_select;
+using boost::property_tree::ptree;
 
-namespace statement {
-
-using manager::metadata::db::postgresql::PgCatalog;
-
-/**
- * @brief  Returns a SELECT statement for role based on role id:
- *   select * from pg_authid where column_name = $1.
- * @param (column_name)  [in]  column name of metadata-table.
- * @return a SELECT statement:
- *    select * from pg_authid where column_name = $1.
- */
-std::string select_equal_to(std::string_view column_name) {
-  // SQL statement
-  boost::format query =
-      boost::format(
-          "SELECT %2%, %3%, %4%, %5%, %6%, %7%, %8%, %9%"
-          " , %10%, %11%, %12%, %13%"
-          " FROM %1%"
-          " WHERE %14% = $1") %
-      PgCatalog::PgAuth::kTableName % PgCatalog::PgAuth::ColumnName::kOid %
-      PgCatalog::PgAuth::ColumnName::kName %
-      PgCatalog::PgAuth::ColumnName::kSuper %
-      PgCatalog::PgAuth::ColumnName::kInherit %
-      PgCatalog::PgAuth::ColumnName::kCreateRole %
-      PgCatalog::PgAuth::ColumnName::kCreateDb %
-      PgCatalog::PgAuth::ColumnName::kCanLogin %
-      PgCatalog::PgAuth::ColumnName::kReplication %
-      PgCatalog::PgAuth::ColumnName::kBypassRls %
-      PgCatalog::PgAuth::ColumnName::kConnLimit %
-      PgCatalog::PgAuth::ColumnName::kPassword %
-      PgCatalog::PgAuth::ColumnName::kValidUntil % column_name.data();
-
-  return query.str();
-}
-
-}  // namespace statement
-}  // namespace
-
-// =============================================================================
-namespace manager::metadata::db::postgresql {
-
-using manager::metadata::ErrorCode;
-using manager::metadata::db::StatementName;
-
-/**
- *  @brief  Constructor
- *  @param  (connection)  [in]  a connection to the metadata repository.
- *  @return none.
- */
-RolesDAO::RolesDAO(DBSessionManager* session_manager)
-    : connection_(session_manager->get_connection()) {
-  // Creates a list of column names
-  // in order to get values based on
-  // one column included in this list
-  // from metadata repository.
-  //
-  // For example,
-  // If column name "id" is added to this list,
-  // later defines a prepared statement
-  // "select * from where id = ?".
-  role_column_names.emplace(Roles::ROLE_OID,
-                            PgCatalog::PgAuth::ColumnName::kOid);
-  role_column_names.emplace(Roles::ROLE_ROLNAME,
-                            PgCatalog::PgAuth::ColumnName::kName);
-
-  // Creates a list of unique name
-  // for the new prepared statement for each column names.
-  for (auto column : role_column_names) {
-    // Creates unique name for the new prepared statement.
-    boost::format statement_name_select =
-        boost::format("%1%-%2%-%3%") %
-        static_cast<int>(StatementName::ROLES_DAO_SELECT) %
-        PgCatalog::PgAuth::kTableName % column.first;
-
-    // Added this list to unique name for the new prepared statement.
-    // key : column name
-    // value : unique name for the new prepared statement.
-    statement_names_select.emplace(column.first, statement_name_select.str());
-  }
-}
-
-/**
- *  @brief  Defines all prepared statements.
- *  @param  none.
- *  @return ErrorCode::OK if success, otherwise an error code.
- */
-ErrorCode RolesDAO::prepare() const {
+ErrorCode RolesDaoPg::select(std::string_view key, std::string_view value,
+                             boost::property_tree::ptree& object) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
-  // Set conditional SQL statement.
-  for (auto column : role_column_names) {
-    // Set SELECT statement.
-    error =
-        DbcUtils::prepare(connection_, statement_names_select.at(column.first),
-                          statement::select_equal_to(column.second));
-    if (error != ErrorCode::OK) {
-      return error;
-    }
-  }
+  std::vector<const char*> params;
+  // Set key value.
+  params.emplace_back(value.data());
 
-  return error;
-}
-
-/**
- * @brief Executes a SELECT statement to get role from the
- *   postgreSQL system catalog,
- *   where the given key equals the given value.
- * @param (object_key)    [in]  key. column name of a role metadata table.
- * @param (object_value)  [in]  value to be filtered.
- * @param (object)        [out] role to get,
- *   where the given key equals the given value.
- * @retval ErrorCode::OK if success.
- * @retval ErrorCode::ID_NOT_FOUND if the role id does not exist.
- * @retval ErrorCode::NAME_NOT_FOUND if the role name does not exist.
- * @retval otherwise an error code.
- */
-ErrorCode RolesDAO::select_role_metadata(
-    std::string_view object_key, std::string_view object_value,
-    boost::property_tree::ptree& object) const {
-  ErrorCode error = ErrorCode::UNKNOWN;
-  std::vector<const char*> param_values;
-
-  param_values.emplace_back(object_value.data());
-
-  // Get the name of the SQL statement to be executed.
-  std::string statement_name;
-  error = DbcUtils::find_statement_name(statement_names_select, object_key,
-                                        statement_name);
-  if (error != ErrorCode::OK) {
-    return error;
+  // Set SELECT statement.
+  SelectStatement statement;
+  try {
+    statement = select_statements_.at(key.data());
+  } catch (...) {
+    LOG_ERROR << Message::INVALID_STATEMENT_KEY << key;
+    return ErrorCode::INVALID_PARAMETER;
   }
 
   PGresult* res = nullptr;
-  error =
-      DbcUtils::exec_prepared(connection_, statement_name, param_values, res);
+  // Execute a prepared statement.
+  error = DbcUtils::exec_prepared(pg_conn_, statement.name(), params, res);
 
   if (error == ErrorCode::OK) {
     int nrows = PQntuples(res);
-
     if (nrows == 1) {
-      error = convert_pgresult_to_ptree(res, FIRST_ROW, object);
-    } else if (nrows == 0) {
-      // Convert the error code.
-      if (object_key == Roles::ROLE_OID) {
-        error = ErrorCode::ID_NOT_FOUND;
-      } else if (object_key == Roles::ROLE_ROLNAME) {
-        error = ErrorCode::NAME_NOT_FOUND;
-      } else {
-        error = ErrorCode::NOT_FOUND;
-      }
+      // Convert acquired data to ptree type.
+      object = convert_pgresult_to_ptree(res, kFirstRow);
     } else {
-      error = ErrorCode::INVALID_PARAMETER;
+      // Get a NOT_FOUND error code corresponding to the key.
+      error = get_not_found_error_code(key);
     }
   }
-
   PQclear(res);
+
   return error;
 }
 
@@ -197,99 +66,115 @@ ErrorCode RolesDAO::select_role_metadata(
  * Private method area
  */
 
-/**
- * @brief Get the role by converting
- *   it from type PGresult to type ptree.
- * @brief Gets the ptree type role metadata
- *   converted from the given PGresult type value.
- * @param (res)         [in]  the result of a query.
- * @param (row_number)  [in]  row number of the PGresult.
- * @param (role)        [out] one role metadata.
- * @return ErrorCode::OK if success, otherwise an error code.
- */
-ErrorCode RolesDAO::convert_pgresult_to_ptree(
-    const PGresult* res, const int row_number,
-    boost::property_tree::ptree& role) const {
-  ErrorCode error = ErrorCode::UNKNOWN;
+void RolesDaoPg::create_prepared_statements() {
+  // SELECT statements with oid specified.
+  SelectStatement select_statement_oid{
+      this->get_source_name(),
+      this->get_select_statement(PgCatalog::PgAuth::ColumnName::kOid),
+      PgCatalog::PgAuth::ColumnName::kOid};
+  select_statements_.emplace(Roles::ROLE_OID, select_statement_oid);
 
-  // Initialization.
-  role.clear();
-
-  // Set the value of the format_version to ptree.
-  role.put(Roles::FORMAT_VERSION, Roles::format_version());
-
-  // Set the value of the generation to ptree.
-  role.put(Roles::GENERATION, Roles::generation());
-
-  // Set the value of the oid column to ptree.
-  role.put(Roles::ROLE_OID,
-           PQgetvalue(res, row_number,
-                      static_cast<int>(OrdinalPosition::kOid)));
-
-  // Set the value of the rolname column to ptree.
-  role.put(Roles::ROLE_ROLNAME,
-           PQgetvalue(res, row_number,
-                      static_cast<int>(OrdinalPosition::kName)));
-
-  // Set the value of the rolsuper column to ptree.
-  role.put(
-      Roles::ROLE_ROLSUPER,
-      DbcUtils::convert_boolean_expression(PQgetvalue(
-          res, row_number, static_cast<int>(OrdinalPosition::kSuper))));
-
-  // Set the value of the rolinherit column to ptree.
-  role.put(
-      Roles::ROLE_ROLINHERIT,
-      DbcUtils::convert_boolean_expression(PQgetvalue(
-          res, row_number, static_cast<int>(OrdinalPosition::kInherit))));
-
-  // Set the value of the rolcreaterole column to ptree.
-  role.put(Roles::ROLE_ROLCREATEROLE,
-           DbcUtils::convert_boolean_expression(
-               PQgetvalue(res, row_number,
-                          static_cast<int>(OrdinalPosition::kCreateRole))));
-
-  // Set the value of the rolcreatedb column to ptree.
-  role.put(Roles::ROLE_ROLCREATEDB,
-           DbcUtils::convert_boolean_expression(
-               PQgetvalue(res, row_number,
-                          static_cast<int>(OrdinalPosition::kCreateDb))));
-
-  // Set the value of the rolcanlogin column to ptree.
-  role.put(Roles::ROLE_ROLCANLOGIN,
-           DbcUtils::convert_boolean_expression(
-               PQgetvalue(res, row_number,
-                          static_cast<int>(OrdinalPosition::kCanLogin))));
-
-  // Set the value of the rolreplication column to ptree.
-  role.put(Roles::ROLE_ROLREPLICATION,
-           DbcUtils::convert_boolean_expression(
-               PQgetvalue(res, row_number,
-                          static_cast<int>(OrdinalPosition::kReplication))));
-
-  // Set the value of the rolbypassrls column to ptree.
-  role.put(Roles::ROLE_ROLBYPASSRLS,
-           DbcUtils::convert_boolean_expression(
-               PQgetvalue(res, row_number,
-                          static_cast<int>(OrdinalPosition::kBypassRls))));
-
-  // Set the value of the rolconnlimit column to ptree.
-  role.put(Roles::ROLE_ROLCONNLIMIT,
-           PQgetvalue(res, row_number,
-                      static_cast<int>(OrdinalPosition::kConnLimit)));
-
-  // Set the value of the rolpassword column to ptree.
-  role.put(Roles::ROLE_ROLPASSWORD,
-           PQgetvalue(res, row_number,
-                      static_cast<int>(OrdinalPosition::kPassword)));
-
-  // Set the value of the rolvaliduntil column to ptree.
-  role.put(Roles::ROLE_ROLVALIDUNTIL,
-           PQgetvalue(res, row_number,
-                      static_cast<int>(OrdinalPosition::kValidUntil)));
-
-  error = ErrorCode::OK;
-  return error;
+  // SELECT statements with name specified.
+  SelectStatement select_statement_name{
+      this->get_source_name(),
+      this->get_select_statement(PgCatalog::PgAuth::ColumnName::kName),
+      PgCatalog::PgAuth::ColumnName::kName};
+  select_statements_.emplace(Roles::ROLE_ROLNAME, select_statement_name);
 }
 
-}  // namespace manager::metadata::db::postgresql
+std::string RolesDaoPg::get_select_statement(std::string_view key) const {
+  // SQL statement
+  boost::format query = boost::format(
+                            "SELECT %2%, %3%, %4%, %5%, %6%, %7%, %8%, %9%"
+                            " , %10%, %11%, %12%, %13%"
+                            " FROM %1%"
+                            " WHERE %14% = $1") %
+                        PgCatalog::PgAuth::kTableName %
+                        PgCatalog::PgAuth::ColumnName::kOid %
+                        PgCatalog::PgAuth::ColumnName::kName %
+                        PgCatalog::PgAuth::ColumnName::kSuper %
+                        PgCatalog::PgAuth::ColumnName::kInherit %
+                        PgCatalog::PgAuth::ColumnName::kCreateRole %
+                        PgCatalog::PgAuth::ColumnName::kCreateDb %
+                        PgCatalog::PgAuth::ColumnName::kCanLogin %
+                        PgCatalog::PgAuth::ColumnName::kReplication %
+                        PgCatalog::PgAuth::ColumnName::kBypassRls %
+                        PgCatalog::PgAuth::ColumnName::kConnLimit %
+                        PgCatalog::PgAuth::ColumnName::kPassword %
+                        PgCatalog::PgAuth::ColumnName::kValidUntil % key;
+
+  return query.str();
+}
+
+boost::property_tree::ptree RolesDaoPg::convert_pgresult_to_ptree(
+    const PGresult* pg_result, const int row_number) const {
+  boost::property_tree::ptree object;
+
+  // Set the value of the format_version to ptree.
+  object.put(Roles::FORMAT_VERSION, Roles::format_version());
+
+  // Set the value of the generation to ptree.
+  object.put(Roles::GENERATION, Roles::generation());
+
+  // Set the value of the oid column to ptree.
+  object.put(Roles::ROLE_OID,
+             get_result_value(pg_result, row_number, OrdinalPosition::kOid));
+
+  // Set the value of the rolname column to ptree.
+  object.put(Roles::ROLE_ROLNAME,
+             get_result_value(pg_result, row_number, OrdinalPosition::kName));
+
+  // Set the value of the rolsuper column to ptree.
+  object.put(
+      Roles::ROLE_ROLSUPER,
+      get_result_value<bool>(pg_result, row_number, OrdinalPosition::kSuper));
+
+  // Set the value of the rolinherit column to ptree.
+  object.put(
+      Roles::ROLE_ROLINHERIT,
+      get_result_value<bool>(pg_result, row_number, OrdinalPosition::kInherit));
+
+  // Set the value of the rolcreaterole column to ptree.
+  object.put(Roles::ROLE_ROLCREATEROLE,
+             get_result_value<bool>(pg_result, row_number,
+                                    OrdinalPosition::kCreateRole));
+
+  // Set the value of the rolcreatedb column to ptree.
+  object.put(Roles::ROLE_ROLCREATEDB,
+             get_result_value<bool>(pg_result, row_number,
+                                    OrdinalPosition::kCreateDb));
+
+  // Set the value of the rolcanlogin column to ptree.
+  object.put(Roles::ROLE_ROLCANLOGIN,
+             get_result_value<bool>(pg_result, row_number,
+                                    OrdinalPosition::kCanLogin));
+
+  // Set the value of the rolreplication column to ptree.
+  object.put(Roles::ROLE_ROLREPLICATION,
+             get_result_value<bool>(pg_result, row_number,
+                                    OrdinalPosition::kReplication));
+
+  // Set the value of the rolbypassrls column to ptree.
+  object.put(Roles::ROLE_ROLBYPASSRLS,
+             get_result_value<bool>(pg_result, row_number,
+                                    OrdinalPosition::kBypassRls));
+
+  // Set the value of the rolconnlimit column to ptree.
+  object.put(
+      Roles::ROLE_ROLCONNLIMIT,
+      get_result_value(pg_result, row_number, OrdinalPosition::kConnLimit));
+
+  // Set the value of the rolpassword column to ptree.
+  object.put(
+      Roles::ROLE_ROLPASSWORD,
+      get_result_value(pg_result, row_number, OrdinalPosition::kPassword));
+
+  // Set the value of the rolvaliduntil column to ptree.
+  object.put(
+      Roles::ROLE_ROLVALIDUNTIL,
+      get_result_value(pg_result, row_number, OrdinalPosition::kValidUntil));
+
+  return object;
+}
+
+}  // namespace manager::metadata::db

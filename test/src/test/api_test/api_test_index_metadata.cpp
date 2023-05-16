@@ -35,15 +35,16 @@ class ApiTestIndexMetadata : public ::testing::Test {
 
   void SetUp() override {
     UTUtils::skip_if_connection_not_opened();
+    if (global->is_open()) {
+      UTUtils::print(">> gtest::SetUp()");
 
-    UTUtils::print(">> gtest::SetUp()");
+      // Change to a unique table name.
+      std::string table_name =
+          "ApiTestIndexMetadata_" + UTUtils::generate_narrow_uid();
 
-    // Change to a unique table name.
-    std::string table_name =
-        "ApiTestIndexMetadata_" + UTUtils::generate_narrow_uid();
-
-    // Add table metadata.
-    TableMetadataHelper::add_table(table_name, &table_id_);
+      // Add table metadata.
+      TableMetadataHelper::add_table(table_name, &table_id_);
+    }
   }
 
   void TearDown() override {
