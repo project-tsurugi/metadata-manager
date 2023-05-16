@@ -15,9 +15,19 @@
  */
 #include "manager/metadata/helper/ptree_helper.h"
 
+#include <boost/property_tree/json_parser.hpp>
+
+#include "manager/metadata/common/message.h"
+#include "manager/metadata/helper/logging_helper.h"
+
 namespace ptree_helper {
 
+namespace json_parser = boost::property_tree::json_parser;
+
+using boost::property_tree::json_parser_error;
 using boost::property_tree::ptree;
+using manager::metadata::ErrorCode;
+using manager::metadata::Message;
 
 // ==========================================================================
 // ptree_helper functions.
@@ -60,6 +70,64 @@ std::vector<int64_t> make_vector_int(const boost::property_tree::ptree& pt,
   }
 
   return v;
+}
+
+/**
+ * @brief Converts a JSON string to a property_tree.
+ * @param json   [in]  JSON string to be converted to a property_tree.
+ * @param ptree  [out] The converted property_tree..
+ * @return ErrorCode::OK if success, otherwise an error code.
+ */
+[[nodiscard]] manager::metadata::ErrorCode json_to_ptree(
+    std::string_view json, boost::property_tree::ptree& ptree) {
+  ErrorCode error = ErrorCode::UNKNOWN;
+
+  if (!json.empty()) {
+    std::stringstream ss;
+    ss << json;
+    try {
+      json_parser::read_json(ss, ptree);
+    } catch (json_parser_error& e) {
+      LOG_ERROR << Message::READ_JSON_FAILURE << e.what();
+      error = ErrorCode::INTERNAL_ERROR;
+      return error;
+    } catch (...) {
+      LOG_ERROR << Message::READ_JSON_FAILURE;
+      error = ErrorCode::INTERNAL_ERROR;
+      return error;
+    }
+  }
+
+  return ErrorCode::OK;
+}
+
+/**
+ * @brief Converts a property_tree to a JSON string.
+ * @param ptree  [in]  property_tree to be converted to a JSON string.
+ * @param json   [out] The converted JSON string.
+ * @return ErrorCode::OK if success, otherwise an error code.
+ */
+[[nodiscard]] manager::metadata::ErrorCode ptree_to_json(
+    const boost::property_tree::ptree& ptree, std::string& json) {
+  ErrorCode error = ErrorCode::UNKNOWN;
+
+  if (!ptree.empty()) {
+    std::stringstream ss;
+    try {
+      json_parser::write_json(ss, ptree, false);
+    } catch (json_parser_error& e) {
+      LOG_ERROR << Message::WRITE_JSON_FAILURE << e.what();
+      error = ErrorCode::INVALID_PARAMETER;
+      return error;
+    } catch (...) {
+      LOG_ERROR << Message::WRITE_JSON_FAILURE;
+      error = ErrorCode::INVALID_PARAMETER;
+      return error;
+    }
+    json = ss.str();
+  }
+
+  return ErrorCode::OK;
 }
 
 }  // namespace ptree_helper

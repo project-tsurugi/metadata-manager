@@ -35,9 +35,8 @@ class ApiTestAddTableMetadataException
  public:
   void SetUp() override {
     UTUtils::skip_if_connection_not_opened();
-    if (global->is_open()) {
-      invalid_table_metadata_ = make_invalid_table_metadata();
-    }
+
+    invalid_table_metadata_ = make_invalid_table_metadata();
   }
 
  private:

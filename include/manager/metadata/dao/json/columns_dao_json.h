@@ -16,49 +16,89 @@
 #ifndef MANAGER_METADATA_DAO_JSON_COLUMNS_DAO_JSON_H_
 #define MANAGER_METADATA_DAO_JSON_COLUMNS_DAO_JSON_H_
 
+#include <string>
 #include <string_view>
+#include <vector>
 
 #include <boost/property_tree/ptree.hpp>
 
-#include "manager/metadata/dao/columns_dao.h"
-#include "manager/metadata/dao/json/db_session_manager_json.h"
+#include "manager/metadata/dao/json/dao_json.h"
 #include "manager/metadata/error_code.h"
 
-namespace manager::metadata::db::json {
+namespace manager::metadata::db {
 
-class ColumnsDAO : public manager::metadata::db::ColumnsDAO {
+/**
+ * @brief Class defined for compatibility.
+ *   The functionality of the class in question is encapsulated in the
+ *   manager::metadata::db::TablesDaoJson class.
+ */
+class ColumnsDaoJson : public DaoJson {
  public:
-  explicit ColumnsDAO(DBSessionManager* session_manager) {}
+  // Inheritance constructor.
+  using DaoJson::DaoJson;
 
-  manager::metadata::ErrorCode prepare() const override {
+  /**
+   * @brief Function defined for compatibility.
+   * @return Always ErrorCode::OK.
+   */
+  manager::metadata::ErrorCode prepare() override {
     // Do nothing and return of ErrorCode::OK.
     return ErrorCode::OK;
   }
 
-  manager::metadata::ErrorCode insert_column_metadata(
-      [[maybe_unused]] const ObjectIdType table_id,
-      [[maybe_unused]] const boost::property_tree::ptree& columns_metadata)
-      const override {
+  /**
+   * @brief Function defined for compatibility.
+   * @return Always ErrorCode::OK.
+   */
+  manager::metadata::ErrorCode insert(const boost::property_tree::ptree&,
+                                      ObjectId&) const override {
     // Do nothing and return of ErrorCode::OK.
     return ErrorCode::OK;
   }
 
-  manager::metadata::ErrorCode select_column_metadata(
-      [[maybe_unused]] std::string_view object_key,
-      [[maybe_unused]] std::string_view object_value,
-      [[maybe_unused]] boost::property_tree::ptree& columns_metadata) const override {
+  /**
+   * @brief Function defined for compatibility.
+   * @return Always ErrorCode::OK.
+   */
+  manager::metadata::ErrorCode select_all(
+      std::vector<boost::property_tree::ptree>&) const override {
     // Do nothing and return of ErrorCode::OK.
     return ErrorCode::OK;
   }
 
-  manager::metadata::ErrorCode delete_column_metadata(
-      [[maybe_unused]] std::string_view object_key,
-      [[maybe_unused]] std::string_view object_value) const override {
+  /**
+   * @brief Function defined for compatibility.
+   * @return Always ErrorCode::OK.
+   */
+  manager::metadata::ErrorCode select(
+      std::string_view, std::string_view,
+      boost::property_tree::ptree&) const override {
     // Do nothing and return of ErrorCode::OK.
     return ErrorCode::OK;
   }
-};  // class ColumnsDAO
 
-}  // namespace manager::metadata::db::json
+  /**
+   * @brief Function defined for compatibility.
+   * @return Always ErrorCode::OK.
+   */
+  manager::metadata::ErrorCode update(
+      std::string_view, std::string_view,
+      const boost::property_tree::ptree&) const override {
+    // Do nothing and return of ErrorCode::OK.
+    return ErrorCode::OK;
+  }
+
+  /**
+   * @brief Function defined for compatibility.
+   * @return Always ErrorCode::OK.
+   */
+  manager::metadata::ErrorCode remove(std::string_view, std::string_view,
+                                      ObjectId&) const override {
+    // Do nothing and return of ErrorCode::OK.
+    return ErrorCode::OK;
+  }
+};  // class ColumnsDaoJson
+
+}  // namespace manager::metadata::db
 
 #endif  // MANAGER_METADATA_DAO_JSON_COLUMNS_DAO_JSON_H_

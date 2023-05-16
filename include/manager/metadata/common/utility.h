@@ -17,7 +17,7 @@
 #define MANAGER_METADATA_COMMON_UTILITY_H_
 
 #include <string>
-#include <string_view>
+#include <vector>
 
 #include <boost/property_tree/ptree.hpp>
 
@@ -27,18 +27,42 @@ namespace manager::metadata {
 
 class Utility {
  public:
+  /**
+   * @brief Converts a string to a numeric.
+   * @tparam T Supported types are integer (int32_t, int64_t) or
+   *   floating point (float).
+   * @param str    [in]  String to be converted to a floating point.
+   * @param value  [out] The converted value.
+   * @return ErrorCode::OK if success, otherwise an error code.
+   */
   template <typename T>
   static manager::metadata::ErrorCode str_to_numeric(std::string_view str,
-                                                     T& return_value);
+                                                     T& value);
 
-  static manager::metadata::ErrorCode json_to_ptree(
-      std::string_view json, boost::property_tree::ptree& ptree);
-  static manager::metadata::ErrorCode ptree_to_json(
-      const boost::property_tree::ptree& ptree, std::string& json);
+  /**
+   * @brief Converts boolean expression in metadata repository to boolean value
+   * in application.
+   * @param bool_alpha  [in]  boolean string.
+   * @return Converted boolean value of the string.
+   */
+  static bool str_to_boolean(std::string_view bool_alpha);
 
- private:
-  template <typename T>
-  [[nodiscard]] static T convert_to_numeric(std::string_view str);
+  /**
+   * @brief Converts boolean value in application to boolean expression in
+   * metadata repository.
+   * @param value  [in]  boolean expression.
+   * @return Converted string of the boolean value.
+   */
+  static std::string boolean_to_str(const bool value);
+
+  /**
+   * @brief Split a string with a specified delimiter.
+   * @param source    [in]  Source string to be split.
+   * @param delimiter [in]  Delimiter to split.
+   * @return Vector of the result of the split.
+   */
+  static std::vector<std::string> split(std::string_view source,
+                                        const char& delimiter);
 };  // class Utility
 
 }  // namespace manager::metadata

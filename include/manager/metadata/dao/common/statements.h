@@ -1,32 +1,58 @@
+/*
+ * Copyright 2022 tsurugi project.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+#ifndef MANAGER_METADATA_DAO_COMMON_STATEMENTS_H_
+#define MANAGER_METADATA_DAO_COMMON_STATEMENTS_H_
+
 #include <string>
-#include <string_view>
 #include <typeinfo>
 #include <unordered_map>
+
 #include "manager/metadata/dao/dao.h"
 #include "manager/metadata/dao/db_session_manager.h"
 
 namespace manager::metadata::db {
 
 /**
- * @brief
+ * @brief Base class for managing SQL statements.
  */
 class Statement {
  public:
+  static constexpr const char* const kDefaultKey = "DefaultStatementKey";
+
   Statement() {}
-  explicit Statement(std::string_view table_name, std::string_view statement) 
-      : table_name_(table_name), statement_(statement) {}
-//  Statement(const Statement&) = delete;
-//  Statement& operator=(const Statement&) = delete;
+  explicit Statement(std::string_view table_name, std::string_view statement)
+      : table_name_(table_name), statement_(statement), key_(kDefaultKey) {}
+  explicit Statement(std::string_view table_name, std::string_view statement,
+                     std::string_view key)
+      : table_name_(table_name), statement_(statement), key_(key) {}
+
   virtual ~Statement() {}
 
-  void set(std::string_view table_name, std::string_view statement) {
+  void set(std::string_view table_name, std::string_view statement,
+           std::string_view key) {
     table_name_ = table_name;
-    statement_ = statement;
+    statement_  = statement;
+    key_        = key;
   }
+
   std::string table_name() const { return table_name_; }
   std::string statement() const { return statement_; }
-  virtual std::string name() const {
-    return table_name_ + ':' + this->get_base_name();
+  std::string key() const { return key_; }
+  std::string name() const {
+    return table_name_ + ':' + this->get_base_name() + '-' + key_.data();
   }
 
  protected:
@@ -38,134 +64,84 @@ class Statement {
  private:
   std::string table_name_;
   std::string statement_;
-};
-
-/**
- * @brief
- */
-class StatementWithKey : public Statement {
- public:
-  StatementWithKey() : Statement() {}
-  explicit StatementWithKey(std::string_view table_name, 
-                            std::string_view statement, 
-                            std::string_view key) 
-      : Statement(table_name, statement), key_(key) {}
-//  StatementWithKey(const StatementWithKey&) = delete;
-//  StatementWithKey& operator=(const StatementWithKey&) = delete;
-  virtual ~StatementWithKey() {}
-
-  void set(std::string_view table_name, 
-          std::string_view statement, 
-          std::string_view key) 
-  {
-    Statement::set(table_name, statement);
-    key_ = key;
-  }
-  virtual std::string name() const {
-    return table_name() + ':' + this->get_base_name() + '-' + key_.data();
-  }
-
- private:
   std::string key_;
 };
 
 using StatementMap = std::unordered_map<std::string_view, Statement>;
-#if 0
-static ErrorCode find_statement(
-    const std::unordered_map<std::string_view, Statement>& statements, 
-    std::string_view key,
-    Statement& statement) {
 
-  Statement statement;
-  try {
-    statement = statements.at(key.data());
-  }
-  catch (std::out_of_range& e) {
-    return ErrorCode::NOT_FOUND;
-  }
-  catch (...) {
-    return ErrorCode::INTERNAL_ERROR;
-  }
-
-  return ErrorCode::OK;
-}
-#endif
 // ==========================================================================
-// Concreate classes.
+// Concrete classes.
+
 /**
- * @brief
+ * @brief Class for managing insert statements.
  */
 class InsertStatement : public Statement {
  public:
-  InsertStatement() : Statement() {}
-  InsertStatement(std::string_view table_name, std::string_view statement) 
-      : Statement(table_name, statement) {}
+  // Inheritance constructor.
+  using Statement::Statement;
 
-  std::string name() const override {
-    return Statement::name() + ':' + std::to_string(__LINE__);
+ private:
+  std::string get_base_name() const override {
+    return std::to_string(__LINE__);
   }
 };
 
 /**
- * @brief
+ * @brief Class for managing select-all statements.
  */
 class SelectAllStatement : public Statement {
  public:
-  SelectAllStatement() : Statement() {}
-  SelectAllStatement(std::string_view table_name, std::string_view statement)
-      : Statement(table_name, statement) {}
+  // Inheritance constructor.
+  using Statement::Statement;
 
-  std::string name() const override {
-    return Statement::name() + ':' + std::to_string(__LINE__);
+ private:
+  std::string get_base_name() const override {
+    return std::to_string(__LINE__);
   }
 };
 
 /**
- * @brief
+ * @brief Class for managing select statements.
  */
-class SelectStatement : public StatementWithKey {
+class SelectStatement : public Statement {
  public:
-  SelectStatement() {}
-  SelectStatement(std::string_view table_name, 
-                  std::string_view statement, 
-                  std::string_view key)
-      : StatementWithKey(table_name, statement, key) {}
+  // Inheritance constructor.
+  using Statement::Statement;
 
-  std::string name() const override {
-    return StatementWithKey::name() + ':' + std::to_string(__LINE__);
+ private:
+  std::string get_base_name() const override {
+    return std::to_string(__LINE__);
   }
 };
 
 /**
- * @brief
+ * @brief Class for managing update statements.
  */
-class UpdateStatement : public StatementWithKey {
+class UpdateStatement : public Statement {
  public:
-  UpdateStatement() {}
-  UpdateStatement(std::string_view table_name, 
-                  std::string_view statement, 
-                  std::string_view key)
-      : StatementWithKey(table_name, statement, key) {}
+  // Inheritance constructor.
+  using Statement::Statement;
 
-  std::string name() const override {
-    return StatementWithKey::name() + ':' + std::to_string(__LINE__);
+ private:
+  std::string get_base_name() const override {
+    return std::to_string(__LINE__);
   }
 };
 
 /**
- * @brief
+ * @brief Class for managing delete statements.
  */
-class DeleteStatement : public StatementWithKey {
+class DeleteStatement : public Statement {
  public:
-  DeleteStatement() {}
-  DeleteStatement(std::string_view table_name, 
-                  std::string_view statement, 
-                  std::string_view key)
-      : StatementWithKey(table_name, statement, key) {}
+  // Inheritance constructor.
+  using Statement::Statement;
 
-  std::string name() const override {
-    return StatementWithKey::name() + ':' + std::to_string(__LINE__);
+ private:
+  std::string get_base_name() const override {
+    return std::to_string(__LINE__);
   }
 };
 
-} // namespace manager::metadata::db
+}  // namespace manager::metadata::db
+
+#endif  // MANAGER_METADATA_DAO_COMMON_STATEMENTS_H_

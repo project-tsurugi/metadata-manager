@@ -17,10 +17,6 @@
 
 #include <boost/foreach.hpp>
 
-#include "manager/metadata/datatypes.h"
-#include "manager/metadata/provider/datatypes_provider.h"
-#include "manager/metadata/roles.h"
-
 // =============================================================================
 namespace manager::metadata::db {
 
@@ -30,21 +26,24 @@ namespace manager::metadata::db {
  */
 ErrorCode RolesProvider::init() {
   ErrorCode error = ErrorCode::UNKNOWN;
-  std::shared_ptr<GenericDAO> gdao = nullptr;
 
-  if (roles_dao_ != nullptr) {
-    // Instance of the RolesDAO class has already been obtained.
-    error = ErrorCode::OK;
-  } else {
-    // Get an instance of the RolesDAO class.
-    error = session_manager_->get_dao(GenericDAO::TableName::ROLES, gdao);
-    if (error != ErrorCode::OK) {
+  // RolesDAO
+  if (!roles_dao_) {
+    // Get an instance of the RolesDAO.
+    roles_dao_ = session_manager_->get_roles_dao();
+    if (!roles_dao_) {
+      error = ErrorCode::DATABASE_ACCESS_FAILURE;
       return error;
     }
-    // Set RolesDAO instance.
-    roles_dao_ = std::static_pointer_cast<RolesDAO>(gdao);
+    // Prepare to access table metadata.
+    error = roles_dao_->prepare();
+    if (error != ErrorCode::OK) {
+      roles_dao_.reset();
+      return error;
+    }
   }
 
+  error = ErrorCode::OK;
   return error;
 }
 
@@ -69,7 +68,7 @@ ErrorCode RolesProvider::get_role_metadata(
     return error;
   }
 
-  error = roles_dao_->select_role_metadata(key, value, object);
+  error = roles_dao_->select(key, value, object);
 
   return error;
 }

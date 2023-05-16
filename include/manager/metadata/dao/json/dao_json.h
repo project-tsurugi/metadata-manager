@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 tsurugi project.
+ * Copyright 2020-2022 tsurugi project.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,24 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef MANAGER_METADATA_PROVIDER_PROVIDER_BASE_H_
-#define MANAGER_METADATA_PROVIDER_PROVIDER_BASE_H_
+#ifndef MANAGER_METADATA_DAO_JSON_DAO_JSON_H_
+#define MANAGER_METADATA_DAO_JSON_DAO_JSON_H_
 
-#include <memory>
+#include <string>
+#include <vector>
 
-#include "manager/metadata/dao/db_session_manager.h"
+#include "manager/metadata/dao/dao.h"
+#include "manager/metadata/dao/json/db_session_manager_json.h"
 
 namespace manager::metadata::db {
 
-class ProviderBase {
+/**
+ * @brief DAO base class for JSON.
+ */
+class DaoJson : public Dao {
  public:
-  ProviderBase();
-  virtual ~ProviderBase() {}
+  explicit DaoJson(DbSessionManagerJson* session) : session_(session) {}
+  virtual ~DaoJson() {}
 
  protected:
-  std::unique_ptr<DbSessionManager> session_manager_;
-};  // class ProviderBase
+  DbSessionManagerJson* session_;
+};  // class DaoPg
 
 }  // namespace manager::metadata::db
 
-#endif  // MANAGER_METADATA_PROVIDER_PROVIDER_BASE_H_
+#endif  // MANAGER_METADATA_DAO_JSON_DAO_JSON_H_

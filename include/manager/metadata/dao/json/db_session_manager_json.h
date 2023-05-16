@@ -17,49 +17,51 @@
 
 #include <memory>
 #include <string>
+
 #include <boost/property_tree/ptree.hpp>
 
 #include "manager/metadata/dao/db_session_manager.h"
 #include "manager/metadata/error_code.h"
-#include "manager/metadata/dao/generic_dao.h"
 
 namespace manager::metadata::db {
+
 /**
- * @brief
+ * @brief Class that manages connection information.
  */
 struct Connection {
   std::string json_file;
 };
 
 /**
- * @brief
+ * @brief Class for managing sessions with JSON files.
  */
-class DbSessionManagerJson : public DBSessionManager {
+class DbSessionManagerJson : public DbSessionManager {
  public:
   DbSessionManagerJson()
       : contents_(std::make_unique<boost::property_tree::ptree>()) {}
-  DbSessionManagerJson(const DBSessionManager&) = delete;
-  DbSessionManagerJson& operator=(const DBSessionManager&) = delete;
 
-  manager::metadata::ErrorCode get_dao(
-      const GenericDAO::TableName,
-      std::shared_ptr<GenericDAO>&) override { return ErrorCode::UNKNOWN; }
-  std::shared_ptr<Dao> get_index_dao() override;
+  explicit DbSessionManagerJson(const DbSessionManager&)   = delete;
+  DbSessionManagerJson& operator=(const DbSessionManager&) = delete;
+
+  std::shared_ptr<Dao> get_tables_dao() override;
+  std::shared_ptr<Dao> get_columns_dao() override;
+  std::shared_ptr<Dao> get_indexes_dao() override;
+  std::shared_ptr<Dao> get_constraints_dao() override;
+  std::shared_ptr<Dao> get_datatypes_dao() override;
+  std::shared_ptr<Dao> get_roles_dao() override;
+  std::shared_ptr<Dao> get_privileges_dao() override;
+  std::shared_ptr<Dao> get_statistics_dao() override;
 
   Connection connection() const { return conn_; }
 
-//  manager::metadata::ErrorCode connect() override { return ErrorCode::OK; }
   manager::metadata::ErrorCode connect(std::string_view file_name,
                                        std::string_view root_node);
   manager::metadata::ErrorCode start_transaction() override;
   manager::metadata::ErrorCode commit() override;
   manager::metadata::ErrorCode rollback() override;
- // void close() override {}
 
   manager::metadata::ErrorCode load_contents() const;
-  boost::property_tree::ptree* get_contents() const {
-    return contents_.get();
-  }
+  boost::property_tree::ptree* get_contents() const { return contents_.get(); }
 
  private:
   Connection conn_;
@@ -69,45 +71,4 @@ class DbSessionManagerJson : public DBSessionManager {
   void clear_contents() { contents_->clear(); }
 };  // class DbSessionManagerJson
 
-} // manager//metadata::db
-
-
-namespace manager::metadata::db::json {
-/**
- * @brief
- */
-class DBSessionManager : public manager::metadata::db::DBSessionManager {
- public:
-  DBSessionManager()
-      : file_name_(""), meta_object_(std::make_unique<boost::property_tree::ptree>()) {}
-
-  manager::metadata::ErrorCode get_dao(
-      const GenericDAO::TableName table_name,
-      std::shared_ptr<GenericDAO>& gdao) override;
-
-  std::shared_ptr<Dao> get_index_dao() override { return nullptr; }
-
- // Connection connection() const { return conn_; }
-
-  manager::metadata::ErrorCode start_transaction() override;
-  manager::metadata::ErrorCode commit() override;
-  manager::metadata::ErrorCode rollback() override;
-
-  manager::metadata::ErrorCode connect(std::string_view file_name,
-                                       std::string_view initial_node);
-  boost::property_tree::ptree* get_container() const;
-  manager::metadata::ErrorCode load_object() const;
-
-  DBSessionManager(const DBSessionManager&) = delete;
-  DBSessionManager& operator=(const DBSessionManager&) = delete;
-
- private:
-  std::string file_name_;
-  std::unique_ptr<boost::property_tree::ptree> meta_object_;
-//  manager::metadata::db::Connection conn_;  // dummy for build
-
-  void init_meta_data();
-  manager::metadata::ErrorCode save_object() const;
-};  // class DBSessionManager
-
-}  // namespace manager::metadata::db::json
+}  // namespace manager::metadata::db

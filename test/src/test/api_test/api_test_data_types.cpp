@@ -18,7 +18,7 @@
 #include <memory>
 #include <tuple>
 
-#include "manager/metadata/metadata_factory.h"
+#include "manager/metadata/datatypes.h"
 #include "test/common/global_test_environment.h"
 #include "test/common/ut_utils.h"
 #include "test/helper/metadata_helper.h"
@@ -113,7 +113,7 @@ INSTANTIATE_TEST_CASE_P(
 TEST_F(ApiTestDataTypes, test_init) {
   CALL_TRACE;
 
-  auto manager = get_datatypes_ptr(GlobalTestEnvironment::TEST_DB);
+  auto manager = std::make_unique<DataTypes>(GlobalTestEnvironment::TEST_DB);
 
   // Execute the test.
   ApiTestHelper::test_init(manager.get(), ErrorCode::OK);
@@ -125,7 +125,7 @@ TEST_F(ApiTestDataTypes, test_init) {
 TEST_F(ApiTestDataTypes, test_add) {
   CALL_TRACE;
 
-  auto manager = get_datatypes_ptr(GlobalTestEnvironment::TEST_DB);
+  auto manager = std::make_unique<DataTypes>(GlobalTestEnvironment::TEST_DB);
 
   ptree inserted_metadata;
   // Execute the test.
@@ -138,7 +138,7 @@ TEST_F(ApiTestDataTypes, test_add) {
 TEST_F(ApiTestDataTypes, test_getall) {
   CALL_TRACE;
 
-  auto manager = get_datatypes_ptr(GlobalTestEnvironment::TEST_DB);
+  auto manager = std::make_unique<DataTypes>(GlobalTestEnvironment::TEST_DB);
 
   std::vector<ptree> container = {};
   // Execute the test.
@@ -152,7 +152,7 @@ TEST_F(ApiTestDataTypes, test_getall) {
 TEST_F(ApiTestDataTypes, test_update) {
   CALL_TRACE;
 
-  auto manager = get_datatypes_ptr(GlobalTestEnvironment::TEST_DB);
+  auto manager = std::make_unique<DataTypes>(GlobalTestEnvironment::TEST_DB);
 
   ptree updated_metadata;
   // Execute the test.
@@ -165,7 +165,7 @@ TEST_F(ApiTestDataTypes, test_update) {
 TEST_F(ApiTestDataTypes, test_remove_by_id) {
   CALL_TRACE;
 
-  auto manager = get_datatypes_ptr(GlobalTestEnvironment::TEST_DB);
+  auto manager = std::make_unique<DataTypes>(GlobalTestEnvironment::TEST_DB);
 
   // Execute the test.
   ApiTestHelper::test_remove(manager.get(), INT64_MAX, ErrorCode::UNKNOWN);
@@ -177,7 +177,7 @@ TEST_F(ApiTestDataTypes, test_remove_by_id) {
 TEST_F(ApiTestDataTypes, test_remove_by_name) {
   CALL_TRACE;
 
-  auto manager = get_datatypes_ptr(GlobalTestEnvironment::TEST_DB);
+  auto manager = std::make_unique<DataTypes>(GlobalTestEnvironment::TEST_DB);
 
   // Execute the test.
   ApiTestHelper::test_remove(manager.get(), "INT32", ErrorCode::UNKNOWN);
@@ -188,7 +188,7 @@ TEST_F(ApiTestDataTypes, test_remove_by_name) {
  * name.
  */
 TEST_P(ApiTestDataTypesByName, get_datatypes_by_name) {
-  auto datatypes = get_datatypes_ptr(GlobalTestEnvironment::TEST_DB);
+  auto datatypes = std::make_unique<DataTypes>(GlobalTestEnvironment::TEST_DB);
 
   auto param = GetParam();
   ptree datatype;
@@ -208,16 +208,14 @@ TEST_P(ApiTestDataTypesByName, get_datatypes_by_name) {
  * key/value pair.
  */
 TEST_P(ApiTestDataTypesByKeyValue, get_datatypes_by_key_value) {
-  // TODO(future): Change when changing Metadata class.
-  auto datatypes = static_cast<DataTypes*>(
-      get_datatypes_ptr(GlobalTestEnvironment::TEST_DB).get());
+  auto datatypes = std::make_unique<DataTypes>(GlobalTestEnvironment::TEST_DB);
 
   auto param        = GetParam();
   std::string key   = std::get<0>(param);
   std::string value = std::get<1>(param);
 
   ptree datatype;
-  ErrorCode error = datatypes->get(key, value, datatype);
+  ErrorCode error = datatypes->get(key.c_str(), value, datatype);
   EXPECT_EQ(ErrorCode::OK, error);
 
   UTUtils::print("-- get data type metadata --");
@@ -232,7 +230,7 @@ TEST_P(ApiTestDataTypesByKeyValue, get_datatypes_by_key_value) {
  * based on invalid data type name.
  */
 TEST_P(ApiTestDataTypesException, get_non_existing_datatypes_by_name) {
-  auto datatypes = get_datatypes_ptr(GlobalTestEnvironment::TEST_DB);
+  auto datatypes = std::make_unique<DataTypes>(GlobalTestEnvironment::TEST_DB);
 
   std::string value = std::get<0>(GetParam());
 
@@ -251,15 +249,13 @@ TEST_P(ApiTestDataTypesException, get_non_existing_datatypes_by_name) {
  * based on invalid data type key/value pair.
  */
 TEST_P(ApiTestDataTypesException, get_non_existing_datatypes_by_key_value) {
-  // TODO(future): Change when changing Metadata class.
-  auto datatypes = static_cast<DataTypes*>(
-      get_datatypes_ptr(GlobalTestEnvironment::TEST_DB).get());
+  auto datatypes = std::make_unique<DataTypes>(GlobalTestEnvironment::TEST_DB);
 
   std::string key   = std::get<0>(GetParam());
   std::string value = std::get<1>(GetParam());
 
   ptree datatype;
-  ErrorCode error = datatypes->get(key, value, datatype);
+  ErrorCode error = datatypes->get(key.c_str(), value, datatype);
   if (key == DataTypes::ID) {
 #ifdef STORAGE_POSTGRESQL
     if (value == "invalid_value") {

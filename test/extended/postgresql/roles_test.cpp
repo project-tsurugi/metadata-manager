@@ -24,7 +24,8 @@
 
 #include "manager/metadata/common/config.h"
 #include "manager/metadata/dao/postgresql/common_pg.h"
-#include "manager/metadata/metadata_factory.h"
+#include "manager/metadata/roles.h"
+#include "manager/metadata/tables.h"
 
 namespace {
 
@@ -348,7 +349,7 @@ void roles_test() {
       ROLE_NAME,
       "NOINHERIT CREATEROLE CREATEDB REPLICATION CONNECTION LIMIT 10");
 
-  auto roles = manager::metadata::get_roles_ptr(TEST_DB);
+  auto roles = std::make_unique<Roles>(TEST_DB);
   result     = roles->init();
   EXPECT_EQ(ErrorCode::OK, result);
 
@@ -402,7 +403,7 @@ void roles_test() {
 void get_role_metadata(std::string_view role_name) {
   ErrorCode result = ErrorCode::UNKNOWN;
 
-  auto roles = manager::metadata::get_roles_ptr(TEST_DB);
+  auto roles = std::make_unique<Roles>(TEST_DB);
   result     = roles->init();
   if (result != ErrorCode::OK) {
     std::cout << "Failed to initialize the metadata management object."
@@ -432,7 +433,7 @@ void get_table_metadata(std::string_view role_name,
                         std::string_view table_name) {
   ErrorCode result = ErrorCode::UNKNOWN;
 
-  auto tables = manager::metadata::get_tables_ptr(TEST_DB);
+  auto tables = std::make_unique<Tables>(TEST_DB);
   result      = tables->init();
   if (result != ErrorCode::OK) {
     std::cout << "ERR: Failed to initialize the metadata management object."
@@ -519,10 +520,7 @@ void confirm_permission_in_acls(std::string_view role_name,
                                 const char* permission) {
   ErrorCode result = ErrorCode::UNKNOWN;
 
-  // TODO(future): Change when changing Metadata class.
-  auto tables =
-      static_cast<Tables*>(manager::metadata::get_tables_ptr(TEST_DB).get());
-
+  auto tables = std::make_unique<Tables>(TEST_DB);
   result      = tables->init();
   if (result != ErrorCode::OK) {
     std::cout << "Failed to initialize the metadata management object."

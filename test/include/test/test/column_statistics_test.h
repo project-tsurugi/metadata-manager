@@ -20,7 +20,7 @@
 #include <string>
 #include <utility>
 
-#include "manager/metadata/metadata_factory.h"
+#include "manager/metadata/statistics.h"
 #include "test/metadata/ut_column_statistics.h"
 #include "test/test/metadata_test.h"
 
@@ -37,7 +37,7 @@ class StatisticsMetadataTest : public MetadataTest {
    * @return std::unique_ptr<Metadata> - metadata management object.
    */
   std::unique_ptr<Metadata> get_metadata_manager() const override {
-    return manager::metadata::get_statistics_ptr(TEST_DB);
+    return std::make_unique<Statistics>(TEST_DB);
   }
 
   /**

@@ -22,7 +22,7 @@
 #include <boost/property_tree/ptree.hpp>
 
 #include "manager/metadata/dao/postgresql/common_pg.h"
-#include "manager/metadata/metadata_factory.h"
+#include "manager/metadata/tables.h"
 
 namespace {
 
@@ -191,7 +191,7 @@ void add_table(const boost::property_tree::ptree& new_table,
                ObjectIdType* ret_table_id = nullptr) {
   std::cout << "-- add table metadata --" << std::endl;
 
-  auto tables = manager::metadata::get_tables_ptr(TEST_DB);
+  auto tables = std::make_unique<Tables>(TEST_DB);
 
   ErrorCode result = tables->init();
   EXPECT_EQ(ErrorCode::OK, result);
@@ -218,7 +218,7 @@ void add_table(const boost::property_tree::ptree& new_table,
 void remove_table(std::string_view table_name) {
   std::cout << "-- remove table metadata --" << std::endl;
 
-  auto tables = manager::metadata::get_tables_ptr(TEST_DB);
+  auto tables = std::make_unique<Tables>(TEST_DB);
 
   ErrorCode result = tables->init();
   EXPECT_EQ(ErrorCode::OK, result);
@@ -548,7 +548,7 @@ ErrorCode tables_test() {
   helper::add_table(new_table, &ret_table_id);
   new_table.put(Table::ID, ret_table_id);
 
-  auto tables = manager::metadata::get_tables_ptr(TEST_DB);
+  auto tables = std::make_unique<Tables>(TEST_DB);
   result      = tables->init();
   EXPECT_EQ(ErrorCode::OK, result);
 

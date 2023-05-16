@@ -8,7 +8,7 @@
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the IndexDAOLicense is distributed on an "AS IS" BASIS,
+ * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
@@ -21,63 +21,95 @@
 
 #include <boost/property_tree/ptree.hpp>
 
+#include "manager/metadata/dao/json/dao_json.h"
 #include "manager/metadata/error_code.h"
-#include "manager/metadata/dao/dao.h"
-#include "manager/metadata/dao/db_session_manager.h"
-#include "manager/metadata/dao/json/db_session_manager_json.h"
+#include "manager/metadata/indexes.h"
 
 namespace manager::metadata::db {
+
 /**
- * @brief This class is base class of concrete IndexesDAO classes.
+ * @brief DAO class for accessing index metadata for JSON data.
  */
-class IndexDaoJson : public Dao {
+class IndexDaoJson : public DaoJson {
  public:
-  static constexpr const char* const INDEXES_ROOT = "indexes";
-  static constexpr const char* const OID_KEY_NAME_TABLE = "indexes";
+  // Root node name for index metadata.
+  static constexpr const char* const kRootNode = "indexes";
 
-  explicit IndexDaoJson(DbSessionManagerJson* session)
-      : Dao(session), session_(session) {}
+  // Inheritance constructor.
+  using DaoJson::DaoJson;
 
+  /**
+   * @brief Prepare to access the constraint metadata JSON file.
+   * @return ErrorCode::OK if success, otherwise an error code.
+   */
   manager::metadata::ErrorCode prepare() override;
 
-  bool exists(std::string_view name) const override;
-  bool exists(const boost::property_tree::ptree& object) const override;
+  /**
+   * @brief Add metadata object to metadata table file.
+   * @param object     [in]  index metadata object to add.
+   * @param object_id  [out] object id of the added row.
+   * @return ErrorCode::OK if success, otherwise an error code.
+   * @note  If success, metadata object is added management metadata.
+   *   e.g. format version, generation, etc...
+   */
+  manager::metadata::ErrorCode insert(const boost::property_tree::ptree& object,
+                                      ObjectId& object_id) const override;
 
-  manager::metadata::ErrorCode insert(
-      const boost::property_tree::ptree& object,
-      ObjectIdType& object_id) const override;
-
+  /**
+   * @brief Get all metadata objects from a metadata table file.
+   *   If the table metadata does not exist, return the container as empty.
+   * @param objects  [out] all indexes metadata.
+   * @return ErrorCode::OK if success, otherwise an error code.
+   */
   manager::metadata::ErrorCode select_all(
       std::vector<boost::property_tree::ptree>& objects) const override;
 
+  /**
+   * @brief Get a metadata object from a metadata table file.
+   * @param key     [in]  key. column name of a index metadata table.
+   * @param value   [in]  value to be filtered.
+   * @param object  [out] index metadata to get, where the given
+   *   key equals the given value.
+   * @retval ErrorCode::OK if success.
+   * @retval ErrorCode::ID_NOT_FOUND if the object id does not exist.
+   * @retval ErrorCode::NAME_NOT_FOUND if the object name does not exist.
+   * @retval otherwise an error code.
+   */
   manager::metadata::ErrorCode select(
       std::string_view key, std::string_view object_value,
       boost::property_tree::ptree& object) const override;
 
+  /**
+   * @brief Updates metadata objects in the metadata table.
+   * @param key     [in]  key. column name of a index metadata table.
+   * @param value   [in]  value to be filtered.
+   * @param object  [in]  index metadata object to be update.
+   * @return ErrorCode::OK if success, otherwise an error code.
+   */
   manager::metadata::ErrorCode update(
-    std::string_view key,  std::string_view value,
-    const boost::property_tree::ptree& object) const override;
-
-  manager::metadata::ErrorCode remove(
       std::string_view key, std::string_view value,
-      ObjectIdType& object_id) const override;
+      const boost::property_tree::ptree& object) const override;
+
+  /**
+   * @brief Remove a metadata object from a metadata table file.
+   * @param key        [in]  key. column name of a index metadata table.
+   * @param value      [in]  value to be filtered.
+   * @param object_id  [out] object id of the deleted row.
+   * @retval ErrorCode::OK if success.
+   * @retval ErrorCode::ID_NOT_FOUND if the object id does not exist.
+   * @retval ErrorCode::NAME_NOT_FOUND if the object name does not exist.
+   * @retval otherwise an error code.
+   */
+  manager::metadata::ErrorCode remove(std::string_view key,
+                                      std::string_view value,
+                                      ObjectId& object_id) const override;
 
  private:
-  DbSessionManagerJson* session_;
+  // Name of the index metadata management file.
+  static constexpr const char* const kIndexMetadataName = "indexes";
+  // Object ID key name for index ID.
+  static constexpr const char* const kOidKeyNameIndex = "indexes";
 
-  std::string get_source_name() const override { return "indexes"; }
-  std::string get_insert_statement() const override { return ""; }
-  std::string get_select_all_statement() const override { return ""; }
-  std::string get_select_statement(std::string_view) const override { 
-    return ""; 
-  }
-  std::string get_update_statement(std::string_view) const override { 
-    return ""; 
-  };
-  std::string get_delete_statement(std::string_view) const override { 
-    return ""; 
-  }
-  void create_prepared_statements() override {}
-};
+};  // class IndexDaoJson
 
 }  // namespace manager::metadata::db

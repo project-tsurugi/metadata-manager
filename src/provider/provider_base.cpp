@@ -30,18 +30,17 @@
 // =============================================================================
 namespace manager::metadata::db {
 
-#if defined(STORAGE_POSTGRESQL)
-namespace storage = postgresql;
-#elif defined(STORAGE_JSON)
-namespace storage = json;
-#endif
-
 /**
  * @brief Constructor.
  *   Create an instance of the DBSessionManager class.
  * @return none.
  */
-ProviderBase::ProviderBase()
-    : session_manager_(std::make_unique<storage::DBSessionManager>()) {}
+ProviderBase::ProviderBase() {
+#if defined(STORAGE_POSTGRESQL)
+  session_manager_ = std::make_unique<DbSessionManagerPg>();
+#elif defined(STORAGE_JSON)
+  session_manager_ = std::make_unique<DbSessionManagerJson>();
+#endif
+  }
 
 }  // namespace manager::metadata::db

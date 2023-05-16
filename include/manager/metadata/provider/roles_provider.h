@@ -21,10 +21,10 @@
 
 #include <boost/property_tree/ptree.hpp>
 
-#include "manager/metadata/dao/roles_dao.h"
+#include "manager/metadata/dao/dao.h"
 #include "manager/metadata/error_code.h"
-#include "manager/metadata/metadata.h"
 #include "manager/metadata/provider/provider_base.h"
+#include "manager/metadata/roles.h"
 
 namespace manager::metadata::db {
 
@@ -36,7 +36,7 @@ class RolesProvider : public ProviderBase {
       boost::property_tree::ptree& object);
 
  private:
-  std::shared_ptr<RolesDAO> roles_dao_ = nullptr;
+  std::shared_ptr<Dao> roles_dao_ = nullptr;
 };  // class RolesProvider
 
 }  // namespace manager::metadata::db
