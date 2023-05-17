@@ -28,7 +28,7 @@ class ProviderBase {
   virtual ~ProviderBase() {}
 
  protected:
-  std::unique_ptr<DBSessionManager> session_manager_;
+  std::unique_ptr<DbSessionManager> session_manager_;
 };  // class ProviderBase
 
 }  // namespace manager::metadata::db

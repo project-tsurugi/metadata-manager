@@ -47,8 +47,6 @@ class ApiTestRolesMetadataPg : public ::testing::Test {
   }
 
   void TearDown() override {
-    UTUtils::skip_if_json();
-
     if (UTUtils::is_postgresql() && g_environment_->is_open()) {
       UTUtils::print(">> gtest::TearDown()");
 

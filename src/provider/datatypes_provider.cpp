@@ -15,8 +15,6 @@
  */
 #include "manager/metadata/provider/datatypes_provider.h"
 
-#include "manager/metadata/datatypes.h"
-
 // =============================================================================
 namespace manager::metadata::db {
 
@@ -26,21 +24,24 @@ namespace manager::metadata::db {
  */
 ErrorCode DataTypesProvider::init() {
   ErrorCode error = ErrorCode::UNKNOWN;
-  std::shared_ptr<GenericDAO> gdao = nullptr;
 
-  if (datatypes_dao_ != nullptr) {
-    // Instance of the DataTypeDAO class has already been obtained.
-    error = ErrorCode::OK;
-  } else {
-    // Get an instance of the DataTypeDAO class.
-    error = session_manager_->get_dao(GenericDAO::TableName::DATATYPES, gdao);
-    if (error != ErrorCode::OK) {
+  // DataTypeDAO
+  if (!datatypes_dao_) {
+    // Get an instance of the DataTypeDAO.
+    datatypes_dao_ = session_manager_->get_datatypes_dao();
+    if (!datatypes_dao_) {
+      error = ErrorCode::DATABASE_ACCESS_FAILURE;
       return error;
     }
-    // Set DataTypesDAO instance.
-    datatypes_dao_ = std::static_pointer_cast<DataTypesDAO>(gdao);
+    // Prepare to access table metadata.
+    error = datatypes_dao_->prepare();
+    if (error != ErrorCode::OK) {
+      datatypes_dao_.reset();
+      return error;
+    }
   }
 
+  error = ErrorCode::OK;
   return error;
 }
 
@@ -68,7 +69,7 @@ ErrorCode DataTypesProvider::get_datatype_metadata(
     return error;
   }
 
-  error = datatypes_dao_->select_one_data_type_metadata(key, value, object);
+  error = datatypes_dao_->select(key, value, object);
 
   return error;
 }

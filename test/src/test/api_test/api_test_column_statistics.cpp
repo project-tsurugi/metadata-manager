@@ -51,20 +51,20 @@ class ApiTestColumnStatisticsPg : public ::testing::Test {
     UTUtils::skip_if_json();
     UTUtils::skip_if_connection_not_opened();
 
-    UTUtils::print(">> gtest::SetUp()");
+    if (UTUtils::is_postgresql() && g_environment_->is_open()) {
+      UTUtils::print(">> gtest::SetUp()");
 
-    // Change to a unique table name.
-    std::string table_name =
-        "ApiTestColumnStatistic_" + UTUtils::generate_narrow_uid();
+      // Change to a unique table name.
+      std::string table_name =
+          "ApiTestColumnStatistic_" + UTUtils::generate_narrow_uid();
 
-    // Add table metadata.
-    TableMetadataHelper::add_table(table_name, &table_id_);
+      // Add table metadata.
+      TableMetadataHelper::add_table(table_name, &table_id_);
+    }
   }
 
   void TearDown() override {
-    UTUtils::skip_if_json();
-
-    if (g_environment_->is_open()) {
+    if (UTUtils::is_postgresql() && g_environment_->is_open()) {
       UTUtils::print(">> gtest::TearDown()");
 
       // Remove table metadata.

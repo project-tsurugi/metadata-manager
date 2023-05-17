@@ -40,6 +40,8 @@ class ApiTestTableMetadataEx
     : public ::testing::TestWithParam<std::vector<UtTableMetadata>> {
  public:
   static void SetUpTestCase() {
+    UTUtils::skip_if_connection_not_opened();
+
     if (g_environment_->is_open()) {
       UTUtils::print(">> gtest::SetUpTestCase()");
 
@@ -53,12 +55,12 @@ class ApiTestTableMetadataEx
 
   void SetUp() override {
     UTUtils::skip_if_connection_not_opened();
-    if (!g_environment_->is_open()) {
-      GTEST_SKIP();
-    }
-    // If valid test data could not be made, skip this test.
-    if (valid_table_metadata.empty()) {
-      GTEST_SKIP_("  Skipped: Could not read a json file with table metadata.");
+
+    if (g_environment_->is_open()) {
+      // If valid test data could not be made, skip this test.
+      if (valid_table_metadata.empty()) {
+        GTEST_SKIP_("  Skipped: Could not read a json file with table metadata.");
+      }
     }
   }
 };

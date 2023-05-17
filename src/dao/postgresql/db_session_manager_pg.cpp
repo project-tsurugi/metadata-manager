@@ -15,31 +15,140 @@
  */
 #include "manager/metadata/dao/postgresql/db_session_manager_pg.h"
 
-#include <libpq-fe.h>
-
-#include <iostream>
-
 #include "manager/metadata/common/config.h"
 #include "manager/metadata/common/message.h"
-#include "manager/metadata/helper/logging_helper.h"
-#include "manager/metadata/dao/postgresql/common_pg.h"
+#include "manager/metadata/dao/postgresql/columns_dao_pg.h"
+#include "manager/metadata/dao/postgresql/constraints_dao_pg.h"
+#include "manager/metadata/dao/postgresql/datatypes_dao_pg.h"
 #include "manager/metadata/dao/postgresql/dbc_utils_pg.h"
 #include "manager/metadata/dao/postgresql/index_dao_pg.h"
+#include "manager/metadata/dao/postgresql/privileges_dao_pg.h"
+#include "manager/metadata/dao/postgresql/roles_dao_pg.h"
+#include "manager/metadata/dao/postgresql/statistics_dao_pg.h"
+#include "manager/metadata/dao/postgresql/tables_dao_pg.h"
+#include "manager/metadata/helper/logging_helper.h"
 
 // =============================================================================
 namespace manager::metadata::db {
 
-using manager::metadata::db::postgresql::DbcUtils;
-
-std::shared_ptr<Dao> DbSessionManagerPg::get_index_dao() {
-  if (!DbcUtils::is_open(conn_.pg_conn)) {
-    ErrorCode error = this->connect();
-    if (error == ErrorCode::OK) {
-      this->set_always_secure_search_path();
-    }
+/**
+ * @brief Get an instance of a DAO for table metadata.
+ *   Returns nullptr if the database connection fails.
+ * @return DAO instance or nullptr.
+ */
+std::shared_ptr<Dao> DbSessionManagerPg::get_tables_dao() {
+  // Connection to DB.
+  if (this->connect() != ErrorCode::OK) {
+    return nullptr;
   }
 
+  // Create an instance of DAO.
+  return std::make_shared<TablesDaoPg>(this);
+}
+
+/**
+ * @brief Get an instance of a DAO for column metadata.
+ *   Returns nullptr if the database connection fails.
+ * @return DAO instance or nullptr.
+ */
+std::shared_ptr<Dao> DbSessionManagerPg::get_columns_dao() {
+  // Connection to DB.
+  if (this->connect() != ErrorCode::OK) {
+    return nullptr;
+  }
+
+  // Create an instance of DAO.
+  return std::make_shared<ColumnsDaoPg>(this);
+}
+
+/**
+ * @brief Get an instance of a DAO for index metadata.
+ *   Returns nullptr if the database connection fails.
+ * @return DAO instance or nullptr.
+ */
+std::shared_ptr<Dao> DbSessionManagerPg::get_indexes_dao() {
+  // Connection to DB.
+  if (this->connect() != ErrorCode::OK) {
+    return nullptr;
+  }
+
+  // Create an instance of DAO.
   return std::make_shared<IndexDaoPg>(this);
+}
+
+/**
+ * @brief Get an instance of a DAO for constraint metadata.
+ *   Returns nullptr if the database connection fails.
+ * @return DAO instance or nullptr.
+ */
+std::shared_ptr<Dao> DbSessionManagerPg::get_constraints_dao() {
+  // Connection to DB.
+  if (this->connect() != ErrorCode::OK) {
+    return nullptr;
+  }
+
+  // Create an instance of DAO.
+  return std::make_shared<ConstraintsDaoPg>(this);
+}
+
+/**
+ * @brief Get an instance of a DAO for data-type metadata.
+ *   Returns nullptr if the database connection fails.
+ * @return DAO instance or nullptr.
+ */
+std::shared_ptr<Dao> DbSessionManagerPg::get_datatypes_dao() {
+  // Connection to DB.
+  if (this->connect() != ErrorCode::OK) {
+    return nullptr;
+  }
+
+  // Create an instance of DAO.
+  return std::make_shared<DataTypesDaoPg>(this);
+}
+
+/**
+ * @brief Get an instance of a DAO for role metadata.
+ *   Returns nullptr if the database connection fails.
+ * @return DAO instance or nullptr.
+ */
+std::shared_ptr<Dao> DbSessionManagerPg::get_roles_dao() {
+  // Connection to DB.
+  if (this->connect() != ErrorCode::OK) {
+    return nullptr;
+  }
+
+  // Create an instance of DAO.
+  return std::make_shared<RolesDaoPg>(this);
+}
+
+/**
+ * @brief Get an instance of a DAO for privilege metadata.
+ *   Returns nullptr if the database connection fails.
+ * @return DAO instance or nullptr.
+ */
+std::shared_ptr<Dao> DbSessionManagerPg::get_privileges_dao() {
+  // Connection to DB.
+  if (this->connect() != ErrorCode::OK) {
+    return nullptr;
+  }
+
+  // Create an instance of DAO.
+  return std::make_shared<PrivilegesDaoPg>(this);
+}
+
+/**
+ * @brief Get an instance of a DAO for statistic metadata.
+ *   Returns nullptr if the database connection fails.
+ * @return DAO instance or nullptr.
+ */
+std::shared_ptr<Dao> DbSessionManagerPg::get_statistics_dao() {
+  // Connection to DB.
+  if (this->connect() != ErrorCode::OK) {
+    return nullptr;
+  }
+
+  // Create an instance of DAO.
+  return std::make_shared<StatisticsDaoPg>(this);
 }
 
 /**
@@ -76,7 +185,6 @@ ErrorCode DbSessionManagerPg::start_transaction() {
  * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode DbSessionManagerPg::commit() {
-
   ErrorCode error = ErrorCode::UNKNOWN;
 
   if (!DbcUtils::is_open(conn_.pg_conn)) {
@@ -116,7 +224,8 @@ ErrorCode DbSessionManagerPg::rollback() {
   if (PQresultStatus(res.get()) == PGRES_COMMAND_OK) {
     error = ErrorCode::OK;
   } else {
-    LOG_ERROR << Message::ROLLBACK_FAILURE << PQerrorMessage(conn_.pg_conn.get());
+    LOG_ERROR << Message::ROLLBACK_FAILURE
+              << PQerrorMessage(conn_.pg_conn.get());
     error = ErrorCode::DATABASE_ACCESS_FAILURE;
   }
 
@@ -128,23 +237,29 @@ ErrorCode DbSessionManagerPg::rollback() {
  */
 
 /**
- * @brief Establishes a connection_ to the metadata repository
- *   using connection_ information in a string.
+ * @brief Establish a connection to the metadata repository
+ *   using a connection string.
  * @param none.
  * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode DbSessionManagerPg::connect() {
   ErrorCode error = ErrorCode::UNKNOWN;
 
-  conn_.pg_conn = DbcUtils::make_connection_sptr(
-      PQconnectdb(Config::get_connection_string().c_str()));
-
   if (DbcUtils::is_open(conn_.pg_conn)) {
     error = ErrorCode::OK;
   } else {
-    LOG_ERROR << Message::CONNECT_FAILURE << "\n  "
-              << PQerrorMessage(conn_.pg_conn.get());
-    error = ErrorCode::DATABASE_ACCESS_FAILURE;
+    // Connection to DB.
+    conn_.pg_conn = DbcUtils::make_connection_sptr(
+        PQconnectdb(Config::get_connection_string().c_str()));
+    if (DbcUtils::is_open(conn_.pg_conn)) {
+      // Set up a secure search path.
+      this->set_always_secure_search_path();
+      error = ErrorCode::OK;
+    } else {
+      LOG_ERROR << Message::CONNECT_FAILURE << "\n  "
+                << PQerrorMessage(conn_.pg_conn.get());
+      error = ErrorCode::DATABASE_ACCESS_FAILURE;
+    }
   }
 
   return error;
@@ -182,182 +297,3 @@ ErrorCode DbSessionManagerPg::set_always_secure_search_path() const {
 }
 
 }  // namespace manager::metadata::db
-
-
-// =============================================================================
-namespace manager::metadata::db::postgresql {
-
-/**
- * @brief Gets Dao instance for the requested table name
- *   if all the following steps are successfully completed.
- *   1. Establishes a connection_ to the metadata repository.
- *   2. Sends a query to set always-secure search path
- *      to the metadata repository.
- *   3. Defines prepared statements for returned Dao
- *      in the metadata repository.
- * @param (table_name)   [in]  unique id for the Dao.
- * @param (gdao)         [out] Dao instance if success.
- *   for the requested table name.
- * @return ErrorCode::OK if success, otherwise an error code.
- */
-ErrorCode DBSessionManager::get_dao(const GenericDAO::TableName table_name,
-                                    std::shared_ptr<GenericDAO>& gdao) {
-  ErrorCode error = ErrorCode::UNKNOWN;
-
-  if (!DbcUtils::is_open(connection_)) {
-    error = connect();
-    if (error != ErrorCode::OK) {
-      return error;
-    }
-
-    error = set_always_secure_search_path();
-    if (error != ErrorCode::OK) {
-      return error;
-    }
-  }
-
-  error = create_dao(table_name, (manager::metadata::db::DBSessionManager*)this,
-                     gdao);
-
-  return error;
-}
-
-/**
- * @brief Starts a transaction scope managed by this DBSessionManager.
- * @param none.
- * @return ErrorCode::OK if success, otherwise an error code.
- */
-ErrorCode DBSessionManager::start_transaction() {
-  ErrorCode error = ErrorCode::UNKNOWN;
-
-  if (!DbcUtils::is_open(connection_)) {
-    LOG_ERROR << Message::START_TRANSACTION_FAILURE << Message::NOT_INITIALIZED;
-    error = ErrorCode::NOT_INITIALIZED;
-    return error;
-  }
-
-  ResultPtr res =
-      DbcUtils::make_result_uptr(PQexec(connection_.get(), "BEGIN"));
-  if (PQresultStatus(res.get()) == PGRES_COMMAND_OK) {
-    error = ErrorCode::OK;
-  } else {
-    LOG_ERROR << Message::START_TRANSACTION_FAILURE
-              << PQerrorMessage(connection_.get());
-    error = ErrorCode::DATABASE_ACCESS_FAILURE;
-  }
-
-  return error;
-}
-
-/**
- * @brief Commits all transactions currently started for all DAO contexts
- *   managed by this DBSessionManager.
- * @param none.
- * @return ErrorCode::OK if success, otherwise an error code.
- */
-ErrorCode DBSessionManager::commit() {
-  ErrorCode error = ErrorCode::UNKNOWN;
-
-  if (!DbcUtils::is_open(connection_)) {
-    LOG_ERROR << Message::COMMIT_FAILURE << Message::NOT_INITIALIZED;
-    error = ErrorCode::NOT_INITIALIZED;
-    return error;
-  }
-
-  ResultPtr res =
-      DbcUtils::make_result_uptr(PQexec(connection_.get(), "COMMIT"));
-  if (PQresultStatus(res.get()) == PGRES_COMMAND_OK) {
-    error = ErrorCode::OK;
-  } else {
-    LOG_ERROR << Message::COMMIT_FAILURE << PQerrorMessage(connection_.get());
-    error = ErrorCode::DATABASE_ACCESS_FAILURE;
-  }
-
-  return error;
-}
-
-/**
- * @brief Rollbacks all transactions currently started for all DAO contexts
- *   managed by this DBSessionManager.
- * @param none.
- * @return ErrorCode::OK if success, otherwise an error code.
- */
-ErrorCode DBSessionManager::rollback() {
-  ErrorCode error = ErrorCode::UNKNOWN;
-
-  if (!DbcUtils::is_open(connection_)) {
-    LOG_ERROR << Message::ROLLBACK_FAILURE << Message::NOT_INITIALIZED;
-    error = ErrorCode::NOT_INITIALIZED;
-    return error;
-  }
-  ResultPtr res =
-      DbcUtils::make_result_uptr(PQexec(connection_.get(), "ROLLBACK"));
-  if (PQresultStatus(res.get()) == PGRES_COMMAND_OK) {
-    error = ErrorCode::OK;
-  } else {
-    LOG_ERROR << Message::ROLLBACK_FAILURE << PQerrorMessage(connection_.get());
-    error = ErrorCode::DATABASE_ACCESS_FAILURE;
-  }
-
-  return error;
-}
-
-/* =============================================================================
- * Private method area
- */
-
-/**
- * @brief Establishes a connection_ to the metadata repository
- *   using connection_ information in a string.
- * @param none.
- * @return ErrorCode::OK if success, otherwise an error code.
- */
-ErrorCode DBSessionManager::connect() {
-  ErrorCode error = ErrorCode::UNKNOWN;
-
-  connection_ = DbcUtils::make_connection_sptr(
-      PQconnectdb(Config::get_connection_string().c_str()));
-
-  if (DbcUtils::is_open(connection_)) {
-    error = ErrorCode::OK;
-  } else {
-    LOG_ERROR << Message::CONNECT_FAILURE << "\n  "
-              << PQerrorMessage(connection_.get());
-    error = ErrorCode::DATABASE_ACCESS_FAILURE;
-  }
-
-  return error;
-}
-
-/**
- * @brief Sends a query to set always-secure search path
- *   to the metadata repository.
- * @param none.
- * @return ErrorCode::OK if success, otherwise an error code.
- */
-ErrorCode DBSessionManager::set_always_secure_search_path() const {
-  ErrorCode error = ErrorCode::UNKNOWN;
-
-  if (!DbcUtils::is_open(connection_)) {
-    LOG_ERROR << Message::SET_ALWAYS_SECURE_SEARCH_PATH
-              << Message::NOT_INITIALIZED;
-    error = ErrorCode::NOT_INITIALIZED;
-    return error;
-  }
-
-  std::string statement =
-      "SELECT pg_catalog.set_config('search_path', '', false)";
-  ResultPtr res =
-      DbcUtils::make_result_uptr(PQexec(connection_.get(), statement.data()));
-  if (PQresultStatus(res.get()) == PGRES_TUPLES_OK) {
-    error = ErrorCode::OK;
-  } else {
-    LOG_ERROR << Message::SET_ALWAYS_SECURE_SEARCH_PATH
-              << PQerrorMessage(connection_.get());
-    error = ErrorCode::DATABASE_ACCESS_FAILURE;
-  }
-
-  return error;
-}
-
-}  // namespace manager::metadata::db::postgresql

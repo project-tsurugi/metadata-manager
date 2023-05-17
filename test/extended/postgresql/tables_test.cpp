@@ -21,7 +21,7 @@
 #include <boost/format.hpp>
 #include <boost/property_tree/ptree.hpp>
 
-#include "manager/metadata/dao/postgresql/common_pg.h"
+#include "manager/metadata/dao/postgresql/pg_common.h"
 #include "manager/metadata/metadata_factory.h"
 
 namespace {
@@ -35,12 +35,11 @@ using manager::metadata::GenerationType;
 using manager::metadata::ObjectIdType;
 using manager::metadata::Table;
 using manager::metadata::Tables;
-using manager::metadata::db::postgresql::ConnectionSPtr;
 
 static constexpr const char* const TEST_DB   = "test";
 static constexpr const char* const ROLE_NAME = "tsurugi_ut_role_user_1";
 
-ConnectionSPtr connection;
+manager::metadata::db::PgConnectionPtr connection;
 bool test_succeed = true;
 
 #define EXPECT_EQ(expected, actual) \
@@ -484,6 +483,7 @@ ErrorCode tables_test() {
   column.put(Column::COLUMN_NUMBER, 1);
   column.put(Column::DATA_TYPE_ID, 6);
   column.put(Column::IS_NOT_NULL, "true");
+  column.put(Column::VARYING, "false");
   columns.push_back(std::make_pair("", column));
 
   column.clear();

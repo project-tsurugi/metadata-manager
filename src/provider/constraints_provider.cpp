@@ -15,7 +15,6 @@
  */
 #include "manager/metadata/provider/constraints_provider.h"
 
-#include "manager/metadata/constraints.h"
 #include "manager/metadata/helper/logging_helper.h"
 
 // =============================================================================
@@ -28,17 +27,22 @@ using boost::property_tree::ptree;
  * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode ConstraintsProvider::init() {
-  ErrorCode error                  = ErrorCode::UNKNOWN;
-  std::shared_ptr<GenericDAO> gdao = nullptr;
+  ErrorCode error = ErrorCode::UNKNOWN;
 
-  if (constraints_dao_ == nullptr) {
-    // Get an instance of the TablesDAO class.
-    error = session_manager_->get_dao(GenericDAO::TableName::CONSTRAINTS, gdao);
-    if (error != ErrorCode::OK) {
+  // ConstraintsDAO
+  if (!constraints_dao_) {
+    // Get an instance of the ConstraintsDAO.
+    constraints_dao_ = session_manager_->get_constraints_dao();
+    if (!constraints_dao_) {
+      error = ErrorCode::DATABASE_ACCESS_FAILURE;
       return error;
     }
-    // Set ConstraintsDAO instance.
-    constraints_dao_ = std::static_pointer_cast<ConstraintsDAO>(gdao);
+    // Prepare to access table metadata.
+    error = constraints_dao_->prepare();
+    if (error != ErrorCode::OK) {
+      constraints_dao_.reset();
+      return error;
+    }
   }
 
   error = ErrorCode::OK;
@@ -68,7 +72,7 @@ ErrorCode ConstraintsProvider::add_constraint_metadata(const boost::property_tre
   }
 
   // Add metadata object to constraint metadata table.
-  error = constraints_dao_->insert_constraint_metadata(object, constraint_id);
+  error = constraints_dao_->insert(object, constraint_id);
 
   if (error == ErrorCode::OK) {
     // Commit the transaction.
@@ -106,7 +110,7 @@ ErrorCode ConstraintsProvider::get_constraint_metadata(const ObjectId constraint
 
   std::string key_constraint_id = std::to_string(constraint_id);
   // Get constraint metadata.
-  error = constraints_dao_->select_constraint_metadata(Constraint::ID, key_constraint_id, object);
+  error = constraints_dao_->select(Constraint::ID, key_constraint_id, object);
   if (error != ErrorCode::OK) {
     return error;
   }
@@ -131,7 +135,7 @@ ErrorCode ConstraintsProvider::get_constraint_metadata(
   }
 
   // Get constraint metadata.
-  error = constraints_dao_->select_constraint_metadata(container);
+  error = constraints_dao_->select_all(container);
 
   return error;
 }
@@ -158,8 +162,10 @@ ErrorCode ConstraintsProvider::remove_constraint_metadata(const ObjectId constra
     return error;
   }
 
-  std::string key_constraint_id = std::to_string(constraint_id);
-  error = constraints_dao_->delete_constraint_metadata(Constraint::ID, key_constraint_id);
+  ObjectId removed_id = 0;
+  // Remove a metadata object from the constraints metadata table.
+  error = constraints_dao_->remove(Constraint::ID, std::to_string(constraint_id), removed_id);
+
   if (error == ErrorCode::OK) {
     // Commit the transaction.
     error = session_manager_->commit();

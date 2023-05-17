@@ -17,13 +17,11 @@
 
 #include <boost/foreach.hpp>
 
-#include "manager/metadata/dao/generic_dao.h"
 #include "manager/metadata/datatypes.h"
 #include "manager/metadata/metadata.h"
 #include "manager/metadata/index.h"
 #include "manager/metadata/indexes.h"
 #include "manager/metadata/dao/dao.h"
-#include "manager/metadata/dao/json/index_dao_json.h"
 #include "manager/metadata/dao/db_session_manager.h"
 
 namespace manager::metadata::db {
@@ -42,7 +40,7 @@ ErrorCode MetadataProvider::init() {
 //  std::shared_ptr<Dao> gdao = nullptr;
 
   if (index_dao_ == nullptr) {
-    index_dao_ = session_->get_index_dao();
+    index_dao_ = session_->get_indexes_dao();
     ErrorCode error = index_dao_->prepare();
     if (error != ErrorCode::OK) {
       return error;

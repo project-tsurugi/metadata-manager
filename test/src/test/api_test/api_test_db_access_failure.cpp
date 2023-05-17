@@ -158,7 +158,13 @@ TEST_F(ApiTestDBAccessFailure, add_table_metadata) {
   EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
 
   ptree table_metadata;
+  ptree column_metadata;
   ObjectIdType ret_table_id = -1;
+
+  // Set dummy data.
+  table_metadata.put(Table::NAME, "table_name");
+  table_metadata.put_child(Table::COLUMNS_NODE, column_metadata);
+
   // Execute the test.
   error = tables->add(table_metadata, &ret_table_id);
   EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
@@ -199,6 +205,7 @@ TEST_F(ApiTestDBAccessFailure, get_table_metadata_by_table_name) {
 
   ptree table_metadata;
   std::string table_name = "table_name";
+
   // Execute the test.
   error = tables->get(table_name, table_metadata);
   EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
@@ -219,7 +226,13 @@ TEST_F(ApiTestDBAccessFailure, update_table_metadata) {
   EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
 
   ptree table_metadata;
+  ptree column_metadata;
   ObjectIdType dummy_table_id = 1;
+
+  // Set dummy data.
+  table_metadata.put(Table::NAME, "table_name");
+  table_metadata.put_child(Table::COLUMNS_NODE, column_metadata);
+
   // Execute the test.
   error = tables->update(dummy_table_id, table_metadata);
   EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
@@ -560,7 +573,7 @@ TEST_P(ApiTestDBAccessFailureByColumnStatistics, add_one_column_statistic) {
  */
 TEST_P(ApiTestDBAccessFailureByTableIdColumnNumber, get_one_column_statistic) {
   // TODO(future): Change when changing Metadata class.
-  auto stats_tmp = get_tables_ptr(GlobalTestEnvironment::TEST_DB);
+  auto stats_tmp = get_statistics_ptr(GlobalTestEnvironment::TEST_DB);
   auto stats = static_cast<Statistics*>(stats_tmp.get());
 
   ErrorCode error = stats->init();
@@ -587,7 +600,7 @@ TEST_P(ApiTestDBAccessFailureByTableIdColumnNumber, get_one_column_statistic) {
  */
 TEST_P(ApiTestDBAccessFailureByTableId, get_all_column_statistics) {
   // TODO(future): Change when changing Metadata class.
-  auto stats_tmp = get_tables_ptr(GlobalTestEnvironment::TEST_DB);
+  auto stats_tmp = get_statistics_ptr(GlobalTestEnvironment::TEST_DB);
   auto stats = static_cast<Statistics*>(stats_tmp.get());
 
   ErrorCode error = stats->init();
@@ -613,7 +626,7 @@ TEST_P(ApiTestDBAccessFailureByTableId, get_all_column_statistics) {
 TEST_P(ApiTestDBAccessFailureByTableIdColumnNumber,
        remove_one_column_statistic) {
   // TODO(future): Change when changing Metadata class.
-  auto stats_tmp = get_tables_ptr(GlobalTestEnvironment::TEST_DB);
+  auto stats_tmp = get_statistics_ptr(GlobalTestEnvironment::TEST_DB);
   auto stats = static_cast<Statistics*>(stats_tmp.get());
 
   ErrorCode error = stats->init();
@@ -638,7 +651,7 @@ TEST_P(ApiTestDBAccessFailureByTableIdColumnNumber,
  */
 TEST_P(ApiTestDBAccessFailureByTableId, remove_all_column_statistics) {
   // TODO(future): Change when changing Metadata class.
-  auto stats_tmp = get_tables_ptr(GlobalTestEnvironment::TEST_DB);
+  auto stats_tmp = get_statistics_ptr(GlobalTestEnvironment::TEST_DB);
   auto stats = static_cast<Statistics*>(stats_tmp.get());
 
   ErrorCode error = stats->init();

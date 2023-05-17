@@ -74,19 +74,6 @@ std::vector<std::string> DataTypesIdList = {
 std::vector<std::string> DataTypesNameList = {
     DataTypesName::INT32,   DataTypesName::INT64, DataTypesName::FLOAT32,
     DataTypesName::FLOAT64, DataTypesName::CHAR,  DataTypesName::VARCHAR};
-// a list of PostgreSQL data type oid
-std::vector<std::string> PgDataTypeList = {
-    PgDataType::INT32,   PgDataType::INT64, PgDataType::FLOAT32,
-    PgDataType::FLOAT64, PgDataType::CHAR,  PgDataType::VARCHAR};
-// a list of PostgreSQL data type name
-std::vector<std::string> PgDataTypeNameList = {
-    PgDataTypeName::INT32,   PgDataTypeName::INT64, PgDataTypeName::FLOAT32,
-    PgDataTypeName::FLOAT64, PgDataTypeName::CHAR,  PgDataTypeName::VARCHAR};
-// a list of PostgreSQL qualified data type name
-std::vector<std::string> PgDataTypeQualifiedNameList = {
-    PgDataTypeQualifiedName::INT32,   PgDataTypeQualifiedName::INT64,
-    PgDataTypeQualifiedName::FLOAT32, PgDataTypeQualifiedName::FLOAT64,
-    PgDataTypeQualifiedName::CHAR,    PgDataTypeQualifiedName::VARCHAR};
 
 }  // namespace
 
@@ -183,31 +170,6 @@ std::vector<std::string> UtDataTypesMetadata::get_datatype_ids() const {
  */
 std::vector<std::string> UtDataTypesMetadata::get_datatype_names() const {
   return DataTypesNameList;
-}
-
-/**
- * @brief Get a list of PostgreSQL data type ids.
- * @return PostgreSQL data type ids.
- */
-std::vector<std::string> UtDataTypesMetadata::get_pg_datatype_ids() const {
-  return PgDataTypeList;
-}
-
-/**
- * @brief Get a list of PostgreSQL data type names.
- * @return PostgreSQL data type names.
- */
-std::vector<std::string> UtDataTypesMetadata::get_pg_datatype_names() const {
-  return PgDataTypeNameList;
-}
-
-/**
- * @brief Get a list of PostgreSQL qualified data type names.
- * @return qualified data type names.
- */
-std::vector<std::string> UtDataTypesMetadata::get_pg_datatype_qualified_names()
-    const {
-  return PgDataTypeQualifiedNameList;
 }
 
 /**

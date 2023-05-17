@@ -36,7 +36,9 @@ class ApiTestAddTableMetadataException
   void SetUp() override {
     UTUtils::skip_if_connection_not_opened();
 
-    invalid_table_metadata_ = make_invalid_table_metadata();
+    if (g_environment_->is_open()) {
+      invalid_table_metadata_ = make_invalid_table_metadata();
+    }
   }
 
  private:

@@ -18,28 +18,30 @@
 #include <memory>
 
 #include "manager/metadata/dao/db_session_manager.h"
-#include "manager/metadata/dao/postgresql/common_pg.h"
 #include "manager/metadata/dao/postgresql/pg_common.h"
 #include "manager/metadata/error_code.h"
 
 namespace manager::metadata::db {
 /**
- * @brief
+ * @brief Class that manages connection information.
  */
 struct Connection {
   PgConnectionPtr pg_conn;
 };
 
 /**
- * @brief
+ * @brief Class for managing sessions with PostgreSQL.
  */
-class DbSessionManagerPg : public DBSessionManager {
+class DbSessionManagerPg : public DbSessionManager {
  public:
-  manager::metadata::ErrorCode get_dao(
-      const GenericDAO::TableName,
-      std::shared_ptr<GenericDAO>&) override { return ErrorCode::UNKNOWN; }
-
-  std::shared_ptr<Dao> get_index_dao() override;
+  std::shared_ptr<Dao> get_tables_dao() override;
+  std::shared_ptr<Dao> get_columns_dao() override;
+  std::shared_ptr<Dao> get_indexes_dao() override;
+  std::shared_ptr<Dao> get_constraints_dao() override;
+  std::shared_ptr<Dao> get_datatypes_dao() override;
+  std::shared_ptr<Dao> get_roles_dao() override;
+  std::shared_ptr<Dao> get_privileges_dao() override;
+  std::shared_ptr<Dao> get_statistics_dao() override;
 
   Connection connection() const { return conn_; }
   manager::metadata::ErrorCode start_transaction() override;
@@ -47,41 +49,10 @@ class DbSessionManagerPg : public DBSessionManager {
   manager::metadata::ErrorCode rollback() override;
 
  private:
-   Connection conn_;
+  Connection conn_;
 
   manager::metadata::ErrorCode connect();
   manager::metadata::ErrorCode set_always_secure_search_path() const;
 };  // class DBSessionManager
 
 }  // namespace manager::metadata::db
-
-
-
-namespace manager::metadata::db::postgresql {
-/**
- * @brief
- */
-class DBSessionManager : public manager::metadata::db::DBSessionManager {
- public:
-  manager::metadata::ErrorCode get_dao(
-      const GenericDAO::TableName table_name,
-      std::shared_ptr<GenericDAO>& gdao) override;
-
-  std::shared_ptr<Dao> get_index_dao() override { return nullptr; } // dummy
-
-  Connection connection() const { return conn_; }
-  manager::metadata::ErrorCode start_transaction() override;
-  manager::metadata::ErrorCode commit() override;
-  manager::metadata::ErrorCode rollback() override;
-
-  ConnectionSPtr get_connection() const { return connection_; }
-
- private:
-  manager::metadata::db::Connection conn_;  // dummy for build.
-  ConnectionSPtr connection_;
-
-  manager::metadata::ErrorCode connect();
-  manager::metadata::ErrorCode set_always_secure_search_path() const;
-};  // class DBSessionManager
-
-}  // namespace manager::metadata::db::postgresql

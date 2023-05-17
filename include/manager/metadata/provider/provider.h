@@ -28,6 +28,6 @@ class Provider {
   virtual manager::metadata::ErrorCode init() = 0;
 
  protected:
-  std::unique_ptr<DBSessionManager> session_;
+  std::unique_ptr<DbSessionManager> session_;
 };
 } // namespace manager::metadata::db

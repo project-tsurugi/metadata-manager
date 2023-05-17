@@ -15,11 +15,14 @@
  */
 #include "manager/metadata/provider/tables_provider.h"
 
+#include <regex>
+
 #include <boost/foreach.hpp>
 
+#include "manager/metadata/common/message.h"
+#include "manager/metadata/common/utility.h"
 #include "manager/metadata/datatypes.h"
 #include "manager/metadata/helper/logging_helper.h"
-#include "manager/metadata/tables.h"
 
 // =============================================================================
 namespace manager::metadata::db {
@@ -31,47 +34,72 @@ using boost::property_tree::ptree;
  * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode TablesProvider::init() {
-  ErrorCode error                  = ErrorCode::UNKNOWN;
-  std::shared_ptr<GenericDAO> gdao = nullptr;
+  ErrorCode error = ErrorCode::UNKNOWN;
 
-  if (tables_dao_ == nullptr) {
-    // Get an instance of the TablesDAO class.
-    error = session_manager_->get_dao(GenericDAO::TableName::TABLES, gdao);
-    if (error != ErrorCode::OK) {
+  // TablesDAO
+  if (!tables_dao_) {
+    // Get an instance of the TablesDAO.
+    tables_dao_ = session_manager_->get_tables_dao();
+    if (!tables_dao_) {
+      error = ErrorCode::DATABASE_ACCESS_FAILURE;
       return error;
     }
-    // Set TablesDAO instance.
-    tables_dao_ = std::static_pointer_cast<TablesDAO>(gdao);
+    // Prepare to access table metadata.
+    error = tables_dao_->prepare();
+    if (error != ErrorCode::OK) {
+      tables_dao_.reset();
+      return error;
+    }
   }
 
-  if (columns_dao_ == nullptr) {
-    // Get an instance of the ColumnsDAO class.
-    error = session_manager_->get_dao(GenericDAO::TableName::COLUMNS, gdao);
-    if (error != ErrorCode::OK) {
+  // ColumnsDAO
+  if (!columns_dao_) {
+    // Get an instance of the ColumnsDAO.
+    columns_dao_ = session_manager_->get_columns_dao();
+    if (!columns_dao_) {
+      error = ErrorCode::DATABASE_ACCESS_FAILURE;
       return error;
     }
-    // Set ColumnsDAO instance.
-    columns_dao_ = std::static_pointer_cast<ColumnsDAO>(gdao);
+    // Prepare to access table metadata.
+    error = columns_dao_->prepare();
+    if (error != ErrorCode::OK) {
+      columns_dao_.reset();
+      return error;
+    }
   }
 
-  if (constraints_dao_ == nullptr) {
-    // Get an instance of the ConstraintsDAO class.
-    error = session_manager_->get_dao(GenericDAO::TableName::CONSTRAINTS, gdao);
-    if (error != ErrorCode::OK) {
+  // ConstraintsDAO
+  if (!constraints_dao_) {
+    // Get an instance of the ConstraintsDAO.
+    constraints_dao_ = session_manager_->get_constraints_dao();
+    if (!constraints_dao_) {
+      error = ErrorCode::DATABASE_ACCESS_FAILURE;
       return error;
     }
-    // Set ConstraintsDAO instance.
-    constraints_dao_ = std::static_pointer_cast<ConstraintsDAO>(gdao);
+    // Prepare to access table metadata.
+    error = constraints_dao_->prepare();
+    if (error != ErrorCode::OK) {
+      constraints_dao_.reset();
+      return error;
+    }
   }
 
-  if (privileges_dao_ == nullptr) {
-    // Get an instance of the PrivilegesDAO class.
-    error = session_manager_->get_dao(GenericDAO::TableName::PRIVILEGES, gdao);
-    if (error != ErrorCode::OK) {
+  // PrivilegesDAO
+  if (!privileges_dao_) {
+    // Get an instance of the PrivilegesDAO.
+    privileges_dao_ = session_manager_->get_privileges_dao();
+    if (!privileges_dao_) {
+      error = ErrorCode::DATABASE_ACCESS_FAILURE;
       return error;
     }
-    // Set PrivilegesDAO instance.
-    privileges_dao_ = std::static_pointer_cast<PrivilegesDAO>(gdao);
+    // Prepare to access table metadata.
+    error = privileges_dao_->prepare();
+    if (error != ErrorCode::OK) {
+      privileges_dao_.reset();
+      if (error != ErrorCode::NOT_SUPPORTED) {
+        return error;
+      }
+    }
   }
 
   error = ErrorCode::OK;
@@ -101,7 +129,7 @@ ErrorCode TablesProvider::add_table_metadata(
   }
 
   // Add metadata object to table metadata table.
-  error = tables_dao_->insert_table_metadata(object, table_id);
+  error = tables_dao_->insert(object, table_id);
 
   // Add column metadata object to column metadata table.
   if (error == ErrorCode::OK) {
@@ -112,9 +140,12 @@ ErrorCode TablesProvider::add_table_metadata(
 
       // Erase the columns ID.
       column.erase(Column::ID);
+      // Set table-id.
+      column.put(Column::TABLE_ID, table_id);
 
+      ObjectId added_id = 0;
       // Insert the column metadata.
-      error = columns_dao_->insert_column_metadata(table_id, column);
+      error = columns_dao_->insert(column, added_id);
       if (error != ErrorCode::OK) {
         // When an error occurs, the process is aborted.
         break;
@@ -137,8 +168,7 @@ ErrorCode TablesProvider::add_table_metadata(
 
         ObjectId added_id = 0;
         // Insert the constraint metadata.
-        error =
-            constraints_dao_->insert_constraint_metadata(constraint, added_id);
+        error = constraints_dao_->insert(constraint, added_id);
         error = (error == ErrorCode::NOT_FOUND ? ErrorCode::OK : error);
 
         if (error != ErrorCode::OK) {
@@ -191,7 +221,7 @@ ErrorCode TablesProvider::get_table_metadata(
   }
 
   // Get table metadata.
-  error = tables_dao_->select_table_metadata(key, value, object);
+  error = tables_dao_->select(key, value, object);
   if (error != ErrorCode::OK) {
     return error;
   }
@@ -236,7 +266,7 @@ ErrorCode TablesProvider::get_table_metadata(
   }
 
   // Get table metadata.
-  error = tables_dao_->select_table_metadata(container);
+  error = tables_dao_->select_all(container);
   if (error != ErrorCode::OK) {
     return error;
   }
@@ -289,7 +319,7 @@ ErrorCode TablesProvider::get_table_statistic(
   }
 
   // Get table metadata.
-  error = tables_dao_->select_table_metadata(key, value, object);
+  error = tables_dao_->select(key, value, object);
 
   return error;
 }
@@ -320,14 +350,15 @@ ErrorCode TablesProvider::update_table_metadata(
 
   // Update table metadata table.
   if (error == ErrorCode::OK) {
-    error = tables_dao_->update_table_metadata(table_id, object);
+    error = tables_dao_->update(Table::ID, std::to_string(table_id), object);
   }
 
   // Remove a metadata object from the column metadata table.
   if (error == ErrorCode::OK) {
+    ObjectId removed_id = 0;
     // Delete records associated with TableID.
-    error = columns_dao_->delete_column_metadata(Column::TABLE_ID,
-                                                 std::to_string(table_id));
+    error = columns_dao_->remove(Column::TABLE_ID, std::to_string(table_id),
+                                 removed_id);
     // No record is found, it is treated as a success.
     error = (error == ErrorCode::NOT_FOUND ? ErrorCode::OK : error);
   }
@@ -337,10 +368,14 @@ ErrorCode TablesProvider::update_table_metadata(
     // Add metadata object to columns metadata table.
     BOOST_FOREACH (const ptree::value_type& node,
                    object.get_child(Table::COLUMNS_NODE)) {
-      const ptree& column = node.second;
+      ptree column = node.second;
 
+      // Set table-id.
+      column.put(Column::TABLE_ID, table_id);
+
+      ObjectId added_id = 0;
       // Add metadata object to columns metadata table.
-      error = columns_dao_->insert_column_metadata(table_id, column);
+      error = columns_dao_->insert(column, added_id);
       if (error != ErrorCode::OK) {
         // When an error occurs, the process is aborted.
         break;
@@ -350,9 +385,10 @@ ErrorCode TablesProvider::update_table_metadata(
 
   // Remove a metadata object from the constraint metadata table.
   if (error == ErrorCode::OK) {
+    ObjectId removed_id = 0;
     // Delete records associated with TableID.
-    error = constraints_dao_->delete_constraint_metadata(
-        Constraint::TABLE_ID, std::to_string(table_id));
+    error = constraints_dao_->remove(Constraint::TABLE_ID,
+                                     std::to_string(table_id), removed_id);
     // No record is found, it is treated as a success.
     error = (error == ErrorCode::NOT_FOUND ? ErrorCode::OK : error);
   }
@@ -370,8 +406,7 @@ ErrorCode TablesProvider::update_table_metadata(
 
         ObjectId added_id = 0;
         // Insert the constraint metadata.
-        error =
-            constraints_dao_->insert_constraint_metadata(constraint, added_id);
+        error = constraints_dao_->insert(constraint, added_id);
         if (error != ErrorCode::OK) {
           // When an error occurs, the process is aborted.
           break;
@@ -414,7 +449,7 @@ ErrorCode TablesProvider::set_table_statistic(
   }
 
   // id
-  auto optional_id = object.get_optional<std::string>(Table::ID);
+  auto optional_id = object.get_optional<ObjectId>(Table::ID);
   // name
   auto optional_name = object.get_optional<std::string>(Table::NAME);
   // number_of_tuples
@@ -425,14 +460,16 @@ ErrorCode TablesProvider::set_table_statistic(
   std::string value;
   if (optional_id) {
     key   = Tables::ID;
-    value = optional_id.get();
-  } else {
+    value = std::to_string(optional_id.get());
+  } else if (optional_name) {
     key   = Tables::NAME;
     value = optional_name.get();
+  } else {
+    LOG_ERROR << Message::PARAMETER_FAILED << "\"" << Tables::ID << "\" or \""
+              << Tables::NAME << "\" is required.";
+    error = ErrorCode::INVALID_PARAMETER;
+    return error;
   }
-
-  // Set the update value.
-  int64_t tuples = optional_tuples.get();
 
   // Start the transaction.
   error = session_manager_->start_transaction();
@@ -440,8 +477,22 @@ ErrorCode TablesProvider::set_table_statistic(
     return error;
   }
 
+  boost::property_tree::ptree table_metadata;
+  // Get table metadata.
+  error = get_table_metadata(key, value, table_metadata);
+  if (error != ErrorCode::OK) {
+    return error;
+  }
+
+  // Get the updated object id.
+  auto opt_object_id = table_metadata.get_optional<ObjectId>(Table::ID);
+  table_id           = opt_object_id.value_or(-1);
+
+  // Set the update value.
+  table_metadata.put(Table::NUMBER_OF_TUPLES, optional_tuples.get());
+
   // Update table statistics to table metadata table.
-  error = tables_dao_->update_reltuples(tuples, key, value, table_id);
+  error = tables_dao_->update(key, value, table_metadata);
 
   if (error == ErrorCode::OK) {
     // Commit the transaction.
@@ -489,20 +540,22 @@ ErrorCode TablesProvider::remove_table_metadata(std::string_view key,
   }
 
   // Remove a metadata object from the tables metadata table.
-  error = tables_dao_->delete_table_metadata(key, value, table_id);
+  error = tables_dao_->remove(key, value, table_id);
 
   if (error == ErrorCode::OK) {
+    ObjectId removed_id = 0;
     // Remove a metadata object from the constraints metadata table.
-    error = columns_dao_->delete_column_metadata(Column::TABLE_ID,
-                                                 std::to_string(table_id));
+    error = columns_dao_->remove(Column::TABLE_ID, std::to_string(table_id),
+                                 removed_id);
     // No record is found, it is treated as a success.
     error = (error == ErrorCode::NOT_FOUND ? ErrorCode::OK : error);
   }
 
   if (error == ErrorCode::OK) {
+    ObjectId removed_id = 0;
     // Remove a metadata object from the constraints metadata table.
-    error = constraints_dao_->delete_constraint_metadata(
-        Constraint::TABLE_ID, std::to_string(table_id));
+    error = constraints_dao_->remove(Constraint::TABLE_ID,
+                                     std::to_string(table_id), removed_id);
     // No record is found, it is treated as a success.
     error = (error == ErrorCode::NOT_FOUND ? ErrorCode::OK : error);
   }
@@ -532,6 +585,7 @@ ErrorCode TablesProvider::remove_table_metadata(std::string_view key,
  * @retval ErrorCode::NOT_FOUND if the foreign table does not exist.
  * @retval ErrorCode::ID_NOT_FOUND if the role id does not exist.
  * @retval ErrorCode::NAME_NOT_FOUND if the role name does not exist.
+ * @retval ErrorCode::NOT_SUPPORTED If the function is not supported.
  * @retval otherwise an error code.
  */
 ErrorCode TablesProvider::confirm_permission(std::string_view key,
@@ -540,15 +594,75 @@ ErrorCode TablesProvider::confirm_permission(std::string_view key,
                                              bool& check_result) {
   ErrorCode error = ErrorCode::UNKNOWN;
 
+  if (!privileges_dao_) {
+    error = ErrorCode::NOT_SUPPORTED;
+    return error;
+  }
+
+  // Extracts the valid part of the given authentication string.
+  std::string match_string(permission);
+  std::smatch matcher;
+  std::regex_match(match_string, matcher, std::regex(R"((.*=|)(.+)(/.*|))"));
+  std::string check_privilege(
+      std::regex_replace(matcher[2].str(), std::regex(R"(\s)"), ""));
+
+  if (check_privilege.empty()) {
+    LOG_ERROR << Message::INCORRECT_DATA << "The permission to check is empty.";
+    error = ErrorCode::INVALID_PARAMETER;
+    return error;
+  }
+
+  // Checks the normality of the specified authorization string.
+  for (auto privilege = check_privilege.c_str(); *privilege != 0x00;
+       privilege++) {
+    if (privileges_map_.find(*privilege) == privileges_map_.end()) {
+      LOG_ERROR << Message::INCORRECT_DATA
+                << "The privilege format is incorrect.: "
+                << "\"" << permission << "\"";
+      error = ErrorCode::INVALID_PARAMETER;
+      return error;
+    }
+  }
+
   // Initialization
   error = init();
   if (error != ErrorCode::OK) {
     return error;
   }
 
-  error = privileges_dao_->confirm_tables_permission(key, value, permission,
-                                                     check_result);
+  // In the case of ID specification, check for the presence of the
+  // specified ID.
+  if (key == Object::ID) {
+    ObjectId object_id;
+    error = Utility::str_to_numeric<ObjectId>(value, object_id);
+    if (error != ErrorCode::OK) {
+      return error;
+    }
 
+    // Check for the presence of the specified ID.
+    auto exists = privileges_dao_->exists(object_id);
+    if (!exists) {
+      LOG_INFO << "The role with the specified ID does not exist.: "
+               << object_id;
+
+      error = ErrorCode::ID_NOT_FOUND;
+      return error;
+    }
+  }
+
+  ptree object;
+  // Get privileges for all tables included in the table metadata.
+  error = privileges_dao_->select(key, value, object);
+  if (error != ErrorCode::OK) {
+    LOG_INFO << "Target table metadata did not exist.";
+
+    return error;
+  }
+
+  // Checks for the presence of specified privileges.
+  check_result = check_of_privilege(object, check_privilege);
+
+  error = ErrorCode::OK;
   return error;
 }
 
@@ -573,8 +687,7 @@ ErrorCode TablesProvider::get_column_metadata(
   }
 
   ptree columns;
-  error = columns_dao_->select_column_metadata(Column::TABLE_ID,
-                                               table_id, columns);
+  error = columns_dao_->select(Column::TABLE_ID, table_id, columns);
   if ((error == ErrorCode::OK) || (error == ErrorCode::NOT_FOUND)) {
     if (table_object.find(Table::COLUMNS_NODE) == table_object.not_found()) {
       table_object.add_child(Table::COLUMNS_NODE, columns);
@@ -602,8 +715,7 @@ ErrorCode TablesProvider::get_constraint_metadata(
   }
 
   ptree constraints;
-  error = constraints_dao_->select_constraint_metadata(Constraint::TABLE_ID,
-                                                       table_id, constraints);
+  error = constraints_dao_->select(Constraint::TABLE_ID, table_id, constraints);
   if ((error == ErrorCode::OK) || (error == ErrorCode::NOT_FOUND)) {
     if (table_object.find(Table::CONSTRAINTS_NODE) ==
         table_object.not_found()) {
@@ -613,6 +725,63 @@ ErrorCode TablesProvider::get_constraint_metadata(
   }
 
   return error;
+}
+
+/**
+ * @brief Checks for the presence of specified privileges.
+ * @param object      [in]  ptree of table privileges.
+ * @param privileges  [in]  privileges to check.
+ * @return bool
+ */
+bool TablesProvider::check_of_privilege(
+    const boost::property_tree::ptree& object,
+    std::string_view privileges) const {
+  auto check_result = true;
+
+  for (auto iterator = object.begin(); iterator != object.end(); iterator++) {
+    if (iterator->second.empty()) {
+      break;
+    }
+
+    auto iterator_child = iterator->second.begin();
+    if (iterator_child->second.empty()) {
+      auto table_name      = iterator->first;
+      auto privileges_node = iterator->second;
+
+      LOG_DEBUG << "Check table privileges: [" << table_name << "]["
+                << privileges << "]";
+
+      for (auto privilege = privileges.data(); *privilege != 0x00;
+           privilege++) {
+        std::string key;
+        try {
+          key = privileges_map_.at(*privilege);
+        } catch (...) {
+          check_result = false;
+          break;
+        }
+
+        auto value   = privileges_node.get_optional<std::string>(key);
+        check_result = Utility::str_to_boolean(value.get_value_or(""));
+
+        LOG_DEBUG << "=>" << key << " was " << value.get_value_or("");
+
+        if (!check_result) {
+          break;
+        }
+      }
+      LOG_INFO << "Check table privileges: [" << table_name << "]"
+               << " [" << privileges << "]"
+               << " => " << Utility::boolean_to_str(check_result);
+    } else {
+      check_result = check_of_privilege(iterator->second, privileges);
+    }
+    if (!check_result) {
+      break;
+    }
+  }
+
+  return check_result;
 }
 
 }  // namespace manager::metadata::db

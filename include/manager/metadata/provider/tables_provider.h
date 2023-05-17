@@ -16,19 +16,17 @@
 #ifndef MANAGER_METADATA_PROVIDER_TABLES_PROVIDER_H_
 #define MANAGER_METADATA_PROVIDER_TABLES_PROVIDER_H_
 
+#include <map>
 #include <memory>
-#include <string_view>
+#include <string>
 #include <vector>
 
 #include <boost/property_tree/ptree.hpp>
 
-#include "manager/metadata/dao/columns_dao.h"
-#include "manager/metadata/dao/constraints_dao.h"
-#include "manager/metadata/dao/privileges_dao.h"
-#include "manager/metadata/dao/tables_dao.h"
+#include "manager/metadata/dao/dao.h"
 #include "manager/metadata/error_code.h"
-#include "manager/metadata/metadata.h"
 #include "manager/metadata/provider/provider_base.h"
+#include "manager/metadata/tables.h"
 
 namespace manager::metadata::db {
 
@@ -61,15 +59,31 @@ class TablesProvider : public ProviderBase {
                                                   std::string_view permission, bool& check_result);
 
  private:
-  std::shared_ptr<TablesDAO> tables_dao_           = nullptr;
-  std::shared_ptr<ColumnsDAO> columns_dao_         = nullptr;
-  std::shared_ptr<ConstraintsDAO> constraints_dao_ = nullptr;
-  std::shared_ptr<PrivilegesDAO> privileges_dao_   = nullptr;
+  /**
+   * @brief Mapping information between privilege codes and column names.
+   */
+  const std::map<char, std::string> privileges_map_ = {
+      {'r',     Dao::PrivilegeColumn::kSelect},
+      {'a',     Dao::PrivilegeColumn::kInsert},
+      {'w',     Dao::PrivilegeColumn::kUpdate},
+      {'d',     Dao::PrivilegeColumn::kDelete},
+      {'D',   Dao::PrivilegeColumn::kTruncate},
+      {'x', Dao::PrivilegeColumn::kReferences},
+      {'t',    Dao::PrivilegeColumn::kTrigger}
+  };
+
+  std::shared_ptr<Dao> tables_dao_      = nullptr;
+  std::shared_ptr<Dao> columns_dao_     = nullptr;
+  std::shared_ptr<Dao> constraints_dao_ = nullptr;
+  std::shared_ptr<Dao> privileges_dao_  = nullptr;
 
   manager::metadata::ErrorCode get_column_metadata(std::string_view table_id,
                                                    boost::property_tree::ptree& tables) const;
   manager::metadata::ErrorCode get_constraint_metadata(std::string_view table_id,
                                                        boost::property_tree::ptree& tables) const;
+
+  bool check_of_privilege(const boost::property_tree::ptree& object,
+                          std::string_view privileges) const;
 };  // class TablesProvider
 
 }  // namespace manager::metadata::db
