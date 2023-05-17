@@ -62,7 +62,7 @@ std::vector<UtTableMetadata> TableMetadataHelper::make_valid_table_metadata() {
   ptree pt;
   try {
     // read a json file with table metadata used as test data.
-    json_parser::read_json(global->get_json_schema_file_name(), pt);
+    json_parser::read_json(g_environment_->get_json_schema_file_name(), pt);
   } catch (boost::property_tree::json_parser_error& e) {
     UTUtils::print("could not read a json file with table metadata.", e.what());
     return testdata_table_metadata_list;

@@ -42,7 +42,7 @@ class ApiTestTableMetadataEx
   static void SetUpTestCase() {
     UTUtils::skip_if_connection_not_opened();
 
-    if (global->is_open()) {
+    if (g_environment_->is_open()) {
       UTUtils::print(">> gtest::SetUpTestCase()");
 
       // If metadata repository is opened,
@@ -55,8 +55,7 @@ class ApiTestTableMetadataEx
 
   void SetUp() override {
     UTUtils::skip_if_connection_not_opened();
-
-    if (global->is_open()) {
+    if (g_environment_->is_open()) {
       // If valid test data could not be made, skip this test.
       if (valid_table_metadata.empty()) {
         GTEST_SKIP_("  Skipped: Could not read a json file with table metadata.");
