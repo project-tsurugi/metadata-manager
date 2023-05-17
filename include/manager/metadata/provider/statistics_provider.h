@@ -59,7 +59,7 @@ class StatisticsProvider : public ProviderBase {
       ObjectIdType& statistic_id);
 
  private:
-  std::shared_ptr<Dao> statistics_dao_;
+  std::shared_ptr<Dao> statistics_dao_ = nullptr;
 };  // class StatisticsProvider
 
 }  // namespace manager::metadata::db
