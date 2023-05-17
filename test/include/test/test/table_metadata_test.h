@@ -40,7 +40,7 @@ class TableMetadataTest : public MetadataTest {
    * @return std::unique_ptr<Metadata> - metadata management object.
    */
   std::unique_ptr<Metadata> get_metadata_manager() const override {
-    return get_table_metadata(TEST_DB);
+    return get_tables_ptr(TEST_DB);
   }
 
   /**

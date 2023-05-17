@@ -113,7 +113,7 @@ void TableMetadataHelper::add_table(
   UTUtils::print("-- add table metadata --");
   UTUtils::print(" " + UTUtils::get_tree_string(new_table));
 
-  auto tables = get_table_metadata(GlobalTestEnvironment::TEST_DB);
+  auto tables = get_tables_ptr(GlobalTestEnvironment::TEST_DB);
 
   ErrorCode error = tables->init();
   ASSERT_EQ(ErrorCode::OK, error);
@@ -144,7 +144,7 @@ void TableMetadataHelper::add_table(const manager::metadata::Table& new_table,
   ptree pt_table = new_table.convert_to_ptree();
   UTUtils::print(" " + UTUtils::get_tree_string(pt_table));
 
-  auto tables = get_table_metadata(GlobalTestEnvironment::TEST_DB);
+  auto tables = get_tables_ptr(GlobalTestEnvironment::TEST_DB);
 
   ErrorCode error = tables->init();
   ASSERT_EQ(ErrorCode::OK, error);
@@ -172,7 +172,7 @@ boost::property_tree::ptree TableMetadataHelper::get_table(
   UTUtils::print("-- get table metadata --");
   UTUtils::print(" >> table_id:" + std::to_string(table_id));
 
-  auto tables = get_table_metadata(GlobalTestEnvironment::TEST_DB);
+  auto tables = get_tables_ptr(GlobalTestEnvironment::TEST_DB);
 
   ErrorCode error = tables->init();
   EXPECT_EQ(ErrorCode::OK, error);
@@ -196,7 +196,7 @@ void TableMetadataHelper::remove_table(const ObjectId table_id) {
   UTUtils::print("-- remove table metadata --");
   UTUtils::print(" >> table_id: ", table_id);
 
-  auto tables = get_table_metadata(GlobalTestEnvironment::TEST_DB);
+  auto tables = get_tables_ptr(GlobalTestEnvironment::TEST_DB);
 
   ErrorCode error = tables->init();
   ASSERT_EQ(ErrorCode::OK, error);
@@ -215,7 +215,7 @@ void TableMetadataHelper::remove_table(std::string_view table_name) {
   UTUtils::print("-- remove table metadata --");
   UTUtils::print(" >> table_name: ", table_name);
 
-  auto tables = get_table_metadata(GlobalTestEnvironment::TEST_DB);
+  auto tables = get_tables_ptr(GlobalTestEnvironment::TEST_DB);
 
   ErrorCode error = tables->init();
   ASSERT_EQ(ErrorCode::OK, error);

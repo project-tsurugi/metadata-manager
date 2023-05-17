@@ -64,7 +64,7 @@ TEST_F(ApiTestConstraintMetadata, test_get_by_name_with_ptree) {
   CALL_TRACE;
 
   // Generate test metadata.
-  auto managers = get_constraint_metadata(GlobalTestEnvironment::TEST_DB);
+  auto managers = get_constraints_ptr(GlobalTestEnvironment::TEST_DB);
 
   auto object_name = "dummy_name";
   ptree retrieved_metadata;
@@ -83,7 +83,7 @@ TEST_F(ApiTestConstraintMetadata, test_get_by_name_with_struct) {
   CALL_TRACE;
 
   // Generate test metadata.
-  auto managers = get_constraint_metadata(GlobalTestEnvironment::TEST_DB);
+  auto managers = get_constraints_ptr(GlobalTestEnvironment::TEST_DB);
 
   auto object_name = "dummy_name";
   Constraint retrieved_metadata;
@@ -102,7 +102,7 @@ TEST_F(ApiTestConstraintMetadata, test_update) {
   CALL_TRACE;
 
   // Generate test metadata.
-  auto managers = get_constraint_metadata(GlobalTestEnvironment::TEST_DB);
+  auto managers = get_constraints_ptr(GlobalTestEnvironment::TEST_DB);
 
   // Generate test metadata.
   UtConstraintMetadata ut_metadata(table_id_);
@@ -123,7 +123,7 @@ TEST_F(ApiTestConstraintMetadata, test_invalid_parameter) {
   CALL_TRACE;
 
   // Generate constraints metadata manager.
-  auto managers = get_constraint_metadata(GlobalTestEnvironment::TEST_DB);
+  auto managers = get_constraints_ptr(GlobalTestEnvironment::TEST_DB);
 
   // Test to initialize the manager.
   ApiTestHelper::test_init(managers.get(), ErrorCode::OK);
@@ -162,7 +162,7 @@ TEST_F(ApiTestConstraintMetadata, test_without_initialized) {
   // Add constraint metadata.
   {
     // Generate constraints metadata manager.
-    auto managers = get_constraint_metadata(GlobalTestEnvironment::TEST_DB);
+    auto managers = get_constraints_ptr(GlobalTestEnvironment::TEST_DB);
 
     object_id = ApiTestHelper::test_add(managers.get(), inserted_metadata,
                                         ErrorCode::OK);
@@ -171,7 +171,7 @@ TEST_F(ApiTestConstraintMetadata, test_without_initialized) {
   // Get constraint metadata by constraint id with ptree.
   {
     // Generate constraints metadata manager.
-    auto managers = get_constraint_metadata(GlobalTestEnvironment::TEST_DB);
+    auto managers = get_constraints_ptr(GlobalTestEnvironment::TEST_DB);
 
     ptree retrieved_metadata;
     ApiTestHelper::test_get(managers.get(), object_id, ErrorCode::OK,
@@ -181,7 +181,7 @@ TEST_F(ApiTestConstraintMetadata, test_without_initialized) {
   // Get constraint metadata by constraint name with ptree.
   {
     // Generate constraints metadata manager.
-    auto managers = get_constraint_metadata(GlobalTestEnvironment::TEST_DB);
+    auto managers = get_constraints_ptr(GlobalTestEnvironment::TEST_DB);
 
     ptree retrieved_metadata;
     ApiTestHelper::test_get(managers.get(), object_name, ErrorCode::UNKNOWN,
@@ -191,7 +191,7 @@ TEST_F(ApiTestConstraintMetadata, test_without_initialized) {
   // Get constraint metadata by constraint id with structure.
   {
     // Generate constraints metadata manager.
-    auto managers = get_constraint_metadata(GlobalTestEnvironment::TEST_DB);
+    auto managers = get_constraints_ptr(GlobalTestEnvironment::TEST_DB);
 
     Constraint retrieved_metadata;
     ApiTestHelper::test_get(managers.get(), object_id, ErrorCode::OK,
@@ -201,7 +201,7 @@ TEST_F(ApiTestConstraintMetadata, test_without_initialized) {
   // Get constraint metadata by constraint name with structure.
   {
     // Generate constraints metadata manager.
-    auto managers = get_constraint_metadata(GlobalTestEnvironment::TEST_DB);
+    auto managers = get_constraints_ptr(GlobalTestEnvironment::TEST_DB);
 
     Constraint retrieved_metadata;
     ApiTestHelper::test_get(managers.get(), object_name, ErrorCode::UNKNOWN,
@@ -211,7 +211,7 @@ TEST_F(ApiTestConstraintMetadata, test_without_initialized) {
   // Get all constraint metadata with ptree.
   {
     // Generate constraints metadata manager.
-    auto managers = get_constraint_metadata(GlobalTestEnvironment::TEST_DB);
+    auto managers = get_constraints_ptr(GlobalTestEnvironment::TEST_DB);
 
     std::vector<ptree> container = {};
     // Get all constraints metadata.
@@ -221,7 +221,7 @@ TEST_F(ApiTestConstraintMetadata, test_without_initialized) {
   // Update constraint metadata.
   {
     // Generate constraints metadata manager.
-    auto managers = get_constraint_metadata(GlobalTestEnvironment::TEST_DB);
+    auto managers = get_constraints_ptr(GlobalTestEnvironment::TEST_DB);
 
     // Execute the test.
     ApiTestHelper::test_update(managers.get(), object_id, inserted_metadata,
@@ -231,7 +231,7 @@ TEST_F(ApiTestConstraintMetadata, test_without_initialized) {
   // Remove constraint metadata by constraint id.
   {
     // Generate constraints metadata manager.
-    auto managers = get_constraint_metadata(GlobalTestEnvironment::TEST_DB);
+    auto managers = get_constraints_ptr(GlobalTestEnvironment::TEST_DB);
 
     // Remove constraint metadata by constraint id.
     ApiTestHelper::test_remove(managers.get(), object_id, ErrorCode::OK);
@@ -240,7 +240,7 @@ TEST_F(ApiTestConstraintMetadata, test_without_initialized) {
   // Remove constraint metadata by constraint name.
   {
     // Generate constraints metadata manager.
-    auto managers = get_constraint_metadata(GlobalTestEnvironment::TEST_DB);
+    auto managers = get_constraints_ptr(GlobalTestEnvironment::TEST_DB);
 
     // Remove constraint metadata by constraint name.
     ApiTestHelper::test_remove(managers.get(), object_name, ErrorCode::UNKNOWN);

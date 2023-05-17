@@ -61,7 +61,7 @@ class TablePrivilegesPg {
       boost::format statement;
 
       // create an instance of the Tables class.
-      auto managers = get_table_metadata(GlobalTestEnvironment::TEST_DB);
+      auto managers = get_tables_ptr(GlobalTestEnvironment::TEST_DB);
       managers->init();
 
       // create dummy data for ROLE.
@@ -247,7 +247,7 @@ TEST_P(ApiTestTablePrivilegesSinglePg, confirm_tables_permission) {
   auto params     = GetParam();
 
   // create an instance of the Tables class.
-  auto managers = get_table_metadata(GlobalTestEnvironment::TEST_DB);
+  auto managers = get_tables_ptr(GlobalTestEnvironment::TEST_DB);
   auto tables   = static_cast<Tables*>(managers.get());
 
   error = tables->init();
@@ -280,7 +280,7 @@ TEST_P(ApiTestTablePrivilegesMultiplePg, confirm_tables_permission) {
   auto params     = GetParam();
 
   // create an instance of the Tables class.
-  auto managers = get_table_metadata(GlobalTestEnvironment::TEST_DB);
+  auto managers = get_tables_ptr(GlobalTestEnvironment::TEST_DB);
   auto tables   = static_cast<Tables*>(managers.get());
 
   error = tables->init();
@@ -312,7 +312,7 @@ TEST_F(ApiTestForeignTablePg, get_table_metadata) {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   // create an instance of the Tables class.
-  auto managers = get_table_metadata(GlobalTestEnvironment::TEST_DB);
+  auto managers = get_tables_ptr(GlobalTestEnvironment::TEST_DB);
   auto tables   = static_cast<Tables*>(managers.get());
 
   error = tables->init();
@@ -338,7 +338,7 @@ TEST_F(ApiTestForeignTableNotExistsPg, table_metadata_does_not_exist) {
   bool res_permission = false;
 
   // create an instance of the Tables class.
-  auto managers = get_table_metadata(GlobalTestEnvironment::TEST_DB);
+  auto managers = get_tables_ptr(GlobalTestEnvironment::TEST_DB);
   auto tables   = static_cast<Tables*>(managers.get());
 
   error = tables->init();
@@ -361,7 +361,7 @@ TEST_F(ApiTestForeignTableNotExistsPg, foreign_table_does_not_exist) {
   bool res_permission = false;
 
   // create an instance of the Tables class.
-  auto managers = get_table_metadata(GlobalTestEnvironment::TEST_DB);
+  auto managers = get_tables_ptr(GlobalTestEnvironment::TEST_DB);
   auto tables   = static_cast<Tables*>(managers.get());
 
   error = tables->init();
@@ -390,7 +390,7 @@ TEST_F(ApiTestForeignTableNotExistsPg, role_does_not_exist) {
   bool res_permission = false;
 
   // create an instance of the Tables class.
-  auto managers = get_table_metadata(GlobalTestEnvironment::TEST_DB);
+  auto managers = get_tables_ptr(GlobalTestEnvironment::TEST_DB);
   auto tables   = static_cast<Tables*>(managers.get());
 
   error = tables->init();
@@ -438,7 +438,7 @@ TEST_P(ApiTestTablePrivilegesInvalidPg, confirm_tables_permission) {
   auto params     = GetParam();
 
   // create an instance of the Tables class.
-  auto managers = get_table_metadata(GlobalTestEnvironment::TEST_DB);
+  auto managers = get_tables_ptr(GlobalTestEnvironment::TEST_DB);
   auto tables   = static_cast<Tables*>(managers.get());
 
   error = tables->init();
@@ -472,7 +472,7 @@ TEST_F(ApiTestForeignTableJson, confirm_permission_in_acls) {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   // create an instance of the Tables class.
-  auto managers = get_table_metadata(GlobalTestEnvironment::TEST_DB);
+  auto managers = get_tables_ptr(GlobalTestEnvironment::TEST_DB);
   auto tables   = static_cast<Tables*>(managers.get());
 
   error = tables->init();

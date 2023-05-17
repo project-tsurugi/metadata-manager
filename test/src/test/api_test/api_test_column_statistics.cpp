@@ -18,7 +18,7 @@
 #include "boost/foreach.hpp"
 #include "boost/property_tree/ptree.hpp"
 
-#include "manager/metadata/statistics.h"
+#include "manager/metadata/metadata_factory.h"
 #include "test/common/global_test_environment.h"
 #include "test/helper/api_test_helper.h"
 #include "test/helper/column_statistics_helper.h"
@@ -87,7 +87,7 @@ class ApiTestColumnStatisticsPg : public ::testing::Test {
     std::vector<UtColumnStatistics> ut_statistics{};
 
     // Generate columns statistics manager.
-    auto manager = std::make_unique<Statistics>(GlobalTestEnvironment::TEST_DB);
+    auto manager = get_statistics_ptr(GlobalTestEnvironment::TEST_DB);
 
     // Add table metadata.
     for (int32_t i = 1; i <= kMakeTableCount; i++) {
@@ -132,8 +132,7 @@ class ApiTestColumnStatisticsPg : public ::testing::Test {
 
   void cleanup_test_data(std::vector<StatisticsTestData> test_data) {
     // Generate columns statistics manager.
-    auto manager =
-        std::make_unique<Statistics>(GlobalTestEnvironment::TEST_DB);
+    auto manager = get_statistics_ptr(GlobalTestEnvironment::TEST_DB);
 
     // Add table metadata.
     for (auto& tables : test_data) {
@@ -163,7 +162,9 @@ class ApiTestColumnStatisticsJson : public ::testing::Test {
  */
 TEST_F(ApiTestColumnStatisticsPg, test_get_by_column_id) {
   // Generate columns statistics manager.
-  auto manager = std::make_unique<Statistics>(GlobalTestEnvironment::TEST_DB);
+  // TODO(future): Change when changing Metadata class.
+  auto manager_tmp = get_statistics_ptr(GlobalTestEnvironment::TEST_DB);
+  auto manager = static_cast<Statistics*>(manager_tmp.get());
 
   // Create test data for column statistics.
   auto test_data = create_test_data();
@@ -204,7 +205,9 @@ TEST_F(ApiTestColumnStatisticsPg, test_get_by_column_id) {
  */
 TEST_F(ApiTestColumnStatisticsPg, test_get_by_column_name) {
   // Generate columns statistics manager.
-  auto manager = std::make_unique<Statistics>(GlobalTestEnvironment::TEST_DB);
+  // TODO(future): Change when changing Metadata class.
+  auto manager_tmp = get_statistics_ptr(GlobalTestEnvironment::TEST_DB);
+  auto manager = static_cast<Statistics*>(manager_tmp.get());
 
   // Create test data for column statistics.
   auto test_data = create_test_data();
@@ -244,7 +247,9 @@ TEST_F(ApiTestColumnStatisticsPg, test_get_by_column_name) {
  */
 TEST_F(ApiTestColumnStatisticsPg, test_get_by_column_number) {
   // Generate columns statistics manager.
-  auto manager = std::make_unique<Statistics>(GlobalTestEnvironment::TEST_DB);
+  // TODO(future): Change when changing Metadata class.
+  auto manager_tmp = get_statistics_ptr(GlobalTestEnvironment::TEST_DB);
+  auto manager = static_cast<Statistics*>(manager_tmp.get());
 
   // Create test data for column statistics.
   auto test_data = create_test_data();
@@ -283,7 +288,9 @@ TEST_F(ApiTestColumnStatisticsPg, test_get_by_column_number) {
  */
 TEST_F(ApiTestColumnStatisticsPg, test_remove_by_table_id) {
   // Generate columns statistics manager.
-  auto manager = std::make_unique<Statistics>(GlobalTestEnvironment::TEST_DB);
+  // TODO(future): Change when changing Metadata class.
+  auto manager_tmp = get_statistics_ptr(GlobalTestEnvironment::TEST_DB);
+  auto manager = static_cast<Statistics*>(manager_tmp.get());
 
   // Create test data for column statistics.
   auto test_data = create_test_data();
@@ -332,7 +339,7 @@ TEST_F(ApiTestColumnStatisticsPg, test_update) {
   CALL_TRACE;
 
   // Generate columns statistics manager.
-  auto manager = std::make_unique<Statistics>(GlobalTestEnvironment::TEST_DB);
+  auto manager = get_statistics_ptr(GlobalTestEnvironment::TEST_DB);
 
   ptree statistic;
   // Execute the test.
@@ -350,7 +357,9 @@ TEST_F(ApiTestColumnStatisticsPg, test_add_exists) {
   auto [table_id, columns, statistic_ids, ut_statistics] = test_data[0];
 
   // Generate columns statistics manager.
-  auto manager = std::make_unique<Statistics>(GlobalTestEnvironment::TEST_DB);
+  // TODO(future): Change when changing Metadata class.
+  auto manager_tmp = get_statistics_ptr(GlobalTestEnvironment::TEST_DB);
+  auto manager = static_cast<Statistics*>(manager_tmp.get());
 
   ErrorCode error;
   // Get the statistics of the columns before updating.
@@ -368,7 +377,7 @@ TEST_F(ApiTestColumnStatisticsPg, test_add_exists) {
     ptree updated_ptree = ut_statistic.get_metadata_ptree();
 
     ObjectId statistic_id =
-        ApiTestHelper::test_add(manager.get(), updated_ptree, ErrorCode::OK);
+        ApiTestHelper::test_add(manager, updated_ptree, ErrorCode::OK);
     EXPECT_EQ(statistic_ids[0], statistic_id);
   }
 
@@ -399,7 +408,9 @@ TEST_F(ApiTestColumnStatisticsPg, test_invalid_ids) {
   ErrorCode error;
 
   // Generate columns statistics manager.
-  auto manager = std::make_unique<Statistics>(GlobalTestEnvironment::TEST_DB);
+  // TODO(future): Change when changing Metadata class.
+  auto manager_tmp = get_statistics_ptr(GlobalTestEnvironment::TEST_DB);
+  auto manager = static_cast<Statistics*>(manager_tmp.get());
 
   error = manager->init();
   EXPECT_EQ(ErrorCode::OK, error);
@@ -409,20 +420,20 @@ TEST_F(ApiTestColumnStatisticsPg, test_invalid_ids) {
     UtColumnStatistics ut_statistic(invalid_id, 1);
     ptree statistic = ut_statistic.get_metadata_ptree();
 
-    ApiTestHelper::test_add(manager.get(), statistic, ErrorCode::INVALID_PARAMETER);
+    ApiTestHelper::test_add(manager, statistic, ErrorCode::INVALID_PARAMETER);
   }
 
   // Test of get to a statistic ID that does not exist.
   for (auto invalid_id : g_environment_->invalid_ids) {
     ptree statistic;
-    ApiTestHelper::test_get(manager.get(), invalid_id, ErrorCode::ID_NOT_FOUND,
+    ApiTestHelper::test_get(manager, invalid_id, ErrorCode::ID_NOT_FOUND,
                             statistic);
   }
 
   // Test of get to a statistic name that does not exist.
   for (auto invalid_name : invalid_names) {
     ptree statistic;
-    ApiTestHelper::test_get(manager.get(), invalid_name, ErrorCode::NAME_NOT_FOUND,
+    ApiTestHelper::test_get(manager, invalid_name, ErrorCode::NAME_NOT_FOUND,
                             statistic);
   }
 
@@ -458,12 +469,12 @@ TEST_F(ApiTestColumnStatisticsPg, test_invalid_ids) {
 
   // Test of remove to a statistic ID that does not exist.
   for (auto invalid_id : g_environment_->invalid_ids) {
-    ApiTestHelper::test_remove(manager.get(), invalid_id, ErrorCode::ID_NOT_FOUND);
+    ApiTestHelper::test_remove(manager, invalid_id, ErrorCode::ID_NOT_FOUND);
   }
 
   // Test of remove to a statistic name that does not exist.
   for (auto invalid_name : invalid_names) {
-    ApiTestHelper::test_remove(manager.get(), invalid_name,
+    ApiTestHelper::test_remove(manager, invalid_name,
                                ErrorCode::NAME_NOT_FOUND);
   }
 
@@ -506,8 +517,7 @@ TEST_F(ApiTestColumnStatisticsPg, test_without_initialized) {
 
   {
     // Generate columns statistics manager.
-    auto manager =
-        std::make_unique<Statistics>(GlobalTestEnvironment::TEST_DB);
+    auto manager = get_statistics_ptr(GlobalTestEnvironment::TEST_DB);
 
     UtColumnStatistics ut_statistic_1(table_id_1, 3);
     ptree statistic = ut_statistic_1.get_metadata_ptree();
@@ -524,8 +534,7 @@ TEST_F(ApiTestColumnStatisticsPg, test_without_initialized) {
 
   {
     // Generate columns statistics manager.
-    auto manager =
-        std::make_unique<Statistics>(GlobalTestEnvironment::TEST_DB);
+    auto manager = get_statistics_ptr(GlobalTestEnvironment::TEST_DB);
 
     ptree retrieved;
     auto object_id = statistic_ids_1[0];
@@ -537,21 +546,23 @@ TEST_F(ApiTestColumnStatisticsPg, test_without_initialized) {
 
   {
     // Generate columns statistics manager.
-    auto manager =
-        std::make_unique<Statistics>(GlobalTestEnvironment::TEST_DB);
+    // TODO(future): Change when changing Metadata class.
+    auto manager_tmp = get_statistics_ptr(GlobalTestEnvironment::TEST_DB);
+    auto manager = static_cast<Statistics*>(manager_tmp.get());
 
     ptree retrieved;
     auto object_name = ut_statistics_1[0].get_metadata_struct()->name;
 
     CALL_TRACE;
-    ApiTestHelper::test_get(manager.get(), object_name, ErrorCode::OK,
+    ApiTestHelper::test_get(manager, object_name, ErrorCode::OK,
                             retrieved);
   }
 
   {
     // Generate columns statistics manager.
-    auto manager =
-        std::make_unique<Statistics>(GlobalTestEnvironment::TEST_DB);
+    // TODO(future): Change when changing Metadata class.
+    auto manager_tmp = get_statistics_ptr(GlobalTestEnvironment::TEST_DB);
+    auto manager = static_cast<Statistics*>(manager_tmp.get());
 
     ptree statistic;
     auto object_id = columns_1[0].get<ObjectId>(Column::ID);
@@ -562,8 +573,9 @@ TEST_F(ApiTestColumnStatisticsPg, test_without_initialized) {
 
   {
     // Generate columns statistics manager.
-    auto manager =
-        std::make_unique<Statistics>(GlobalTestEnvironment::TEST_DB);
+    // TODO(future): Change when changing Metadata class.
+    auto manager_tmp = get_statistics_ptr(GlobalTestEnvironment::TEST_DB);
+    auto manager = static_cast<Statistics*>(manager_tmp.get());
 
     ptree statistic;
 
@@ -573,8 +585,9 @@ TEST_F(ApiTestColumnStatisticsPg, test_without_initialized) {
 
   {
     // Generate columns statistics manager.
-    auto manager =
-        std::make_unique<Statistics>(GlobalTestEnvironment::TEST_DB);
+    // TODO(future): Change when changing Metadata class.
+    auto manager_tmp = get_statistics_ptr(GlobalTestEnvironment::TEST_DB);
+    auto manager = static_cast<Statistics*>(manager_tmp.get());
 
     ptree statistic;
     auto object_name = columns_1[0].get<std::string>(Column::NAME);
@@ -586,8 +599,7 @@ TEST_F(ApiTestColumnStatisticsPg, test_without_initialized) {
 
   {
     // Generate columns statistics manager.
-    auto manager =
-        std::make_unique<Statistics>(GlobalTestEnvironment::TEST_DB);
+    auto manager = get_statistics_ptr(GlobalTestEnvironment::TEST_DB);
 
     std::vector<ptree> container = {};
 
@@ -597,8 +609,7 @@ TEST_F(ApiTestColumnStatisticsPg, test_without_initialized) {
 
   {
     // Generate columns statistics manager.
-    auto manager =
-        std::make_unique<Statistics>(GlobalTestEnvironment::TEST_DB);
+    auto manager = get_statistics_ptr(GlobalTestEnvironment::TEST_DB);
 
     auto object_id = statistic_ids_1[0];
 
@@ -608,8 +619,7 @@ TEST_F(ApiTestColumnStatisticsPg, test_without_initialized) {
 
   {
     // Generate columns statistics manager.
-    auto manager =
-        std::make_unique<Statistics>(GlobalTestEnvironment::TEST_DB);
+    auto manager = get_statistics_ptr(GlobalTestEnvironment::TEST_DB);
 
     auto object_name = ut_statistics_1[1].get_metadata_struct()->name;
 
@@ -619,8 +629,9 @@ TEST_F(ApiTestColumnStatisticsPg, test_without_initialized) {
 
   {
     // Generate columns statistics manager.
-    auto manager =
-        std::make_unique<Statistics>(GlobalTestEnvironment::TEST_DB);
+    // TODO(future): Change when changing Metadata class.
+    auto manager_tmp = get_statistics_ptr(GlobalTestEnvironment::TEST_DB);
+    auto manager = static_cast<Statistics*>(manager_tmp.get());
 
     ErrorCode error = manager->remove_by_table_id(table_id_1);
     EXPECT_EQ(ErrorCode::OK, error);
@@ -628,8 +639,9 @@ TEST_F(ApiTestColumnStatisticsPg, test_without_initialized) {
 
   {
     // Generate columns statistics manager.
-    auto manager =
-        std::make_unique<Statistics>(GlobalTestEnvironment::TEST_DB);
+    // TODO(future): Change when changing Metadata class.
+    auto manager_tmp = get_statistics_ptr(GlobalTestEnvironment::TEST_DB);
+    auto manager = static_cast<Statistics*>(manager_tmp.get());
 
     auto object_id = columns_2[0].get<ObjectId>(Column::ID);
 
@@ -639,8 +651,9 @@ TEST_F(ApiTestColumnStatisticsPg, test_without_initialized) {
 
   {
     // Generate columns statistics manager.
-    auto manager =
-        std::make_unique<Statistics>(GlobalTestEnvironment::TEST_DB);
+    // TODO(future): Change when changing Metadata class.
+    auto manager_tmp = get_statistics_ptr(GlobalTestEnvironment::TEST_DB);
+    auto manager = static_cast<Statistics*>(manager_tmp.get());
 
     ErrorCode error = manager->remove_by_column_number(table_id_2, 3);
     EXPECT_EQ(ErrorCode::OK, error);
@@ -648,8 +661,9 @@ TEST_F(ApiTestColumnStatisticsPg, test_without_initialized) {
 
   {
     // Generate columns statistics manager.
-    auto manager =
-        std::make_unique<Statistics>(GlobalTestEnvironment::TEST_DB);
+    // TODO(future): Change when changing Metadata class.
+    auto manager_tmp = get_statistics_ptr(GlobalTestEnvironment::TEST_DB);
+    auto manager = static_cast<Statistics*>(manager_tmp.get());
 
     auto object_name = columns_2[1].get<std::string>(Column::NAME);
 
@@ -668,7 +682,7 @@ TEST_F(ApiTestColumnStatisticsJson, test_add) {
   CALL_TRACE;
 
   // Generate statistics metadata manager.
-  auto manager = std::make_unique<Statistics>(GlobalTestEnvironment::TEST_DB);
+  auto manager = get_statistics_ptr(GlobalTestEnvironment::TEST_DB);
 
   // Test to initialize the manager.
   ApiTestHelper::test_init(manager.get(), ErrorCode::NOT_SUPPORTED);
@@ -688,7 +702,7 @@ TEST_F(ApiTestColumnStatisticsJson, test_get) {
   CALL_TRACE;
 
   // Generate statistics metadata manager.
-  auto manager = std::make_unique<Statistics>(GlobalTestEnvironment::TEST_DB);
+  auto manager = get_statistics_ptr(GlobalTestEnvironment::TEST_DB);
 
   // Test to initialize the manager.
   ApiTestHelper::test_init(manager.get(), ErrorCode::NOT_SUPPORTED);
@@ -711,7 +725,7 @@ TEST_F(ApiTestColumnStatisticsJson, test_getall) {
   CALL_TRACE;
 
   // Generate statistics metadata manager.
-  auto manager = std::make_unique<Statistics>(GlobalTestEnvironment::TEST_DB);
+  auto manager = get_statistics_ptr(GlobalTestEnvironment::TEST_DB);
 
   // Test to initialize the manager.
   ApiTestHelper::test_init(manager.get(), ErrorCode::NOT_SUPPORTED);
@@ -731,7 +745,7 @@ TEST_F(ApiTestColumnStatisticsJson, remove_statistic_metadata) {
   CALL_TRACE;
 
   // Generate statistics metadata manager.
-  auto manager = std::make_unique<Statistics>(GlobalTestEnvironment::TEST_DB);
+  auto manager = get_statistics_ptr(GlobalTestEnvironment::TEST_DB);
 
   // Test to initialize the manager.
   ApiTestHelper::test_init(manager.get(), ErrorCode::NOT_SUPPORTED);
