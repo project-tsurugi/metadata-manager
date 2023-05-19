@@ -26,13 +26,18 @@ namespace manager::metadata::db {
 
 using boost::property_tree::ptree;
 
-ErrorCode RolesDaoPg::select(std::string_view key, std::string_view value,
+ErrorCode RolesDaoPg::select(std::string_view key,
+                             const std::vector<std::string_view>& values,
                              boost::property_tree::ptree& object) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   std::vector<const char*> params;
   // Set key value.
-  params.emplace_back(value.data());
+  std::transform(values.begin(), values.end(),
+                  std::back_inserter(params),
+                  [](std::string_view value) {
+                    return value.data();
+                  });
 
   // Set SELECT statement.
   SelectStatement statement;

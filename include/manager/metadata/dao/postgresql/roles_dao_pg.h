@@ -63,7 +63,7 @@ class RolesDaoPg : public DaoPg {
   /**
    * @brief Get a metadata object from a metadata table.
    * @param key     [in]  key. column name of a role.
-   * @param value   [in]  value to be filtered.
+   * @param values  [in]  value to be filtered.
    * @param object  [out] privileges to get, where the given
    *   key equals the given value.
    * @retval ErrorCode::OK if success.
@@ -72,7 +72,7 @@ class RolesDaoPg : public DaoPg {
    * @retval otherwise an error code.
    */
   manager::metadata::ErrorCode select(
-      std::string_view object_key, std::string_view object_value,
+      std::string_view key, const std::vector<std::string_view>& values,
       boost::property_tree::ptree& object) const override;
 
   /**
@@ -80,7 +80,7 @@ class RolesDaoPg : public DaoPg {
    * @return Always ErrorCode::OK.
    */
   manager::metadata::ErrorCode update(
-      std::string_view, std::string_view,
+      std::string_view, const std::vector<std::string_view>&,
       const boost::property_tree::ptree&) const override {
     // Do nothing and return of ErrorCode::OK.
     return ErrorCode::OK;
@@ -90,7 +90,8 @@ class RolesDaoPg : public DaoPg {
    * @brief Function defined for compatibility.
    * @return Always ErrorCode::OK.
    */
-  manager::metadata::ErrorCode remove(std::string_view, std::string_view,
+  manager::metadata::ErrorCode remove(std::string_view,
+                                      const std::vector<std::string_view>&,
                                       ObjectId&) const override {
     // Do nothing and return of ErrorCode::OK.
     return ErrorCode::OK;

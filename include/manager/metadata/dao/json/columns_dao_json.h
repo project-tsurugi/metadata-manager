@@ -71,7 +71,7 @@ class ColumnsDaoJson : public DaoJson {
    * @return Always ErrorCode::OK.
    */
   manager::metadata::ErrorCode select(
-      std::string_view, std::string_view,
+      std::string_view, const std::vector<std::string_view>&,
       boost::property_tree::ptree&) const override {
     // Do nothing and return of ErrorCode::OK.
     return ErrorCode::OK;
@@ -82,7 +82,7 @@ class ColumnsDaoJson : public DaoJson {
    * @return Always ErrorCode::OK.
    */
   manager::metadata::ErrorCode update(
-      std::string_view, std::string_view,
+      std::string_view, const std::vector<std::string_view>&,
       const boost::property_tree::ptree&) const override {
     // Do nothing and return of ErrorCode::OK.
     return ErrorCode::OK;
@@ -92,7 +92,8 @@ class ColumnsDaoJson : public DaoJson {
    * @brief Function defined for compatibility.
    * @return Always ErrorCode::OK.
    */
-  manager::metadata::ErrorCode remove(std::string_view, std::string_view,
+  manager::metadata::ErrorCode remove(std::string_view,
+                                      const std::vector<std::string_view>&,
                                       ObjectId&) const override {
     // Do nothing and return of ErrorCode::OK.
     return ErrorCode::OK;

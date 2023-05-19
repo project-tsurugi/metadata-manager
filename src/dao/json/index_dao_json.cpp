@@ -19,7 +19,9 @@
 #include <boost/format.hpp>
 
 #include "manager/metadata/common/config.h"
+#include "manager/metadata/common/message.h"
 #include "manager/metadata/dao/json/object_id_json.h"
+#include "manager/metadata/helper/logging_helper.h"
 
 // =============================================================================
 
@@ -195,16 +197,23 @@ manager::metadata::ErrorCode IndexDaoJson::select_all(
 }
 
 manager::metadata::ErrorCode IndexDaoJson::select(
-    std::string_view key, std::string_view value,
+    std::string_view key, const std::vector<std::string_view>& values,
     boost::property_tree::ptree& object) const {
+  ErrorCode error = ErrorCode::UNKNOWN;
 
-  ErrorCode error = session_->load_contents();
+  if (values.size() == 0) {
+    LOG_ERROR << Message::PARAMETER_FAILED << "Key value is unspecified.";
+    error = ErrorCode::INVALID_PARAMETER;
+    return error;
+  }
+
+  error = session_->load_contents();
   if (error != ErrorCode::OK) {
     return error;
   }
   ptree* metadata_table = session_->get_contents();
 
-  error = find_metadata_object(*metadata_table, key, value, object);
+  error = find_metadata_object(*metadata_table, key, values[0], object);
   if (error == ErrorCode::NOT_FOUND) {
     error = get_not_found_error_code(key);
   }
@@ -216,10 +225,15 @@ manager::metadata::ErrorCode IndexDaoJson::select(
  * @brief
  */
 manager::metadata::ErrorCode IndexDaoJson::update(
-    std::string_view key, std::string_view value,
+    std::string_view key, const std::vector<std::string_view>& values,
     const boost::property_tree::ptree& object) const {
-
   ErrorCode error = ErrorCode::UNKNOWN;
+
+  if (values.size() == 0) {
+    LOG_ERROR << Message::PARAMETER_FAILED << "Key value is unspecified.";
+    error = ErrorCode::INVALID_PARAMETER;
+    return error;
+  }
 
   error = session_->load_contents();
   if (error != ErrorCode::OK) {
@@ -228,14 +242,14 @@ manager::metadata::ErrorCode IndexDaoJson::update(
   ptree* metadata_table = session_->get_contents();
 
   ptree temp_obj;
-  error = find_metadata_object(*metadata_table, key, value, temp_obj);
+  error = find_metadata_object(*metadata_table, key, values[0], temp_obj);
   if (error == ErrorCode::NOT_FOUND) {
     error = get_not_found_error_code(key);
   }
 
   // copy management metadata.
   ObjectId object_id;
-  this->remove(key, value, object_id);
+  this->remove(key, values, object_id);
   auto format_version = temp_obj.get_optional<int64_t>(Object::FORMAT_VERSION)
                             .value_or(INVALID_VALUE);
   auto generation = temp_obj.get_optional<int64_t>(Object::GENERATION)
@@ -256,10 +270,15 @@ manager::metadata::ErrorCode IndexDaoJson::update(
 }
 
 manager::metadata::ErrorCode IndexDaoJson::remove(
-    std::string_view key, std::string_view value,
+    std::string_view key, const std::vector<std::string_view>& values,
     ObjectId& object_id) const {
-
   ErrorCode error = ErrorCode::UNKNOWN;
+
+  if (values.size() == 0) {
+    LOG_ERROR << Message::PARAMETER_FAILED << "Key value is unspecified.";
+    error = ErrorCode::INVALID_PARAMETER;
+    return error;
+  }
 
   error = session_->load_contents();
   if (error != ErrorCode::OK) {
@@ -267,7 +286,7 @@ manager::metadata::ErrorCode IndexDaoJson::remove(
   }
   ptree* contents = session_->get_contents();
 
-  error = delete_metadata_object(*contents, key, value, object_id);
+  error = delete_metadata_object(*contents, key, values[0], object_id);
   if (error == ErrorCode::NOT_FOUND) {
     // Convert the error code.
     error = get_not_found_error_code(key);

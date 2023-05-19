@@ -223,13 +223,18 @@ ErrorCode IndexDaoPg::select_all(
   return error;
 }
 
-ErrorCode IndexDaoPg::select(std::string_view key, std::string_view value,
+ErrorCode IndexDaoPg::select(std::string_view key,
+                             const std::vector<std::string_view>& values,
                              boost::property_tree::ptree& object) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   std::vector<const char*> params;
   // Set key value.
-  params.emplace_back(value.data());
+  std::transform(values.begin(), values.end(),
+                  std::back_inserter(params),
+                  [](std::string_view value) {
+                    return value.data();
+                  });
 
   // Set SELECT statement.
   SelectStatement statement;
@@ -260,7 +265,8 @@ ErrorCode IndexDaoPg::select(std::string_view key, std::string_view value,
   return error;
 }
 
-ErrorCode IndexDaoPg::update(std::string_view key, std::string_view value,
+ErrorCode IndexDaoPg::update(std::string_view key,
+                             const std::vector<std::string_view>& values,
                              const boost::property_tree::ptree& object) const {
   ErrorCode error = ErrorCode::UNKNOWN;
   std::vector<const char*> params;
@@ -335,7 +341,11 @@ ErrorCode IndexDaoPg::update(std::string_view key, std::string_view value,
   params.emplace_back((!options_json.empty() ? options_json.c_str() : "{}"));
 
   // Set key value.
-  params.emplace_back(value.data());
+  std::transform(values.begin(), values.end(),
+                  std::back_inserter(params),
+                  [](std::string_view value) {
+                    return value.data();
+                  });
 
   // Set UPDATE statement.
   UpdateStatement statement;
@@ -366,13 +376,18 @@ ErrorCode IndexDaoPg::update(std::string_view key, std::string_view value,
   return error;
 }
 
-ErrorCode IndexDaoPg::remove(std::string_view key, std::string_view value,
+ErrorCode IndexDaoPg::remove(std::string_view key,
+                             const std::vector<std::string_view>& values,
                              ObjectIdType& object_id) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   std::vector<const char*> params;
   // Set key value.
-  params.emplace_back(value.data());
+  std::transform(values.begin(), values.end(),
+                  std::back_inserter(params),
+                  [](std::string_view value) {
+                    return value.data();
+                  });
 
   // Set DELETE statement.
   DeleteStatement statement;

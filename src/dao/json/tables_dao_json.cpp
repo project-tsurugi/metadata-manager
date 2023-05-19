@@ -135,9 +135,16 @@ ErrorCode TablesDaoJson::select_all(
   return error;
 }
 
-ErrorCode TablesDaoJson::select(std::string_view key, std::string_view value,
+ErrorCode TablesDaoJson::select(std::string_view key,
+                                const std::vector<std::string_view>& values,
                                 boost::property_tree::ptree& object) const {
   ErrorCode error = ErrorCode::UNKNOWN;
+
+  if (values.size() == 0) {
+    LOG_ERROR << Message::PARAMETER_FAILED << "Key value is unspecified.";
+    error = ErrorCode::INVALID_PARAMETER;
+    return error;
+  }
 
   // Load the metadata from the JSON file.
   error = session_->load_contents();
@@ -152,7 +159,7 @@ ErrorCode TablesDaoJson::select(std::string_view key, std::string_view value,
   ptree* contents = session_->get_contents();
 
   // Getting a metadata object.
-  error = get_metadata_object(*contents, key, value, object);
+  error = get_metadata_object(*contents, key, values[0], object);
 
   // Convert the error code.
   if (error == ErrorCode::NOT_FOUND) {
@@ -164,9 +171,15 @@ ErrorCode TablesDaoJson::select(std::string_view key, std::string_view value,
 }
 
 ErrorCode TablesDaoJson::update(
-    std::string_view key, std::string_view value,
+    std::string_view key, const std::vector<std::string_view>& values,
     const boost::property_tree::ptree& object) const {
   ErrorCode error = ErrorCode::UNKNOWN;
+
+  if (values.size() == 0) {
+    LOG_ERROR << Message::PARAMETER_FAILED << "Key value is unspecified.";
+    error = ErrorCode::INVALID_PARAMETER;
+    return error;
+  }
 
   // Load the metadata from the JSON file.
   error = session_->load_contents();
@@ -179,7 +192,7 @@ ErrorCode TablesDaoJson::update(
 
   ObjectId table_id;
   // Delete a metadata object.
-  error = this->delete_metadata_object(*contents, key, value, &table_id);
+  error = this->delete_metadata_object(*contents, key, values[0], &table_id);
   if (error != ErrorCode::OK) {
     return error;
   }
@@ -231,9 +244,16 @@ ErrorCode TablesDaoJson::update(
   return error;
 }
 
-ErrorCode TablesDaoJson::remove(std::string_view key, std::string_view value,
+ErrorCode TablesDaoJson::remove(std::string_view key,
+                                const std::vector<std::string_view>& values,
                                 ObjectId& object_id) const {
   ErrorCode error = ErrorCode::UNKNOWN;
+
+  if (values.size() == 0) {
+    LOG_ERROR << Message::PARAMETER_FAILED << "Key value is unspecified.";
+    error = ErrorCode::INVALID_PARAMETER;
+    return error;
+  }
 
   // Load the metadata from the JSON file.
   error = session_->load_contents();
@@ -245,7 +265,7 @@ ErrorCode TablesDaoJson::remove(std::string_view key, std::string_view value,
   ptree* contents = session_->get_contents();
 
   // Delete a metadata object.
-  error = this->delete_metadata_object(*contents, key, value, &object_id);
+  error = this->delete_metadata_object(*contents, key, values[0], &object_id);
 
   return error;
 }

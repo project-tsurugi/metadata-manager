@@ -75,53 +75,24 @@ class StatisticsDaoPg : public DaoPg {
       std::vector<boost::property_tree::ptree>& objects) const override;
 
   /**
-   * @brief Get all column statistics rows from the column statistics table
-   *   based on the specified table ID.
-   * @param table_id   [in]  table id.
-   * @param objects    [out] all statistics metadata.
-   * @retval ErrorCode::OK if success.
-   * @retval ErrorCode::ID_NOT_FOUND if the table id does not exist.
-   * @retval otherwise an error code.
-   */
-  manager::metadata::ErrorCode select_all(
-      ObjectId table_id,
-      std::vector<boost::property_tree::ptree>& objects) const;
-
-  /**
-   * @brief Get a metadata object from a metadata table.
-   * @param key     [in]  key. column name of a column statistics table.
-   * @param value   [in]  value to be filtered.
-   * @param object  [out] constraint metadata to get, where the given
-   *   key equals the given value.
-   * @retval ErrorCode::OK if success.
-   * @retval ErrorCode::ID_NOT_FOUND if the object id does not exist.
-   * @retval ErrorCode::NAME_NOT_FOUND if the object name does not exist.
-   * @retval otherwise an error code.
-   */
-  manager::metadata::ErrorCode select(
-      std::string_view object_key, std::string_view object_value,
-      boost::property_tree::ptree& object) const override;
-
-  /**
    * @brief Get a column statistics row from the column statistics table
    *   based on the specified table id and the given column ordinal position.
-   * @param table_id  [in]  table id.
-   * @param key       [in]  column name of a column metadata table.
-   * @param value     [in]  value to be filtered.
-   * @param object    [out] get statistics metadata for which the specified key
+   * @param key     [in]  column name of a column metadata table.
+   * @param values  [in]  value to be filtered.
+   * @param object  [out] get statistics metadata for which the specified key
    * and value are equal.
    * @return ErrorCode::OK if success, otherwise an error code.
    */
   manager::metadata::ErrorCode select(
-      ObjectId table_id, std::string_view object_key,
-      std::string_view object_value, boost::property_tree::ptree& object) const;
+      std::string_view key, const std::vector<std::string_view>& values,
+      boost::property_tree::ptree& object) const override;
 
   /**
    * @brief Function defined for compatibility.
    * @return Always ErrorCode::OK.
    */
   manager::metadata::ErrorCode update(
-      std::string_view, std::string_view,
+      std::string_view, const std::vector<std::string_view>&,
       const boost::property_tree::ptree&) const override {
     return ErrorCode::OK;
   }
@@ -130,28 +101,14 @@ class StatisticsDaoPg : public DaoPg {
    * @brief Removes column statistic with the specified key value
    *   from the column statistics table.
    * @param key        [in]  column name of a column metadata table.
-   * @param value      [in]  value to be filtered.
+   * @param values     [in]  value to be filtered.
    * @param object_id  [out] object id of the deleted row.
    *   If multiple rows are deleted, the first column id.
    * @return ErrorCode::OK if success, otherwise an error code.
    */
-  manager::metadata::ErrorCode remove(std::string_view key,
-                                      std::string_view value,
-                                      ObjectId& object) const override;
-
-  /**
-   * @brief Removes column statistics with the specified table id and key value
-   *   from the column statistics table.
-   * @param table_id   [in]  table id.
-   * @param key        [in]  column name of a column metadata table.
-   * @param value      [in]  value to be filtered.
-   * @param object_id  [out] object id of the deleted row.
-   *   If multiple rows are deleted, the first column id.
-   * @return ErrorCode::OK if success, otherwise an error code.
-   */
-  manager::metadata::ErrorCode remove(ObjectId table_id, std::string_view key,
-                                      std::string_view value,
-                                      ObjectId& object) const;
+  manager::metadata::ErrorCode remove(
+      std::string_view key, const std::vector<std::string_view>& values,
+      ObjectId& object) const override;
 
  private:
   /**
@@ -209,19 +166,19 @@ class StatisticsDaoPg : public DaoPg {
   std::string get_select_all_statement() const override;
 
   /**
-   * @brief Get a SELECT statement to retrieve all data from the
-   *   statistics table based on table id.
-   * @return SELECT statement.
-   */
-  std::string get_select_all_statement_tid() const;
-
-  /**
    * @brief Get a SELECT statement to retrieve data matching the criteria from
    * the statistics table.
    * @param key  [in]  column name of statistics table.
    * @return SELECT statement.
    */
   std::string get_select_statement(std::string_view key) const override;
+
+  /**
+   * @brief Get a SELECT statement to retrieve data matching the criteria from
+   * the statistics table based on table id.
+   * @return SELECT statement.
+   */
+  std::string get_select_statement_tid() const;
 
   /**
    * @brief Get a SELECT statement to retrieve data matching the criteria from
@@ -272,7 +229,7 @@ class StatisticsDaoPg : public DaoPg {
    */
   manager::metadata::ErrorCode get_column_statistics_rows(
       std::string_view statement_name, const std::vector<const char*>& params,
-      std::vector<boost::property_tree::ptree>& objects) const;
+      boost::property_tree::ptree& objects) const;
 
   /**
    * @brief Get a NOT_FOUND error code corresponding to the key.

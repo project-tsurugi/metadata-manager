@@ -17,12 +17,6 @@
 
 #include <boost/property_tree/json_parser.hpp>
 
-#if defined(STORAGE_POSTGRESQL)
-#include "manager/metadata/dao/postgresql/statistics_dao_pg.h"
-#elif defined(STORAGE_JSON)
-#include "manager/metadata/dao/json/statistics_dao_json.h"
-#endif
-
 // =============================================================================
 namespace manager::metadata::db {
 
@@ -123,7 +117,11 @@ ErrorCode StatisticsProvider::get_column_statistic(
     return error;
   }
 
-  error = statistics_dao_->select(key, value, object);
+  ptree statistics;
+  error = statistics_dao_->select(key, {value}, statistics);
+  if (error == ErrorCode::OK) {
+    object = statistics.front().second;
+  }
 
   return error;
 }
@@ -152,15 +150,12 @@ ErrorCode StatisticsProvider::get_column_statistic(
     return error;
   }
 
-#if defined(STORAGE_POSTGRESQL)
-  auto statistics_dao =
-      std::static_pointer_cast<StatisticsDaoPg>(statistics_dao_);
-#elif defined(STORAGE_JSON)
-  auto statistics_dao =
-      std::static_pointer_cast<StatisticsDaoJson>(statistics_dao_);
-#endif
-
-  error = statistics_dao->select(table_id, key, value, object);
+  ptree statistics;
+  error = statistics_dao_->select(key, {std::to_string(table_id), value},
+                                   statistics);
+  if (error == ErrorCode::OK) {
+    object = statistics.front().second;
+  }
 
   return error;
 }
@@ -207,15 +202,21 @@ ErrorCode StatisticsProvider::get_column_statistics(
     return error;
   }
 
-#if defined(STORAGE_POSTGRESQL)
-  auto statistics_dao =
-      std::static_pointer_cast<StatisticsDaoPg>(statistics_dao_);
-#elif defined(STORAGE_JSON)
-  auto statistics_dao =
-      std::static_pointer_cast<StatisticsDaoJson>(statistics_dao_);
-#endif
-
-  error = statistics_dao->select_all(table_id, container);
+  ptree statistics;
+  error = statistics_dao_->select(
+      Statistics::TABLE_ID, {std::to_string(table_id)}, statistics);
+  if (error == ErrorCode::OK) {
+    if (statistics.size() > 0) {
+      std::transform(statistics.begin(), statistics.end(),
+                      std::back_inserter(container),
+                      [](boost::property_tree::ptree::value_type vt) {
+                        return vt.second;
+                      });
+    } else {
+      // Convert the error code.
+      error = ErrorCode::ID_NOT_FOUND;
+    }
+  }
 
   return error;
 }
@@ -248,7 +249,7 @@ ErrorCode StatisticsProvider::remove_column_statistic(
   }
 
   // Remove a statistics from the column statistics table.
-  error = statistics_dao_->remove(key, value, statistic_id);
+  error = statistics_dao_->remove(key, {value}, statistic_id);
   if (error == ErrorCode::OK) {
     // Commit the transaction.
     error = session_manager_->commit();
@@ -312,16 +313,9 @@ ErrorCode StatisticsProvider::remove_column_statistic(
     return error;
   }
 
-#if defined(STORAGE_POSTGRESQL)
-  auto statistics_dao =
-      std::static_pointer_cast<StatisticsDaoPg>(statistics_dao_);
-#elif defined(STORAGE_JSON)
-  auto statistics_dao =
-      std::static_pointer_cast<StatisticsDaoJson>(statistics_dao_);
-#endif
-
   // Remove a statistics from the column statistics table.
-  error = statistics_dao->remove(table_id, key, value, statistic_id);
+  error = statistics_dao_->remove(key, {std::to_string(table_id), value},
+                                  statistic_id);
   if (error == ErrorCode::OK) {
     // Commit the transaction.
     error = session_manager_->commit();

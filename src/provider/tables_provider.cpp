@@ -221,7 +221,7 @@ ErrorCode TablesProvider::get_table_metadata(
   }
 
   // Get table metadata.
-  error = tables_dao_->select(key, value, object);
+  error = tables_dao_->select(key, {value}, object);
   if (error != ErrorCode::OK) {
     return error;
   }
@@ -319,7 +319,7 @@ ErrorCode TablesProvider::get_table_statistic(
   }
 
   // Get table metadata.
-  error = tables_dao_->select(key, value, object);
+  error = tables_dao_->select(key, {value}, object);
 
   return error;
 }
@@ -350,14 +350,14 @@ ErrorCode TablesProvider::update_table_metadata(
 
   // Update table metadata table.
   if (error == ErrorCode::OK) {
-    error = tables_dao_->update(Table::ID, std::to_string(table_id), object);
+    error = tables_dao_->update(Table::ID, {std::to_string(table_id)}, object);
   }
 
   // Remove a metadata object from the column metadata table.
   if (error == ErrorCode::OK) {
     ObjectId removed_id = 0;
     // Delete records associated with TableID.
-    error = columns_dao_->remove(Column::TABLE_ID, std::to_string(table_id),
+    error = columns_dao_->remove(Column::TABLE_ID, {std::to_string(table_id)},
                                  removed_id);
     // No record is found, it is treated as a success.
     error = (error == ErrorCode::NOT_FOUND ? ErrorCode::OK : error);
@@ -388,7 +388,7 @@ ErrorCode TablesProvider::update_table_metadata(
     ObjectId removed_id = 0;
     // Delete records associated with TableID.
     error = constraints_dao_->remove(Constraint::TABLE_ID,
-                                     std::to_string(table_id), removed_id);
+                                     {std::to_string(table_id)}, removed_id);
     // No record is found, it is treated as a success.
     error = (error == ErrorCode::NOT_FOUND ? ErrorCode::OK : error);
   }
@@ -492,7 +492,7 @@ ErrorCode TablesProvider::set_table_statistic(
   table_metadata.put(Table::NUMBER_OF_TUPLES, optional_tuples.get());
 
   // Update table statistics to table metadata table.
-  error = tables_dao_->update(key, value, table_metadata);
+  error = tables_dao_->update(key, {value}, table_metadata);
 
   if (error == ErrorCode::OK) {
     // Commit the transaction.
@@ -540,12 +540,12 @@ ErrorCode TablesProvider::remove_table_metadata(std::string_view key,
   }
 
   // Remove a metadata object from the tables metadata table.
-  error = tables_dao_->remove(key, value, table_id);
+  error = tables_dao_->remove(key, {value}, table_id);
 
   if (error == ErrorCode::OK) {
     ObjectId removed_id = 0;
     // Remove a metadata object from the constraints metadata table.
-    error = columns_dao_->remove(Column::TABLE_ID, std::to_string(table_id),
+    error = columns_dao_->remove(Column::TABLE_ID, {std::to_string(table_id)},
                                  removed_id);
     // No record is found, it is treated as a success.
     error = (error == ErrorCode::NOT_FOUND ? ErrorCode::OK : error);
@@ -555,7 +555,7 @@ ErrorCode TablesProvider::remove_table_metadata(std::string_view key,
     ObjectId removed_id = 0;
     // Remove a metadata object from the constraints metadata table.
     error = constraints_dao_->remove(Constraint::TABLE_ID,
-                                     std::to_string(table_id), removed_id);
+                                     {std::to_string(table_id)}, removed_id);
     // No record is found, it is treated as a success.
     error = (error == ErrorCode::NOT_FOUND ? ErrorCode::OK : error);
   }
@@ -652,7 +652,7 @@ ErrorCode TablesProvider::confirm_permission(std::string_view key,
 
   ptree object;
   // Get privileges for all tables included in the table metadata.
-  error = privileges_dao_->select(key, value, object);
+  error = privileges_dao_->select(key, {value}, object);
   if (error != ErrorCode::OK) {
     LOG_INFO << "Target table metadata did not exist.";
 
@@ -687,7 +687,7 @@ ErrorCode TablesProvider::get_column_metadata(
   }
 
   ptree columns;
-  error = columns_dao_->select(Column::TABLE_ID, table_id, columns);
+  error = columns_dao_->select(Column::TABLE_ID, {table_id}, columns);
   if ((error == ErrorCode::OK) || (error == ErrorCode::NOT_FOUND)) {
     if (table_object.find(Table::COLUMNS_NODE) == table_object.not_found()) {
       table_object.add_child(Table::COLUMNS_NODE, columns);
@@ -715,7 +715,8 @@ ErrorCode TablesProvider::get_constraint_metadata(
   }
 
   ptree constraints;
-  error = constraints_dao_->select(Constraint::TABLE_ID, table_id, constraints);
+  error =
+      constraints_dao_->select(Constraint::TABLE_ID, {table_id}, constraints);
   if ((error == ErrorCode::OK) || (error == ErrorCode::NOT_FOUND)) {
     if (table_object.find(Table::CONSTRAINTS_NODE) ==
         table_object.not_found()) {

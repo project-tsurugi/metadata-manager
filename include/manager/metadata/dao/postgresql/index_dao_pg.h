@@ -85,7 +85,7 @@ class IndexDaoPg : public DaoPg {
   /**
    * @brief Get a metadata object from a metadata table.
    * @param key     [in]  key. column name of a index metadata table.
-   * @param value   [in]  value to be filtered.
+   * @param values  [in]  value to be filtered.
    * @param object  [out] constraint metadata to get, where the given
    *   key equals the given value.
    * @retval ErrorCode::OK if success.
@@ -94,36 +94,36 @@ class IndexDaoPg : public DaoPg {
    * @retval otherwise an error code.
    */
   manager::metadata::ErrorCode select(
-      std::string_view object_key, std::string_view object_value,
+      std::string_view object_key, const std::vector<std::string_view>& values,
       boost::property_tree::ptree& object) const override;
 
   /**
    * @brief Update a metadata object into the metadata table.
    * @param key     [in] key name of the index metadata object.
-   * @param value   [in] value of key.
+   * @param values  [in] value of key.
    * @param object  [in] metadata object.
    * @retval ErrorCode::OK if success.
    * @retval ErrorCode::ID_NOT_FOUND if the object id does not exist.
    * @retval otherwise an error code.
    */
   manager::metadata::ErrorCode update(
-      std::string_view key, std::string_view value,
+      std::string_view key, const std::vector<std::string_view>& values,
       const boost::property_tree::ptree& object) const override;
 
   /**
    * @brief Removes index metadata with the specified key value
    *   from the index metadata table.
    * @param key        [in]  key. column name of a index metadata table.
-   * @param value      [in]  value to be filtered.
+   * @param values     [in]  value to be filtered.
    * @param object_id  [out] object id of the deleted row.
    * @retval ErrorCode::OK if success.
    * @retval ErrorCode::ID_NOT_FOUND if the object id does not exist.
    * @retval ErrorCode::NAME_NOT_FOUND if the object name does not exist.
    * @retval otherwise an error code.
    */
-  manager::metadata::ErrorCode remove(std::string_view key,
-                                      std::string_view value,
-                                      ObjectIdType& object) const override;
+  manager::metadata::ErrorCode remove(
+      std::string_view key, const std::vector<std::string_view>& values,
+      ObjectIdType& object) const override;
 
  private:
   /**

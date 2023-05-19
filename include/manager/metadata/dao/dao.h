@@ -59,7 +59,7 @@ class Dao {
    */
   virtual bool exists(std::string_view name) const {
     boost::property_tree::ptree object;
-    return (this->select(Object::NAME, name, object) == ErrorCode::OK);
+    return (this->select(Object::NAME, {name}, object) == ErrorCode::OK);
   }
 
   /**
@@ -70,7 +70,7 @@ class Dao {
    */
   virtual bool exists(ObjectId id) const {
     boost::property_tree::ptree object;
-    return (this->select(Object::ID, std::to_string(id), object) ==
+    return (this->select(Object::ID, {std::to_string(id)}, object) ==
             ErrorCode::OK);
   }
 
@@ -110,7 +110,7 @@ class Dao {
   /**
    * @brief Select a metadata object from the metadata table.
    * @param key     [in]  key name of the metadata object.
-   * @param value   [in]  value of key.
+   * @param values  [in]  value of key.
    * @param object  [out] a selected metadata object.
    * @retval ErrorCode::OK if success.
    * @retval ErrorCode::ID_NOT_FOUND if the table id does not exist.
@@ -118,30 +118,30 @@ class Dao {
    * @retval otherwise an error code.
    */
   virtual manager::metadata::ErrorCode select(
-      std::string_view key, std::string_view value,
-      boost::property_tree::ptree& object) const = 0;
+      std::string_view, const std::vector<std::string_view>& values,
+      boost::property_tree::ptree& objects) const = 0;
 
   /**
    * @brief Update a metadata object into the metadata table.
    * @param key     [in]  key name of the metadata object.
-   * @param value   [in]  value of key.
+   * @param values  [in]  value of key.
    * @param object  [in]  metadata object.
    * @return If success ErrorCode::OK, otherwise error code.
    */
   virtual manager::metadata::ErrorCode update(
-      std::string_view key, std::string_view value,
+      std::string_view key, const std::vector<std::string_view>& values,
       const boost::property_tree::ptree& object) const = 0;
 
   /**
    * @brief Delete a metadata object from the metadata table.
    * @param key        [in]  key name of the metadata object.
-   * @param value      [in]  value of key.
+   * @param values     [in]  value of key.
    * @param object_id  [out] object id of the deleted row.
    * @return If success ErrorCode::OK, otherwise error codes.
    */
-  virtual manager::metadata::ErrorCode remove(std::string_view key,
-                                              std::string_view value,
-                                              ObjectId& object_id) const = 0;
+  virtual manager::metadata::ErrorCode remove(
+      std::string_view key, const std::vector<std::string_view>& values,
+      ObjectId& object_id) const = 0;
 
   /**
    * @brief Get a NOT_FOUND error code corresponding to the key.

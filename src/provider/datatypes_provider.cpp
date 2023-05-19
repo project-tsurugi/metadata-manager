@@ -69,7 +69,7 @@ ErrorCode DataTypesProvider::get_datatype_metadata(
     return error;
   }
 
-  error = datatypes_dao_->select(key, value, object);
+  error = datatypes_dao_->select(key, {value}, object);
 
   return error;
 }

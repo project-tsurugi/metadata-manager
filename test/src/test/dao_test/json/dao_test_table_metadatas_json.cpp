@@ -175,7 +175,7 @@ class DaoTestTableMetadata : public ::testing::Test {
       EXPECT_EQ(ErrorCode::OK, error);
     }
 
-    error = tables_dao->select(Table::NAME, object_name.data(), object);
+    error = tables_dao->select(Table::NAME, {object_name.data()}, object);
     EXPECT_EQ(ErrorCode::OK, error);
 
     BOOST_FOREACH (ptree::value_type& node, object) {
@@ -189,14 +189,14 @@ class DaoTestTableMetadata : public ::testing::Test {
       }
 
       ptree columns;
-      error = columns_dao->select(Column::TABLE_ID, o_table_id.get(), columns);
+      error = columns_dao->select(Column::TABLE_ID, {o_table_id.get()}, columns);
       EXPECT_EQ(ErrorCode::OK, error);
       if (object.find(Table::COLUMNS_NODE) == object.not_found()) {
         object.add_child(Table::COLUMNS_NODE, columns);
       }
 
       ptree constraints;
-      error = constraints_dao->select(Constraint::TABLE_ID, o_table_id.get(),
+      error = constraints_dao->select(Constraint::TABLE_ID, {o_table_id.get()},
                                       constraints);
       error = (error == ErrorCode::NOT_FOUND ? ErrorCode::OK : error);
       EXPECT_EQ(ErrorCode::OK, error);
@@ -251,7 +251,7 @@ class DaoTestTableMetadata : public ::testing::Test {
       EXPECT_EQ(ErrorCode::OK, error);
     }
 
-    error = tables_dao->select(Table::ID, std::to_string(object_id), object);
+    error = tables_dao->select(Table::ID, {std::to_string(object_id)}, object);
     if (error == ErrorCode::OK) {
       EXPECT_EQ(ErrorCode::OK, error);
     } else {
@@ -270,14 +270,14 @@ class DaoTestTableMetadata : public ::testing::Test {
       }
 
       ptree columns;
-      error = columns_dao->select(Column::TABLE_ID, o_table_id.get(), columns);
+      error = columns_dao->select(Column::TABLE_ID, {o_table_id.get()}, columns);
       EXPECT_EQ(ErrorCode::OK, error);
       if (object.find(Table::COLUMNS_NODE) == object.not_found()) {
         object.add_child(Table::COLUMNS_NODE, columns);
       }
 
       ptree constraints;
-      error = constraints_dao->select(Constraint::TABLE_ID, o_table_id.get(),
+      error = constraints_dao->select(Constraint::TABLE_ID, {o_table_id.get()},
                                       constraints);
       error = (error == ErrorCode::NOT_FOUND ? ErrorCode::OK : error);
       EXPECT_EQ(ErrorCode::OK, error);
@@ -312,7 +312,7 @@ class DaoTestTableMetadata : public ::testing::Test {
       EXPECT_EQ(ErrorCode::OK, error);
     }
 
-    error = tables_dao->update(Tables::ID, std::to_string(object_id), object);
+    error = tables_dao->update(Tables::ID, {std::to_string(object_id)}, object);
     if (error == ErrorCode::OK) {
       EXPECT_EQ(ErrorCode::OK, error);
     } else {
@@ -358,7 +358,7 @@ class DaoTestTableMetadata : public ::testing::Test {
     EXPECT_EQ(ErrorCode::OK, error);
 
     ObjectIdType retval_object_id;
-    error = tables_dao->remove(Table::ID, std::to_string(object_id),
+    error = tables_dao->remove(Table::ID, {std::to_string(object_id)},
                                retval_object_id);
     EXPECT_EQ(ErrorCode::OK, error);
     EXPECT_EQ(object_id, retval_object_id);
@@ -400,7 +400,7 @@ class DaoTestTableMetadata : public ::testing::Test {
     EXPECT_EQ(ErrorCode::OK, error);
 
     ObjectIdType retval_object_id = -1;
-    error = tables_dao->remove(Table::NAME, std::string(object_name),
+    error = tables_dao->remove(Table::NAME, {std::string(object_name)},
                                retval_object_id);
     EXPECT_EQ(ErrorCode::OK, error);
     EXPECT_NE(-1, retval_object_id);

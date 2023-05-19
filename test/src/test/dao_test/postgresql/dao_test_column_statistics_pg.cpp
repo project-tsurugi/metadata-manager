@@ -282,12 +282,15 @@ ErrorCode DaoTestColumnStatistics::get_one_column_statistic(
   error = statistics_dao->prepare();
   EXPECT_EQ(ErrorCode::OK, error);
 
-  ptree column_statistic;
-  error = statistics_dao->select(table_id, Statistics::COLUMN_NUMBER,
-                                 std::to_string(ordinal_position),
-                                 column_statistic);
+  ptree column_statistics;
+  error = statistics_dao->select(
+      Statistics::COLUMN_NUMBER,
+      {std::to_string(table_id), std::to_string(ordinal_position)},
+      column_statistics);
 
   if (error == ErrorCode::OK) {
+    auto column_statistic = column_statistics.front().second;
+
     auto optional_ordinal_position =
         column_statistic.get_optional<std::int64_t>(Statistics::COLUMN_NUMBER);
     EXPECT_TRUE(optional_ordinal_position);
@@ -331,7 +334,16 @@ ErrorCode DaoTestColumnStatistics::get_all_column_statistics(
   EXPECT_EQ(ErrorCode::OK, error);
 
   std::vector<ptree> column_statistics;
-  error = statistics_dao->select_all(table_id, column_statistics);
+  ptree statistics;
+  error = statistics_dao->select(Statistics::TABLE_ID,
+                                  {std::to_string(table_id)}, statistics);
+  if (error == ErrorCode::OK) {
+    std::transform(statistics.begin(), statistics.end(),
+                    std::back_inserter(column_statistics),
+                    [](boost::property_tree::ptree::value_type vt) {
+                      return vt.second;
+                    });
+  }
 
   if (error == ErrorCode::OK) {
     UTUtils::print(
@@ -396,7 +408,16 @@ ErrorCode DaoTestColumnStatistics::get_all_column_statistics(
   EXPECT_EQ(ErrorCode::OK, error);
 
   std::vector<ptree> column_statistics;
-  error = statistics_dao->select_all(table_id, column_statistics);
+  ptree statistics;
+  error = statistics_dao->select(Statistics::TABLE_ID,
+                                  {std::to_string(table_id)}, statistics);
+  if (error == ErrorCode::OK) {
+    std::transform(statistics.begin(), statistics.end(),
+                    std::back_inserter(column_statistics),
+                    [](boost::property_tree::ptree::value_type vt) {
+                      return vt.second;
+                    });
+  }
 
   if (error == ErrorCode::OK) {
     UTUtils::print(
@@ -464,9 +485,10 @@ ErrorCode DaoTestColumnStatistics::remove_one_column_statistic(
   EXPECT_EQ(ErrorCode::OK, error);
 
   ObjectIdType ret_statistic_id;
-  error = statistics_dao->remove(table_id, Statistics::COLUMN_NUMBER,
-                                 std::to_string(ordinal_position),
-                                 ret_statistic_id);
+  error = statistics_dao->remove(
+      Statistics::COLUMN_NUMBER,
+      {std::to_string(table_id), std::to_string(ordinal_position)},
+      ret_statistic_id);
 
   if (error == ErrorCode::OK) {
     ErrorCode commit_error = db_session_manager.commit();
@@ -508,7 +530,7 @@ ErrorCode DaoTestColumnStatistics::remove_all_column_statistics(
   EXPECT_EQ(ErrorCode::OK, error);
 
   ObjectIdType ret_statistic_id;
-  error = statistics_dao->remove(Statistics::TABLE_ID, std::to_string(table_id),
+  error = statistics_dao->remove(Statistics::TABLE_ID, {std::to_string(table_id)},
                                  ret_statistic_id);
 
   if (error == ErrorCode::OK) {

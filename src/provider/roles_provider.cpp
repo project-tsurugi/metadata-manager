@@ -68,7 +68,7 @@ ErrorCode RolesProvider::get_role_metadata(
     return error;
   }
 
-  error = roles_dao_->select(key, value, object);
+  error = roles_dao_->select(key, {value}, object);
 
   return error;
 }

@@ -128,9 +128,16 @@ ErrorCode DataTypesDaoJson::select_all(
   return error;
 }
 
-ErrorCode DataTypesDaoJson::select(std::string_view key, std::string_view value,
+ErrorCode DataTypesDaoJson::select(std::string_view key,
+                                   const std::vector<std::string_view>& values,
                                    boost::property_tree::ptree& object) const {
   ErrorCode error = ErrorCode::UNKNOWN;
+
+  if (values.size() == 0) {
+    LOG_ERROR << Message::PARAMETER_FAILED << "Key value is unspecified.";
+    error = ErrorCode::INVALID_PARAMETER;
+    return error;
+  }
 
   ptree* contents = session_->get_contents();
 
@@ -149,7 +156,7 @@ ErrorCode DataTypesDaoJson::select(std::string_view key, std::string_view value,
       error = ErrorCode::INVALID_PARAMETER;
       break;
     }
-    if (data_value.value() == value) {
+    if (data_value.value() == values[0]) {
       object = temp_obj;
       error  = ErrorCode::OK;
       break;

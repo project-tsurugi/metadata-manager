@@ -83,7 +83,7 @@ class ColumnsDaoPg : public DaoPg {
   /**
    * @brief Get a metadata object from a metadata table.
    * @param key     [in]  key. column name of a column metadata table.
-   * @param value   [in]  value to be filtered.
+   * @param values  [in]  value to be filtered.
    * @param object  [out] constraint metadata to get, where the given
    *   key equals the given value.
    * @retval ErrorCode::OK if success.
@@ -92,7 +92,7 @@ class ColumnsDaoPg : public DaoPg {
    * @retval otherwise an error code.
    */
   manager::metadata::ErrorCode select(
-      std::string_view object_key, std::string_view object_value,
+      std::string_view key, const std::vector<std::string_view>& values,
       boost::property_tree::ptree& object) const override;
 
   /**
@@ -100,7 +100,7 @@ class ColumnsDaoPg : public DaoPg {
    * @return Always ErrorCode::OK.
    */
   manager::metadata::ErrorCode update(
-      std::string_view, std::string_view,
+      std::string_view, const std::vector<std::string_view>&,
       const boost::property_tree::ptree&) const override {
     // Do nothing and return of ErrorCode::OK.
     return ErrorCode::OK;
@@ -110,16 +110,16 @@ class ColumnsDaoPg : public DaoPg {
    * @brief Removes column metadata with the specified key value
    *   from the column metadata table.
    * @param key        [in]  key. column name of a column metadata table.
-   * @param value      [in]  value to be filtered.
+   * @param values     [in]  value to be filtered.
    * @param object_id  [out] object id of the deleted row.
    * @retval ErrorCode::OK if success.
    * @retval ErrorCode::ID_NOT_FOUND if the object id does not exist.
    * @retval ErrorCode::NAME_NOT_FOUND if the object name does not exist.
    * @retval otherwise an error code.
    */
-  manager::metadata::ErrorCode remove(std::string_view key,
-                                      std::string_view value,
-                                      ObjectId& object_id) const override;
+  manager::metadata::ErrorCode remove(
+      std::string_view key, const std::vector<std::string_view>& values,
+      ObjectId& object_id) const override;
 
  private:
   /**

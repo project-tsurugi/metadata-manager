@@ -67,7 +67,7 @@ class IndexDaoJson : public DaoJson {
   /**
    * @brief Get a metadata object from a metadata table file.
    * @param key     [in]  key. column name of a index metadata table.
-   * @param value   [in]  value to be filtered.
+   * @param values  [in]  value to be filtered.
    * @param object  [out] index metadata to get, where the given
    *   key equals the given value.
    * @retval ErrorCode::OK if success.
@@ -76,33 +76,33 @@ class IndexDaoJson : public DaoJson {
    * @retval otherwise an error code.
    */
   manager::metadata::ErrorCode select(
-      std::string_view key, std::string_view object_value,
+      std::string_view key, const std::vector<std::string_view>& values,
       boost::property_tree::ptree& object) const override;
 
   /**
    * @brief Updates metadata objects in the metadata table.
    * @param key     [in]  key. column name of a index metadata table.
-   * @param value   [in]  value to be filtered.
+   * @param values  [in]  value to be filtered.
    * @param object  [in]  index metadata object to be update.
    * @return ErrorCode::OK if success, otherwise an error code.
    */
   manager::metadata::ErrorCode update(
-      std::string_view key, std::string_view value,
+      std::string_view key, const std::vector<std::string_view>& values,
       const boost::property_tree::ptree& object) const override;
 
   /**
    * @brief Remove a metadata object from a metadata table file.
    * @param key        [in]  key. column name of a index metadata table.
-   * @param value      [in]  value to be filtered.
+   * @param values     [in]  value to be filtered.
    * @param object_id  [out] object id of the deleted row.
    * @retval ErrorCode::OK if success.
    * @retval ErrorCode::ID_NOT_FOUND if the object id does not exist.
    * @retval ErrorCode::NAME_NOT_FOUND if the object name does not exist.
    * @retval otherwise an error code.
    */
-  manager::metadata::ErrorCode remove(std::string_view key,
-                                      std::string_view value,
-                                      ObjectId& object_id) const override;
+  manager::metadata::ErrorCode remove(
+      std::string_view key, const std::vector<std::string_view>& values,
+      ObjectId& object_id) const override;
 
  private:
   // Name of the index metadata management file.

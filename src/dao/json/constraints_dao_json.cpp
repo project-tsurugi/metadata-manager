@@ -19,6 +19,7 @@
 #include <boost/format.hpp>
 
 #include "manager/metadata/common/config.h"
+#include "manager/metadata/common/message.h"
 #include "manager/metadata/dao/json/object_id_json.h"
 #include "manager/metadata/helper/logging_helper.h"
 #include "manager/metadata/helper/ptree_helper.h"
@@ -164,10 +165,16 @@ ErrorCode ConstraintsDaoJson::select_all(
 }
 
 ErrorCode ConstraintsDaoJson::select(
-    std::string_view key, std::string_view value,
+    std::string_view key, const std::vector<std::string_view>& values,
     boost::property_tree::ptree& object) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
+  if (values.size() == 0) {
+    LOG_ERROR << Message::PARAMETER_FAILED << "Key value is unspecified.";
+    error = ErrorCode::INVALID_PARAMETER;
+    return error;
+  }
+
   // Load the metadata from the JSON file.
   error = session_->load_contents();
   if (error != ErrorCode::OK) {
@@ -176,55 +183,13 @@ ErrorCode ConstraintsDaoJson::select(
 
   // Getting a metadata contents.
   ptree* contents = session_->get_contents();
+
+  // Initialize the error code.
+  error = get_not_found_error_code(key);
 
   // Getting a metadata object.
-  error = get_constraint_metadata_object(*contents, key, value, object);
-
-  // Convert the error code.
-  if (error == ErrorCode::NOT_FOUND) {
-    // Get a NOT_FOUND error code corresponding to the key.
-    error = get_not_found_error_code(key);
-  }
-
-  return error;
-}
-
-ErrorCode ConstraintsDaoJson::remove(std::string_view key,
-                                     std::string_view value,
-                                     ObjectId& object_id) const {
-  ErrorCode error = ErrorCode::UNKNOWN;
-
-  // Load the metadata from the JSON file.
-  error = session_->load_contents();
-  if (error != ErrorCode::OK) {
-    return error;
-  }
-
-  // Getting a metadata contents.
-  ptree* contents = session_->get_contents();
-
-  // Delete a metadata object.
-  error = this->delete_metadata_object(*contents, key, value, &object_id);
-
-  return error;
-}
-
-/* =============================================================================
- * Private method area
- */
-
-ErrorCode ConstraintsDaoJson::get_constraint_metadata_object(
-    const boost::property_tree::ptree& objects, std::string_view key,
-    std::string_view value, boost::property_tree::ptree& object) const {
-  ErrorCode error = ErrorCode::UNKNOWN;
-
-  LOG_DEBUG << "get_metadata metadata:"
-            << (objects.empty() ? "empty" : "exists") << " \"" << key << "\"=\""
-            << value << "\"";
-
-  error = ErrorCode::NOT_FOUND;
   BOOST_FOREACH (const ptree::value_type& root_node,
-                 objects.get_child(kRootNode)) {
+                 contents->get_child(kRootNode)) {
     const ptree& table = root_node.second;
     if (table.find(Table::CONSTRAINTS_NODE) != table.not_found()) {
       BOOST_FOREACH (const ptree::value_type& constraints_node,
@@ -233,7 +198,7 @@ ErrorCode ConstraintsDaoJson::get_constraint_metadata_object(
 
         std::string key_value(ptree_helper::ptree_value_to_string<std::string>(
             constraint, key.data()));
-        if (key_value == value) {
+        if (key_value == values[0]) {
           error = ErrorCode::OK;
           // copy.
           object = constraint;
@@ -245,23 +210,35 @@ ErrorCode ConstraintsDaoJson::get_constraint_metadata_object(
       break;
     }
   }
+
   return error;
 }
 
-ErrorCode ConstraintsDaoJson::delete_metadata_object(
-    boost::property_tree::ptree& objects, std::string_view key,
-    std::string_view value, ObjectId* object_id) const {
+ErrorCode ConstraintsDaoJson::remove(
+    std::string_view key, const std::vector<std::string_view>& values,
+    ObjectId& object_id) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
-  LOG_DEBUG << "Remove constraint metadata => "
-            << "metadata " << (objects.empty() ? "empty" : "exists") << ", "
-            << key << "=\"" << value << "\"";
+  if (values.size() == 0) {
+    LOG_ERROR << Message::PARAMETER_FAILED << "Key value is unspecified.";
+    error = ErrorCode::INVALID_PARAMETER;
+    return error;
+  }
+
+  // Load the metadata from the JSON file.
+  error = session_->load_contents();
+  if (error != ErrorCode::OK) {
+    return error;
+  }
+
+  // Getting a metadata contents.
+  ptree* contents = session_->get_contents();
 
   // Initialize the error code.
   error = get_not_found_error_code(key);
 
   // Getting a metadata container.
-  ptree& root_node = objects.get_child(kRootNode);
+  ptree& root_node = contents->get_child(kRootNode);
 
   for (ptree::iterator it_tables = root_node.begin();
        it_tables != root_node.end(); it_tables++) {
@@ -280,16 +257,15 @@ ErrorCode ConstraintsDaoJson::delete_metadata_object(
       std::string key_value(ptree_helper::ptree_value_to_string<std::string>(
           metadata, key.data()));
       // If the key value matches, the metadata is removed.
-      if (key_value == value) {
-        if (object_id != nullptr) {
-          auto opt_oid_value = metadata.get_optional<ObjectId>(Constraint::ID);
-          *object_id         = opt_oid_value.get_value_or(-1);
-        }
+      if (key_value == values[0]) {
+        auto opt_oid_value = metadata.get_optional<ObjectId>(Constraint::ID);
+        object_id          = opt_oid_value.get_value_or(-1);
+
         error = ErrorCode::OK;
         // Remove constraint metadata.
         it_constraints = constraints_node.erase(it_constraints);
 
-        LOG_DEBUG << "Remove constraint metadata. " << key << "=\"" << value
+        LOG_DEBUG << "Remove constraint metadata. " << key << "=\"" << values[0]
                   << "\"";
         break;
       } else {

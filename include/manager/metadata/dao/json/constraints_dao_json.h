@@ -69,7 +69,7 @@ class ConstraintsDaoJson : public DaoJson {
   /**
    * @brief Get a metadata object from a metadata table file.
    * @param key     [in]  key. column name of a constraint metadata table.
-   * @param value   [in]  value to be filtered.
+   * @param values  [in]  value to be filtered.
    * @param object  [out] constraint metadata to get, where the given
    *   key equals the given value.
    * @retval ErrorCode::OK if success.
@@ -78,7 +78,7 @@ class ConstraintsDaoJson : public DaoJson {
    * @retval otherwise an error code.
    */
   manager::metadata::ErrorCode select(
-      std::string_view key, std::string_view object_value,
+      std::string_view key, const std::vector<std::string_view>& values,
       boost::property_tree::ptree& object) const override;
 
   /**
@@ -86,7 +86,7 @@ class ConstraintsDaoJson : public DaoJson {
    * @return Always ErrorCode::OK.
    */
   manager::metadata::ErrorCode update(
-      std::string_view, std::string_view,
+      std::string_view, const std::vector<std::string_view>&,
       const boost::property_tree::ptree&) const override {
     // Do nothing and return of ErrorCode::OK.
     return ErrorCode::OK;
@@ -95,48 +95,22 @@ class ConstraintsDaoJson : public DaoJson {
   /**
    * @brief Remove a metadata object from a metadata table file.
    * @param key        [in]  key. column name of a constraint metadata table.
-   * @param value      [in]  value to be filtered.
+   * @param values     [in]  value to be filtered.
    * @param object_id  [out] object id of the deleted row.
    * @retval ErrorCode::OK if success.
    * @retval ErrorCode::ID_NOT_FOUND if the object id does not exist.
    * @retval ErrorCode::NAME_NOT_FOUND if the object name does not exist.
    * @retval otherwise an error code.
    */
-  manager::metadata::ErrorCode remove(std::string_view key,
-                                      std::string_view value,
-                                      ObjectId& object_id) const override;
+  manager::metadata::ErrorCode remove(
+      std::string_view key, const std::vector<std::string_view>& values,
+      ObjectId& object_id) const override;
 
  private:
   // Name of the constraint metadata management file.
   static constexpr const char* const kConstraintMetadataName = "tables";
   // Object ID key name for constraint ID.
   static constexpr const char* const kOidKeyNameConstraint = "constraint";
-
-  /**
-   * @brief Get metadata-object.
-   * @param objects  [in]  metadata container.
-   * @param key      [in]  key. column name of a metadata table.
-   * @param value    [in]  value to be filtered.
-   * @param object   [out] metadata-object with the specified name.
-   * @return ErrorCode::OK if success, otherwise an error code.
-   */
-  manager::metadata::ErrorCode get_constraint_metadata_object(
-      const boost::property_tree::ptree& objects, std::string_view key,
-      std::string_view value, boost::property_tree::ptree& object) const;
-
-  /**
-   * @brief Delete a metadata object from a metadata constraint file.
-   * @param objects    [in/out] metadata container.
-   * @param key        [in]     key. column name of a metadata table.
-   * @param value      [in]     value to be filtered.
-   * @param object_id  [out]    object id of the row deleted.
-   * @retval ErrorCode::OK if success.
-   * @retval ErrorCode::ID_NOT_FOUND if the object id does not exist.
-   * @retval otherwise an error code.
-   */
-  manager::metadata::ErrorCode delete_metadata_object(
-      boost::property_tree::ptree& objects, std::string_view key,
-      std::string_view value, ObjectId* object_id) const;
 };  // class ConstraintsDaoJson
 
 }  // namespace manager::metadata::db

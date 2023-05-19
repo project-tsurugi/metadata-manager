@@ -142,7 +142,7 @@ class DaoTestTableMetadata : public ::testing::Test {
     ASSERT_EQ(ErrorCode::OK, error);
 
     // Run the API under test.
-    error = tables_dao->select(Table::NAME, object_name, object);
+    error = tables_dao->select(Table::NAME, {object_name}, object);
     EXPECT_EQ(ErrorCode::OK, error);
 
     BOOST_FOREACH (ptree::value_type& node, object) {
@@ -157,13 +157,13 @@ class DaoTestTableMetadata : public ::testing::Test {
         ptree columns;
         // Run the API under test.
         error =
-            columns_dao->select(Column::TABLE_ID, o_table_id.get(), columns);
+            columns_dao->select(Column::TABLE_ID, {o_table_id.get()}, columns);
         EXPECT_EQ(ErrorCode::OK, error);
         object.add_child(Table::COLUMNS_NODE, columns);
 
         ptree constraints;
         // Run the API under test.
-        error = constraints_dao->select(Constraint::TABLE_ID, o_table_id.get(),
+        error = constraints_dao->select(Constraint::TABLE_ID, {o_table_id.get()},
                                         constraints);
         EXPECT_EQ(ErrorCode::OK, error);
         object.add_child(Table::CONSTRAINTS_NODE, constraints);
@@ -177,13 +177,13 @@ class DaoTestTableMetadata : public ::testing::Test {
         ptree columns;
         // Run the API under test.
         error =
-            columns_dao->select(Column::TABLE_ID, o_table_id.get(), columns);
+            columns_dao->select(Column::TABLE_ID, {o_table_id.get()}, columns);
         EXPECT_EQ(ErrorCode::OK, error);
         object.add_child(Table::COLUMNS_NODE, columns);
 
         ptree constraints;
         // Run the API under test.
-        error = constraints_dao->select(Constraint::TABLE_ID, o_table_id.get(),
+        error = constraints_dao->select(Constraint::TABLE_ID, {o_table_id.get()},
                                         constraints);
         EXPECT_EQ(ErrorCode::OK, error);
         object.add_child(Table::CONSTRAINTS_NODE, constraints);
@@ -221,7 +221,7 @@ class DaoTestTableMetadata : public ::testing::Test {
     ASSERT_EQ(ErrorCode::OK, error);
 
     // Run the API under test.
-    error = tables_dao->select(Table::ID, std::to_string(object_id), object);
+    error = tables_dao->select(Table::ID, {std::to_string(object_id)}, object);
     if (error == ErrorCode::OK) {
       EXPECT_EQ(ErrorCode::OK, error);
     } else {
@@ -241,13 +241,13 @@ class DaoTestTableMetadata : public ::testing::Test {
         ptree columns;
         // Run the API under test.
         error =
-            columns_dao->select(Column::TABLE_ID, o_table_id.get(), columns);
+            columns_dao->select(Column::TABLE_ID, {o_table_id.get()}, columns);
         EXPECT_EQ(ErrorCode::OK, error);
         object.add_child(Table::COLUMNS_NODE, columns);
 
         ptree constraints;
         // Run the API under test.
-        error = constraints_dao->select(Constraint::TABLE_ID, o_table_id.get(),
+        error = constraints_dao->select(Constraint::TABLE_ID, {o_table_id.get()},
                                         constraints);
         EXPECT_EQ(ErrorCode::OK, error);
         object.add_child(Table::CONSTRAINTS_NODE, constraints);
@@ -261,13 +261,13 @@ class DaoTestTableMetadata : public ::testing::Test {
         ptree columns;
         // Run the API under test.
         error =
-            columns_dao->select(Column::TABLE_ID, o_table_id.get(), columns);
+            columns_dao->select(Column::TABLE_ID, {o_table_id.get()}, columns);
         EXPECT_EQ(ErrorCode::OK, error);
         object.add_child(Table::COLUMNS_NODE, columns);
 
         ptree constraints;
         // Run the API under test.
-        error = constraints_dao->select(Constraint::TABLE_ID, o_table_id.get(),
+        error = constraints_dao->select(Constraint::TABLE_ID, {o_table_id.get()},
                                         constraints);
         EXPECT_EQ(ErrorCode::OK, error);
         object.add_child(Table::CONSTRAINTS_NODE, constraints);
@@ -305,7 +305,7 @@ class DaoTestTableMetadata : public ::testing::Test {
     EXPECT_EQ(ErrorCode::OK, error);
 
     // Update table metadata object to table metadata table.
-    error = tables_dao->update(Tables::ID, std::to_string(object_id), object);
+    error = tables_dao->update(Tables::ID, {std::to_string(object_id)}, object);
     EXPECT_EQ(ErrorCode::OK, error);
 
     // Run the API under test.
@@ -337,7 +337,7 @@ class DaoTestTableMetadata : public ::testing::Test {
     ObjectIdType removed_id = -1;
     // Run the API under test.
     error =
-        tables_dao->remove(Table::ID, std::to_string(object_id), removed_id);
+        tables_dao->remove(Table::ID, {std::to_string(object_id)}, removed_id);
     EXPECT_EQ(ErrorCode::OK, error);
     EXPECT_EQ(object_id, removed_id);
 
@@ -379,7 +379,7 @@ class DaoTestTableMetadata : public ::testing::Test {
     ObjectIdType removed_id = -1;
     // Run the API under test.
     error =
-        tables_dao->remove(Table::NAME, std::string(object_name), removed_id);
+        tables_dao->remove(Table::NAME, {std::string(object_name)}, removed_id);
     EXPECT_EQ(ErrorCode::OK, error);
     EXPECT_NE(-1, removed_id);
 

@@ -110,7 +110,7 @@ ErrorCode ConstraintsProvider::get_constraint_metadata(const ObjectId constraint
 
   std::string key_constraint_id = std::to_string(constraint_id);
   // Get constraint metadata.
-  error = constraints_dao_->select(Constraint::ID, key_constraint_id, object);
+  error = constraints_dao_->select(Constraint::ID, {key_constraint_id}, object);
   if (error != ErrorCode::OK) {
     return error;
   }
@@ -164,7 +164,8 @@ ErrorCode ConstraintsProvider::remove_constraint_metadata(const ObjectId constra
 
   ObjectId removed_id = 0;
   // Remove a metadata object from the constraints metadata table.
-  error = constraints_dao_->remove(Constraint::ID, std::to_string(constraint_id), removed_id);
+  error = constraints_dao_->remove(Constraint::ID,
+                                   {std::to_string(constraint_id)}, removed_id);
 
   if (error == ErrorCode::OK) {
     // Commit the transaction.

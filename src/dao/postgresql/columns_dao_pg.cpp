@@ -173,13 +173,18 @@ ErrorCode ColumnsDaoPg::insert(const boost::property_tree::ptree& object,
   return error;
 }
 
-ErrorCode ColumnsDaoPg::select(std::string_view key, std::string_view value,
+ErrorCode ColumnsDaoPg::select(std::string_view key,
+                               const std::vector<std::string_view>& values,
                                boost::property_tree::ptree& object) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   std::vector<const char*> params;
   // Set key value.
-  params.emplace_back(value.data());
+  std::transform(values.begin(), values.end(),
+                  std::back_inserter(params),
+                  [](std::string_view value) {
+                    return value.data();
+                  });
 
   // Set SELECT statement.
   SelectStatement statement;
@@ -213,13 +218,18 @@ ErrorCode ColumnsDaoPg::select(std::string_view key, std::string_view value,
   return error;
 }
 
-ErrorCode ColumnsDaoPg::remove(std::string_view key, std::string_view value,
+ErrorCode ColumnsDaoPg::remove(std::string_view key,
+                               const std::vector<std::string_view>& values,
                                ObjectId& object_id) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   std::vector<const char*> params;
   // Set key value.
-  params.emplace_back(value.data());
+  std::transform(values.begin(), values.end(),
+                  std::back_inserter(params),
+                  [](std::string_view value) {
+                    return value.data();
+                  });
 
   // Set DELETE statement.
   DeleteStatement statement;

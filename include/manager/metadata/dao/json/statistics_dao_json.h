@@ -64,33 +64,14 @@ class StatisticsDaoJson : public DaoJson {
     // Do nothing and return of ErrorCode::NOT_SUPPORTED.
     return ErrorCode::NOT_SUPPORTED;
   }
-  /**
-   * @brief Function defined for compatibility.
-   * @return Always ErrorCode::NOT_SUPPORTED.
-   */
-  manager::metadata::ErrorCode select_all(
-      ObjectId, std::vector<boost::property_tree::ptree>&) const {
-    // Do nothing and return of ErrorCode::NOT_SUPPORTED.
-    return ErrorCode::NOT_SUPPORTED;
-  }
 
   /**
    * @brief Function defined for compatibility.
    * @return Always ErrorCode::NOT_SUPPORTED.
    */
   manager::metadata::ErrorCode select(
-      std::string_view, std::string_view,
+      std::string_view, const std::vector<std::string_view>&,
       boost::property_tree::ptree&) const override {
-    // Do nothing and return of ErrorCode::NOT_SUPPORTED.
-    return ErrorCode::NOT_SUPPORTED;
-  }
-  /**
-   * @brief Function defined for compatibility.
-   * @return Always ErrorCode::NOT_SUPPORTED.
-   */
-  manager::metadata::ErrorCode select(ObjectId, std::string_view,
-                                      std::string_view,
-                                      boost::property_tree::ptree&) const {
     // Do nothing and return of ErrorCode::NOT_SUPPORTED.
     return ErrorCode::NOT_SUPPORTED;
   }
@@ -100,7 +81,7 @@ class StatisticsDaoJson : public DaoJson {
    * @return Always ErrorCode::NOT_SUPPORTED.
    */
   manager::metadata::ErrorCode update(
-      std::string_view, std::string_view,
+      std::string_view, const std::vector<std::string_view>&,
       const boost::property_tree::ptree&) const override {
     // Do nothing and return of ErrorCode::NOT_SUPPORTED.
     return ErrorCode::NOT_SUPPORTED;
@@ -110,17 +91,9 @@ class StatisticsDaoJson : public DaoJson {
    * @brief Function defined for compatibility.
    * @return Always ErrorCode::OK.
    */
-  manager::metadata::ErrorCode remove(std::string_view, std::string_view,
+  manager::metadata::ErrorCode remove(std::string_view,
+                                      const std::vector<std::string_view>&,
                                       ObjectId&) const override {
-    // Do nothing and return of ErrorCode::OK.
-    return ErrorCode::NOT_SUPPORTED;
-  }
-  /**
-   * @brief Function defined for compatibility.
-   * @return Always ErrorCode::OK.
-   */
-  manager::metadata::ErrorCode remove(ObjectId, std::string_view,
-                                      std::string_view, ObjectId&) const {
     // Do nothing and return of ErrorCode::OK.
     return ErrorCode::NOT_SUPPORTED;
   }

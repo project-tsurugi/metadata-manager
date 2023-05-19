@@ -82,7 +82,7 @@ class PrivilegesDaoJson : public DaoJson {
    * @return Always ErrorCode::NOT_SUPPORTED.
    */
   manager::metadata::ErrorCode select(
-      std::string_view, std::string_view,
+      std::string_view, const std::vector<std::string_view>&,
       boost::property_tree::ptree&) const override {
     // Do nothing and return of ErrorCode::NOT_SUPPORTED.
     return ErrorCode::NOT_SUPPORTED;
@@ -93,7 +93,7 @@ class PrivilegesDaoJson : public DaoJson {
    * @return Always ErrorCode::NOT_SUPPORTED.
    */
   manager::metadata::ErrorCode update(
-      std::string_view, std::string_view,
+      std::string_view, const std::vector<std::string_view>&,
       const boost::property_tree::ptree&) const override {
     // Do nothing and return of ErrorCode::NOT_SUPPORTED.
     return ErrorCode::NOT_SUPPORTED;
@@ -103,7 +103,8 @@ class PrivilegesDaoJson : public DaoJson {
    * @brief Unsupported function.
    * @return Always ErrorCode::NOT_SUPPORTED.
    */
-  manager::metadata::ErrorCode remove(std::string_view, std::string_view,
+  manager::metadata::ErrorCode remove(std::string_view,
+                                      const std::vector<std::string_view>&,
                                       ObjectId&) const override {
     // Do nothing and return of ErrorCode::NOT_SUPPORTED.
     return ErrorCode::NOT_SUPPORTED;

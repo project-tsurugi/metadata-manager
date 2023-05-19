@@ -141,65 +141,48 @@ ErrorCode StatisticsDaoPg::select_all(
     return ErrorCode::INVALID_PARAMETER;
   }
 
-  error = get_column_statistics_rows(statement.name(), params, objects);
+  // error = get_column_statistics_rows(statement.name(), params, objects);
+  ptree statistics;
+  error = get_column_statistics_rows(statement.name(), params, statistics);
+  if (error == ErrorCode::OK) {
+    std::transform(statistics.begin(), statistics.end(),
+                    std::back_inserter(objects),
+                    [](boost::property_tree::ptree::value_type vt) {
+                      return vt.second;
+                    });
+  }
 
   return error;
 }
 
-ErrorCode StatisticsDaoPg::select_all(
-    ObjectId table_id,
-    std::vector<boost::property_tree::ptree>& objects) const {
+ErrorCode StatisticsDaoPg::select(std::string_view key,
+                                  const std::vector<std::string_view>& values,
+                                  boost::property_tree::ptree& object) const {
   ErrorCode error = ErrorCode::UNKNOWN;
-
-  std::string s_table_id(std::to_string(table_id));
   std::vector<const char*> params;
-  // Set key value.
-  params.emplace_back(s_table_id.c_str());
 
-  // Set SELECT-all statement.
-  SelectAllStatement statement;
+  std::transform(values.begin(), values.end(),
+                  std::back_inserter(params),
+                  [](std::string_view value) {
+                    return value.data();
+                  });
+
+  // Set SELECT statement.
+  SelectStatement statement;
   try {
-    statement = select_all_statements_.at(ColumnsDaoPg::ColumnName::kTableId);
+    statement = select_statements_.at(key.data());
   } catch (...) {
     LOG_ERROR << Message::INVALID_STATEMENT_KEY
               << ColumnsDaoPg::ColumnName::kTableId;
     return ErrorCode::INVALID_PARAMETER;
   }
 
-  error = get_column_statistics_rows(statement.name(), params, objects);
-  if (error == ErrorCode::OK) {
-    if (objects.size() == 0) {
-      // Convert the error code.
-      error = ErrorCode::ID_NOT_FOUND;
-    }
-  }
-
-  return error;
-}
-
-ErrorCode StatisticsDaoPg::select(std::string_view key, std::string_view value,
-                                  boost::property_tree::ptree& object) const {
-  ErrorCode error = ErrorCode::UNKNOWN;
-
-  // Set key value.
-  std::vector<const char*> params;
-  params.emplace_back(value.data());
-
-  // Set SELECT statement.
-  SelectStatement statement;
-  try {
-    statement = select_statements_.at(key.data());
-  } catch (...) {
-    LOG_ERROR << Message::INVALID_STATEMENT_KEY << key;
-    return ErrorCode::INVALID_PARAMETER;
-  }
-
-  std::vector<ptree> objects;
+  ptree objects;
   error = get_column_statistics_rows(statement.name(), params, objects);
 
   if (error == ErrorCode::OK) {
     if (objects.size() >= 1) {
-      object = objects[0];
+      object = objects;
     } else if (objects.size() == 0) {
       error = this->get_not_found_error_code(key);
     } else {
@@ -210,95 +193,18 @@ ErrorCode StatisticsDaoPg::select(std::string_view key, std::string_view value,
   return error;
 }
 
-ErrorCode StatisticsDaoPg::select(ObjectId table_id, std::string_view key,
-                                  std::string_view value,
-                                  boost::property_tree::ptree& object) const {
-  ErrorCode error = ErrorCode::UNKNOWN;
-
-  std::string s_table_id = std::to_string(table_id);
-  std::vector<const char*> params;
-  // Set key value.
-  params.emplace_back(s_table_id.c_str());
-  params.emplace_back(value.data());
-
-  // Set SELECT statement.
-  SelectStatement statement;
-  try {
-    statement = select_statements_.at(key.data());
-  } catch (...) {
-    LOG_ERROR << Message::INVALID_STATEMENT_KEY << key;
-    return ErrorCode::INVALID_PARAMETER;
-  }
-
-  std::vector<ptree> objects;
-  error = get_column_statistics_rows(statement.name(), params, objects);
-
-  if (error == ErrorCode::OK) {
-    if (objects.size() >= 1) {
-      object = objects[0];
-    } else if (objects.size() == 0) {
-      // Convert the error code.
-      error = this->get_not_found_error_code(key);
-    } else {
-      error = ErrorCode::INVALID_PARAMETER;
-    }
-  }
-
-  return error;
-}
-
-ErrorCode StatisticsDaoPg::remove(std::string_view key, std::string_view value,
+ErrorCode StatisticsDaoPg::remove(std::string_view key,
+                                  const std::vector<std::string_view>& values,
                                   ObjectId& object_id) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   std::vector<const char*> params;
   // Set key value.
-  params.emplace_back(value.data());
-
-  // Set DELETE statement.
-  DeleteStatement statement;
-  try {
-    statement = delete_statements_.at(key.data());
-  } catch (...) {
-    LOG_ERROR << Message::INVALID_STATEMENT_KEY << key;
-    return ErrorCode::INVALID_PARAMETER;
-  }
-
-  PGresult* res = nullptr;
-  // Execute a prepared statement.
-  error = DbcUtils::exec_prepared(pg_conn_, statement.name(), params, res);
-
-  if (error == ErrorCode::OK) {
-    uint64_t number_of_rows_affected = 0;
-    ErrorCode error_get =
-        DbcUtils::get_number_of_rows_affected(res, number_of_rows_affected);
-
-    if (error_get != ErrorCode::OK) {
-      error = error_get;
-    } else if (number_of_rows_affected >= 1) {
-      // Obtain the object ID of the added metadata object.
-      std::string result_value = PQgetvalue(res, kFirstRow, kFirstColumn);
-      error = Utility::str_to_numeric(result_value, object_id);
-    } else {
-      // Convert the error code.
-      error = this->get_not_found_error_code(key);
-    }
-  }
-  PQclear(res);
-
-  return error;
-}
-
-ErrorCode StatisticsDaoPg::remove(ObjectId table_id, std::string_view key,
-                                  std::string_view value,
-                                  ObjectId& object_id) const {
-  ErrorCode error = ErrorCode::UNKNOWN;
-
-  std::string s_table_id(std::to_string(table_id));
-  std::vector<const char*> params;
-  // Set key value.
-  params.emplace_back(s_table_id.c_str());
-  params.emplace_back(value.data());
+  std::transform(values.begin(), values.end(),
+                  std::back_inserter(params),
+                  [](std::string_view value) {
+                    return value.data();
+                  });
 
   // Set DELETE statement.
   DeleteStatement statement;
@@ -361,13 +267,19 @@ void StatisticsDaoPg::create_prepared_statements() {
   {
     // SELECT-all statement with table id specified.
     SelectAllStatement statement{this->get_source_name(),
-                                 this->get_select_all_statement_tid(),
+                                 this->get_select_statement_tid(),
                                  ColumnsDaoPg::ColumnName::kTableId};
-    select_all_statements_.emplace(ColumnsDaoPg::ColumnName::kTableId,
+    select_all_statements_.emplace(Statistics::TABLE_ID,
                                    statement);
   }
 
   {
+    // SELECT statement with table id specified.
+    SelectStatement statement_tid{this->get_source_name(),
+                                  this->get_select_statement_tid(),
+                                  ColumnsDaoPg::ColumnName::kTableId};
+    select_statements_.emplace(Statistics::TABLE_ID, statement_tid);
+
     // SELECT statement with column id specified.
     SelectStatement statement_id{
         this->get_source_name(),
@@ -477,25 +389,6 @@ std::string StatisticsDaoPg::get_select_all_statement() const {
   return query.str();
 }
 
-std::string StatisticsDaoPg::get_select_all_statement_tid() const {
-  // SQL statement
-  boost::format query =
-      boost::format(
-          "SELECT sts.%3%, sts.%4%, sts.%5%, sts.%6%, sts.%7%, sts.%8%"
-          " , col.%11%, col.%12%, col.%13% column_name"
-          " FROM %1%.%2% sts JOIN %1%.%9% col ON (sts.%7% = col.%10%)"
-          " WHERE col.%11% = $1"
-          " ORDER BY %12%") %
-      kSchemaTsurugiCatalog % kTableName % ColumnName::kFormatVersion %
-      ColumnName::kGeneration % ColumnName::kId % ColumnName::kName %
-      ColumnName::kColumnId % ColumnName::kColumnStatistic %
-      ColumnsDaoPg::kTableName % ColumnsDaoPg::ColumnName::kId %
-      ColumnsDaoPg::ColumnName::kTableId %
-      ColumnsDaoPg::ColumnName::kColumnNumber % ColumnsDaoPg::ColumnName::kName;
-
-  return query.str();
-}
-
 std::string StatisticsDaoPg::get_select_statement(std::string_view key) const {
   // SQL statement
   boost::format query =
@@ -511,6 +404,25 @@ std::string StatisticsDaoPg::get_select_statement(std::string_view key) const {
       ColumnsDaoPg::ColumnName::kTableId %
       ColumnsDaoPg::ColumnName::kColumnNumber %
       ColumnsDaoPg::ColumnName::kName % key;
+
+  return query.str();
+}
+
+std::string StatisticsDaoPg::get_select_statement_tid() const {
+  // SQL statement
+  boost::format query =
+      boost::format(
+          "SELECT sts.%3%, sts.%4%, sts.%5%, sts.%6%, sts.%7%, sts.%8%"
+          " , col.%11%, col.%12%, col.%13% column_name"
+          " FROM %1%.%2% sts JOIN %1%.%9% col ON (sts.%7% = col.%10%)"
+          " WHERE col.%11% = $1"
+          " ORDER BY %12%") %
+      kSchemaTsurugiCatalog % kTableName % ColumnName::kFormatVersion %
+      ColumnName::kGeneration % ColumnName::kId % ColumnName::kName %
+      ColumnName::kColumnId % ColumnName::kColumnStatistic %
+      ColumnsDaoPg::kTableName % ColumnsDaoPg::ColumnName::kId %
+      ColumnsDaoPg::ColumnName::kTableId %
+      ColumnsDaoPg::ColumnName::kColumnNumber % ColumnsDaoPg::ColumnName::kName;
 
   return query.str();
 }
@@ -575,7 +487,7 @@ std::string StatisticsDaoPg::get_delete_statement_columns(
 
 ErrorCode StatisticsDaoPg::get_column_statistics_rows(
     std::string_view statement, const std::vector<const char*>& params,
-    std::vector<boost::property_tree::ptree>& objects) const {
+    boost::property_tree::ptree& objects) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   objects.clear();
@@ -590,7 +502,7 @@ ErrorCode StatisticsDaoPg::get_column_statistics_rows(
     if (nrows >= 0) {
       for (int row_number = 0; row_number < nrows; row_number++) {
         ptree object = convert_pgresult_to_ptree(res, row_number);
-        objects.emplace_back(object);
+        objects.push_back(std::make_pair("", object));
       }
     } else {
       error = ErrorCode::INVALID_PARAMETER;

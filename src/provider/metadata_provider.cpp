@@ -114,7 +114,7 @@ ErrorCode MetadataProvider::get_index_metadata(
     return error;
   }
 
-  error = index_dao_->select(key, value, object);
+  error = index_dao_->select(key, {value}, object);
   if (error != ErrorCode::OK) {
     return error;
   }
@@ -170,7 +170,7 @@ ErrorCode MetadataProvider::update_index_metadata(
   }
 
   if (error == ErrorCode::OK) {
-    error = index_dao_->update(Object::ID, std::to_string(object_id), object);
+    error = index_dao_->update(Object::ID, {std::to_string(object_id)}, object);
   }
 
   if (error == ErrorCode::OK) {
@@ -211,7 +211,7 @@ ErrorCode MetadataProvider::remove_index_metadata(std::string_view key,
     return error;
   }
 
-  error = index_dao_->remove(key, value, object_id);
+  error = index_dao_->remove(key, {value}, object_id);
   if (error == ErrorCode::OK) {
     error = session_->commit();
   } else {
