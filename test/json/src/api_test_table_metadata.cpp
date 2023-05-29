@@ -403,7 +403,7 @@ TEST_F(ApiTestTableMetadata, update_table_metadata) {
     column.clear();
     column.put(Column::NAME, "col-1");
     column.put(Column::COLUMN_NUMBER, 1);
-    column.put<ObjectIdType>(Column::DATA_TYPE_ID, 4);
+    column.put<ObjectIdType>(Column::DATA_TYPE_ID, 23);
     column.put<bool>(Column::IS_NOT_NULL, false);
     columns_metadata.push_back(std::make_pair("", column));
 
@@ -411,7 +411,7 @@ TEST_F(ApiTestTableMetadata, update_table_metadata) {
     column.clear();
     column.put(Column::NAME, "col-2");
     column.put(Column::COLUMN_NUMBER, 2);
-    column.put<ObjectIdType>(Column::DATA_TYPE_ID, 6);
+    column.put<ObjectIdType>(Column::DATA_TYPE_ID, 20);
     column.put<bool>(Column::IS_NOT_NULL, true);
     columns_metadata.push_back(std::make_pair("", column));
   }
@@ -525,7 +525,7 @@ TEST_F(ApiTestTableMetadata, update_table_metadata) {
     column.clear();
     column.put(Column::NAME, "new-col");
     column.put(Column::COLUMN_NUMBER, 2);
-    column.put<ObjectIdType>(Column::DATA_TYPE_ID, 13);
+    column.put<ObjectIdType>(Column::DATA_TYPE_ID, 1042);
     column.put<bool>(Column::VARYING, false);
     column.put(Column::DATA_LENGTH, 32);
     column.put<bool>(Column::IS_NOT_NULL, false);

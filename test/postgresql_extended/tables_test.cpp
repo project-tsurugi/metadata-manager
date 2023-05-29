@@ -477,12 +477,13 @@ ErrorCode tables_test() {
   new_table.put(Table::NAMESPACE, "namespace");
   new_table.put(Table::NUMBER_OF_TUPLES, 15);
 
-  // Set the value of the columns to ptree.
   ptree columns;
   ptree column;
+
+  // Set the value of the columns to ptree.
   column.put(Column::NAME, "col-1");
   column.put(Column::COLUMN_NUMBER, 1);
-  column.put(Column::DATA_TYPE_ID, 6);
+  column.put(Column::DATA_TYPE_ID, 20);
   column.put(Column::IS_NOT_NULL, "true");
   columns.push_back(std::make_pair("", column));
 
@@ -490,9 +491,15 @@ ErrorCode tables_test() {
   column.put(Column::NAME, "col-2");
   column.put(Column::COLUMN_NUMBER, 2);
   column.put(Column::IS_NOT_NULL, "false");
-  column.put(Column::DATA_TYPE_ID, 14);
+  column.put(Column::DATA_TYPE_ID, 1043);
+  {
+    ptree elements;
+    ptree element;
+    element.put("", 100);
+    elements.push_back(std::make_pair("", element));
+    column.add_child(Column::DATA_LENGTH, elements);
+  }
   column.put(Column::VARYING, "true");
-  column.put(Column::DATA_LENGTH, 100);
   column.put(Column::DEFAULT_EXPR, "default-text");
   columns.push_back(std::make_pair("", column));
   new_table.add_child(Table::COLUMNS_NODE, columns);
@@ -595,7 +602,7 @@ ErrorCode tables_test() {
       it->second.get_optional<std::string>(Column::NAME).value_or("unknown-1") +
           "-update");
   update_column.put(Column::COLUMN_NUMBER, 1);
-  update_column.put(Column::DATA_TYPE_ID, 6);
+  update_column.put(Column::DATA_TYPE_ID, 20);
   update_column.erase(Column::DATA_LENGTH);
   update_column.put<bool>(Column::VARYING, false);
   update_column.put<bool>(Column::IS_NOT_NULL, true);
@@ -606,10 +613,16 @@ ErrorCode tables_test() {
   update_column.clear();
   update_column.put(Column::NAME, "new-col-3");
   update_column.put(Column::COLUMN_NUMBER, 2);
-  update_column.put(Column::DATA_TYPE_ID, 14);
+  update_column.put(Column::DATA_TYPE_ID, 1043);
+  {
+    ptree elements;
+    ptree element;
+    element.put("", 200);
+    elements.push_back(std::make_pair("", element));
+    update_column.add_child(Column::DATA_LENGTH, elements);
+  }
   update_column.put<bool>(Column::VARYING, false);
   update_column.put<bool>(Column::IS_NOT_NULL, true);
-  update_column.put(Column::DATA_LENGTH, 200);
   update_column.put(Column::DEFAULT_EXPR, "default-text-2");
   update_columns.push_back(std::make_pair("", update_column));
 
