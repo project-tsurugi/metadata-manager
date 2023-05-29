@@ -121,6 +121,7 @@ class Roles : public Metadata {
                    [[maybe_unused]] ObjectIdType* object_id) const override {
     return ErrorCode::UNKNOWN;
   }
+
 };  // class Roles
 
 }  // namespace manager::metadata

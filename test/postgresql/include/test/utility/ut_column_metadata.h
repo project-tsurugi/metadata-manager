@@ -33,9 +33,9 @@ class UTColumnMetadata {
   std::int64_t data_type_id = NOT_INITIALIZED;
   boost::property_tree::ptree p_data_length;  //!< @brief array of data length
   std::vector<int64_t> data_length;
-  int varying = NOT_INITIALIZED;
+  bool varying;
   bool is_not_null;
-  std::string default_expr;
+  std::string default_expr = "";
 
   UTColumnMetadata() = delete;
   UTColumnMetadata(std::string name, std::int64_t column_number,

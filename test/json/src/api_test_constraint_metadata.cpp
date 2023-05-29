@@ -25,6 +25,7 @@
 #include "manager/metadata/constraints.h"
 #include "manager/metadata/error_code.h"
 #include "manager/metadata/tables.h"
+#include "manager/metadata/metadata_factory.h"
 #include "test/global_test_environment.h"
 #include "test/helper/constraint_metadata_helper.h"
 #include "test/helper/table_metadata_helper.h"
@@ -381,7 +382,7 @@ TEST_F(ApiTestConstraintMetadata, add_get_constraint_metadata_object_ptree) {
   new_constraints.table_id = table_id;
 
   // generate constraint metadata manager.
-  auto constraints = std::make_unique<Constraints>(GlobalTestEnvironment::TEST_DB);
+  auto constraints = manager::metadata::get_constraints_ptr(GlobalTestEnvironment::TEST_DB);
   ErrorCode error  = constraints->init();
   ASSERT_EQ(ErrorCode::OK, error);
 
@@ -446,7 +447,7 @@ TEST_F(ApiTestConstraintMetadata, add_get_constraint_metadata_ptree_object) {
   new_constraints.put(Constraint::TABLE_ID, table_id);
 
   // generate constraint metadata manager.
-  auto constraints = std::make_unique<Constraints>(GlobalTestEnvironment::TEST_DB);
+  auto constraints = manager::metadata::get_constraints_ptr(GlobalTestEnvironment::TEST_DB);
   ErrorCode error  = constraints->init();
   ASSERT_EQ(ErrorCode::OK, error);
 
@@ -473,7 +474,7 @@ TEST_F(ApiTestConstraintMetadata, add_get_constraint_metadata_ptree_object) {
   {
     Constraint get_constraint_metadata;
     // get constraint metadata by constraint id.
-    error = constraints->get(ret_id_value, get_constraint_metadata);
+    error = constraints->get(ret_id_value, get_constraint_metadata); 
     EXPECT_EQ(ErrorCode::OK, error);
 
     UTUtils::print(UTUtils::get_tree_string(get_constraint_metadata.convert_to_ptree()));

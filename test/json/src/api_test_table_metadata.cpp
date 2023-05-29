@@ -76,7 +76,7 @@ TEST_F(ApiTestTableMetadata, add_get_table_metadata_by_table_name3) {
   UTUtils::print(UTUtils::get_tree_string(table_metadata_inserted));
 
   // verifies that the returned table metadata is expected one.
-  TableMetadataHelper::check_table_metadata_expected(new_table,
+  TableMetadataHelper::check_table_metadata_expected(new_table.convert_to_ptree(),
                                                      table_metadata_inserted);
   // cleanup
   tables->remove(new_table_name.c_str(), nullptr);
@@ -124,7 +124,7 @@ TEST_F(ApiTestTableMetadata, add_get_table_metadata_by_table_name2) {
 
   // verifies that the returned table metadata is expected one.
   TableMetadataHelper::check_table_metadata_expected(new_table,
-                                                     table_metadata_inserted);
+                                                     table_metadata_inserted.convert_to_ptree());
   // cleanup
   tables->remove(new_table_name.c_str(), nullptr);
 }
@@ -312,6 +312,75 @@ TEST_F(ApiTestTableMetadata, add_get_table_metadata_by_table_id) {
 
   // cleanup
   tables->remove(new_table_name.c_str(), nullptr);
+}
+
+/**
+ * @brief happy test for all table metadata getting.
+ */
+TEST_F(ApiTestTableMetadata, get_all_table_next) {
+  constexpr int test_table_count      = 5;
+  std::string table_name_prefix       = "Table-ApiTestTableMetadata-GetAll-";
+  std::vector<ObjectIdType> table_ids = {};
+
+  // prepare test data for adding table metadata.
+  UTTableMetadata testdata_table_metadata =
+      *(global->testdata_table_metadata.get());
+  ptree expected_table = testdata_table_metadata.tables;
+
+  // add table metadata.
+  for (int count = 1; count <= test_table_count; count++) {
+    std::string table_name = table_name_prefix + std::to_string(count);
+    ObjectIdType table_id;
+    TableMetadataHelper::add_table(table_name, &table_id);
+    table_ids.emplace_back(table_id);
+  }
+
+  // gets all table metadata.
+  auto tables = manager::metadata::get_tables_ptr(GlobalTestEnvironment::TEST_DB);
+//  auto tables = std::make_unique<manager::metadata::Tables>(GlobalTestEnvironment::TEST_DB);
+  ErrorCode error = tables->init();
+  EXPECT_EQ(ErrorCode::OK, error);
+
+  int64_t actual_count = 0;
+  ptree pt;
+  while ((error = tables->next(pt)) == ErrorCode::OK) {
+    UTUtils::print("-- get all table metadata --");
+    UTUtils::print(UTUtils::get_tree_string(pt));
+
+    std::string table_name = table_name_prefix + std::to_string(actual_count + 1);
+    expected_table.put(Tables::ID, table_ids[actual_count]);
+    expected_table.put(Tables::NAME, table_name);
+
+    // verifies that the returned table metadata is expected one.
+    TableMetadataHelper::check_table_metadata_expected(expected_table,
+                                                       pt);
+    ++actual_count;
+  }
+  ASSERT_EQ(test_table_count, actual_count);
+
+  tables->get_all();
+  actual_count = 0;
+  Table table;
+  while ((error = tables->next(table)) == ErrorCode::OK) {
+    UTUtils::print("-- get all table metadata --");
+    UTUtils::print(UTUtils::get_tree_string(table.convert_to_ptree()));
+
+    std::string table_name = table_name_prefix + std::to_string(actual_count + 1);
+    expected_table.put(Tables::ID, table_ids[actual_count]);
+    expected_table.put(Tables::NAME, table_name);
+
+    // verifies that the returned table metadata is expected one.
+    TableMetadataHelper::check_table_metadata_expected(expected_table,
+                                                       table.convert_to_ptree());
+    ++actual_count;
+  }
+  ASSERT_EQ(test_table_count, actual_count);
+
+  // cleanup
+  for (ObjectIdType table_id : table_ids) {
+    error = tables->remove(table_id);
+    EXPECT_EQ(ErrorCode::OK, error);
+  }
 }
 
 /**
