@@ -12,4 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-add_subdirectory(v2.0)
+if (DATA_STORAGE_JSON)
+  add_subdirectory(json)
+else()
+  add_subdirectory(postgresql)
+endif()
