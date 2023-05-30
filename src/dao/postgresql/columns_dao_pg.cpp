@@ -415,12 +415,11 @@ ErrorCode ColumnsDAO::select_column_metadata(
   if (error == ErrorCode::OK) {
     int nrows = PQntuples(res);
     if (nrows >= 1) {
-      for (int ordinal_position = 0; ordinal_position < nrows;
-           ordinal_position++) {
+      for (int row_number = 0; row_number < nrows; row_number++) {
         ptree column;
 
         // Convert acquired data to ptree type.
-        error = convert_pgresult_to_ptree(res, ordinal_position, column);
+        error = convert_pgresult_to_ptree(res, row_number, column);
         if (error != ErrorCode::OK) {
           break;
         }
@@ -501,12 +500,12 @@ ErrorCode ColumnsDAO::delete_column_metadata(
  * @brief Gets the ptree type column metadata
  *  converted from the given PGresult type value.
  * @param (res)               [in]  the result of a query.
- * @param (ordinal_position)  [in]  column ordinal position of PGresult.
+ * @param (row_number)        [in]  row number of the PGresult.
  * @param (columns_metadata)  [out] one column metadata.
  * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode ColumnsDAO::convert_pgresult_to_ptree(
-    const PGresult* res, const int ordinal_position,
+    const PGresult* res, const int row_number,
     boost::property_tree::ptree& columns_metadata) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
@@ -516,45 +515,45 @@ ErrorCode ColumnsDAO::convert_pgresult_to_ptree(
   // Set the value of the format_version column to ptree.
   columns_metadata.put(
       Column::FORMAT_VERSION,
-      PQgetvalue(res, ordinal_position,
+      PQgetvalue(res, row_number,
                  static_cast<int>(OrdinalPosition::kFormatVersion)));
 
   // Set the value of the generation column to ptree.
   columns_metadata.put(
       Column::GENERATION,
-      PQgetvalue(res, ordinal_position,
+      PQgetvalue(res, row_number,
                  static_cast<int>(OrdinalPosition::kGeneration)));
 
   // Set the value of the id to ptree.
-  columns_metadata.put(Column::ID,
-                       PQgetvalue(res, ordinal_position,
-                                  static_cast<int>(OrdinalPosition::kId)));
+  columns_metadata.put(
+      Column::ID,
+      PQgetvalue(res, row_number, static_cast<int>(OrdinalPosition::kId)));
 
   // Set the value of the name to ptree.
-  columns_metadata.put(Column::NAME,
-                       PQgetvalue(res, ordinal_position,
-                                  static_cast<int>(OrdinalPosition::kName)));
+  columns_metadata.put(
+      Column::NAME,
+      PQgetvalue(res, row_number, static_cast<int>(OrdinalPosition::kName)));
 
   // Set the value of the table_id to ptree.
-  columns_metadata.put(Column::TABLE_ID,
-                       PQgetvalue(res, ordinal_position,
-                                  static_cast<int>(OrdinalPosition::kTableId)));
+  columns_metadata.put(
+      Column::TABLE_ID,
+      PQgetvalue(res, row_number, static_cast<int>(OrdinalPosition::kTableId)));
 
   // Set the value of the ordinal_position to ptree.
   columns_metadata.put(
       Column::COLUMN_NUMBER,
-      PQgetvalue(res, ordinal_position,
+      PQgetvalue(res, row_number,
                  static_cast<int>(OrdinalPosition::kColumnNumber)));
 
   // Set the value of the data_type_id to ptree.
   columns_metadata.put(
       Column::DATA_TYPE_ID,
-      PQgetvalue(res, ordinal_position,
+      PQgetvalue(res, row_number,
                  static_cast<int>(OrdinalPosition::kDataTypeId)));
 
   // Set the value of the data_length to ptree.
   std::string data_length = std::string(PQgetvalue(
-      res, ordinal_position, static_cast<int>(OrdinalPosition::kDataLength)));
+      res, row_number, static_cast<int>(OrdinalPosition::kDataLength)));
   if (!data_length.empty()) {
     ptree p_data_length;
     // Converts a JSON string to a property_tree.
@@ -566,29 +565,29 @@ ErrorCode ColumnsDAO::convert_pgresult_to_ptree(
   }
 
   // Set the value of the varying to ptree.
-  std::string varying = DbcUtils::convert_boolean_expression(PQgetvalue(
-      res, ordinal_position, static_cast<int>(OrdinalPosition::kVarying)));
+  std::string varying = DbcUtils::convert_boolean_expression(
+      PQgetvalue(res, row_number, static_cast<int>(OrdinalPosition::kVarying)));
   if (!varying.empty()) {
     columns_metadata.put(Column::VARYING, varying);
   }
 
   // Set the value of the nullable to ptree.
   std::string nullable = DbcUtils::convert_boolean_expression(PQgetvalue(
-      res, ordinal_position, static_cast<int>(OrdinalPosition::kIsNotNull)));
+      res, row_number, static_cast<int>(OrdinalPosition::kIsNotNull)));
   if (!nullable.empty()) {
     columns_metadata.put(Column::IS_NOT_NULL, nullable);
   }
 
   // Set the value of the default_expr to ptree.
   std::string default_expr = PQgetvalue(
-      res, ordinal_position, static_cast<int>(OrdinalPosition::kDefaultExpr));
+      res, row_number, static_cast<int>(OrdinalPosition::kDefaultExpr));
   if (!default_expr.empty()) {
     columns_metadata.put(Column::DEFAULT_EXPR, default_expr);
   }
 
   // Set the value of the is_funcexpr to ptree.
   std::string is_funcexpr = DbcUtils::convert_boolean_expression(PQgetvalue(
-      res, ordinal_position, static_cast<int>(OrdinalPosition::kIsFuncExpr)));
+      res, row_number, static_cast<int>(OrdinalPosition::kIsFuncExpr)));
   if (!is_funcexpr.empty()) {
     columns_metadata.put(Column::IS_FUNCEXPR, is_funcexpr);
   }
