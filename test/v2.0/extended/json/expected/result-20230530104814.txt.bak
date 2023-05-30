@@ -1,0 +1,164 @@
+*** TableMetadata test start. ***
+
+=== Start test of add and get of Tables class. ===
+--- get table metadata by table name. ---
+--- table metadata ---
+         id: [1]
+       name: [table_1]
+  namespace: [public]
+ numberOfTu: [123]
+--- columns metadata ---
+         id: [1]
+    tableId: [1]
+       name: [column_1]
+ columnNumb: [1]
+ dataTypeId: [8]
+ dataLength: [--]
+    varying: [--]
+  isNotNull: [0]
+ defaultExp: [--]
+  ------------------
+         id: [2]
+    tableId: [1]
+       name: [column_2]
+ columnNumb: [2]
+ dataTypeId: [14]
+ dataLength: [8]
+    varying: [1]
+  isNotNull: [0]
+ defaultExp: [--]
+  ------------------
+         id: [3]
+    tableId: [1]
+       name: [column_3]
+ columnNumb: [3]
+ dataTypeId: [13]
+ dataLength: [1]
+    varying: [0]
+  isNotNull: [1]
+ defaultExp: [--]
+  ------------------
+--- get table metadata by table id. ---
+--- table metadata ---
+         id: [1]
+       name: [table_1]
+  namespace: [public]
+ numberOfTu: [123]
+--- columns metadata ---
+         id: [1]
+    tableId: [1]
+       name: [column_1]
+ columnNumb: [1]
+ dataTypeId: [8]
+ dataLength: [--]
+    varying: [--]
+  isNotNull: [0]
+ defaultExp: [--]
+  ------------------
+         id: [2]
+    tableId: [1]
+       name: [column_2]
+ columnNumb: [2]
+ dataTypeId: [14]
+ dataLength: [8]
+    varying: [1]
+  isNotNull: [0]
+ defaultExp: [--]
+  ------------------
+         id: [3]
+    tableId: [1]
+       name: [column_3]
+ columnNumb: [3]
+ dataTypeId: [13]
+ dataLength: [1]
+    varying: [0]
+  isNotNull: [1]
+ defaultExp: [--]
+  ------------------
+=== Done test of add and get of Tables class. ===
+
+=== Start test of update of Tables class. ===
+ --- table metadata ---
+         id: [2] --> [2]
+       name: [table_2] --> [table_2-update]
+  namespace: [public] --> [public-update]
+ numberOfTu: [123] --> [246]
+--- columns metadata ---
+         id: [4] --> [--]
+    tableId: [2] --> [--]
+       name: [column_1] --> [--]
+ columnNumb: [1] --> [--]
+ dataTypeId: [8] --> [--]
+ dataLength: [--] --> [--]
+    varying: [--] --> [--]
+  isNotNull: [0] --> [--]
+ defaultExp: [--] --> [--]
+ ------------------
+         id: [5] --> [5]
+    tableId: [2] --> [2]
+       name: [column_2] --> [column_2-update]
+ columnNumb: [2] --> [1]
+ dataTypeId: [14] --> [6]
+ dataLength: [8] --> [--]
+    varying: [1] --> [0]
+  isNotNull: [0] --> [1]
+ defaultExp: [--] --> [-1]
+ ------------------
+         id: [6] --> [6]
+    tableId: [2] --> [2]
+       name: [column_3] --> [column_3-update]
+ columnNumb: [3] --> [2]
+ dataTypeId: [13] --> [14]
+ dataLength: [1] --> [123]
+    varying: [0] --> [1]
+  isNotNull: [1] --> [0]
+ defaultExp: [--] --> [default-string]
+ ------------------
+         id: [--] --> [7]
+    tableId: [--] --> [2]
+       name: [--] --> [new-col]
+ columnNumb: [--] --> [3]
+ dataTypeId: [--] --> [4]
+ dataLength: [--] --> [--]
+    varying: [--] --> [0]
+  isNotNull: [--] --> [0]
+ defaultExp: [--] --> [9999]
+ ------------------
+=== Done test of update of Tables class. ===
+
+=== Start test of remove of Tables class. ===
+=== Done test of remove of Tables class. ===
+remove table name :table_3, id:3
+remove table name :table_5, id:5
+remove table name :table_6, id:6
+remove table name :table_4, id:4
+can't remove table name not exists :table_name_not_exists
+remove table id:7
+remove table id:9
+remove table id:10
+remove table id:8
+can't remove table id not exists :0
+=== remove table functions test done. ===
+
+=== Start test of get of DataTypes class. ===
+DataTypes -> FORMAT_VERSION:[1] / GENERATION:[1] / ID:[23] / NAME:[INT32]
+DataTypes -> FORMAT_VERSION:[1] / GENERATION:[1] / ID:[20] / NAME:[INT64]
+DataTypes -> FORMAT_VERSION:[1] / GENERATION:[1] / ID:[700] / NAME:[FLOAT32]
+DataTypes -> FORMAT_VERSION:[1] / GENERATION:[1] / ID:[701] / NAME:[FLOAT64]
+DataTypes -> FORMAT_VERSION:[1] / GENERATION:[1] / ID:[1042] / NAME:[CHAR]
+DataTypes -> FORMAT_VERSION:[1] / GENERATION:[1] / ID:[1043] / NAME:[VARCHAR]
+DataTypes -> FORMAT_VERSION:[1] / GENERATION:[1] / ID:[1700] / NAME:[NUMERIC]
+DataTypes -> FORMAT_VERSION:[1] / GENERATION:[1] / ID:[1082] / NAME:[DATE]
+DataTypes -> FORMAT_VERSION:[1] / GENERATION:[1] / ID:[1083] / NAME:[TIME]
+DataTypes -> FORMAT_VERSION:[1] / GENERATION:[1] / ID:[1266] / NAME:[TIMETZ]
+DataTypes -> FORMAT_VERSION:[1] / GENERATION:[1] / ID:[1114] / NAME:[TIMESTAMP]
+DataTypes -> FORMAT_VERSION:[1] / GENERATION:[1] / ID:[1184] / NAME:[TIMESTAMPTZ]
+DataTypes -> FORMAT_VERSION:[1] / GENERATION:[1] / ID:[1186] / NAME:[INTERVAL]
+=== Done test of get of DataTypes class. ===
+
+Tables add and get functions test: Success
+Tables update functions test     : Success
+Tables remove functions test     : Success
+DataTypes get functions test     : Success
+
+*** TableMetadata test completed. ***
