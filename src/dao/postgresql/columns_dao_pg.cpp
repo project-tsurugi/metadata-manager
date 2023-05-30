@@ -246,7 +246,7 @@ ErrorCode ColumnsDAO::insert_column_metadata(
     const ObjectIdType table_id,
     const boost::property_tree::ptree& columns_metadata) const {
   ErrorCode error = ErrorCode::UNKNOWN;
-  std::vector<char const*> param_values;
+  std::vector<const char*> param_values;
   StatementName statementName;
 
   // Checks for INSERT execution with object-id specified.

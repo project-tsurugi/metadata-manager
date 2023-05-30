@@ -307,7 +307,7 @@ ErrorCode TablesDAO::insert_table_metadata(
     const boost::property_tree::ptree& table_metadata,
     ObjectIdType& table_id) const {
   ErrorCode error = ErrorCode::UNKNOWN;
-  std::vector<char const*> param_values;
+  std::vector<const char*> param_values;
 
   // format_version
   std::string s_format_version = std::to_string(Tables::format_version());
@@ -456,7 +456,7 @@ ErrorCode TablesDAO::update_table_metadata(
     const ObjectIdType table_id,
     const boost::property_tree::ptree& table_metadata) const {
   ErrorCode error = ErrorCode::UNKNOWN;
-  std::vector<char const*> param_values;
+  std::vector<const char*> param_values;
 
   // name
   boost::optional<std::string> name =
@@ -515,7 +515,7 @@ ErrorCode TablesDAO::update_reltuples(int64_t number_of_tuples,
                                       std::string_view object_value,
                                       ObjectIdType& table_id) const {
   ErrorCode error = ErrorCode::UNKNOWN;
-  std::vector<char const*> param_values;
+  std::vector<const char*> param_values;
 
   // tuples
   std::string s_reltuples = std::to_string(number_of_tuples);

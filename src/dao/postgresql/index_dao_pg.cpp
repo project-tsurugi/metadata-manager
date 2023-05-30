@@ -550,7 +550,7 @@ ErrorCode IndexDaoPg::update(
     const boost::property_tree::ptree& object) const {
 
   ErrorCode error = ErrorCode::UNKNOWN;
-  std::vector<char const*> params;
+  std::vector<const char*> params;
 
   auto name = object.get_optional<std::string>(Index::NAME);
   params.emplace_back((name ? name.value().c_str() : nullptr));
