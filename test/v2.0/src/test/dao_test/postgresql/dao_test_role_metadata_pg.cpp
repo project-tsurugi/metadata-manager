@@ -38,7 +38,7 @@ class DaoTestRolesMetadata : public ::testing::Test {
   void SetUp() override {
     UTUtils::skip_if_connection_not_opened();
 
-    if (global->is_open()) {
+    if (g_environment_->is_open()) {
       UTUtils::print(">> gtest::SetUp()");
 
       // Create dummy data for ROLE.
@@ -49,7 +49,7 @@ class DaoTestRolesMetadata : public ::testing::Test {
   }
 
   void TearDown() override {
-    if (global->is_open()) {
+    if (g_environment_->is_open()) {
       UTUtils::print(">> gtest::TearDown()");
 
       // Remove dummy data for ROLE.

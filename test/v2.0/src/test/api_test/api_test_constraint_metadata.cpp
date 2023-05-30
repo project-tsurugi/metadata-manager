@@ -36,7 +36,7 @@ class ApiTestConstraintMetadata : public ::testing::Test {
   void SetUp() override {
     UTUtils::skip_if_connection_not_opened();
 
-    if (global->is_open()) {
+    if (g_environment_->is_open()) {
       UTUtils::print(">> gtest::SetUp()");
 
       // Change to a unique table name.
@@ -49,7 +49,7 @@ class ApiTestConstraintMetadata : public ::testing::Test {
   }
 
   void TearDown() override {
-    if (global->is_open()) {
+    if (g_environment_->is_open()) {
       UTUtils::print(">> gtest::TearDown()");
 
       // Remove table metadata.

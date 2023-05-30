@@ -36,7 +36,7 @@ class ApiTestRolesMetadataPg : public ::testing::Test {
     UTUtils::skip_if_json();
     UTUtils::skip_if_connection_not_opened();
 
-    if (UTUtils::is_postgresql() && global->is_open()) {
+    if (UTUtils::is_postgresql() && g_environment_->is_open()) {
       UTUtils::print(">> gtest::SetUp()");
 
       // Create dummy data for ROLE.
@@ -47,7 +47,7 @@ class ApiTestRolesMetadataPg : public ::testing::Test {
   }
 
   void TearDown() override {
-    if (UTUtils::is_postgresql() && global->is_open()) {
+    if (UTUtils::is_postgresql() && g_environment_->is_open()) {
       UTUtils::print(">> gtest::TearDown()");
 
       // Remove dummy data for ROLE.
