@@ -23,11 +23,7 @@
 
 #include <boost/property_tree/ptree.hpp>
 
-#include "manager/metadata/constraints.h"
-#include "manager/metadata/datatypes.h"
-#include "manager/metadata/roles.h"
-#include "manager/metadata/statistics.h"
-#include "manager/metadata/tables.h"
+#include "manager/metadata/metadata_factory.h"
 #include "test/common/global_test_environment.h"
 #include "test/common/ut_utils.h"
 #include "test/helper/column_statistics_helper.h"
@@ -156,7 +152,7 @@ INSTANTIATE_TEST_CASE_P(
  *   return ErrorCode::DATABASE_ACCESS_FAILURE
  */
 TEST_F(ApiTestDBAccessFailure, add_table_metadata) {
-  auto tables = std::make_unique<Tables>(GlobalTestEnvironment::TEST_DB);
+  auto tables = get_tables_ptr(GlobalTestEnvironment::TEST_DB);
 
   ErrorCode error = tables->init();
   EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
@@ -180,7 +176,7 @@ TEST_F(ApiTestDBAccessFailure, add_table_metadata) {
 TEST_F(ApiTestDBAccessFailure, get_table_metadata_by_table_id) {
   ObjectIdType table_id = 1;
 
-  auto tables = std::make_unique<Tables>(GlobalTestEnvironment::TEST_DB);
+  auto tables = get_tables_ptr(GlobalTestEnvironment::TEST_DB);
 
   ErrorCode error = tables->init();
   EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
@@ -200,7 +196,7 @@ TEST_F(ApiTestDBAccessFailure, get_table_metadata_by_table_id) {
  *   return ErrorCode::DATABASE_ACCESS_FAILURE
  */
 TEST_F(ApiTestDBAccessFailure, get_table_metadata_by_table_name) {
-  auto tables = std::make_unique<Tables>(GlobalTestEnvironment::TEST_DB);
+  auto tables = get_tables_ptr(GlobalTestEnvironment::TEST_DB);
 
   ErrorCode error = tables->init();
   EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
@@ -221,7 +217,7 @@ TEST_F(ApiTestDBAccessFailure, get_table_metadata_by_table_name) {
  *   return ErrorCode::DATABASE_ACCESS_FAILURE
  */
 TEST_F(ApiTestDBAccessFailure, update_table_metadata) {
-  auto tables = std::make_unique<Tables>(GlobalTestEnvironment::TEST_DB);
+  auto tables = get_tables_ptr(GlobalTestEnvironment::TEST_DB);
 
   ErrorCode error = tables->init();
   EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
@@ -242,7 +238,7 @@ TEST_F(ApiTestDBAccessFailure, update_table_metadata) {
  *   return ErrorCode::DATABASE_ACCESS_FAILURE
  */
 TEST_F(ApiTestDBAccessFailure, remove_table_metadata_by_table_id) {
-  auto tables = std::make_unique<Tables>(GlobalTestEnvironment::TEST_DB);
+  auto tables = get_tables_ptr(GlobalTestEnvironment::TEST_DB);
 
   ErrorCode error = tables->init();
   EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
@@ -257,7 +253,7 @@ TEST_F(ApiTestDBAccessFailure, remove_table_metadata_by_table_id) {
  *   return ErrorCode::DATABASE_ACCESS_FAILURE
  */
 TEST_F(ApiTestDBAccessFailure, remove_table_metadata_by_table_name) {
-  auto tables = std::make_unique<Tables>(GlobalTestEnvironment::TEST_DB);
+  auto tables = get_tables_ptr(GlobalTestEnvironment::TEST_DB);
 
   ErrorCode error = tables->init();
   EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
@@ -275,7 +271,7 @@ TEST_F(ApiTestDBAccessFailure, remove_table_metadata_by_table_name) {
  *  return ErrorCode::DATABASE_ACCESS_FAILURE
  */
 TEST_F(ApiTestDBAccessFailure, get_datatypes_by_name) {
-  auto datatypes = std::make_unique<DataTypes>(GlobalTestEnvironment::TEST_DB);
+  auto datatypes = get_datatypes_ptr(GlobalTestEnvironment::TEST_DB);
 
   ErrorCode error = datatypes->init();
   EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
@@ -296,7 +292,9 @@ TEST_F(ApiTestDBAccessFailure, get_datatypes_by_name) {
  *   return ErrorCode::DATABASE_ACCESS_FAILURE
  */
 TEST_F(ApiTestDBAccessFailure, get_datatypes_by_key_value) {
-  auto datatypes = std::make_unique<DataTypes>(GlobalTestEnvironment::TEST_DB);
+  // TODO(future): Change when changing Metadata class.
+  auto datatypes_tmp = get_datatypes_ptr(GlobalTestEnvironment::TEST_DB);
+  auto datatypes = static_cast<DataTypes*>(datatypes_tmp.get());
 
   ErrorCode error = datatypes->init();
   EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
@@ -318,7 +316,7 @@ TEST_F(ApiTestDBAccessFailure, get_datatypes_by_key_value) {
  *   return ErrorCode::DATABASE_ACCESS_FAILURE
  */
 TEST_F(ApiTestDBAccessFailure, get_roles_by_id) {
-  auto roles = std::make_unique<Roles>(GlobalTestEnvironment::TEST_DB);
+  auto roles = get_roles_ptr(GlobalTestEnvironment::TEST_DB);
 
   ErrorCode error = roles->init();
   EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
@@ -338,7 +336,7 @@ TEST_F(ApiTestDBAccessFailure, get_roles_by_id) {
  *   return ErrorCode::DATABASE_ACCESS_FAILURE
  */
 TEST_F(ApiTestDBAccessFailure, get_roles_by_name) {
-  auto roles = std::make_unique<Roles>(GlobalTestEnvironment::TEST_DB);
+  auto roles = get_roles_ptr(GlobalTestEnvironment::TEST_DB);
 
   ErrorCode error = roles->init();
   EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
@@ -363,7 +361,7 @@ TEST_F(ApiTestDBAccessFailure, add_constraint_metadata) {
   new_constraints.put<ObjectId>(Constraint::TABLE_ID, 1);
 
   auto constraints =
-      std::make_unique<Constraints>(GlobalTestEnvironment::TEST_DB);
+      get_constraints_ptr(GlobalTestEnvironment::TEST_DB);
 
   ErrorCode error = constraints->init();
   EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
@@ -383,7 +381,7 @@ TEST_F(ApiTestDBAccessFailure, get_constraint_metadata) {
   ObjectIdType constraint_id = 1;
 
   auto constraints =
-      std::make_unique<Constraints>(GlobalTestEnvironment::TEST_DB);
+      get_constraints_ptr(GlobalTestEnvironment::TEST_DB);
 
   ErrorCode error = constraints->init();
   EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
@@ -404,7 +402,7 @@ TEST_F(ApiTestDBAccessFailure, get_constraint_metadata) {
  */
 TEST_F(ApiTestDBAccessFailure, remove_constraint_metadata) {
   auto constraints =
-      std::make_unique<Constraints>(GlobalTestEnvironment::TEST_DB);
+      get_constraints_ptr(GlobalTestEnvironment::TEST_DB);
 
   ErrorCode error = constraints->init();
   EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
@@ -420,7 +418,9 @@ TEST_F(ApiTestDBAccessFailure, remove_constraint_metadata) {
  */
 TEST_P(ApiTestDBAccessFailureByTableIdReltuples,
        add_table_statistic_by_table_id) {
-  auto tables = std::make_unique<Tables>(GlobalTestEnvironment::TEST_DB);
+  // TODO(future): Change when changing Metadata class.
+  auto tables_tmp = get_tables_ptr(GlobalTestEnvironment::TEST_DB);
+  auto tables = static_cast<Tables*>(tables_tmp.get());
 
   ErrorCode error = tables->init();
   EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
@@ -452,7 +452,9 @@ TEST_P(ApiTestDBAccessFailureByTableIdReltuples,
  */
 TEST_P(ApiTestDBAccessFailureByTableNameReltuples,
        add_table_statistic_by_table_name) {
-  auto tables = std::make_unique<Tables>(GlobalTestEnvironment::TEST_DB);
+  // TODO(future): Change when changing Metadata class.
+  auto tables_tmp = get_tables_ptr(GlobalTestEnvironment::TEST_DB);
+  auto tables = static_cast<Tables*>(tables_tmp.get());
 
   ErrorCode error = tables->init();
   EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
@@ -483,7 +485,9 @@ TEST_P(ApiTestDBAccessFailureByTableNameReltuples,
  * return ErrorCode::DATABASE_ACCESS_FAILURE
  */
 TEST_P(ApiTestDBAccessFailureByTableId, get_table_statistic_by_table_id) {
-  auto tables = std::make_unique<Tables>(GlobalTestEnvironment::TEST_DB);
+  // TODO(future): Change when changing Metadata class.
+  auto tables_tmp = get_tables_ptr(GlobalTestEnvironment::TEST_DB);
+  auto tables = static_cast<Tables*>(tables_tmp.get());
 
   ErrorCode error = tables->init();
   EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
@@ -507,7 +511,9 @@ TEST_P(ApiTestDBAccessFailureByTableId, get_table_statistic_by_table_id) {
  * return ErrorCode::DATABASE_ACCESS_FAILURE
  */
 TEST_P(ApiTestDBAccessFailureByTableName, get_table_statistics_by_table_name) {
-  auto tables = std::make_unique<Tables>(GlobalTestEnvironment::TEST_DB);
+  // TODO(future): Change when changing Metadata class.
+  auto tables_tmp = get_tables_ptr(GlobalTestEnvironment::TEST_DB);
+  auto tables = static_cast<Tables*>(tables_tmp.get());
 
   ErrorCode error = tables->init();
   EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
@@ -531,7 +537,7 @@ TEST_P(ApiTestDBAccessFailureByTableName, get_table_statistics_by_table_name) {
  * return ErrorCode::DATABASE_ACCESS_FAILURE
  */
 TEST_P(ApiTestDBAccessFailureByColumnStatistics, add_one_column_statistic) {
-  auto stats = std::make_unique<Statistics>(GlobalTestEnvironment::TEST_DB);
+  auto stats = get_statistics_ptr(GlobalTestEnvironment::TEST_DB);
 
   ErrorCode error = stats->init();
   EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
@@ -561,7 +567,9 @@ TEST_P(ApiTestDBAccessFailureByColumnStatistics, add_one_column_statistic) {
  * return ErrorCode::DATABASE_ACCESS_FAILURE
  */
 TEST_P(ApiTestDBAccessFailureByTableIdColumnNumber, get_one_column_statistic) {
-  auto stats = std::make_unique<Statistics>(GlobalTestEnvironment::TEST_DB);
+  // TODO(future): Change when changing Metadata class.
+  auto stats_tmp = get_statistics_ptr(GlobalTestEnvironment::TEST_DB);
+  auto stats = static_cast<Statistics*>(stats_tmp.get());
 
   ErrorCode error = stats->init();
   EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
@@ -586,7 +594,9 @@ TEST_P(ApiTestDBAccessFailureByTableIdColumnNumber, get_one_column_statistic) {
  * return ErrorCode::DATABASE_ACCESS_FAILURE
  */
 TEST_P(ApiTestDBAccessFailureByTableId, get_all_column_statistics) {
-  auto stats = std::make_unique<Statistics>(GlobalTestEnvironment::TEST_DB);
+  // TODO(future): Change when changing Metadata class.
+  auto stats_tmp = get_statistics_ptr(GlobalTestEnvironment::TEST_DB);
+  auto stats = static_cast<Statistics*>(stats_tmp.get());
 
   ErrorCode error = stats->init();
   EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
@@ -610,7 +620,9 @@ TEST_P(ApiTestDBAccessFailureByTableId, get_all_column_statistics) {
  */
 TEST_P(ApiTestDBAccessFailureByTableIdColumnNumber,
        remove_one_column_statistic) {
-  auto stats = std::make_unique<Statistics>(GlobalTestEnvironment::TEST_DB);
+  // TODO(future): Change when changing Metadata class.
+  auto stats_tmp = get_statistics_ptr(GlobalTestEnvironment::TEST_DB);
+  auto stats = static_cast<Statistics*>(stats_tmp.get());
 
   ErrorCode error = stats->init();
   EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
@@ -633,7 +645,9 @@ TEST_P(ApiTestDBAccessFailureByTableIdColumnNumber,
  * return ErrorCode::DATABASE_ACCESS_FAILURE
  */
 TEST_P(ApiTestDBAccessFailureByTableId, remove_all_column_statistics) {
-  auto stats = std::make_unique<Statistics>(GlobalTestEnvironment::TEST_DB);
+  // TODO(future): Change when changing Metadata class.
+  auto stats_tmp = get_statistics_ptr(GlobalTestEnvironment::TEST_DB);
+  auto stats = static_cast<Statistics*>(stats_tmp.get());
 
   ErrorCode error = stats->init();
   EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
