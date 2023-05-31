@@ -276,7 +276,7 @@ ErrorCode ConstraintsDAO::prepare() const {
 ErrorCode ConstraintsDAO::insert_constraint_metadata(
     const boost::property_tree::ptree& constraint_metadata, ObjectId& constraint_id) const {
   ErrorCode error = ErrorCode::UNKNOWN;
-  std::vector<char const*> param_values;
+  std::vector<const char*> param_values;
 
   // Checks for INSERT execution with object-id specified.
   auto object_id = constraint_metadata.get_optional<ObjectIdType>(Constraint::ID);
@@ -461,15 +461,14 @@ ErrorCode ConstraintsDAO::insert_constraint_metadata(
   }
 
   PGresult* res = nullptr;
-  // Executes a prepared statement
+  // Execute a prepared statement.
   error = DbcUtils::exec_prepared(connection_, statementName, param_values, res);
   if (error == ErrorCode::OK) {
     int nrows = PQntuples(res);
     if (nrows == 1) {
-      int ordinal_position = 0;
       // Get the generated ID.
-      error =
-          DbcUtils::str_to_integral<ObjectId>(PQgetvalue(res, ordinal_position, 0), constraint_id);
+      error = DbcUtils::str_to_integral<ObjectId>(
+          PQgetvalue(res, FIRST_ROW, FIRST_COLUMN), constraint_id);
     } else {
       error = ErrorCode::INVALID_PARAMETER;
     }
@@ -508,22 +507,21 @@ ErrorCode ConstraintsDAO::select_constraint_metadata(
   }
 
   PGresult* res = nullptr;
-  // Executes a prepared statement
+  // Execute a prepared statement.
   error = DbcUtils::exec_prepared(connection_, statement_name, param_values, res);
 
   if (error == ErrorCode::OK) {
     int nrows = PQntuples(res);
     if (nrows >= 1) {
       if (object_key == Constraint::ID) {
-        int ordinal_position = 0;
         // Convert acquired data to ptree type.
-        error = convert_pgresult_to_ptree(res, ordinal_position, constraint_metadata);
+        error = convert_pgresult_to_ptree(res, FIRST_ROW, constraint_metadata);
       } else {
-        for (int ordinal_position = 0; ordinal_position < nrows; ordinal_position++) {
+        for (int row_number = 0; row_number < nrows; row_number++) {
           ptree constraint;
 
           // Convert acquired data to ptree type.
-          error = convert_pgresult_to_ptree(res, ordinal_position, constraint);
+          error = convert_pgresult_to_ptree(res, row_number, constraint);
           if (error != ErrorCode::OK) {
             constraint_metadata.clear();
             break;
@@ -558,7 +556,7 @@ ErrorCode ConstraintsDAO::select_constraint_metadata(
   std::vector<const char*> param_values;
 
   PGresult* res = nullptr;
-  // Executes a prepared statement
+  // Execute a prepared statement.
   error = DbcUtils::exec_prepared(connection_,
                                   StatementName::CONSTRAINTS_DAO_SELECT_ALL_CONSTRAINTS_METADATA,
                                   param_values, res);
@@ -566,10 +564,10 @@ ErrorCode ConstraintsDAO::select_constraint_metadata(
   if (error == ErrorCode::OK) {
     int nrows = PQntuples(res);
     if (nrows >= 0) {
-      for (int ordinal_position = 0; ordinal_position < nrows; ordinal_position++) {
+      for (int row_number = 0; row_number < nrows; row_number++) {
         ptree constraint;
         // Convert acquired data to ptree type.
-        error = convert_pgresult_to_ptree(res, ordinal_position, constraint);
+        error = convert_pgresult_to_ptree(res, row_number, constraint);
         if (error != ErrorCode::OK) {
           break;
         }
@@ -610,7 +608,7 @@ ErrorCode ConstraintsDAO::delete_constraint_metadata(std::string_view object_key
   }
 
   PGresult* res = nullptr;
-  // Executes a prepared statement
+  // Execute a prepared statement.
   error = DbcUtils::exec_prepared(connection_, statement_name, param_values, res);
 
   if (error == ErrorCode::OK) {
@@ -639,14 +637,15 @@ ErrorCode ConstraintsDAO::delete_constraint_metadata(std::string_view object_key
  */
 
 /**
- * @brief Gets the ptree type constraint metadata converted from the given PGresult type value.
+ * @brief Gets the ptree type constraint metadata converted from the given
+ *   PGresult type value.
  * @param res                  [in]  the result of a query.
- * @param ordinal_position     [in]  column ordinal position of PGresult.
+ * @param row_number           [in]  row number of the PGresult.
  * @param constraint_metadata  [out] one constraint metadata.
  * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode ConstraintsDAO::convert_pgresult_to_ptree(
-    const PGresult* res, const int ordinal_position,
+    const PGresult* res, const int row_number,
     boost::property_tree::ptree& constraint_metadata) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
@@ -656,39 +655,46 @@ ErrorCode ConstraintsDAO::convert_pgresult_to_ptree(
   // Set the value of the format_version column to ptree.
   constraint_metadata.put(
       Constraint::FORMAT_VERSION,
-      PQgetvalue(res, ordinal_position, static_cast<int>(OrdinalPosition::kFormatVersion)));
+      PQgetvalue(res, row_number,
+                 static_cast<int>(OrdinalPosition::kFormatVersion)));
 
   // Set the value of the generation column to ptree.
   constraint_metadata.put(
       Constraint::GENERATION,
-      PQgetvalue(res, ordinal_position, static_cast<int>(OrdinalPosition::kGeneration)));
+      PQgetvalue(res, row_number,
+                 static_cast<int>(OrdinalPosition::kGeneration)));
 
   // Set the value of the id column to ptree.
   constraint_metadata.put(
-      Constraint::ID, PQgetvalue(res, ordinal_position, static_cast<int>(OrdinalPosition::kId)));
+      Constraint::ID,
+      PQgetvalue(res, row_number, static_cast<int>(OrdinalPosition::kId)));
 
   // Set the value of the name column to ptree.
-  constraint_metadata.put(Constraint::NAME, PQgetvalue(res, ordinal_position,
-                                                       static_cast<int>(OrdinalPosition::kName)));
+  constraint_metadata.put(
+      Constraint::NAME,
+      PQgetvalue(res, row_number, static_cast<int>(OrdinalPosition::kName)));
 
   // Set the value of the table-id column to ptree.
   constraint_metadata.put(
       Constraint::TABLE_ID,
-      PQgetvalue(res, ordinal_position, static_cast<int>(OrdinalPosition::kTableId)));
+      PQgetvalue(res, row_number, static_cast<int>(OrdinalPosition::kTableId)));
 
   // Set the value of the name column to ptree.
-  constraint_metadata.put(Constraint::NAME, PQgetvalue(res, ordinal_position,
-                                                       static_cast<int>(OrdinalPosition::kName)));
+  constraint_metadata.put(
+      Constraint::NAME,
+      PQgetvalue(res, row_number, static_cast<int>(OrdinalPosition::kName)));
 
   // Set the value of the type column to ptree.
-  constraint_metadata.put(Constraint::TYPE, PQgetvalue(res, ordinal_position,
-                                                       static_cast<int>(OrdinalPosition::kType)));
+  constraint_metadata.put(
+      Constraint::TYPE,
+      PQgetvalue(res, row_number, static_cast<int>(OrdinalPosition::kType)));
 
   // Set the value of the columns column to ptree.
   ptree columns;
   // Converts a JSON string to a property_tree.
   error = Utility::json_to_ptree(
-      PQgetvalue(res, ordinal_position, static_cast<int>(OrdinalPosition::kColumns)), columns);
+      PQgetvalue(res, row_number, static_cast<int>(OrdinalPosition::kColumns)),
+      columns);
   if (error != ErrorCode::OK) {
     return error;
   }
@@ -701,7 +707,9 @@ ErrorCode ConstraintsDAO::convert_pgresult_to_ptree(
   ptree columns_id;
   // Converts a JSON string to a property_tree.
   error = Utility::json_to_ptree(
-      PQgetvalue(res, ordinal_position, static_cast<int>(OrdinalPosition::kColumnsId)), columns_id);
+      PQgetvalue(res, row_number,
+                 static_cast<int>(OrdinalPosition::kColumnsId)),
+      columns_id);
   if (error != ErrorCode::OK) {
     return error;
   }
@@ -713,23 +721,25 @@ ErrorCode ConstraintsDAO::convert_pgresult_to_ptree(
   // Set the value of the index-id column to ptree.
   constraint_metadata.put(
       Constraint::INDEX_ID,
-      PQgetvalue(res, ordinal_position, static_cast<int>(OrdinalPosition::kIndexId)));
+      PQgetvalue(res, row_number, static_cast<int>(OrdinalPosition::kIndexId)));
 
   // Set the value of the expression column to ptree.
   constraint_metadata.put(
       Constraint::EXPRESSION,
-      PQgetvalue(res, ordinal_position, static_cast<int>(OrdinalPosition::kExpression)));
-
+      PQgetvalue(res, row_number,
+                 static_cast<int>(OrdinalPosition::kExpression)));
   // Set the value of the pk_table column to ptree.
   constraint_metadata.put(
       Constraint::PK_TABLE,
-      PQgetvalue(res, ordinal_position, static_cast<int>(OrdinalPosition::kPkTable)));
+      PQgetvalue(res, row_number, static_cast<int>(OrdinalPosition::kPkTable)));
 
   // Set the value of the pk_columns column to ptree.
   ptree pk_columns;
   // Converts a JSON string to a property_tree.
   error = Utility::json_to_ptree(
-      PQgetvalue(res, ordinal_position, static_cast<int>(OrdinalPosition::kPkColumns)), pk_columns);
+      PQgetvalue(res, row_number,
+                 static_cast<int>(OrdinalPosition::kPkColumns)),
+      pk_columns);
   if (error != ErrorCode::OK) {
     return error;
   }
@@ -742,7 +752,9 @@ ErrorCode ConstraintsDAO::convert_pgresult_to_ptree(
   ptree pk_columns_id;
   // Converts a JSON string to a property_tree.
   error = Utility::json_to_ptree(
-      PQgetvalue(res, ordinal_position, static_cast<int>(OrdinalPosition::kPkColumnsId)), pk_columns_id);
+      PQgetvalue(res, row_number,
+                 static_cast<int>(OrdinalPosition::kPkColumnsId)),
+      pk_columns_id);
   if (error != ErrorCode::OK) {
     return error;
   }
@@ -752,16 +764,22 @@ ErrorCode ConstraintsDAO::convert_pgresult_to_ptree(
   constraint_metadata.add_child(Constraint::PK_COLUMNS_ID, pk_columns_id);
 
   // Set the value of the fk_match_type column to ptree.
-  constraint_metadata.put(Constraint::FK_MATCH_TYPE, PQgetvalue(res, ordinal_position,
-                                                       static_cast<int>(OrdinalPosition::kFkMatchType)));
+  constraint_metadata.put(
+      Constraint::FK_MATCH_TYPE,
+      PQgetvalue(res, row_number,
+                 static_cast<int>(OrdinalPosition::kFkMatchType)));
 
   // Set the value of the fk_delete_action column to ptree.
-  constraint_metadata.put(Constraint::FK_DELETE_ACTION, PQgetvalue(res, ordinal_position,
-                                                       static_cast<int>(OrdinalPosition::kFkDeleteAction)));
+  constraint_metadata.put(
+      Constraint::FK_DELETE_ACTION,
+      PQgetvalue(res, row_number,
+                 static_cast<int>(OrdinalPosition::kFkDeleteAction)));
 
   // Set the value of the fk_update_action column to ptree.
-  constraint_metadata.put(Constraint::FK_UPDATE_ACTION, PQgetvalue(res, ordinal_position,
-                                                       static_cast<int>(OrdinalPosition::kFkUpdateAction)));
+  constraint_metadata.put(
+      Constraint::FK_UPDATE_ACTION,
+      PQgetvalue(res, row_number,
+                 static_cast<int>(OrdinalPosition::kFkUpdateAction)));
 
   error = ErrorCode::OK;
   return error;

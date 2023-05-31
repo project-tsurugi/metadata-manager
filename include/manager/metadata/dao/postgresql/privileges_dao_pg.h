@@ -56,7 +56,7 @@ class PrivilegesDAO : public manager::metadata::db::PrivilegesDAO {
   ConnectionSPtr connection_;
 
   manager::metadata::ErrorCode check_of_privilege(
-      const PGresult* res, const int ordinal_position, const char* permission,
+      const PGresult* res, const int row_number, const char* permission,
       bool& check_result) const;
 
   manager::metadata::ErrorCode check_exists_authid(
