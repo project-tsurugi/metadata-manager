@@ -57,7 +57,7 @@ class TablePrivilegesPg {
     UTUtils::skip_if_json();
     UTUtils::skip_if_connection_not_opened();
 
-    if (UTUtils::is_postgresql() && global->is_open()) {
+    if (UTUtils::is_postgresql() && g_environment_->is_open()) {
       boost::format statement;
 
       // create an instance of the Tables class.
@@ -85,7 +85,7 @@ class TablePrivilegesPg {
    * @brief discard the data for testing.
    */
   static void test_teardown() {
-    if (UTUtils::is_postgresql() && global->is_open()) {
+    if (UTUtils::is_postgresql() && g_environment_->is_open()) {
       // remove dummy data for pg_foreign_table.
       ForeignTableHelper::delete_foreign_table(foreign_table_id_ro);
       ForeignTableHelper::delete_foreign_table(foreign_table_id_rw);
@@ -110,13 +110,13 @@ class ApiTestTablePrivilegesSinglePg
   void SetUp() override {
     TablePrivilegesPg::test_setup();
 
-    if (UTUtils::is_postgresql() && global->is_open()) {
+    if (UTUtils::is_postgresql() && g_environment_->is_open()) {
       // add read-write table metadata.
       TableMetadataHelper::add_table(kForeignTableNameRw);
     }
   }
   void TearDown() override {
-    if (UTUtils::is_postgresql() && global->is_open()) {
+    if (UTUtils::is_postgresql() && g_environment_->is_open()) {
       // remove table metadata.
       TableMetadataHelper::remove_table(kForeignTableNameRw);
     }
@@ -134,7 +134,7 @@ class ApiTestTablePrivilegesMultiplePg
   void SetUp() override {
     TablePrivilegesPg::test_setup();
 
-    if (UTUtils::is_postgresql() && global->is_open()) {
+    if (UTUtils::is_postgresql() && g_environment_->is_open()) {
       // add read-write table metadata.
       TableMetadataHelper::add_table(kForeignTableNameRw);
       // add read-only table metadata.
@@ -142,7 +142,7 @@ class ApiTestTablePrivilegesMultiplePg
     }
   }
   void TearDown() override {
-    if (UTUtils::is_postgresql() && global->is_open()) {
+    if (UTUtils::is_postgresql() && g_environment_->is_open()) {
       // remove table metadata.
       TableMetadataHelper::remove_table(kForeignTableNameRw);
       TableMetadataHelper::remove_table(kForeignTableNameRo);
@@ -159,13 +159,13 @@ class ApiTestForeignTablePg : public ::testing::Test {
   void SetUp() override {
     TablePrivilegesPg::test_setup();
 
-    if (UTUtils::is_postgresql() && global->is_open()) {
+    if (UTUtils::is_postgresql() && g_environment_->is_open()) {
       // add read-write table metadata.
       TableMetadataHelper::add_table(kForeignTableNameRw);
     }
   }
   void TearDown() override {
-    if (UTUtils::is_postgresql() && global->is_open()) {
+    if (UTUtils::is_postgresql() && g_environment_->is_open()) {
       // remove table metadata.
       TableMetadataHelper::remove_table(kForeignTableNameRw);
     }
@@ -191,7 +191,7 @@ class ApiTestTablePrivilegesInvalidPg
   void SetUp() override {
     TablePrivilegesPg::test_setup();
 
-    if (UTUtils::is_postgresql() && global->is_open()) {
+    if (UTUtils::is_postgresql() && g_environment_->is_open()) {
       // add read-write table metadata.
       TableMetadataHelper::add_table(kForeignTableNameRw);
     }
@@ -199,7 +199,7 @@ class ApiTestTablePrivilegesInvalidPg
   void TearDown() override {
     UTUtils::skip_if_json();
 
-    if (UTUtils::is_postgresql() && global->is_open()) {
+    if (UTUtils::is_postgresql() && g_environment_->is_open()) {
       // remove table metadata.
       TableMetadataHelper::remove_table(kForeignTableNameRw);
     }
