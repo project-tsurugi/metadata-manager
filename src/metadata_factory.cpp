@@ -16,46 +16,41 @@
 #include "manager/metadata/metadata_factory.h"
 
 namespace manager::metadata {
-  /**
-   * @brief
-   */
-  std::unique_ptr<Metadata> get_table_metadata(std::string_view database) {
-    return std::make_unique<Tables>(database);
-  }
 
-  /**
-   * @brief
-   */
-  std::unique_ptr<Metadata> get_index_metadata(std::string_view database) {
-    return std::make_unique<Indexes>(database);
-  }
+std::unique_ptr<Metadata> get_table_metadata(std::string_view database) {
+  return std::make_unique<Tables>(database);
+}
 
-  /**
-   * @brief
-   */
-  std::unique_ptr<Metadata> get_constraint_metadata(std::string_view database) {
-    return std::make_unique<Constraints>(database);
-  }
+std::unique_ptr<Metadata> get_index_metadata(std::string_view database) {
+  return std::make_unique<Indexes>(database);
+}
 
-  /**
-   * @brief
-   */
-  std::unique_ptr<Metadata> get_tables_ptr(std::string_view database) {
-    return std::make_unique<Tables>(database);
-  }
+std::unique_ptr<Metadata> get_constraint_metadata(std::string_view database) {
+  return std::make_unique<Constraints>(database);
+}
 
-  /**
-   * @brief
-   */
-  std::unique_ptr<Metadata> get_indexes_ptr(std::string_view database) {
-    return std::make_unique<Indexes>(database);
-  }
+std::unique_ptr<Metadata> get_tables_ptr(std::string_view database) {
+  return std::make_unique<Tables>(database);
+}
 
-  /**
-   * @brief
-   */
-  std::unique_ptr<Metadata> get_constraints_ptr(std::string_view database) {
-    return std::make_unique<Constraints>(database);
-  }
+std::unique_ptr<Metadata> get_indexes_ptr(std::string_view database) {
+  return std::make_unique<Indexes>(database);
+}
 
-} // namespace manager::metadata
+std::unique_ptr<Metadata> get_constraints_ptr(std::string_view database) {
+  return std::make_unique<Constraints>(database);
+}
+
+std::unique_ptr<Metadata> get_datatypes_ptr(std::string_view database) {
+  return std::make_unique<DataTypes>(database);
+}
+
+std::unique_ptr<Metadata> get_roles_ptr(std::string_view database) {
+  return std::make_unique<Roles>(database);
+}
+
+std::unique_ptr<Metadata> get_statistics_ptr(std::string_view database) {
+  return std::make_unique<Statistics>(database);
+}
+
+}  // namespace manager::metadata

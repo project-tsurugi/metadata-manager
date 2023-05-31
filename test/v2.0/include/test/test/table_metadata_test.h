@@ -19,7 +19,6 @@
 #include <memory>
 #include <utility>
 
-#include "manager/metadata/datatypes.h"
 #include "manager/metadata/metadata_factory.h"
 #include "test/metadata/ut_table_metadata.h"
 #include "test/test/metadata_test.h"
@@ -41,7 +40,7 @@ class TableMetadataTest : public MetadataTest {
    * @return std::unique_ptr<Metadata> - metadata management object.
    */
   std::unique_ptr<Metadata> get_metadata_manager() const override {
-    return get_table_metadata(TEST_DB);
+    return get_tables_ptr(TEST_DB);
   }
 
   /**

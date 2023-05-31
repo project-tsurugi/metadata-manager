@@ -65,7 +65,7 @@ TEST_F(ApiTestIndexMetadata, test_duplicate_index_name) {
   CALL_TRACE;
 
   // Generate indexes metadata manager.
-  auto managers = get_index_metadata(GlobalTestEnvironment::TEST_DB);
+  auto managers = get_indexes_ptr(GlobalTestEnvironment::TEST_DB);
 
   // Generate test metadata.
   UtIndexMetadata ut_metadata(table_id_);
@@ -97,7 +97,7 @@ TEST_F(ApiTestIndexMetadata, test_invalid_parameter) {
   CALL_TRACE;
 
   // Generate indexes metadata manager.
-  auto managers = get_index_metadata(GlobalTestEnvironment::TEST_DB);
+  auto managers = get_indexes_ptr(GlobalTestEnvironment::TEST_DB);
 
   // Test to initialize the manager.
   ApiTestHelper::test_init(managers.get(), ErrorCode::OK);
@@ -137,7 +137,7 @@ TEST_F(ApiTestIndexMetadata, test_without_initialized) {
   // Add index metadata.
   {
     // Generate indexes metadata manager.
-    auto managers = get_index_metadata(GlobalTestEnvironment::TEST_DB);
+    auto managers = get_indexes_ptr(GlobalTestEnvironment::TEST_DB);
 
     object_id = ApiTestHelper::test_add(managers.get(), inserted_metadata,
                                         ErrorCode::OK);
@@ -146,7 +146,7 @@ TEST_F(ApiTestIndexMetadata, test_without_initialized) {
   // Get index metadata by index id with ptree.
   {
     // Generate indexes metadata manager.
-    auto managers = get_index_metadata(GlobalTestEnvironment::TEST_DB);
+    auto managers = get_indexes_ptr(GlobalTestEnvironment::TEST_DB);
 
     ptree retrieved_metadata;
     ApiTestHelper::test_get(managers.get(), object_id, ErrorCode::OK,
@@ -156,7 +156,7 @@ TEST_F(ApiTestIndexMetadata, test_without_initialized) {
   // Get index metadata by index name with ptree.
   {
     // Generate indexes metadata manager.
-    auto managers = get_index_metadata(GlobalTestEnvironment::TEST_DB);
+    auto managers = get_indexes_ptr(GlobalTestEnvironment::TEST_DB);
 
     ptree retrieved_metadata;
     ApiTestHelper::test_get(managers.get(), object_name, ErrorCode::OK,
@@ -166,7 +166,7 @@ TEST_F(ApiTestIndexMetadata, test_without_initialized) {
   // Get index metadata by index id with structure.
   {
     // Generate indexes metadata manager.
-    auto managers = get_index_metadata(GlobalTestEnvironment::TEST_DB);
+    auto managers = get_indexes_ptr(GlobalTestEnvironment::TEST_DB);
 
     Index retrieved_metadata;
     ApiTestHelper::test_get(managers.get(), object_id, ErrorCode::OK,
@@ -176,7 +176,7 @@ TEST_F(ApiTestIndexMetadata, test_without_initialized) {
   // Get index metadata by index name with structure.
   {
     // Generate indexes metadata manager.
-    auto managers = get_index_metadata(GlobalTestEnvironment::TEST_DB);
+    auto managers = get_indexes_ptr(GlobalTestEnvironment::TEST_DB);
 
     Index retrieved_metadata;
     ApiTestHelper::test_get(managers.get(), object_name, ErrorCode::OK,
@@ -186,7 +186,7 @@ TEST_F(ApiTestIndexMetadata, test_without_initialized) {
   // Get all index metadata with ptree.
   {
     // Generate indexes metadata manager.
-    auto managers = get_index_metadata(GlobalTestEnvironment::TEST_DB);
+    auto managers = get_indexes_ptr(GlobalTestEnvironment::TEST_DB);
 
     std::vector<ptree> container = {};
     // Get all index metadata.
@@ -196,7 +196,7 @@ TEST_F(ApiTestIndexMetadata, test_without_initialized) {
   // Update index metadata.
   {
     // Generate indexes metadata manager.
-    auto managers = get_index_metadata(GlobalTestEnvironment::TEST_DB);
+    auto managers = get_indexes_ptr(GlobalTestEnvironment::TEST_DB);
 
     // Execute the test.
     ApiTestHelper::test_update(managers.get(), object_id, inserted_metadata,
@@ -206,7 +206,7 @@ TEST_F(ApiTestIndexMetadata, test_without_initialized) {
   // Remove index metadata by index id.
   {
     // Generate indexes metadata manager.
-    auto managers = get_index_metadata(GlobalTestEnvironment::TEST_DB);
+    auto managers = get_indexes_ptr(GlobalTestEnvironment::TEST_DB);
 
     // Remove index metadata by index id.
     ApiTestHelper::test_remove(managers.get(), object_id, ErrorCode::OK);
@@ -215,7 +215,7 @@ TEST_F(ApiTestIndexMetadata, test_without_initialized) {
   // Add index metadata.
   {
     // Generate indexes metadata manager.
-    auto managers = get_index_metadata(GlobalTestEnvironment::TEST_DB);
+    auto managers = get_indexes_ptr(GlobalTestEnvironment::TEST_DB);
 
     object_id = ApiTestHelper::test_add(managers.get(), inserted_metadata,
                                         ErrorCode::OK);
@@ -224,7 +224,7 @@ TEST_F(ApiTestIndexMetadata, test_without_initialized) {
   // Remove index metadata by index name.
   {
     // Generate indexes metadata manager.
-    auto managers = get_index_metadata(GlobalTestEnvironment::TEST_DB);
+    auto managers = get_indexes_ptr(GlobalTestEnvironment::TEST_DB);
 
     // Remove index metadata by index id.
     ApiTestHelper::test_remove(managers.get(), object_name, ErrorCode::OK);
