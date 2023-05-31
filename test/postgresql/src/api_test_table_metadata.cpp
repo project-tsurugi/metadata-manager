@@ -504,7 +504,7 @@ TEST_F(ApiTestTableMetadata, update_table_metadata) {
     column.clear();
     column.put(Column::NAME, "new-col");
     column.put(Column::COLUMN_NUMBER, 2);
-    column.put<ObjectIdType>(Column::DATA_TYPE_ID, 13);
+    column.put<ObjectIdType>(Column::DATA_TYPE_ID, 1042);
     column.put<bool>(Column::VARYING, false);
     {
       ptree elements;

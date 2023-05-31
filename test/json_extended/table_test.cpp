@@ -43,8 +43,10 @@ using manager::metadata::db::json::ObjectId;
 const char* const TEST_DB = "test_DB";
 
 std::vector<std::pair<ObjectIdType, std::string>> datatypes_list = {
-    {4, "INT32"},   {6, "INT64"}, {8, "FLOAT32"},
-    {9, "FLOAT64"}, {13, "CHAR"}, {14, "VARCHAR"}};
+    {23, "INT32"},  {20, "INT64"}, {700, "FLOAT32"}, {701, "FLOAT64"},
+    {1042, "CHAR"}, {1043, "VARCHAR"}, {1700, "NUMERIC"}, {1082, "DATE"},
+    {1083, "TIME"}, {1266, "TIMETZ"}, {1114, "TIMESTAMP"},
+    {1184, "TIMESTAMPTZ"}, {1186, "INTERVAL"}};
 
 /*
  * @brief print error code and line number.

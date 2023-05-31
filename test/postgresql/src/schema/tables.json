@@ -9,7 +9,7 @@
                     "columnNumber": "1",
                     "name": "c1",
                     "isNotNull": "false",
-                    "dataTypeId": "4"
+                    "dataTypeId": "23"
                 }
             ],
             "constraints": [
@@ -31,19 +31,19 @@
                     "columnNumber": "1",
                     "name": "c1",
                     "isNotNull": "false",
-                    "dataTypeId": "4"
+                    "dataTypeId": "23"
                 },
                 {
                     "columnNumber": "2",
                     "name": "c2",
                     "isNotNull": "true",
-                    "dataTypeId": "6"
+                    "dataTypeId": "20"
                 },
                 {
                     "columnNumber": "3",
                     "name": "c3",
                     "isNotNull": "true",
-                    "dataTypeId": "9"
+                    "dataTypeId": "701"
                 }
             ],
             "constraints": [
@@ -79,7 +79,7 @@
                     "columnNumber": "4",
                     "name": "c1",
                     "isNotNull": "false",
-                    "dataTypeId": "9"
+                    "dataTypeId": "701"
                 }
             ],
             "constraints": [
@@ -101,13 +101,13 @@
                     "columnNumber": "4",
                     "name": "c1",
                     "isNotNull": "false",
-                    "dataTypeId": "9"
+                    "dataTypeId": "701"
                 },
                 {
                     "columnNumber": "5",
                     "name": "c2",
                     "isNotNull": "false",
-                    "dataTypeId": "13",
+                    "dataTypeId": "1042",
                     "varying": "false",
                     "dataLength": ["2"]
                 }
@@ -138,7 +138,7 @@
                     "columnNumber": "1",
                     "name": "カラム",
                     "isNotNull": "false",
-                    "dataTypeId": "4"
+                    "dataTypeId": "23"
                 }
             ],
             "constraints": [
@@ -160,7 +160,7 @@
                     "columnNumber": "1",
                     "name": "o",
                     "isNotNull": "false",
-                    "dataTypeId": "4"
+                    "dataTypeId": "23"
                 }
             ],
             "constraints": [
@@ -182,31 +182,31 @@
                     "columnNumber": "1",
                     "name": "c_w_id",
                     "isNotNull": "false",
-                    "dataTypeId": "4"
+                    "dataTypeId": "23"
                 },
                 {
                     "columnNumber": "2",
                     "name": "c_d_id",
                     "isNotNull": "false",
-                    "dataTypeId": "4"
+                    "dataTypeId": "23"
                 },
                 {
                     "columnNumber": "3",
                     "name": "c_id",
                     "isNotNull": "false",
-                    "dataTypeId": "4"
+                    "dataTypeId": "23"
                 },
                 {
                     "columnNumber": "4",
                     "name": "c_discount",
                     "isNotNull": "false",
-                    "dataTypeId": "9"
+                    "dataTypeId": "701"
                 },
                 {
                     "columnNumber": "5",
                     "name": "c_credit",
                     "isNotNull": "false",
-                    "dataTypeId": "13",
+                    "dataTypeId": "1042",
                     "varying": "false",
                     "dataLength": ["2"]
                 },
@@ -214,7 +214,7 @@
                     "columnNumber": "6",
                     "name": "c_last",
                     "isNotNull": "false",
-                    "dataTypeId": "14",
+                    "dataTypeId": "1043",
                     "varying": "true",
                     "dataLength": ["16"]
                 },
@@ -222,7 +222,7 @@
                     "columnNumber": "7",
                     "name": "c_first",
                     "isNotNull": "false",
-                    "dataTypeId": "14",
+                    "dataTypeId": "1043",
                     "varying": "true",
                     "dataLength": ["16"]
                 },
@@ -230,37 +230,37 @@
                     "columnNumber": "8",
                     "name": "c_credit_lim",
                     "isNotNull": "false",
-                    "dataTypeId": "9"
+                    "dataTypeId": "701"
                 },
                 {
                     "columnNumber": "9",
                     "name": "c_balance",
                     "isNotNull": "false",
-                    "dataTypeId": "9"
+                    "dataTypeId": "701"
                 },
                 {
                     "columnNumber": "10",
                     "name": "c_ytd_payment",
                     "isNotNull": "false",
-                    "dataTypeId": "9"
+                    "dataTypeId": "701"
                 },
                 {
                     "columnNumber": "11",
                     "name": "c_payment_cnt",
                     "isNotNull": "false",
-                    "dataTypeId": "4"
+                    "dataTypeId": "23"
                 },
                 {
                     "columnNumber": "12",
                     "name": "c_delivery_cnt",
                     "isNotNull": "false",
-                    "dataTypeId": "4"
+                    "dataTypeId": "23"
                 },
                 {
                     "columnNumber": "13",
                     "name": "c_street_1",
                     "isNotNull": "false",
-                    "dataTypeId": "14",
+                    "dataTypeId": "1043",
                     "varying": "true",
                     "dataLength": ["20"]
                 },
@@ -268,7 +268,7 @@
                     "columnNumber": "14",
                     "name": "c_street_2",
                     "isNotNull": "false",
-                    "dataTypeId": "14",
+                    "dataTypeId": "1043",
                     "varying": "true",
                     "dataLength": ["20"]
                 },
@@ -276,7 +276,7 @@
                     "columnNumber": "15",
                     "name": "c_city",
                     "isNotNull": "false",
-                    "dataTypeId": "14",
+                    "dataTypeId": "1043",
                     "varying": "true",
                     "dataLength": ["20"]
                 },
@@ -284,7 +284,7 @@
                     "columnNumber": "16",
                     "name": "c_state",
                     "isNotNull": "false",
-                    "dataTypeId": "13",
+                    "dataTypeId": "1042",
                     "varying": "false",
                     "dataLength": ["2"]
                 },
@@ -292,7 +292,7 @@
                     "columnNumber": "17",
                     "name": "c_zip",
                     "isNotNull": "false",
-                    "dataTypeId": "13",
+                    "dataTypeId": "1042",
                     "varying": "false",
                     "dataLength": ["9"]
                 },
@@ -300,7 +300,7 @@
                     "columnNumber": "18",
                     "name": "c_phone",
                     "isNotNull": "false",
-                    "dataTypeId": "13",
+                    "dataTypeId": "1042",
                     "varying": "false",
                     "dataLength": ["16"]
                 },
@@ -308,7 +308,7 @@
                     "columnNumber": "19",
                     "name": "c_since",
                     "isNotNull": "false",
-                    "dataTypeId": "13",
+                    "dataTypeId": "1042",
                     "varying": "false",
                     "dataLength": ["24"]
                 },
@@ -316,7 +316,7 @@
                     "columnNumber": "20",
                     "name": "c_middle",
                     "isNotNull": "false",
-                    "dataTypeId": "13",
+                    "dataTypeId": "1042",
                     "varying": "false",
                     "dataLength": ["2"]
                 },
@@ -324,7 +324,7 @@
                     "columnNumber": "21",
                     "name": "c_data",
                     "isNotNull": "false",
-                    "dataTypeId": "14",
+                    "dataTypeId": "1043",
                     "varying": "true",
                     "dataLength": ["500"]
                 }
@@ -355,7 +355,7 @@
                     "columnNumber": "1",
                     "name": "ol_w_id",
                     "isNotNull": "false",
-                    "dataTypeId": "4"
+                    "dataTypeId": "23"
                 }
             ],
             "constraints": [
@@ -377,13 +377,13 @@
                     "columnNumber": "1",
                     "name": "id",
                     "isNotNull": "false",
-                    "dataTypeId": "4"
+                    "dataTypeId": "23"
                 },
                 {
                     "columnNumber": "2",
                     "name": "ol_w_id",
                     "isNotNull": "true",
-                    "dataTypeId": "6"
+                    "dataTypeId": "20"
                 }
             ],
             "constraints": [
@@ -412,7 +412,7 @@
                     "columnNumber": "1",
                     "name": "ol_w_id",
                     "isNotNull": "false",
-                    "dataTypeId": "8"
+                    "dataTypeId": "700"
                 }
             ],
             "constraints": []
@@ -426,7 +426,7 @@
                     "columnNumber": "1",
                     "name": "ol_w_id",
                     "isNotNull": "false",
-                    "dataTypeId": "9"
+                    "dataTypeId": "701"
                 }
             ],
             "constraints": []
@@ -440,7 +440,7 @@
                     "columnNumber": "1",
                     "name": "ol_w_id",
                     "isNotNull": "false",
-                    "dataTypeId": "13",
+                    "dataTypeId": "1042",
                     "varying": "false",
                     "dataLength": ["10"]
                 }
@@ -456,7 +456,7 @@
                     "columnNumber": "1",
                     "name": "ol_w_id",
                     "isNotNull": "false",
-                    "dataTypeId": "14",
+                    "dataTypeId": "1043",
                     "varying": "true",
                     "dataLength": ["10"]
                 }

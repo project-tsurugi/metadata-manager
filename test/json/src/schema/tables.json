@@ -10,7 +10,7 @@
                     "name": "c1",
                     "direction": "1",
                     "isNotNull": "false",
-                    "dataTypeId": "4"
+                    "dataTypeId": "23"
                 }
             ],
             "constraints": [
@@ -34,21 +34,21 @@
                     "name": "c1",
                     "direction": "1",
                     "isNotNull": "false",
-                    "dataTypeId": "4"
+                    "dataTypeId": "23"
                 },
                 {
                     "columnNumber": "2",
                     "name": "c2",
                     "direction": "0",
                     "isNotNull": "true",
-                    "dataTypeId": "6"
+                    "dataTypeId": "20"
                 },
                 {
                     "columnNumber": "3",
                     "name": "c3",
                     "direction": "0",
                     "isNotNull": "true",
-                    "dataTypeId": "9"
+                    "dataTypeId": "701"
                 }
             ],
             "constraints": [
@@ -91,7 +91,7 @@
                     "name": "c1",
                     "direction": "0",
                     "isNotNull": "false",
-                    "dataTypeId": "9"
+                    "dataTypeId": "701"
                 }
             ],
             "constraints": [
@@ -117,14 +117,14 @@
                     "name": "c1",
                     "direction": "0",
                     "isNotNull": "false",
-                    "dataTypeId": "9"
+                    "dataTypeId": "701"
                 },
                 {
                     "columnNumber": "5",
                     "name": "c2",
                     "direction": "0",
                     "isNotNull": "false",
-                    "dataTypeId": "13",
+                    "dataTypeId": "1042",
                     "varying": "false",
                     "dataLength": "2"
                 }
@@ -159,7 +159,7 @@
                     "name": "カラム",
                     "direction": "1",
                     "isNotNull": "false",
-                    "dataTypeId": "4"
+                    "dataTypeId": "23"
                 }
             ],
             "constraints": [
@@ -185,7 +185,7 @@
                     "name": "o",
                     "direction": "1",
                     "isNotNull": "false",
-                    "dataTypeId": "4"
+                    "dataTypeId": "23"
                 }
             ],
             "constraints": [
@@ -213,35 +213,35 @@
                     "name": "c_w_id",
                     "direction": "1",
                     "isNotNull": "false",
-                    "dataTypeId": "4"
+                    "dataTypeId": "23"
                 },
                 {
                     "columnNumber": "2",
                     "name": "c_d_id",
                     "direction": "1",
                     "isNotNull": "false",
-                    "dataTypeId": "4"
+                    "dataTypeId": "23"
                 },
                 {
                     "columnNumber": "3",
                     "name": "c_id",
                     "direction": "1",
                     "isNotNull": "false",
-                    "dataTypeId": "4"
+                    "dataTypeId": "23"
                 },
                 {
                     "columnNumber": "4",
                     "name": "c_discount",
                     "direction": "0",
                     "isNotNull": "false",
-                    "dataTypeId": "9"
+                    "dataTypeId": "701"
                 },
                 {
                     "columnNumber": "5",
                     "name": "c_credit",
                     "direction": "0",
                     "isNotNull": "false",
-                    "dataTypeId": "13",
+                    "dataTypeId": "1042",
                     "varying": "false",
                     "dataLength": "2"
                 },
@@ -250,7 +250,7 @@
                     "name": "c_last",
                     "direction": "0",
                     "isNotNull": "false",
-                    "dataTypeId": "14",
+                    "dataTypeId": "1043",
                     "varying": "true",
                     "dataLength": "16"
                 },
@@ -259,7 +259,7 @@
                     "name": "c_first",
                     "direction": "0",
                     "isNotNull": "false",
-                    "dataTypeId": "14",
+                    "dataTypeId": "1043",
                     "varying": "true",
                     "dataLength": "16"
                 },
@@ -268,42 +268,42 @@
                     "name": "c_credit_lim",
                     "direction": "0",
                     "isNotNull": "false",
-                    "dataTypeId": "9"
+                    "dataTypeId": "701"
                 },
                 {
                     "columnNumber": "9",
                     "name": "c_balance",
                     "direction": "0",
                     "isNotNull": "false",
-                    "dataTypeId": "9"
+                    "dataTypeId": "701"
                 },
                 {
                     "columnNumber": "10",
                     "name": "c_ytd_payment",
                     "direction": "0",
                     "isNotNull": "false",
-                    "dataTypeId": "9"
+                    "dataTypeId": "701"
                 },
                 {
                     "columnNumber": "11",
                     "name": "c_payment_cnt",
                     "direction": "0",
                     "isNotNull": "false",
-                    "dataTypeId": "4"
+                    "dataTypeId": "23"
                 },
                 {
                     "columnNumber": "12",
                     "name": "c_delivery_cnt",
                     "direction": "0",
                     "isNotNull": "false",
-                    "dataTypeId": "4"
+                    "dataTypeId": "23"
                 },
                 {
                     "columnNumber": "13",
                     "name": "c_street_1",
                     "direction": "0",
                     "isNotNull": "false",
-                    "dataTypeId": "14",
+                    "dataTypeId": "1043",
                     "varying": "true",
                     "dataLength": "20"
                 },
@@ -312,7 +312,7 @@
                     "name": "c_street_2",
                     "direction": "0",
                     "isNotNull": "false",
-                    "dataTypeId": "14",
+                    "dataTypeId": "1043",
                     "varying": "true",
                     "dataLength": "20"
                 },
@@ -321,7 +321,7 @@
                     "name": "c_city",
                     "direction": "0",
                     "isNotNull": "false",
-                    "dataTypeId": "14",
+                    "dataTypeId": "1043",
                     "varying": "true",
                     "dataLength": "20"
                 },
@@ -330,7 +330,7 @@
                     "name": "c_state",
                     "direction": "0",
                     "isNotNull": "false",
-                    "dataTypeId": "13",
+                    "dataTypeId": "1042",
                     "varying": "false",
                     "dataLength": "2"
                 },
@@ -339,7 +339,7 @@
                     "name": "c_zip",
                     "direction": "0",
                     "isNotNull": "false",
-                    "dataTypeId": "13",
+                    "dataTypeId": "1042",
                     "varying": "false",
                     "dataLength": "9"
                 },
@@ -348,7 +348,7 @@
                     "name": "c_phone",
                     "direction": "0",
                     "isNotNull": "false",
-                    "dataTypeId": "13",
+                    "dataTypeId": "1042",
                     "varying": "false",
                     "dataLength": "16"
                 },
@@ -357,7 +357,7 @@
                     "name": "c_since",
                     "direction": "0",
                     "isNotNull": "false",
-                    "dataTypeId": "13",
+                    "dataTypeId": "1042",
                     "varying": "false",
                     "dataLength": "24"
                 },
@@ -366,7 +366,7 @@
                     "name": "c_middle",
                     "direction": "0",
                     "isNotNull": "false",
-                    "dataTypeId": "13",
+                    "dataTypeId": "1042",
                     "varying": "false",
                     "dataLength": "2"
                 },
@@ -375,7 +375,7 @@
                     "name": "c_data",
                     "direction": "0",
                     "isNotNull": "false",
-                    "dataTypeId": "14",
+                    "dataTypeId": "1043",
                     "varying": "true",
                     "dataLength": "500"
                 }
@@ -410,7 +410,7 @@
                     "name": "ol_w_id",
                     "direction": "1",
                     "isNotNull": "false",
-                    "dataTypeId": "4"
+                    "dataTypeId": "23"
                 }
             ],
             "constraints": [
@@ -436,14 +436,14 @@
                     "name": "id",
                     "direction": "1",
                     "isNotNull": "false",
-                    "dataTypeId": "4"
+                    "dataTypeId": "23"
                 },
                 {
                     "columnNumber": "2",
                     "name": "ol_w_id",
                     "direction": "0",
                     "isNotNull": "true",
-                    "dataTypeId": "6"
+                    "dataTypeId": "20"
                 }
             ],
             "constraints": [
@@ -476,7 +476,7 @@
                     "name": "ol_w_id",
                     "direction": "1",
                     "isNotNull": "false",
-                    "dataTypeId": "8"
+                    "dataTypeId": "700"
                 }
             ],
             "constraints": []
@@ -494,7 +494,7 @@
                     "name": "ol_w_id",
                     "direction": "1",
                     "isNotNull": "false",
-                    "dataTypeId": "9"
+                    "dataTypeId": "701"
                 }
             ],
             "constraints": []
@@ -512,7 +512,7 @@
                     "name": "ol_w_id",
                     "direction": "1",
                     "isNotNull": "false",
-                    "dataTypeId": "13",
+                    "dataTypeId": "1042",
                     "varying": "false",
                     "dataLength": "10"
                 }
@@ -532,7 +532,7 @@
                     "name": "ol_w_id",
                     "direction": "1",
                     "isNotNull": "false",
-                    "dataTypeId": "14",
+                    "dataTypeId": "1043",
                     "varying": "true",
                     "dataLength": "10"
                 }
