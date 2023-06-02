@@ -69,8 +69,10 @@ struct Index : public ClassObject {
         number_of_key_columns(INVALID_VALUE),
         is_unique(false),
         is_primary(false) {}
-  boost::property_tree::ptree convert_to_ptree() const override;
-  void convert_from_ptree(const boost::property_tree::ptree& pt) override;
+
+  virtual boost::property_tree::ptree convert_to_ptree() const override;
+  virtual void convert_from_ptree(
+      const boost::property_tree::ptree& pt) override;
 };
 
 } // namespace manager::metadata

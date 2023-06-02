@@ -21,6 +21,7 @@
 #include <vector>
 
 #include <boost/property_tree/ptree.hpp>
+#include <boost/iterator_adaptors.hpp>
 
 #include "manager/metadata/constraints.h"
 #include "manager/metadata/error_code.h"
@@ -113,8 +114,9 @@ struct Column : public Object {
         varying(false),
         is_not_null(false),
         is_funcexpr(false) {}
-  boost::property_tree::ptree convert_to_ptree() const override;
-  void convert_from_ptree(const boost::property_tree::ptree& ptree) override;
+  virtual boost::property_tree::ptree convert_to_ptree() const override;
+  virtual void convert_from_ptree(
+      const boost::property_tree::ptree& ptree) override;
 };
 
 /**
@@ -169,8 +171,10 @@ struct Table : public ClassObject {
   static constexpr const char* const TABLE_ACL_NODE = "tables";
 
   Table() : ClassObject(), number_of_tuples(INVALID_VALUE) {}
-  boost::property_tree::ptree convert_to_ptree() const override;
-  void convert_from_ptree(const boost::property_tree::ptree& ptree) override;
+  Table(boost::property_tree::ptree pt);
+  virtual boost::property_tree::ptree convert_to_ptree() const override;
+  virtual void convert_from_ptree(
+      const boost::property_tree::ptree& ptree) override;
 };
 
 /**
