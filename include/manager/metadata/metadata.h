@@ -18,8 +18,10 @@
 #include <string>
 #include <string_view>
 #include <vector>
+#include <memory>
 
 #include <boost/property_tree/ptree.hpp>
+#include <boost/iterator_adaptors.hpp>
 
 #include "manager/metadata/error_code.h"
 
@@ -43,10 +45,12 @@ struct Object {
    * @brief Field name constant indicating the format version of the metadata.
    */
   static constexpr const char* FORMAT_VERSION = "formatVersion";
+  static constexpr int64_t DEFAULT_FORMAT_VERSION = 1;
   /**
    * @brief Field name constant indicating the generation of the metadata.
    */
   static constexpr const char* GENERATION = "generation";
+  static constexpr int64_t DEFAULT_GENERATION = 1;
   /**
    * @brief Field name constant indicating the object id of the metadata.
    */
@@ -62,14 +66,26 @@ struct Object {
   std::string name;        //!< object name.
 
   Object()
-      : format_version(1), generation(1), id(INVALID_OBJECT_ID), name("") {}
-
-  /**
-   * @brief  Convert metadata from structure object to ptree object.
+      : format_version(DEFAULT_FORMAT_VERSION), 
+        generation(DEFAULT_GENERATION), 
+        id(INVALID_OBJECT_ID), 
+        name("") {}
+  /** 
+   * @brief  Transform metadata from structure object to ptree object.
    * @return ptree object.
    */
-  virtual boost::property_tree::ptree convert_to_ptree() const;
-  virtual void convert_from_ptree(const boost::property_tree::ptree& pt);
+  virtual boost::property_tree::ptree convert_to_ptree() const = 0;
+
+  /**
+   * @brief   Transform metadata from ptree object to structure object.
+   * @param   pt [in] ptree object of metdata.
+   * @return  structure object of metadata.
+   */
+  virtual void convert_from_ptree(const boost::property_tree::ptree& pt) = 0;
+
+ protected:
+  virtual boost::property_tree::ptree base_convert_to_ptree() const;
+  virtual void base_convert_from_ptree(const boost::property_tree::ptree& pt);
 };
 
 /**
@@ -97,11 +113,13 @@ struct ClassObject : public Object {
         namespace_name(""),
         owner_id(INVALID_OBJECT_ID),
         acl("") {}
-  /** @brief  Convert metadata from structure object to ptree object.
-   *  @return ptree object.
-   */
-  boost::property_tree::ptree convert_to_ptree() const override;
-  void convert_from_ptree(const boost::property_tree::ptree& pt) override;
+
+  virtual boost::property_tree::ptree base_convert_to_ptree() const override;
+  virtual void base_convert_from_ptree(
+      const boost::property_tree::ptree& pt) override;
+  virtual boost::property_tree::ptree convert_to_ptree() const override;
+  virtual void convert_from_ptree(
+      const boost::property_tree::ptree& pt) override;
   /**
    * @brief Obtain a full qualified object name.
    * e.g. database.schema.table
@@ -110,6 +128,13 @@ struct ClassObject : public Object {
   std::string full_qualified_name() {
     return database_name + '.' + schema_name + '.' + this->name;
   }
+};
+
+class Iterator {
+ public:
+  virtual ~Iterator() {}
+  virtual bool has_next() const = 0;
+  virtual ErrorCode next(Object& obj) = 0;
 };
 
 /**
@@ -291,7 +316,7 @@ class Metadata {
    * @retval ErrorCode::ID_NOT_FOUND if the table id does not exist.
    * @retval otherwise an error code.
    */
-  ErrorCode get(const ObjectIdType object_id,
+  ErrorCode get(const ObjectId object_id,
                 manager::metadata::Object& object) const;
 
   /**
@@ -305,17 +330,19 @@ class Metadata {
   ErrorCode get(std::string_view object_name,
                 manager::metadata::Object& object) const;
 
-  /**
-   * @brief Get all metadata object objects from the metadata table.
-   *   If no metadata object exists, return the container as empty.
-   * @param objects  [out] Container of metadata objects.
-   * @return ErrorCode::OK if success, otherwise an error code.
-   */
-  ErrorCode get_all(std::vector<manager::metadata::Object>& objects) const;
-
-
   ErrorCode update(const manager::metadata::ObjectIdType object_id,
                    const manager::metadata::Object& object) const;
+
+  ErrorCode get_all();
+  ErrorCode next(boost::property_tree::ptree& object);
+  ErrorCode next(manager::metadata::Object& object);
+  
+  // for iterator
+  std::unique_ptr<Iterator> iterator();
+  size_t size() const { return objects_.size(); }
+  void get(const size_t index, Object& obj) const {
+    return obj.convert_from_ptree(objects_[index]);
+  }
 
  protected:
   static constexpr const char* const kDefaultComponent = "visitor";
@@ -327,6 +354,18 @@ class Metadata {
 
   std::string database_;
   std::string component_;
+  std::vector<boost::property_tree::ptree> objects_;
+  int64_t cursor_;
+};
+
+class MetadataIterator : public Iterator {
+ public:
+  MetadataIterator(const Metadata* metadata) : metadata_(metadata), cursor_(0) {}
+  virtual bool has_next() const override;
+  virtual ErrorCode next(Object& obj) override;
+ private:
+  const Metadata* metadata_;
+  size_t cursor_;
 };
 
 }  // namespace manager::metadata

@@ -106,7 +106,7 @@ class StatisticsDAO : public manager::metadata::db::StatisticsDAO {
   ConnectionSPtr connection_;
 
   manager::metadata::ErrorCode convert_pgresult_to_ptree(
-      const PGresult* res, const int ordinal_position,
+      const PGresult* res, const int row_number,
       boost::property_tree::ptree& statistic) const;
 
   manager::metadata::ErrorCode get_column_statistics_rows(

@@ -93,7 +93,7 @@ class TablesDAO : public manager::metadata::db::TablesDAO {
   ConnectionSPtr connection_;
 
   manager::metadata::ErrorCode convert_pgresult_to_ptree(
-      const PGresult* res, const int ordinal_position,
+      const PGresult* res, const int row_number,
       boost::property_tree::ptree& table) const;
   std::vector<std::string> split(const std::string& source,
                                  const char& delimiter) const;
