@@ -43,7 +43,7 @@ using boost::property_tree::ptree;
  * @return ptree object.
  */
 boost::property_tree::ptree Constraint::convert_to_ptree() const {
-  ptree metadata = Object::convert_to_ptree();
+  ptree metadata = this->base_convert_to_ptree();
 
   // ID.
   if (this->id <= 0) {
@@ -103,7 +103,7 @@ boost::property_tree::ptree Constraint::convert_to_ptree() const {
  * @return structure object of metadata.
  */
 void Constraint::convert_from_ptree(const boost::property_tree::ptree& ptree) {
-  Object::convert_from_ptree(ptree);
+  this->base_convert_from_ptree(ptree);
 
   // table ID.
   this->table_id =
@@ -318,69 +318,6 @@ ErrorCode Constraints::remove(const ObjectId object_id) const {
 
   // Log of API function finish.
   log::function_finish("Constraints::remove(ConstraintId)", error);
-
-  return error;
-}
-
-/**
- *  structure interfaces.
- */
-
-/**
- * @brief Add constraint metadata to constraint metadata table.
- * @param object     [in]  constraint metadata to add.
- * @param object_id  [out] ID of the added constraint metadata.
- * @return ErrorCode::OK if success, otherwise an error code.
- */
-ErrorCode Constraints::add(const manager::metadata::Constraint& constraint,
-                           ObjectId* object_id) const {
-  ErrorCode error = ErrorCode::UNKNOWN;
-  ptree ptree     = constraint.convert_to_ptree();
-
-  error = this->add(ptree, object_id);
-  if (error != ErrorCode::OK) {
-    return error;
-  }
-
-  return error;
-}
-
-/**
- * @brief Add constraint metadata to constraint metadata table.
- * @param object  [in]  constraint metadata to add.
- * @return ErrorCode::OK if success, otherwise an error code.
- */
-ErrorCode Constraints::add(
-    const manager::metadata::Constraint& constraint) const {
-  ErrorCode error    = ErrorCode::UNKNOWN;
-  ObjectId object_id = INVALID_OBJECT_ID;
-
-  error = this->add(constraint, &object_id);
-  if (error != ErrorCode::OK) {
-    return error;
-  }
-
-  return error;
-}
-
-/**
- * @brief Get constraint metadata.
- * @param object_id   [in]  constraint id.
- * @param constraint  [out] constraint metadata with the specified ID.
- * @retval ErrorCode::OK if success,
- * @retval ErrorCode::ID_NOT_FOUND if the constraint id does not exist.
- * @retval otherwise an error code.
- */
-ErrorCode Constraints::get(const ObjectId object_id,
-                           manager::metadata::Constraint& constraint) const {
-  ErrorCode error = ErrorCode::UNKNOWN;
-  ptree ptree;
-
-  error = this->get(object_id, ptree);
-  if (error != ErrorCode::OK) {
-    return error;
-  }
-  constraint.convert_from_ptree(ptree);
 
   return error;
 }

@@ -82,8 +82,6 @@ set(JWT-CPP_INCLUDE_DIR ${SUBMODULE_DIR}/jwt-cpp/include)
 
 add_library(interface INTERFACE)
 
-add_subdirectory(${SUBMODULE_DIR}/googletest)
-
 if (DATA_STORAGE AND (DATA_STORAGE MATCHES "^.+$"))
   string(TOUPPER ${DATA_STORAGE} VARNAME)
 else()
@@ -132,7 +130,11 @@ elseif (DATA_STORAGE_JSON)
 endif()
 
 add_subdirectory(src)
-add_subdirectory(test)
+
+if (BUILD_TESTS)
+  add_subdirectory(test)
+  add_subdirectory(${SUBMODULE_DIR}/googletest)
+endif()
 
 target_include_directories(interface
   INTERFACE

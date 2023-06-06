@@ -267,7 +267,7 @@ ErrorCode DbcUtils::prepare(const ConnectionSPtr& connection, std::string_view s
 
 ErrorCode DbcUtils::execute_statement(const ConnectionSPtr& connection,
                                       std::string_view statement_name,
-                                      const std::vector<char const*>& param_values,
+                                      const std::vector<const char*>& param_values,
                                       PGresult*& res) {
   return exec_prepared(connection,
                        statement_name,
@@ -285,7 +285,7 @@ ErrorCode DbcUtils::execute_statement(const ConnectionSPtr& connection,
  */
 ErrorCode DbcUtils::exec_prepared(const ConnectionSPtr& connection,
                                   const StatementName& statement_name,
-                                  const std::vector<char const*>& param_values, PGresult*& res) {
+                                  const std::vector<const char*>& param_values, PGresult*& res) {
   return exec_prepared(connection, std::to_string(static_cast<int>(statement_name)), param_values,
                        res);
 }
@@ -300,7 +300,7 @@ ErrorCode DbcUtils::exec_prepared(const ConnectionSPtr& connection,
  * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode DbcUtils::exec_prepared(const ConnectionSPtr& connection, std::string_view statement_name,
-                                  const std::vector<char const*>& param_values, PGresult*& res) {
+                                  const std::vector<const char*>& param_values, PGresult*& res) {
   ErrorCode error = ErrorCode::INVALID_PARAMETER;
 
   if (!DbcUtils::is_open(connection)) {

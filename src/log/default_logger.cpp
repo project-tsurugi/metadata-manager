@@ -80,16 +80,16 @@ void DefaultLogger::output(std::string_view prefix_string,
         std::chrono::nanoseconds{system_time.time_since_epoch()});
 
     // Save the current format flags.
-    std::ios::fmtflags flags_saved = std::cout.flags();
+    auto fillch = std::cout.fill('0');
 
     // Compose and output the log data.
     std::cout << "["
               << std::put_time(std::localtime(&now_time), "%Y-%m-%dT%H:%M:%S")
-              << "." << std::setw(3) << std::setfill('0') << msec.count() % 1000
+              << "." << std::setw(3) << msec.count() % 1000
               << "] " << prefix_string << " " << log_string << std::endl;
 
     // Restore format flags.
-    std::cout.flags(flags_saved);
+    std::cout.fill(fillch);
   } catch (const std::exception& e) {
     std::cerr << "\n\n<<<<<\nexception on " << __PRETTY_FUNCTION__
               << "\nwhat=" << e.what() << "\n>>>>>" << std::endl;
