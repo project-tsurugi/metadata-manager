@@ -21,13 +21,14 @@
 #include <boost/format.hpp>
 #include <boost/property_tree/ptree.hpp>
 
-#include "manager/metadata/dao/postgresql/common_pg.h"
+#include "manager/metadata/dao/postgresql/pg_common.h"
 #include "manager/metadata/metadata_factory.h"
 
 namespace {
 
 using boost::property_tree::ptree;
 using manager::metadata::Column;
+using manager::metadata::DataTypes;
 using manager::metadata::Constraint;
 using manager::metadata::ErrorCode;
 using manager::metadata::FormatVersionType;
@@ -35,12 +36,11 @@ using manager::metadata::GenerationType;
 using manager::metadata::ObjectIdType;
 using manager::metadata::Table;
 using manager::metadata::Tables;
-using manager::metadata::db::postgresql::ConnectionSPtr;
 
 static constexpr const char* const TEST_DB   = "test";
 static constexpr const char* const ROLE_NAME = "tsurugi_ut_role_user_1";
 
-ConnectionSPtr connection;
+manager::metadata::db::PgConnectionPtr connection;
 bool test_succeed = true;
 
 #define EXPECT_EQ(expected, actual) \
@@ -380,6 +380,9 @@ void check_table_metadata_expected(const ptree& expected, const ptree& actual) {
         // default
         check_expected<std::string>(columns_expected, columns_actual,
                                     Column::DEFAULT_EXPR);
+        // is_funcexpr
+        check_expected<bool>(columns_expected, columns_actual,
+                             Column::IS_FUNCEXPR);
       }
     } else {
       EXPECT_EQ(o_columns_expected.is_initialized(),
@@ -482,15 +485,19 @@ ErrorCode tables_test() {
   ptree column;
   column.put(Column::NAME, "col-1");
   column.put(Column::COLUMN_NUMBER, 1);
-  column.put(Column::DATA_TYPE_ID, 6);
+  column.put(Column::DATA_TYPE_ID,
+      static_cast<int64_t>(DataTypes::DataTypesId::INT64));
   column.put(Column::IS_NOT_NULL, "true");
+  column.put(Column::VARYING, "false");
+  column.put(Column::IS_FUNCEXPR, "false");
   columns.push_back(std::make_pair("", column));
 
   column.clear();
   column.put(Column::NAME, "col-2");
   column.put(Column::COLUMN_NUMBER, 2);
   column.put(Column::IS_NOT_NULL, "false");
-  column.put(Column::DATA_TYPE_ID, 14);
+  column.put(Column::DATA_TYPE_ID,
+      static_cast<int64_t>(DataTypes::DataTypesId::VARCHAR));
   column.put(Column::VARYING, "true");
   {
     ptree elements;
@@ -601,18 +608,21 @@ ErrorCode tables_test() {
       it->second.get_optional<std::string>(Column::NAME).value_or("unknown-1") +
           "-update");
   update_column.put(Column::COLUMN_NUMBER, 1);
-  update_column.put(Column::DATA_TYPE_ID, 6);
+  update_column.put(Column::DATA_TYPE_ID,
+      static_cast<int64_t>(DataTypes::DataTypesId::INT64));
   update_column.erase(Column::DATA_LENGTH);
   update_column.put<bool>(Column::VARYING, false);
   update_column.put<bool>(Column::IS_NOT_NULL, true);
   update_column.put(Column::DEFAULT_EXPR, -1);
+  update_column.put<bool>(Column::IS_FUNCEXPR, false);
   update_columns.push_back(std::make_pair("", update_column));
 
   // 3 item add.
   update_column.clear();
   update_column.put(Column::NAME, "new-col-3");
   update_column.put(Column::COLUMN_NUMBER, 2);
-  update_column.put(Column::DATA_TYPE_ID, 14);
+  update_column.put(Column::DATA_TYPE_ID,
+      static_cast<int64_t>(DataTypes::DataTypesId::VARCHAR));
   update_column.put<bool>(Column::VARYING, false);
   update_column.put<bool>(Column::IS_NOT_NULL, true);
   {
@@ -624,6 +634,7 @@ ErrorCode tables_test() {
   }
   update_column.put(Column::DEFAULT_EXPR, "default-text-2");
   update_columns.push_back(std::make_pair("", update_column));
+  update_column.put<bool>(Column::IS_FUNCEXPR, true);
 
   update_table.add_child(Table::COLUMNS_NODE, update_columns);
 

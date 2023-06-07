@@ -30,11 +30,11 @@ class TestEnvironmentPg : public TestEnvironment {
     TestEnvironment::SetUp();
 
     // check if a connection to the metadata repository is opened or not.
-    db::postgresql::ConnectionSPtr connection =
-        db::postgresql::DbcUtils::make_connection_sptr(
+    db::PgConnectionPtr connection =
+        db::DbcUtils::make_connection_sptr(
             PQconnectdb(Config::get_connection_string().c_str()));
 
-    this->is_open_ = db::postgresql::DbcUtils::is_open(connection);
+    this->is_open_ = db::DbcUtils::is_open(connection);
   }
 
   void TearDown() override {

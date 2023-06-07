@@ -22,10 +22,10 @@
 
 #include <boost/property_tree/ptree.hpp>
 
-#include "manager/metadata/dao/statistics_dao.h"
+#include "manager/metadata/dao/dao.h"
 #include "manager/metadata/error_code.h"
-#include "manager/metadata/metadata.h"
 #include "manager/metadata/provider/provider_base.h"
+#include "manager/metadata/statistics.h"
 
 namespace manager::metadata::db {
 
@@ -59,7 +59,7 @@ class StatisticsProvider : public ProviderBase {
       ObjectIdType& statistic_id);
 
  private:
-  std::shared_ptr<StatisticsDAO> statistics_dao_ = nullptr;
+  std::shared_ptr<Dao> statistics_dao_ = nullptr;
 };  // class StatisticsProvider
 
 }  // namespace manager::metadata::db

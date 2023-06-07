@@ -16,8 +16,6 @@
 #ifndef MANAGER_METADATA_PROVIDER_PROVIDER_BASE_H_
 #define MANAGER_METADATA_PROVIDER_PROVIDER_BASE_H_
 
-#include <memory>
-
 #include "manager/metadata/dao/db_session_manager.h"
 
 namespace manager::metadata::db {
@@ -28,7 +26,7 @@ class ProviderBase {
   virtual ~ProviderBase() {}
 
  protected:
-  std::unique_ptr<DBSessionManager> session_manager_;
+  DbSessionManager* session_manager_;
 };  // class ProviderBase
 
 }  // namespace manager::metadata::db
