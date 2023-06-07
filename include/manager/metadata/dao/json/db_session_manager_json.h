@@ -16,98 +16,187 @@
 #pragma once
 
 #include <memory>
+#include <mutex>
 #include <string>
+#include <string_view>
+#include <unordered_map>
+
 #include <boost/property_tree/ptree.hpp>
 
 #include "manager/metadata/dao/db_session_manager.h"
 #include "manager/metadata/error_code.h"
-#include "manager/metadata/dao/generic_dao.h"
+
+#include "manager/metadata/helper/ptree_helper.h"
 
 namespace manager::metadata::db {
-/**
- * @brief
- */
-struct Connection {
-  std::string json_file;
-};
 
 /**
- * @brief
+ * @brief Class for managing sessions with JSON files.
  */
-class DbSessionManagerJson : public DBSessionManager {
+class DbSessionManagerJson : public DbSessionManager {
  public:
-  DbSessionManagerJson()
-      : contents_(std::make_unique<boost::property_tree::ptree>()) {}
-  DbSessionManagerJson(const DBSessionManager&) = delete;
-  DbSessionManagerJson& operator=(const DBSessionManager&) = delete;
+  /**
+   * @brief Function defined for compatibility.
+   * @return Always ErrorCode::OK.
+   */
+  ErrorCode connect() override { return ErrorCode::OK; }
 
-  manager::metadata::ErrorCode get_dao(
-      const GenericDAO::TableName,
-      std::shared_ptr<GenericDAO>&) override { return ErrorCode::UNKNOWN; }
-  std::shared_ptr<Dao> get_index_dao() override;
+  /**
+   * @brief Get an instance of a DAO for table metadata.
+   * @return DAO instance.
+   */
+  std::shared_ptr<Dao> get_tables_dao() override;
 
-  Connection connection() const { return conn_; }
+  /**
+   * @brief Get an instance of a DAO for column metadata.
+   * @return DAO instance.
+   */
+  std::shared_ptr<Dao> get_columns_dao() override;
 
-//  manager::metadata::ErrorCode connect() override { return ErrorCode::OK; }
-  manager::metadata::ErrorCode connect(std::string_view file_name,
-                                       std::string_view root_node);
-  manager::metadata::ErrorCode start_transaction() override;
-  manager::metadata::ErrorCode commit() override;
-  manager::metadata::ErrorCode rollback() override;
- // void close() override {}
+  /**
+   * @brief Get an instance of a DAO for index metadata.
+   * @return DAO instance.
+   */
+  std::shared_ptr<Dao> get_indexes_dao() override;
 
-  manager::metadata::ErrorCode load_contents() const;
-  boost::property_tree::ptree* get_contents() const {
-    return contents_.get();
-  }
+  /**
+   * @brief Get an instance of a DAO for constraint metadata.
+   *   Returns nullptr if the database connection fails.
+   * @return DAO instance or nullptr.
+   */
+  std::shared_ptr<Dao> get_constraints_dao() override;
+
+  /**
+   * @brief Get an instance of a DAO for data-type metadata.
+   * @return DAO instance.
+   */
+  std::shared_ptr<Dao> get_datatypes_dao() override;
+
+  /**
+   * @brief Get an instance of a DAO for role metadata.
+   * @return DAO instance.
+   */
+  std::shared_ptr<Dao> get_roles_dao() override;
+
+  /**
+   * @brief Get an instance of a DAO for privilege metadata.
+   * @return DAO instance.
+   */
+  std::shared_ptr<Dao> get_privileges_dao() override;
+
+  /**
+   * @brief Get an instance of a DAO for statistic metadata.
+   * @return DAO instance.
+   */
+  std::shared_ptr<Dao> get_statistics_dao() override;
+
+  /**
+   * @brief Starts a transaction scope managed by this DBSessionManager.
+   * @param none.
+   * @return ErrorCode::OK if success, otherwise an error code.
+   */
+  ErrorCode start_transaction() override;
+
+  /**
+   * @brief Commits all transactions currently started for all DAO contexts
+   *   managed by this DBSessionManager.
+   * @param none.
+   * @return ErrorCode::OK if success, otherwise an error code.
+   */
+  ErrorCode commit() override;
+
+  /**
+   * @brief Rollbacks all transactions currently started for all DAO contexts
+   *   managed by this DBSessionManager.
+   * @param none.
+   * @return ErrorCode::OK if success, otherwise an error code.
+   */
+  ErrorCode rollback() override;
+
+  /**
+   * @brief Loads a metadata object from a metadata table file.
+   * @param database  [in]  path to the JSON file.
+   * @param root_node [in]  root node name.
+   * @param object    [out] metadata object.
+   * @return ErrorCode::OK if success, otherwise an error code.
+   */
+  ErrorCode load_contents(std::string_view database, std::string_view root_node,
+                          boost::property_tree::ptree& object);
+
+  /**
+   * @brief Set the contents object.
+   *   To make it persistent, perform transaction control
+   *   (start_transaction(), commit()).
+   * @param database  [in]  path to the JSON file.
+   * @param object    [in]  metadata object.
+   */
+  void set_contents(std::string_view database,
+                    const boost::property_tree::ptree& object);
 
  private:
-  Connection conn_;
-  std::unique_ptr<boost::property_tree::ptree> contents_;
+  class Content {
+   public:
+    Content() : pre_hash(0), cur_hash(0) {}
+    Content& operator=(const boost::property_tree::ptree& content) {
+      this->data_ = content;
 
+      auto hash_value =
+          std::hash<std::string>()(ptree_helper::ptree_to_json(content));
+      if (this->pre_hash == 0) {
+        this->pre_hash = hash_value;
+      } else if (this->cur_hash == 0) {
+        this->cur_hash = hash_value;
+      } else {
+        this->pre_hash = this->cur_hash;
+        this->cur_hash = hash_value;
+      }
+
+      return *this;
+    }
+
+    const boost::property_tree::ptree& data() const { return this->data_; }
+    boost::property_tree::ptree* data_ptr() { return &this->data_; }
+    bool is_modified() const { return (this->pre_hash != this->cur_hash); }
+
+   private:
+    std::size_t pre_hash;
+    std::size_t cur_hash;
+    boost::property_tree::ptree data_;
+  };
+
+  class MutexWrapper {
+   public:
+    MutexWrapper() : locking_(false) {}
+
+    void lock() {
+      mutex_lock_.lock();
+      locking_ = true;
+    }
+    void unlock() {
+      mutex_lock_.unlock();
+      locking_ = false;
+    }
+    bool is_lock() { return locking_; }
+
+   private:
+    std::mutex mutex_lock_;
+    bool locking_;
+  };
+
+  MutexWrapper transaction_lock;
+  std::unordered_map<std::string, Content> contents_map_ = {};
+
+  /**
+   * @brief Save the metadata to a file.
+   * @param database  [in]  path to the JSON file.
+   * @return ErrorCode::OK if success, otherwise an error code.
+   */
   manager::metadata::ErrorCode save_contents() const;
-  void clear_contents() { contents_->clear(); }
+
+  /**
+   * @brief Clear the content data.
+   */
+  void clear_contents() { contents_map_.clear(); }
 };  // class DbSessionManagerJson
 
-} // manager//metadata::db
-
-
-namespace manager::metadata::db::json {
-/**
- * @brief
- */
-class DBSessionManager : public manager::metadata::db::DBSessionManager {
- public:
-  DBSessionManager()
-      : file_name_(""), meta_object_(std::make_unique<boost::property_tree::ptree>()) {}
-
-  manager::metadata::ErrorCode get_dao(
-      const GenericDAO::TableName table_name,
-      std::shared_ptr<GenericDAO>& gdao) override;
-
-  std::shared_ptr<Dao> get_index_dao() override { return nullptr; }
-
- // Connection connection() const { return conn_; }
-
-  manager::metadata::ErrorCode start_transaction() override;
-  manager::metadata::ErrorCode commit() override;
-  manager::metadata::ErrorCode rollback() override;
-
-  manager::metadata::ErrorCode connect(std::string_view file_name,
-                                       std::string_view initial_node);
-  boost::property_tree::ptree* get_container() const;
-  manager::metadata::ErrorCode load_object() const;
-
-  DBSessionManager(const DBSessionManager&) = delete;
-  DBSessionManager& operator=(const DBSessionManager&) = delete;
-
- private:
-  std::string file_name_;
-  std::unique_ptr<boost::property_tree::ptree> meta_object_;
-//  manager::metadata::db::Connection conn_;  // dummy for build
-
-  void init_meta_data();
-  manager::metadata::ErrorCode save_object() const;
-};  // class DBSessionManager
-
-}  // namespace manager::metadata::db::json
+}  // namespace manager::metadata::db

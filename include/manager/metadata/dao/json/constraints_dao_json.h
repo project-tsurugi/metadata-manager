@@ -16,53 +16,131 @@
 #ifndef MANAGER_METADATA_DAO_JSON_CONSTRAINTS_DAO_JSON_H_
 #define MANAGER_METADATA_DAO_JSON_CONSTRAINTS_DAO_JSON_H_
 
+#include <string>
+#include <string_view>
 #include <vector>
 
 #include <boost/property_tree/ptree.hpp>
 
-#include "manager/metadata/dao/constraints_dao.h"
-#include "manager/metadata/dao/json/db_session_manager_json.h"
+#include "manager/metadata/constraints.h"
+#include "manager/metadata/dao/json/dao_json.h"
 #include "manager/metadata/error_code.h"
+#include "manager/metadata/tables.h"
 
-namespace manager::metadata::db::json {
+namespace manager::metadata::db {
 
-class ConstraintsDAO : public manager::metadata::db::ConstraintsDAO {
+/**
+ * @brief DAO class for accessing constraint metadata for JSON data.
+ */
+class ConstraintsDaoJson : public DaoJson {
  public:
-  explicit ConstraintsDAO(DBSessionManager* session_manager) : session_manager_(session_manager) {}
+  // Root node name for constraint metadata.
+  static constexpr const char* const kRootNode = "tables";
 
-  manager::metadata::ErrorCode prepare() const override;
+  /**
+    * @brief Construct a new Constraint Metadata DAO class for JSON data.
+    * @param session pointer to DB session manager for JSON.
+    */
+  explicit ConstraintsDaoJson(DbSessionManagerJson* session)
+      : DaoJson(session, kTableName) {}
 
-  manager::metadata::ErrorCode insert_constraint_metadata(
-      const boost::property_tree::ptree& constraint_metadata,
-      ObjectIdType& constraint_id) const override;
+  /**
+   * @brief Add metadata object to metadata table file.
+   * @param object     [in]  constraint metadata object to add.
+   * @param object_id  [out] object id of the added row.
+   * @return ErrorCode::OK if success, otherwise an error code.
+   * @note  If success, metadata object is added management metadata.
+   *   e.g. format version, generation, etc...
+   */
+  manager::metadata::ErrorCode insert(const boost::property_tree::ptree& object,
+                                      ObjectId& object_id) const override;
 
-  manager::metadata::ErrorCode select_constraint_metadata(
-      std::string_view object_key, std::string_view object_value,
-      boost::property_tree::ptree& constraint_metadata) const override;
-  manager::metadata::ErrorCode select_constraint_metadata(
-      std::vector<boost::property_tree::ptree>& constraint_container) const override;
+  /**
+   * @brief Get all metadata objects from a metadata table file.
+   *   If the table metadata does not exist, return the container as empty.
+   * @param objects  [out] all constraints metadata.
+   * @return ErrorCode::OK if success, otherwise an error code.
+   */
+  manager::metadata::ErrorCode select_all(
+      std::vector<boost::property_tree::ptree>& objects) const override;
 
-  manager::metadata::ErrorCode delete_constraint_metadata(
-      std::string_view object_key, std::string_view object_value) const override;
+  /**
+   * @brief Get a metadata object from a metadata table file.
+   * @param key     [in]  key. column name of a constraint metadata table.
+   * @param values  [in]  value to be filtered.
+   * @param object  [out] constraint metadata to get, where the given
+   *   key equals the given value.
+   * @retval ErrorCode::OK if success.
+   * @retval ErrorCode::ID_NOT_FOUND if the object id does not exist.
+   * @retval ErrorCode::NAME_NOT_FOUND if the object name does not exist.
+   * @retval otherwise an error code.
+   */
+  manager::metadata::ErrorCode select(
+      std::string_view key, const std::vector<std::string_view>& values,
+      boost::property_tree::ptree& object) const override;
+
+  /**
+   * @brief Function defined for compatibility.
+   * @return Always ErrorCode::OK.
+   */
+  manager::metadata::ErrorCode update(
+      std::string_view, const std::vector<std::string_view>&,
+      const boost::property_tree::ptree&) const override {
+    // Do nothing and return of ErrorCode::OK.
+    return ErrorCode::OK;
+  }
+
+  /**
+   * @brief Remove a metadata object from a metadata table file.
+   * @param key        [in]  key. column name of a constraint metadata table.
+   * @param values     [in]  value to be filtered.
+   * @param object_id  [out] object id of the deleted row.
+   * @retval ErrorCode::OK if success.
+   * @retval ErrorCode::ID_NOT_FOUND if the object id does not exist.
+   * @retval ErrorCode::NAME_NOT_FOUND if the object name does not exist.
+   * @retval otherwise an error code.
+   */
+  manager::metadata::ErrorCode remove(
+      std::string_view key, const std::vector<std::string_view>& values,
+      ObjectId& object_id) const override;
 
  private:
-  // root node.
-  static constexpr const char* const ROOT_NODE = "tables";
-  // Name of the table metadata management file.
-  static constexpr const char* const CONSTRAINTS_METADATA_NAME = "tables";
+  // Name of the constraint metadata management file.
+  static constexpr const char* const kTableName = "tables";
   // Object ID key name for constraint ID.
-  static constexpr const char* const OID_KEY_NAME_CONSTRAINT = "constraint";
+  static constexpr const char* const kOidKeyNameConstraint = "constraint";
 
-  DBSessionManager* session_manager_;
+  /**
+   * @brief Get metadata-object.
+   * @param objects  [in]  metadata container.
+   * @param key      [in]  key. column name of a constraint metadata table.
+   * @param value    [in]  value to be filtered.
+   * @param object   [out] metadata-object with the specified name.
+   * @retval ErrorCode::OK if success.
+   * @retval ErrorCode::ID_NOT_FOUND if the object id does not exist.
+   * @retval ErrorCode::NAME_NOT_FOUND if the object name does not exist.
+   * @retval otherwise an error code.
+   */
+  manager::metadata::ErrorCode get_metadata_object(
+      const boost::property_tree::ptree& objects, std::string_view key,
+      std::string_view value, boost::property_tree::ptree& object) const;
 
-  manager::metadata::ErrorCode get_constraint_metadata_object(
-      const boost::property_tree::ptree& container, std::string_view object_key,
-      std::string_view object_value, boost::property_tree::ptree& constraint_metadata) const;
-  manager::metadata::ErrorCode delete_metadata_object(boost::property_tree::ptree& container,
-                                                      std::string_view object_key,
-                                                      std::string_view object_value) const;
-};  // class ConstraintsDAO
+  /**
+   * @brief Delete a metadata object from a metadata constraint file.
+   * @param objects    [in/out] metadata container.
+   * @param key        [in]     key. column name of a constraint metadata table.
+   * @param value      [in]     value to be filtered.
+   * @param object_id  [out]    table id of the row deleted.
+   * @retval ErrorCode::OK if success.
+   * @retval ErrorCode::ID_NOT_FOUND if the object id does not exist.
+   * @retval ErrorCode::NAME_NOT_FOUND if the object name does not exist.
+   * @retval otherwise an error code.
+   */
+  manager::metadata::ErrorCode delete_metadata_object(
+      boost::property_tree::ptree& objects, std::string_view key,
+      std::string_view value, ObjectId& object_id) const;
+};  // class ConstraintsDaoJson
 
-}  // namespace manager::metadata::db::json
+}  // namespace manager::metadata::db
 
 #endif  // MANAGER_METADATA_DAO_JSON_CONSTRAINTS_DAO_JSON_H_

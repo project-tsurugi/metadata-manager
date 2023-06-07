@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef MANAGER_METADATA_DAO_JSON_COLUMNS_DAO_JSON_H_
-#define MANAGER_METADATA_DAO_JSON_COLUMNS_DAO_JSON_H_
+#ifndef MANAGER_METADATA_DAO_JSON_ROLES_DAO_JSON_H_
+#define MANAGER_METADATA_DAO_JSON_ROLES_DAO_JSON_H_
 
 #include <string>
 #include <string_view>
@@ -28,82 +28,92 @@
 namespace manager::metadata::db {
 
 /**
- * @brief Class defined for compatibility.
- *   The functionality of the class in question is encapsulated in the
- *   manager::metadata::db::TablesDaoJson class.
+ * @brief DAO class defined for compatibility.
+ *   This metadata is not supported in JSON.
  */
-class ColumnsDaoJson : public DaoJson {
+class RolesDaoJson : public DaoJson {
  public:
   /**
-    * @brief Construct a new Column Metadata DAO class for JSON data.
+    * @brief Construct a new Role Metadata DAO class for JSON data.
     * @param session pointer to DB session manager for JSON.
     */
-  explicit ColumnsDaoJson(DbSessionManagerJson* session)
-      : DaoJson(session, "") {}
+  explicit RolesDaoJson(DbSessionManagerJson* session)
+        : DaoJson(session, "") {}
 
   /**
    * @brief Function defined for compatibility.
-   * @return Always ErrorCode::OK.
+   * @return Always true.
    */
-  manager::metadata::ErrorCode prepare() override {
-    // Do nothing and return of ErrorCode::OK.
-    return ErrorCode::OK;
+  bool exists(std::string_view name) const override { return true; }
+
+  /**
+   * @brief Function defined for compatibility.
+   * @return Always true.
+   */
+  bool exists(ObjectId) const override { return true; }
+
+  /**
+   * @brief Function defined for compatibility.
+   * @return Always true.
+   */
+  bool exists(const boost::property_tree::ptree& object) const override {
+    return true;
   }
 
   /**
-   * @brief Function defined for compatibility.
-   * @return Always ErrorCode::OK.
+   * @brief Unsupported function.
+   * @return Always ErrorCode::NOT_SUPPORTED.
    */
   manager::metadata::ErrorCode insert(const boost::property_tree::ptree&,
                                       ObjectId&) const override {
-    // Do nothing and return of ErrorCode::OK.
-    return ErrorCode::OK;
+    // Do nothing and return of ErrorCode::NOT_SUPPORTED.
+    return ErrorCode::NOT_SUPPORTED;
   }
 
   /**
-   * @brief Function defined for compatibility.
-   * @return Always ErrorCode::OK.
+   * @brief Unsupported function.
+   * @return Always ErrorCode::NOT_SUPPORTED.
    */
   manager::metadata::ErrorCode select_all(
       std::vector<boost::property_tree::ptree>&) const override {
-    // Do nothing and return of ErrorCode::OK.
-    return ErrorCode::OK;
+    // Do nothing and return of ErrorCode::NOT_SUPPORTED.
+    return ErrorCode::NOT_SUPPORTED;
   }
 
   /**
    * @brief Function defined for compatibility.
-   * @return Always ErrorCode::OK.
+   * @return Always ErrorCode::NOT_SUPPORTED.
    */
   manager::metadata::ErrorCode select(
       std::string_view, const std::vector<std::string_view>&,
       boost::property_tree::ptree&) const override {
-    // Do nothing and return of ErrorCode::OK.
-    return ErrorCode::OK;
+    // Do nothing and return of ErrorCode::NOT_SUPPORTED.
+    return ErrorCode::NOT_SUPPORTED;
   }
 
   /**
-   * @brief Function defined for compatibility.
-   * @return Always ErrorCode::OK.
+   * @brief Unsupported function.
+   * @return Always ErrorCode::NOT_SUPPORTED.
    */
   manager::metadata::ErrorCode update(
       std::string_view, const std::vector<std::string_view>&,
       const boost::property_tree::ptree&) const override {
-    // Do nothing and return of ErrorCode::OK.
-    return ErrorCode::OK;
+    // Do nothing and return of ErrorCode::NOT_SUPPORTED.
+    return ErrorCode::NOT_SUPPORTED;
   }
 
   /**
-   * @brief Function defined for compatibility.
-   * @return Always ErrorCode::OK.
+   * @brief Unsupported function.
+   * @return Always ErrorCode::NOT_SUPPORTED.
    */
   manager::metadata::ErrorCode remove(std::string_view,
                                       const std::vector<std::string_view>&,
                                       ObjectId&) const override {
-    // Do nothing and return of ErrorCode::OK.
-    return ErrorCode::OK;
+    // Do nothing and return of ErrorCode::NOT_SUPPORTED.
+    return ErrorCode::NOT_SUPPORTED;
   }
-};  // class ColumnsDaoJson
+};  // class RolesDaoJson
 
 }  // namespace manager::metadata::db
 
-#endif  // MANAGER_METADATA_DAO_JSON_COLUMNS_DAO_JSON_H_
+#endif  // MANAGER_METADATA_DAO_JSON_ROLES_DAO_JSON_H_
