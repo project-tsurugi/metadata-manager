@@ -24,12 +24,12 @@
 
 #include "manager/metadata/common/config.h"
 #include "manager/metadata/dao/postgresql/common_pg.h"
-#include "manager/metadata/roles.h"
-#include "manager/metadata/tables.h"
+#include "manager/metadata/metadata_factory.h"
 
 namespace {
 
 using boost::property_tree::ptree;
+
 using manager::metadata::ErrorCode;
 using manager::metadata::FormatVersionType;
 using manager::metadata::GenerationType;
@@ -349,7 +349,7 @@ void roles_test() {
       ROLE_NAME,
       "NOINHERIT CREATEROLE CREATEDB REPLICATION CONNECTION LIMIT 10");
 
-  auto roles = std::make_unique<Roles>(TEST_DB);
+  auto roles = manager::metadata::get_roles_ptr(TEST_DB);
   result     = roles->init();
   EXPECT_EQ(ErrorCode::OK, result);
 
@@ -403,7 +403,7 @@ void roles_test() {
 void get_role_metadata(std::string_view role_name) {
   ErrorCode result = ErrorCode::UNKNOWN;
 
-  auto roles = std::make_unique<Roles>(TEST_DB);
+  auto roles = manager::metadata::get_roles_ptr(TEST_DB);
   result     = roles->init();
   if (result != ErrorCode::OK) {
     std::cout << "Failed to initialize the metadata management object."
@@ -433,7 +433,7 @@ void get_table_metadata(std::string_view role_name,
                         std::string_view table_name) {
   ErrorCode result = ErrorCode::UNKNOWN;
 
-  auto tables = std::make_unique<Tables>(TEST_DB);
+  auto tables = manager::metadata::get_tables_ptr(TEST_DB);
   result      = tables->init();
   if (result != ErrorCode::OK) {
     std::cout << "ERR: Failed to initialize the metadata management object."
@@ -520,7 +520,10 @@ void confirm_permission_in_acls(std::string_view role_name,
                                 const char* permission) {
   ErrorCode result = ErrorCode::UNKNOWN;
 
-  auto tables = std::make_unique<Tables>(TEST_DB);
+  // TODO(future): Change when changing Metadata class.
+  auto tables_tmp = manager::metadata::get_tables_ptr(TEST_DB);
+  auto tables = static_cast<Tables*>(tables_tmp.get());
+
   result      = tables->init();
   if (result != ErrorCode::OK) {
     std::cout << "Failed to initialize the metadata management object."

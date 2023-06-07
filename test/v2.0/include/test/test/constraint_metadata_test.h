@@ -40,7 +40,7 @@ class ConstraintMetadataTest : public MetadataTest {
    * @return std::unique_ptr<Metadata> - metadata management object.
    */
   std::unique_ptr<Metadata> get_metadata_manager() const override {
-    return get_constraint_metadata(TEST_DB);
+    return get_constraints_ptr(TEST_DB);
   }
 
   /**
