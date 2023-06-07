@@ -17,224 +17,153 @@
 
 #include <boost/foreach.hpp>
 #include <boost/format.hpp>
-#include <boost/property_tree/ptree.hpp>
 
 #include "manager/metadata/common/config.h"
 #include "manager/metadata/common/message.h"
-#include "manager/metadata/dao/json/object_id_json.h"
-#include "manager/metadata/error_code.h"
 #include "manager/metadata/helper/logging_helper.h"
-#include "manager/metadata/metadata.h"
-#include "manager/metadata/tables.h"
+#include "manager/metadata/helper/ptree_helper.h"
 
 // =============================================================================
-namespace {
-
-std::unique_ptr<manager::metadata::db::json::ObjectId> object_id = nullptr;
-
-}  // namespace
-
-// =============================================================================
-namespace manager::metadata::db::json {
+namespace manager::metadata::db {
 
 using boost::property_tree::ptree;
 
-/**
- * @brief Prepare to access the JSON file of table metadata.
- * @param none.
- * @return ErrorCode::OK if success, otherwise an error code.
- */
-ErrorCode TablesDAO::prepare() const {
+ErrorCode TablesDaoJson::insert(const boost::property_tree::ptree& object,
+                                ObjectId& object_id) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
-  // Filename of the table metadata.
-  boost::format filename = boost::format("%s/%s.json") %
-                           Config::get_storage_dir_path() %
-                           std::string(TablesDAO::TABLES_METADATA_NAME);
+  // Check if the object is already exists.
+  if (this->exists(object)) {
+    auto opt_name_value = object.get_optional<std::string>(Table::NAME);
+    LOG_WARNING << Message::ALREADY_EXISTS << opt_name_value.value();
+    return ErrorCode::ALREADY_EXISTS;
+  }
 
-  // Connect to the table metadata file.
-  error = session_manager_->connect(filename.str(), TablesDAO::TABLES_NODE);
-
-  // Create the ObjectId.
-  object_id = std::make_unique<ObjectId>();
-
-  return error;
-}
-
-/**
- * @brief Add metadata object to metadata table file.
- * @param (table_metadata) [in]   one table metadata to add.
- * @param (table_id)       [out]  table id.
- * @return ErrorCode::OK if success, otherwise an error code.
- */
-
-ErrorCode TablesDAO::insert_table_metadata(
-    const boost::property_tree::ptree& table_metadata,
-    ObjectIdType& table_id) const {
-  ErrorCode error = ErrorCode::UNKNOWN;
-
+  ptree contents;
   // Load the metadata from the JSON file.
-  error = session_manager_->load_object();
+  error = this->session()->load_contents(this->database(), kRootNode, contents);
   if (error != ErrorCode::OK) {
     return error;
   }
 
-  // Getting a metadata container.
-  ptree* container = session_manager_->get_container();
-
-  // Getting a metadata object.
-  auto optional_name = table_metadata.get_optional<std::string>(Table::NAME);
-  ptree table_name_searched;
-  error = get_metadata_object(*container, Table::NAME, optional_name.get(),
-                              table_name_searched);
-  if (error == ErrorCode::OK) {
-    LOG_WARNING << Message::ALREADY_EXISTS << optional_name.get();
-    error = ErrorCode::ALREADY_EXISTS;
-    return error;
-  }
+  // Generate the object ID of the metadata object to be added.
+  object_id = this->oid_generator()->generate(kOidKeyNameTable);
 
   // Copy to the temporary area.
-  ptree tmp_table = table_metadata;
+  ptree tmp_object = object;
 
   // format_version
-  tmp_table.put(Table::FORMAT_VERSION, Tables::format_version());
-
+  tmp_object.put(Table::FORMAT_VERSION, Tables::format_version());
   // generation
-  tmp_table.put(Table::GENERATION, Tables::generation());
-
-  // Generate the object ID of the metadata object to be added.
-  table_id = object_id->generate(OID_KEY_NAME_TABLE);
-
+  tmp_object.put(Table::GENERATION, Tables::generation());
   // table ID
-  tmp_table.put(Table::ID, table_id);
+  tmp_object.put(Table::ID, object_id);
 
   // column metadata
   BOOST_FOREACH (ptree::value_type& node,
-                 tmp_table.get_child(Table::COLUMNS_NODE)) {
+                 tmp_object.get_child(Table::COLUMNS_NODE)) {
     ptree& column = node.second;
 
     // Generate the object ID of the metadata object to be added.
-    ObjectIdType columns_id = object_id->generate(OID_KEY_NAME_COLUMN);
+    ObjectId columns_id = this->oid_generator()->generate(kOidKeyNameColumn);
 
     // column ID
     column.put(Column::ID, columns_id);
 
     // table ID
-    column.put(Column::TABLE_ID, table_id);
+    column.put(Column::TABLE_ID, object_id);
   }
 
   // Constraint metadata is not stored here.
-  tmp_table.erase(Table::CONSTRAINTS_NODE);
+  tmp_object.erase(Table::CONSTRAINTS_NODE);
 
   // Add new element.
-  ptree node = container->get_child(TablesDAO::TABLES_NODE);
+  ptree node = contents.get_child(kRootNode);
 
-  node.push_back(std::make_pair("", tmp_table));
-  container->put_child(TablesDAO::TABLES_NODE, node);
+  node.push_back(std::make_pair("", tmp_object));
+  contents.put_child(kRootNode, node);
+
+  // Set updated content.
+  this->session()->set_contents(this->database(), contents);
 
   error = ErrorCode::OK;
 
   return error;
 }
 
-/**
- * @brief Get metadata object from a metadata table file.
- * @param object_key      [in]  key. column name of a table metadata table.
- * @param object_value    [in]  value to be filtered.
- * @param table_metadata  [out] table metadata to get, where the given key
- *   equals the given value.
- * @retval ErrorCode::OK if success,
- * @retval ErrorCode::ID_NOT_FOUND if the table id does not exist.
- * @retval ErrorCode::NAME_NOT_FOUND if the table name does not exist.
- * @retval otherwise an error code.
- */
-ErrorCode TablesDAO::select_table_metadata(
-    std::string_view object_key, std::string_view object_value,
-    boost::property_tree::ptree& table_metadata) const {
+ErrorCode TablesDaoJson::select_all(
+    std::vector<boost::property_tree::ptree>& objects) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
-  // Load the meta data from the JSON file.
-  error = session_manager_->load_object();
+  ptree contents;
+  // Load the metadata from the JSON file.
+  error = this->session()->load_contents(this->database(), kRootNode, contents);
   if (error != ErrorCode::OK) {
     return error;
   }
-
-  // Getting a metadata container.
-  ptree* container = session_manager_->get_container();
-
-  // Getting a metadata object.
-  error =
-      get_metadata_object(*container, object_key, object_value, table_metadata);
-
-  // Convert the error code.
-  if (error == ErrorCode::NOT_FOUND) {
-    if (object_key == Table::ID) {
-      error = ErrorCode::ID_NOT_FOUND;
-    } else if (object_key == Table::NAME) {
-      error = ErrorCode::NAME_NOT_FOUND;
-    }
-  }
-
-  return error;
-}
-
-/**
- * @brief Get all metadata objects from a metadata table file.
- *   If the table metadata does not exist, return the container as empty.
- * @param table_container  [out] all table metadata.
- * @return ErrorCode::OK if success, otherwise an error code.
- */
-ErrorCode TablesDAO::select_table_metadata(
-    std::vector<boost::property_tree::ptree>& table_container) const {
-  ErrorCode error = ErrorCode::UNKNOWN;
-
-  // Load the meta data from the JSON file.
-  error = session_manager_->load_object();
-  if (error != ErrorCode::OK) {
-    return error;
-  }
-
-  // Getting a metadata container.
-  ptree* container = session_manager_->get_container();
 
   // Convert from ptree structure type to vector<ptree>.
-  auto node = container->get_child(TablesDAO::TABLES_NODE);
-  std::transform(node.begin(), node.end(), std::back_inserter(table_container),
+  auto node = contents.get_child(kRootNode);
+  std::transform(node.begin(), node.end(), std::back_inserter(objects),
                  [](ptree::value_type v) { return v.second; });
 
   return error;
 }
 
-/**
- * @brief Executes an UPDATE statement to update the table metadata table with
- *   the specified table metadata.
- * @param table_id        [in]  table id.
- * @param table_metadata  [in]  table metadata object to be updated.
- * @return ErrorCode::OK if success, otherwise an error code.
- */
-ErrorCode TablesDAO::update_table_metadata(
-    const ObjectIdType table_id,
-    const boost::property_tree::ptree& table_metadata) const {
+ErrorCode TablesDaoJson::select(std::string_view key,
+                                const std::vector<std::string_view>& values,
+                                boost::property_tree::ptree& object) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
-  // Load the meta data from the JSON file.
-  error = session_manager_->load_object();
+  if (values.empty()) {
+    LOG_ERROR << Message::PARAMETER_FAILED << "Key value is unspecified.";
+    error = ErrorCode::INVALID_PARAMETER;
+    return error;
+  }
+
+  ptree contents;
+  // Load the metadata from the JSON file.
+  error = this->session()->load_contents(this->database(), kRootNode, contents);
   if (error != ErrorCode::OK) {
     return error;
   }
 
-  // Getting a metadata container.
-  ptree* container = session_manager_->get_container();
+  // Initialize table metadata list
+  object = {};
 
+  // Getting a metadata object.
+  error = get_metadata_object(contents, key, values[0], object);
+
+  return error;
+}
+
+ErrorCode TablesDaoJson::update(
+    std::string_view key, const std::vector<std::string_view>& values,
+    const boost::property_tree::ptree& object) const {
+  ErrorCode error = ErrorCode::UNKNOWN;
+
+  if (values.empty()) {
+    LOG_ERROR << Message::PARAMETER_FAILED << "Key value is unspecified.";
+    error = ErrorCode::INVALID_PARAMETER;
+    return error;
+  }
+
+  ptree contents;
+  // Load the metadata from the JSON file.
+  error = this->session()->load_contents(this->database(), kRootNode, contents);
+  if (error != ErrorCode::OK) {
+    return error;
+  }
+
+  ObjectId table_id;
   // Delete a metadata object.
-  error = this->delete_metadata_object(*container, Table::ID,
-                                       std::to_string(table_id), nullptr);
+  error = this->delete_metadata_object(contents, key, values[0], table_id);
   if (error != ErrorCode::OK) {
     return error;
   }
 
   // Copy to the temporary area.
-  ptree tmp_table = table_metadata;
+  ptree tmp_table = object;
 
   // format_version
   tmp_table.put(Table::FORMAT_VERSION, Tables::format_version());
@@ -248,17 +177,17 @@ ErrorCode TablesDAO::update_table_metadata(
   // column metadata
   BOOST_FOREACH (ptree::value_type& node,
                  tmp_table.get_child(Table::COLUMNS_NODE)) {
-    ptree& column           = node.second;
-    ObjectIdType columns_id = 0;
+    ptree& column       = node.second;
+    ObjectId columns_id = 0;
 
-    auto optional_columns_id = column.get_optional<ObjectIdType>(Column::ID);
-    if (optional_columns_id) {
+    auto opt_columns_id = column.get_optional<ObjectId>(Column::ID);
+    if (opt_columns_id) {
       // Set the specified object ID to the metadata object to be added.
-      columns_id = optional_columns_id.value();
-      object_id->update(OID_KEY_NAME_COLUMN, columns_id);
+      columns_id = opt_columns_id.value();
+      this->oid_generator()->update(kOidKeyNameColumn, columns_id);
     } else {
       // Generate the object ID of the metadata object to be added.
-      columns_id = object_id->generate(OID_KEY_NAME_COLUMN);
+      columns_id = this->oid_generator()->generate(kOidKeyNameColumn);
     }
 
     // Add or update column and table IDs.
@@ -270,43 +199,44 @@ ErrorCode TablesDAO::update_table_metadata(
   tmp_table.erase(Table::CONSTRAINTS_NODE);
 
   // Add new element.
-  ptree node = container->get_child(TablesDAO::TABLES_NODE);
+  ptree node = contents.get_child(kRootNode);
 
   node.push_back(std::make_pair("", tmp_table));
-  container->put_child(TablesDAO::TABLES_NODE, node);
+  contents.put_child(kRootNode, node);
+
+  // Set updated content.
+  this->session()->set_contents(this->database(), contents);
 
   error = ErrorCode::OK;
 
   return error;
 }
 
-/**
- * @brief Delete a metadata object from a metadata table file.
- * @param object_key    [in]  key. column name of a table metadata table.
- * @param object_value  [in]  value to be filtered.
- * @param table_id      [out]  table id of the row deleted.
- * @retval ErrorCode::OK if success.
- * @retval ErrorCode::ID_NOT_FOUND if the table id does not exist.
- * @retval ErrorCode::NAME_NOT_FOUND if the table name does not exist.
- * @retval otherwise an error code.
- */
-ErrorCode TablesDAO::delete_table_metadata(std::string_view object_key,
-                                           std::string_view object_value,
-                                           ObjectIdType& table_id) const {
+ErrorCode TablesDaoJson::remove(std::string_view key,
+                                const std::vector<std::string_view>& values,
+                                ObjectId& object_id) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
-  // Load the meta data from the JSON file.
-  error = session_manager_->load_object();
+  if (values.empty()) {
+    LOG_ERROR << Message::PARAMETER_FAILED << "Key value is unspecified.";
+    error = ErrorCode::INVALID_PARAMETER;
+    return error;
+  }
+
+  ptree contents;
+  // Load the metadata from the JSON file.
+  error = this->session()->load_contents(this->database(), kRootNode, contents);
   if (error != ErrorCode::OK) {
     return error;
   }
 
-  // Getting a metadata container.
-  ptree* container = session_manager_->get_container();
-
   // Delete a metadata object.
-  error = this->delete_metadata_object(*container, object_key, object_value,
-                                       &table_id);
+  error = this->delete_metadata_object(contents, key, values[0], object_id);
+
+  if (error == ErrorCode::OK) {
+    // Set updated content.
+    this->session()->set_contents(this->database(), contents);
+  }
 
   return error;
 }
@@ -315,120 +245,69 @@ ErrorCode TablesDAO::delete_table_metadata(std::string_view object_key,
  * Private method area
  */
 
-/**
- * @brief Get metadata-object.
- * @param container       [in]  metadata container.
- * @param object_key      [in]  key. column name of a table metadata table.
- * @param object_value    [in]  value to be filtered.
- * @param table_metadata  [out] metadata-object with the specified name.
- * @return ErrorCode::OK if success, otherwise an error code.
- */
-ErrorCode TablesDAO::get_metadata_object(
-    const boost::property_tree::ptree& container, std::string_view object_key,
-    std::string_view object_value,
-    boost::property_tree::ptree& table_metadata) const {
+ErrorCode TablesDaoJson::get_metadata_object(
+    const boost::property_tree::ptree& objects, std::string_view key,
+    std::string_view value, boost::property_tree::ptree& object) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
-  LOG_DEBUG << "get_metadata metadata:"
-            << (container.empty() ? "empty" : "exists") << " \"" << object_key
-            << "\"=\"" << object_value << "\"";
-
-  error = ErrorCode::NOT_FOUND;
-  BOOST_FOREACH (const ptree::value_type& node,
-                 container.get_child(TablesDAO::TABLES_NODE)) {
-    const ptree& temp_obj = node.second;
-
-    boost::optional<std::string> value =
-        temp_obj.get_optional<std::string>(object_key.data());
-    if (!value) {
-      LOG_DEBUG << "\"" << object_key << "\" not found." << object_value;
-      error = ErrorCode::NOT_FOUND;
-      break;
-    }
-
-    if (value.get() == object_value) {
-      table_metadata = temp_obj;
-      error          = ErrorCode::OK;
-      break;
-    }
-  }
-  return error;
-}
-
-/**
- * @brief Delete a metadata object from a metadata table file.
- * @param container     [in/out] metadata container.
- * @param object_key    [in]     key. column name of a table metadata table.
- * @param object_value  [in]     value to be filtered.
- * @param table_id      [out]    table id of the row deleted.
- * @retval ErrorCode::OK if success.
- * @retval ErrorCode::ID_NOT_FOUND if the table id does not exist.
- * @retval ErrorCode::NAME_NOT_FOUND if the table name does not exist.
- * @retval otherwise an error code.
- */
-ErrorCode TablesDAO::delete_metadata_object(
-    boost::property_tree::ptree& container, std::string_view object_key,
-    std::string_view object_value, ObjectIdType* table_id) const {
-  ErrorCode error = ErrorCode::UNKNOWN;
-
-  LOG_DEBUG << "delete_metadata_object metadata:"
-            << (container.empty() ? "empty" : "exists") << " \"" << object_key
-            << "\"=\"" << object_value << "\"";
+  LOG_DEBUG << "get_metadata_object \"" << key << "\"=\"" << value << "\"";
 
   // Initialize the error code.
-  if (object_key == Table::ID) {
-    error = ErrorCode::ID_NOT_FOUND;
-  } else if (object_key == Table::NAME) {
-    error = ErrorCode::NAME_NOT_FOUND;
-  } else {
-    error = ErrorCode::NOT_FOUND;
-  }
+  error = Dao::get_not_found_error_code(key);
 
-  // Getting a metadata container.
-  ptree& node = container.get_child(TablesDAO::TABLES_NODE);
+  BOOST_FOREACH (const ptree::value_type& node, objects.get_child(kRootNode)) {
+    const ptree& temp_obj = node.second;
 
-  for (ptree::iterator it = node.begin(); it != node.end();) {
-    const ptree& temp_obj = it->second;
-    boost::optional<std::string> object_id =
-        temp_obj.get_optional<std::string>(Table::ID);
-
-    if (object_key == Table::ID) {
-      // Delete metadata with table-id as a key.
-      if (object_id && (object_id.get() == object_value)) {
-        it = node.erase(it);
-        if (table_id != nullptr) {
-          *table_id = std::stoul(object_id.get());
-        }
-        error = ErrorCode::OK;
-        break;
-      } else {
-        ++it;
-      }
-    } else if (object_key == Table::NAME) {
-      // Delete metadata with table-name as a key.
-      boost::optional<std::string> name =
-          temp_obj.get_optional<std::string>(Table::NAME);
-
-      if (name && (name.get() == object_value)) {
-        if (object_id) {
-          if (table_id != nullptr) {
-            *table_id = std::stoul(object_id.get());
-          }
-          error = ErrorCode::OK;
-          it    = node.erase(it);
-        } else {
-          error = ErrorCode::UNKNOWN;
-        }
-        break;
-      } else {
-        ++it;
-      }
-    } else {
+    std::string key_value(
+        ptree_helper::ptree_value_to_string<std::string>(temp_obj, key));
+    if (key_value == value) {
+      object = temp_obj;
+      error  = ErrorCode::OK;
       break;
     }
   }
+  LOG_DEBUG << "get_metadata_object => ErrorCode:" << error;
 
   return error;
 }
 
-}  // namespace manager::metadata::db::json
+ErrorCode TablesDaoJson::delete_metadata_object(
+    boost::property_tree::ptree& objects, std::string_view key,
+    std::string_view value, ObjectId& object_id) const {
+  ErrorCode error = ErrorCode::UNKNOWN;
+
+  LOG_DEBUG << "delete_metadata_object \"" << key << "\"=\"" << value << "\"";
+
+  // Initialize the error code.
+  error = get_not_found_error_code(key);
+
+  // Getting a metadata container.
+  ptree& tables_node = objects.get_child(kRootNode);
+
+  for (ptree::iterator it_tables = tables_node.begin();
+       it_tables != tables_node.end();) {
+    const ptree& metadata = it_tables->second;
+
+    // Get the value of the key.
+    auto opt_key_value = metadata.get_optional<std::string>(key.data());
+    // If the key value matches, the metadata is removed.
+    if (opt_key_value && (opt_key_value.value() == value)) {
+      LOG_DEBUG << "Remove table metadata. " << key << "=\"" << value << "\"";
+
+      auto opt_oid_value = metadata.get_optional<ObjectId>(Table::ID);
+      object_id          = opt_oid_value.get_value_or(-1);
+      // Remove table metadata.
+      it_tables = tables_node.erase(it_tables);
+
+      error = ErrorCode::OK;
+      break;
+    } else {
+      it_tables++;
+    }
+  }
+  LOG_DEBUG << "delete_metadata_object => ErrorCode:" << error;
+
+  return error;
+}
+
+}  // namespace manager::metadata::db

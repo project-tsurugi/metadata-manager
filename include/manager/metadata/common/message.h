@@ -69,6 +69,8 @@ struct Message {
       "Failed to insert record. ";
   static constexpr const char* const INCORRECT_DATA = "Incorrect data.: ";
   static constexpr const char* const INVALID_TOKEN = "Token is invalid.: ";
+  static constexpr const char* const TRANSACTION_NOT_START =
+      "Transaction has not been initiated.";
 };  // struct Message
 
 }  // namespace manager::metadata

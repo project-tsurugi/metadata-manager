@@ -16,11 +16,9 @@
 #include "manager/metadata/dao/json/object_id_json.h"
 
 #include <fstream>
-#include <iostream>
 
 #include <boost/format.hpp>
 #include <boost/property_tree/ini_parser.hpp>
-#include <boost/property_tree/ptree.hpp>
 
 #include "manager/metadata/common/config.h"
 #include "manager/metadata/common/message.h"
@@ -33,15 +31,15 @@ namespace ini_parser = boost::property_tree::ini_parser;
 using boost::property_tree::ini_parser_error;
 using boost::property_tree::ptree;
 
-static ObjectIdType INVALID_OID = 0;
+static ObjectId INVALID_OID = 0;
 
 /**
  * @brief Contractor.
  */
 ObjectIdGenerator::ObjectIdGenerator() {
   boost::format file_path = boost::format("%s/%s") %
-                              Config::get_storage_dir_path() %
-                              std::string(ObjectIdGenerator::FILE_NAME);
+                            Config::get_storage_dir_path() %
+                            std::string(ObjectIdGenerator::FILE_NAME);
   oid_file_name_ = file_path.str();
 }
 
@@ -101,7 +99,6 @@ ObjectId ObjectIdGenerator::current(std::string_view metadata_name) {
  * @return Returns the generated OID. Returns 0 if an error occurred.
  */
 ObjectId ObjectIdGenerator::generate(std::string_view metadata_name) {
-
   ErrorCode error = ErrorCode::UNKNOWN;
 
   error = init();
@@ -137,8 +134,7 @@ ObjectId ObjectIdGenerator::generate(std::string_view metadata_name) {
  * @return Returns the next OID. Returns 0 if an error occurred.
  */
 ObjectId ObjectIdGenerator::update(std::string_view metadata_name,
-                                  ObjectId new_oid) {
-
+                                   ObjectId new_oid) {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   error = init();
@@ -161,7 +157,7 @@ ObjectId ObjectIdGenerator::update(std::string_view metadata_name,
   ObjectId oid_value = INVALID_OID;
   if (new_oid > current_oid) {
     oid_data.put(metadata_name.data(), new_oid);
-    error = this->write(oid_data);
+    error     = this->write(oid_data);
     oid_value = (error == ErrorCode::OK ? new_oid : INVALID_OID);
   } else {
     oid_value = current_oid;
@@ -175,9 +171,7 @@ ObjectId ObjectIdGenerator::update(std::string_view metadata_name,
  * @param oid_data [in]  OID management data.
  * @return ErrorCode if success, otherwise an error code.
  */
-ErrorCode ObjectIdGenerator::read(
-    boost::property_tree::ptree& oid_data) const {
-
+ErrorCode ObjectIdGenerator::read(boost::property_tree::ptree& oid_data) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   try {
@@ -203,211 +197,6 @@ ErrorCode ObjectIdGenerator::read(
  */
 ErrorCode ObjectIdGenerator::write(
     const boost::property_tree::ptree& oid_data) const {
-
-  ErrorCode error = ErrorCode::UNKNOWN;
-
-  try {
-    ini_parser::write_ini(oid_file_name_, oid_data);
-    error = ErrorCode::OK;
-  } catch (ini_parser_error& e) {
-    LOG_ERROR << Message::WRITE_INI_FILE_FAILURE << oid_file_name_ << "\n  "
-              << e.what();
-    error = ErrorCode::INTERNAL_ERROR;
-  } catch (...) {
-    LOG_ERROR << Message::WRITE_INI_FILE_FAILURE << oid_file_name_ << "\n  "
-              << "Unknown exception";
-    error = ErrorCode::INTERNAL_ERROR;
-  }
-
-  return error;
-}
-} // namespace manager::metadata::db
-
-// ==========================================================================
-
-namespace manager::metadata::db::json {
-
-namespace ini_parser = boost::property_tree::ini_parser;
-using boost::property_tree::ini_parser_error;
-using boost::property_tree::ptree;
-
-static ObjectIdType INVALID_OID = 0;
-
-/**
- * @brief Contractor.
- */
-ObjectId::ObjectId() {
-  // Filename of the table metadata.
-  boost::format filename = boost::format("%s/%s") %
-                           Config::get_storage_dir_path() %
-                           std::string(ObjectId::OID_NAME);
-  oid_file_name_ = filename.str();
-}
-
-/**
- * @brief initialize object-ID metadata-table.
- */
-ErrorCode ObjectId::init() {
-  ErrorCode error = ErrorCode::UNKNOWN;
-
-  std::ifstream file(oid_file_name_);
-  try {
-    if (!file) {
-      // create oid-metadata-table.
-      ptree root;
-      ini_parser::write_ini(oid_file_name_, root);
-    }
-    error = ErrorCode::OK;
-  } catch (ini_parser_error& e) {
-    LOG_ERROR << Message::WRITE_INI_FILE_FAILURE << oid_file_name_ << "\n  "
-              << e.what();
-    error = ErrorCode::INTERNAL_ERROR;
-  } catch (...) {
-    LOG_ERROR << Message::WRITE_INI_FILE_FAILURE << oid_file_name_;
-    error = ErrorCode::INTERNAL_ERROR;
-  }
-
-  return error;
-}
-
-/**
- * @brief current object-ID.
- * @param (table_name) [in]  OID table name.
- * @return Returns the current OID. Returns 0 if an error occurred.
- */
-ObjectIdType ObjectId::current(std::string_view table_name) {
-  ErrorCode error = ErrorCode::UNKNOWN;
-
-  // initialize
-  error = init();
-  if (error != ErrorCode::OK) {
-    return INVALID_OID;
-  }
-
-  // Reads the OID management file.
-  ptree oid_data;
-  error = this->read(oid_data);
-  if (error != ErrorCode::OK) {
-    return INVALID_OID;
-  }
-
-  auto oid = oid_data.get_optional<ObjectIdType>(table_name.data());
-
-  return oid.value_or(0);
-}
-
-/**
- * @brief generate new object-ID.
- * @param table_name [in]  OID table name.
- * @return Returns the generated OID. Returns 0 if an error occurred.
- */
-ObjectIdType ObjectId::generate(std::string_view table_name) {
-  ErrorCode error = ErrorCode::UNKNOWN;
-
-  // initialize
-  error = init();
-  if (error != ErrorCode::OK) {
-    return INVALID_OID;
-  }
-
-  // Reads the OID management file.
-  ptree oid_data;
-  error = this->read(oid_data);
-  if (error != ErrorCode::OK) {
-    return INVALID_OID;
-  }
-
-  boost::optional<ObjectIdType> oid =
-      oid_data.get_optional<ObjectIdType>(table_name.data());
-  ObjectIdType object_id = oid.value_or(0);
-
-  // Generate next OID.
-  oid_data.put(table_name.data(), ++object_id);
-
-  // Writes to the OID management file.
-  error = this->write(oid_data);
-  if (error != ErrorCode::OK) {
-    return INVALID_OID;
-  }
-
-  return object_id;
-}
-
-/**
- * @brief If greater than the current OID, the OID is updated.
- * @param (table_name) [in]  OID table name.
- * @param (new_oid)    [in]  new OID.
- * @return Returns the next OID. Returns 0 if an error occurred.
- */
-ObjectIdType ObjectId::update(std::string_view table_name,
-                              ObjectIdType new_oid) {
-  ErrorCode error = ErrorCode::UNKNOWN;
-
-  // initialize
-  error = init();
-  if (error != ErrorCode::OK) {
-    return INVALID_OID;
-  }
-
-  // Reads the OID management file.
-  ptree oid_data;
-  error = this->read(oid_data);
-  if (error != ErrorCode::OK) {
-    return INVALID_OID;
-  }
-
-  boost::optional<ObjectIdType> oid =
-      oid_data.get_optional<ObjectIdType>(table_name.data());
-  ObjectIdType current_oid = oid.value_or(1);
-
-  // If the specified OID exceeds the current OID,
-  // the OID management file is updated.
-  ObjectIdType oid_value = INVALID_OID;
-  if (new_oid > current_oid) {
-    // OID is updated and written to the OID management file.
-    oid_data.put(table_name.data(), new_oid);
-
-    // Writes to the OID management file.
-    error = this->write(oid_data);
-
-    oid_value = (error == ErrorCode::OK ? new_oid : INVALID_OID);
-  } else {
-    oid_value = current_oid;
-  }
-
-  return oid_value;
-}
-
-/**
- * @brief Reads the OID management file.
- * @param (oid_data) [in]  OID management data.
- * @return ErrorCode if success, otherwise an error code.
- */
-ErrorCode ObjectId::read(boost::property_tree::ptree& oid_data) const {
-  ErrorCode error = ErrorCode::UNKNOWN;
-
-  try {
-    ini_parser::read_ini(oid_file_name_, oid_data);
-    error = ErrorCode::OK;
-  } catch (ini_parser_error& e) {
-    LOG_ERROR << Message::READ_INI_FILE_FAILURE << oid_file_name_ << "\n  "
-              << e.what();
-    error = ErrorCode::INTERNAL_ERROR;
-  } catch (...) {
-    LOG_ERROR << Message::READ_INI_FILE_FAILURE << oid_file_name_ << "\n  "
-              << "Unknown exception";
-    error = ErrorCode::INTERNAL_ERROR;
-  }
-
-  return error;
-}
-
-/**
- * @brief Writes to the OID management file.
- * @param (oid_data) [in]  OID management data.
- * @return ErrorCode if success, otherwise an error code.
- */
-ErrorCode ObjectId::write(const boost::property_tree::ptree& oid_data) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   try {
@@ -426,4 +215,4 @@ ErrorCode ObjectId::write(const boost::property_tree::ptree& oid_data) const {
   return error;
 }
 
-}  // namespace manager::metadata::db::json
+}  // namespace manager::metadata::db

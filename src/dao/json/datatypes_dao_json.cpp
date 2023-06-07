@@ -16,24 +16,17 @@
 #include "manager/metadata/dao/json/datatypes_dao_json.h"
 
 #include <boost/foreach.hpp>
-#include <boost/property_tree/ptree.hpp>
 
 #include "manager/metadata/common/message.h"
 #include "manager/metadata/dao/common/pg_type.h"
-#include "manager/metadata/error_code.h"
 #include "manager/metadata/helper/logging_helper.h"
 
 // =============================================================================
-namespace manager::metadata::db::json {
+namespace manager::metadata::db {
 
 using boost::property_tree::ptree;
 
-/**
- * @brief Defines all prepared data types metadata.
- * @param none.
- * @return ErrorCode::OK if success, otherwise an error code.
- */
-ErrorCode DataTypesDAO::prepare() const {
+ErrorCode DataTypesDaoJson::prepare() {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   ptree datatypes;
@@ -44,7 +37,7 @@ ErrorCode DataTypesDAO::prepare() const {
     datatype.put(DataTypes::FORMAT_VERSION, DataTypes::format_version());
     datatype.put(DataTypes::GENERATION, DataTypes::generation());
     datatype.put(DataTypes::ID,
-                 static_cast<ObjectIdType>(DataTypes::DataTypesId::INT32));
+                 static_cast<ObjectId>(DataTypes::DataTypesId::INT32));
     datatype.put(DataTypes::NAME, "INT32");
     datatype.put(DataTypes::PG_DATA_TYPE, PgType::TypeOid::kInt4);
     datatype.put(DataTypes::PG_DATA_TYPE_NAME, "integer");
@@ -56,7 +49,7 @@ ErrorCode DataTypesDAO::prepare() const {
     datatype.put(DataTypes::FORMAT_VERSION, DataTypes::format_version());
     datatype.put(DataTypes::GENERATION, DataTypes::generation());
     datatype.put(DataTypes::ID,
-                 static_cast<ObjectIdType>(DataTypes::DataTypesId::INT64));
+                 static_cast<ObjectId>(DataTypes::DataTypesId::INT64));
     datatype.put(DataTypes::NAME, "INT64");
     datatype.put(DataTypes::PG_DATA_TYPE, PgType::TypeOid::kInt8);
     datatype.put(DataTypes::PG_DATA_TYPE_NAME, "bigint");
@@ -68,7 +61,7 @@ ErrorCode DataTypesDAO::prepare() const {
     datatype.put(DataTypes::FORMAT_VERSION, DataTypes::format_version());
     datatype.put(DataTypes::GENERATION, DataTypes::generation());
     datatype.put(DataTypes::ID,
-                 static_cast<ObjectIdType>(DataTypes::DataTypesId::FLOAT32));
+                 static_cast<ObjectId>(DataTypes::DataTypesId::FLOAT32));
     datatype.put(DataTypes::NAME, "FLOAT32");
     datatype.put(DataTypes::PG_DATA_TYPE, PgType::TypeOid::kFloat4);
     datatype.put(DataTypes::PG_DATA_TYPE_NAME, "real");
@@ -80,7 +73,7 @@ ErrorCode DataTypesDAO::prepare() const {
     datatype.put(DataTypes::FORMAT_VERSION, DataTypes::format_version());
     datatype.put(DataTypes::GENERATION, DataTypes::generation());
     datatype.put(DataTypes::ID,
-                 static_cast<ObjectIdType>(DataTypes::DataTypesId::FLOAT64));
+                 static_cast<ObjectId>(DataTypes::DataTypesId::FLOAT64));
     datatype.put(DataTypes::NAME, "FLOAT64");
     datatype.put(DataTypes::PG_DATA_TYPE, PgType::TypeOid::kFloat8);
     datatype.put(DataTypes::PG_DATA_TYPE_NAME, "double precision");
@@ -92,7 +85,7 @@ ErrorCode DataTypesDAO::prepare() const {
     datatype.put(DataTypes::FORMAT_VERSION, DataTypes::format_version());
     datatype.put(DataTypes::GENERATION, DataTypes::generation());
     datatype.put(DataTypes::ID,
-                 static_cast<ObjectIdType>(DataTypes::DataTypesId::CHAR));
+                 static_cast<ObjectId>(DataTypes::DataTypesId::CHAR));
     datatype.put(DataTypes::NAME, "CHAR");
     datatype.put(DataTypes::PG_DATA_TYPE, PgType::TypeOid::kBpchar);
     datatype.put(DataTypes::PG_DATA_TYPE_NAME, "char");
@@ -104,7 +97,7 @@ ErrorCode DataTypesDAO::prepare() const {
     datatype.put(DataTypes::FORMAT_VERSION, DataTypes::format_version());
     datatype.put(DataTypes::GENERATION, DataTypes::generation());
     datatype.put(DataTypes::ID,
-                 static_cast<ObjectIdType>(DataTypes::DataTypesId::VARCHAR));
+                 static_cast<ObjectId>(DataTypes::DataTypesId::VARCHAR));
     datatype.put(DataTypes::NAME, "VARCHAR");
     datatype.put(DataTypes::PG_DATA_TYPE, PgType::TypeOid::kVarchar);
     datatype.put(DataTypes::PG_DATA_TYPE_NAME, "varchar");
@@ -197,53 +190,57 @@ ErrorCode DataTypesDAO::prepare() const {
     datatypes.push_back(std::make_pair("", datatype));
   }
 
-  ptree* meta_object = session_manager_->get_container();
-  meta_object->add_child(DataTypesDAO::DATATYPES_NODE, datatypes);
+  datatype_contents_.clear();
+  datatype_contents_.add_child(kRootNode, datatypes);
 
   error = ErrorCode::OK;
   return error;
 }
 
-/**
- * @brief Get one data type metadata from the data types metadata table,
- *   where the given key equals the given value.
- * @param (object_key)    [in]  metadata-object key.
- * @param (object_value)  [in]  metadata-object value.
- * @param (object)        [out] metadata-object with the specified name.
- * @retval ErrorCode::OK if success.
- * @retval ErrorCode::NOT_FOUND if the data type id or data type name
- *   does not exist.
- * @retval otherwise an error code.
- */
-ErrorCode DataTypesDAO::select_one_data_type_metadata(
-    std::string_view object_key, std::string_view object_value,
-    boost::property_tree::ptree& object) const {
+ErrorCode DataTypesDaoJson::select_all(
+    std::vector<boost::property_tree::ptree>& objects) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
-  ptree* meta_object = session_manager_->get_container();
+  // Getting a metadata contents.
+  const ptree& contents = datatype_contents_;
 
-  // Initialize the error code.
-  if (object_key == DataTypes::ID) {
-    error = ErrorCode::ID_NOT_FOUND;
-  } else if (object_key == DataTypes::NAME) {
-    error = ErrorCode::NAME_NOT_FOUND;
-  } else {
-    error = ErrorCode::NOT_FOUND;
+  // Convert from ptree structure type to vector<ptree>.
+  const auto& node = contents.get_child(kRootNode);
+  std::transform(node.begin(), node.end(), std::back_inserter(objects),
+                 [](ptree::value_type v) { return v.second; });
+
+  return error;
+}
+
+ErrorCode DataTypesDaoJson::select(std::string_view key,
+                                   const std::vector<std::string_view>& values,
+                                   boost::property_tree::ptree& object) const {
+  ErrorCode error = ErrorCode::UNKNOWN;
+
+  if (values.empty()) {
+    LOG_ERROR << Message::PARAMETER_FAILED << "Key value is unspecified.";
+    error = ErrorCode::INVALID_PARAMETER;
+    return error;
   }
 
-  BOOST_FOREACH (const ptree::value_type& node,
-                 meta_object->get_child(DataTypesDAO::DATATYPES_NODE)) {
+  // Getting a metadata contents.
+  const ptree& contents = datatype_contents_;
+
+  // Initialize the error code.
+  error = get_not_found_error_code(key);
+
+  BOOST_FOREACH (const auto& node, contents.get_child(kRootNode)) {
     const ptree& temp_obj = node.second;
 
-    boost::optional<std::string> value =
-        temp_obj.get_optional<std::string>(object_key.data());
-    if (!value) {
-      LOG_ERROR << Message::PARAMETER_FAILED << "\"" << object_key.data()
+    boost::optional<std::string> data_value =
+        temp_obj.get_optional<std::string>(key.data());
+    if (!data_value) {
+      LOG_ERROR << Message::PARAMETER_FAILED << "\"" << key.data()
                 << "\" => undefined value";
       error = ErrorCode::INVALID_PARAMETER;
       break;
     }
-    if (value.get() == object_value) {
+    if (data_value.value() == values[0]) {
       object = temp_obj;
       error = ErrorCode::OK;
       break;
@@ -253,4 +250,4 @@ ErrorCode DataTypesDAO::select_one_data_type_metadata(
   return error;
 }
 
-}  // namespace manager::metadata::db::json
+}  // namespace manager::metadata::db

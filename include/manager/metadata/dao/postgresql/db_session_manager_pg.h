@@ -38,7 +38,6 @@ class DbSessionManagerPg : public DbSessionManager {
   /**
    * @brief Establish a connection to the metadata repository
    *   using a connection string.
-   * @param none.
    * @return ErrorCode::OK if success, otherwise an error code.
    */
   ErrorCode connect() override;
@@ -93,12 +92,6 @@ class DbSessionManagerPg : public DbSessionManager {
   std::shared_ptr<Dao> get_statistics_dao() override;
 
   /**
-   * @brief Get connection information.
-   * @return connection.
-   */
-  Connection connection() const { return conn_; }
-
-  /**
    * @brief Starts a transaction scope managed by this DBSessionManager.
    * @param none.
    * @return ErrorCode::OK if success, otherwise an error code.
@@ -120,6 +113,12 @@ class DbSessionManagerPg : public DbSessionManager {
    * @return ErrorCode::OK if success, otherwise an error code.
    */
   ErrorCode rollback() override;
+
+  /**
+   * @brief Get connection information.
+   * @return connection.
+   */
+  Connection connection() const { return conn_; }
 
  private:
   Connection conn_;
