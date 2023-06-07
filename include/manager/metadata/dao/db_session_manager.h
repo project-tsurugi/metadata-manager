@@ -18,45 +18,45 @@
 #include <memory>
 #include <string>
 
-#include "manager/metadata/dao/generic_dao.h"
 #include "manager/metadata/error_code.h"
 
 namespace manager::metadata::db {
+
 class Dao;
 
-/**
- * @brief
- */
-class DBSessionManager {
+class DbSessionManager {
  public:
-  DBSessionManager() {}
-  virtual ~DBSessionManager() {}
+  /**
+   * @brief Returns an instance of the DB session manager.
+   * @return DB session manager instance.
+   */
+  static DbSessionManager& get_instance();
 
-  virtual manager::metadata::ErrorCode get_dao(
-      const GenericDAO::TableName table_name,
-      std::shared_ptr<GenericDAO>& gdao) = 0;
+  DbSessionManager() {}
+  explicit DbSessionManager(std::string database) : database_(database) {}
 
-  virtual std::shared_ptr<Dao> get_index_dao() = 0;
+  virtual ~DbSessionManager() {}
 
-  virtual manager::metadata::ErrorCode start_transaction() = 0;
-  virtual manager::metadata::ErrorCode commit() = 0;
-  virtual manager::metadata::ErrorCode rollback() = 0;
+  DbSessionManager(const DbSessionManager&)            = delete;
+  DbSessionManager& operator=(const DbSessionManager&) = delete;
 
-//  virtual Connection connection() const = 0;
-//  virtual manager::metadata::ErrorCode connect() = 0;
-//  virtual manager::metadata::ErrorCode start_transaction() = 0;
-//  virtual manager::metadata::ErrorCode commit() = 0;
-//  virtual manager::metadata::ErrorCode rollback() = 0;
-//  virtual void close() = 0;
+  virtual ErrorCode connect() = 0;
+
+  virtual std::shared_ptr<Dao> get_tables_dao()      = 0;
+  virtual std::shared_ptr<Dao> get_columns_dao()     = 0;
+  virtual std::shared_ptr<Dao> get_indexes_dao()     = 0;
+  virtual std::shared_ptr<Dao> get_constraints_dao() = 0;
+  virtual std::shared_ptr<Dao> get_datatypes_dao()   = 0;
+  virtual std::shared_ptr<Dao> get_roles_dao()       = 0;
+  virtual std::shared_ptr<Dao> get_privileges_dao()  = 0;
+  virtual std::shared_ptr<Dao> get_statistics_dao()  = 0;
+
+  virtual ErrorCode start_transaction() = 0;
+  virtual ErrorCode commit()            = 0;
+  virtual ErrorCode rollback()          = 0;
 
  protected:
   std::string database_;
-  std::string metadata_table_;
-
-  manager::metadata::ErrorCode create_dao(
-      const GenericDAO::TableName table_name,
-      const manager::metadata::db::DBSessionManager* session_manager,
-      std::shared_ptr<GenericDAO>& gdao) const;
-};  // class DBSessionManager
+};  // class DbSessionManager
 
 }  // namespace manager::metadata::db

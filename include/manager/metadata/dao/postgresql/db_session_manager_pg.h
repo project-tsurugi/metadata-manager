@@ -18,70 +18,119 @@
 #include <memory>
 
 #include "manager/metadata/dao/db_session_manager.h"
-#include "manager/metadata/dao/postgresql/common_pg.h"
 #include "manager/metadata/dao/postgresql/pg_common.h"
 #include "manager/metadata/error_code.h"
 
 namespace manager::metadata::db {
+
 /**
- * @brief
+ * @brief Class that manages connection information.
  */
 struct Connection {
   PgConnectionPtr pg_conn;
 };
 
 /**
- * @brief
+ * @brief Class for managing sessions with PostgreSQL.
  */
-class DbSessionManagerPg : public DBSessionManager {
+class DbSessionManagerPg : public DbSessionManager {
  public:
-  manager::metadata::ErrorCode get_dao(
-      const GenericDAO::TableName,
-      std::shared_ptr<GenericDAO>&) override { return ErrorCode::UNKNOWN; }
+  /**
+   * @brief Establish a connection to the metadata repository
+   *   using a connection string.
+   * @param none.
+   * @return ErrorCode::OK if success, otherwise an error code.
+   */
+  ErrorCode connect() override;
 
-  std::shared_ptr<Dao> get_index_dao() override;
+  /**
+   * @brief Get an instance of a DAO for table metadata.
+   * @return DAO instance.
+   */
+  std::shared_ptr<Dao> get_tables_dao() override;
 
+  /**
+   * @brief Get an instance of a DAO for column metadata.
+   * @return DAO instance.
+   */
+  std::shared_ptr<Dao> get_columns_dao() override;
+
+  /**
+   * @brief Get an instance of a DAO for index metadata.
+   * @return DAO instance.
+   */
+  std::shared_ptr<Dao> get_indexes_dao() override;
+
+  /**
+   * @brief Get an instance of a DAO for constraint metadata.
+   *   Returns nullptr if the database connection fails.
+   * @return DAO instance or nullptr.
+   */
+  std::shared_ptr<Dao> get_constraints_dao() override;
+
+  /**
+   * @brief Get an instance of a DAO for data-type metadata.
+   * @return DAO instance.
+   */
+  std::shared_ptr<Dao> get_datatypes_dao() override;
+
+  /**
+   * @brief Get an instance of a DAO for role metadata.
+   * @return DAO instance.
+   */
+  std::shared_ptr<Dao> get_roles_dao() override;
+
+  /**
+   * @brief Get an instance of a DAO for privilege metadata.
+   * @return DAO instance.
+   */
+  std::shared_ptr<Dao> get_privileges_dao() override;
+
+  /**
+   * @brief Get an instance of a DAO for statistic metadata.
+   * @return DAO instance.
+   */
+  std::shared_ptr<Dao> get_statistics_dao() override;
+
+  /**
+   * @brief Get connection information.
+   * @return connection.
+   */
   Connection connection() const { return conn_; }
-  manager::metadata::ErrorCode start_transaction() override;
-  manager::metadata::ErrorCode commit() override;
-  manager::metadata::ErrorCode rollback() override;
+
+  /**
+   * @brief Starts a transaction scope managed by this DBSessionManager.
+   * @param none.
+   * @return ErrorCode::OK if success, otherwise an error code.
+   */
+  ErrorCode start_transaction() override;
+
+  /**
+   * @brief Commits all transactions currently started for all DAO contexts
+   *   managed by this DBSessionManager.
+   * @param none.
+   * @return ErrorCode::OK if success, otherwise an error code.
+   */
+  ErrorCode commit() override;
+
+  /**
+   * @brief Rollbacks all transactions currently started for all DAO contexts
+   *   managed by this DBSessionManager.
+   * @param none.
+   * @return ErrorCode::OK if success, otherwise an error code.
+   */
+  ErrorCode rollback() override;
 
  private:
-   Connection conn_;
+  Connection conn_;
 
-  manager::metadata::ErrorCode connect();
-  manager::metadata::ErrorCode set_always_secure_search_path() const;
+  /**
+   * @brief Sends a query to set always-secure search path
+   *   to the metadata repository.
+   * @param none.
+   * @return ErrorCode::OK if success, otherwise an error code.
+   */
+  ErrorCode set_always_secure_search_path() const;
 };  // class DBSessionManager
 
 }  // namespace manager::metadata::db
-
-
-
-namespace manager::metadata::db::postgresql {
-/**
- * @brief
- */
-class DBSessionManager : public manager::metadata::db::DBSessionManager {
- public:
-  manager::metadata::ErrorCode get_dao(
-      const GenericDAO::TableName table_name,
-      std::shared_ptr<GenericDAO>& gdao) override;
-
-  std::shared_ptr<Dao> get_index_dao() override { return nullptr; } // dummy
-
-  Connection connection() const { return conn_; }
-  manager::metadata::ErrorCode start_transaction() override;
-  manager::metadata::ErrorCode commit() override;
-  manager::metadata::ErrorCode rollback() override;
-
-  ConnectionSPtr get_connection() const { return connection_; }
-
- private:
-  manager::metadata::db::Connection conn_;  // dummy for build.
-  ConnectionSPtr connection_;
-
-  manager::metadata::ErrorCode connect();
-  manager::metadata::ErrorCode set_always_secure_search_path() const;
-};  // class DBSessionManager
-
-}  // namespace manager::metadata::db::postgresql

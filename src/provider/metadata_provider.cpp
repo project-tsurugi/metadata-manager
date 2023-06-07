@@ -17,13 +17,11 @@
 
 #include <boost/foreach.hpp>
 
-#include "manager/metadata/dao/generic_dao.h"
 #include "manager/metadata/datatypes.h"
 #include "manager/metadata/metadata.h"
 #include "manager/metadata/index.h"
 #include "manager/metadata/indexes.h"
 #include "manager/metadata/dao/dao.h"
-#include "manager/metadata/dao/json/index_dao_json.h"
 #include "manager/metadata/dao/db_session_manager.h"
 
 namespace manager::metadata::db {
@@ -38,17 +36,26 @@ using boost::property_tree::ptree;
  * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode MetadataProvider::init() {
+  ErrorCode error = ErrorCode::UNKNOWN;
 
-//  std::shared_ptr<Dao> gdao = nullptr;
+  // Establish a connection to the metadata repository.
+  error = session_->connect();
+  if (error != ErrorCode::OK) {
+    return error;
+  }
 
+  // IndexesDAO
   if (index_dao_ == nullptr) {
-    index_dao_ = session_->get_index_dao();
-    ErrorCode error = index_dao_->prepare();
+    // Get an instance of the IndexesDAO.
+    index_dao_ = session_->get_indexes_dao();
+
+    // Prepare to access table metadata.
+    error = index_dao_->prepare();
     if (error != ErrorCode::OK) {
       return error;
     }
   }
-  
+
   return ErrorCode::OK;
 }
 
@@ -116,7 +123,7 @@ ErrorCode MetadataProvider::get_index_metadata(
     return error;
   }
 
-  error = index_dao_->select(key, value, object);
+  error = index_dao_->select(key, {value}, object);
   if (error != ErrorCode::OK) {
     return error;
   }
@@ -172,7 +179,7 @@ ErrorCode MetadataProvider::update_index_metadata(
   }
 
   if (error == ErrorCode::OK) {
-    error = index_dao_->update(Object::ID, std::to_string(object_id), object);
+    error = index_dao_->update(Object::ID, {std::to_string(object_id)}, object);
   }
 
   if (error == ErrorCode::OK) {
@@ -213,7 +220,7 @@ ErrorCode MetadataProvider::remove_index_metadata(std::string_view key,
     return error;
   }
 
-  error = index_dao_->remove(key, value, object_id);
+  error = index_dao_->remove(key, {value}, object_id);
   if (error == ErrorCode::OK) {
     error = session_->commit();
   } else {

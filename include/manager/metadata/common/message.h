@@ -27,6 +27,8 @@ struct Message {
       "Failed to open connection to database.";
   static constexpr const char* const CLOSE_FAILURE =
       "Failed to close connection to database.";
+  static constexpr const char* const NOT_CONNECT =
+      "Not connected to the database.";
   static constexpr const char* const NOT_INITIALIZED = "not initialized.";
   static constexpr const char* const START_TRANSACTION_FAILURE =
       "Failed to start transaction.: ";
@@ -59,6 +61,8 @@ struct Message {
   static constexpr const char* const GENERATE_FAILED_DAO =
       "Failed to generate DAO.: ";
   static constexpr const char* const PARAMETER_FAILED = "Invalid parameter.: ";
+  static constexpr const char* const INVALID_STATEMENT_KEY =
+      "SQL statement is undefined.: ";
   static constexpr const char* const ALREADY_EXISTS =
       "Object with same parameter exists.: ";
   static constexpr const char* const RECORD_INSERT_FAILURE =

@@ -13,18 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#if !defined(STORAGE_POSTGRESQL) && !defined(STORAGE_JSON)
-#define STORAGE_POSTGRESQL
-#endif
-
 #include "manager/metadata/provider/provider.h"
-#include <memory>
-#include "manager/metadata/dao/db_session_manager.h"
-#if defined(STORAGE_POSTGRESQL)
-#include "manager/metadata/dao/postgresql/db_session_manager_pg.h"
-#elif defined(STORAGE_JSON)
-#include "manager/metadata/dao/json/db_session_manager_json.h"
-#endif
 
 namespace manager::metadata::db {
 
@@ -36,11 +25,7 @@ namespace manager::metadata::db {
  * @return none.
  */
 Provider::Provider() {
-#if defined(STORAGE_POSTGRESQL)
-  session_ = std::make_unique<DbSessionManagerPg>();
-#elif defined(STORAGE_JSON)
-  session_ = std::make_unique<DbSessionManagerJson>();
-#endif
+  session_ = &(DbSessionManager::get_instance());
 }
 
 }  // namespace manager::metadata::db

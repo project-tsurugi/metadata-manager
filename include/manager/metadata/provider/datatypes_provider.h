@@ -21,7 +21,8 @@
 
 #include <boost/property_tree/ptree.hpp>
 
-#include "manager/metadata/dao/datatypes_dao.h"
+#include "manager/metadata/dao/dao.h"
+#include "manager/metadata/datatypes.h"
 #include "manager/metadata/error_code.h"
 #include "manager/metadata/provider/provider_base.h"
 
@@ -35,7 +36,7 @@ class DataTypesProvider : public ProviderBase {
       boost::property_tree::ptree& object);
 
  private:
-  std::shared_ptr<DataTypesDAO> datatypes_dao_ = nullptr;
+  std::shared_ptr<Dao> datatypes_dao_ = nullptr;
 };  // class DataTypesProvider
 
 }  // namespace manager::metadata::db

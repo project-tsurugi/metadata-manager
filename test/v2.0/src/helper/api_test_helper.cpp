@@ -43,8 +43,8 @@ void ApiTestHelper::test_init(const Metadata* manager, ErrorCode expect_code) {
  * @return ObjectId - added object ID.
  */
 ObjectId ApiTestHelper::test_add(const Metadata* manager,
-                           boost::property_tree::ptree& metadata_object,
-                           ErrorCode expect_code) {
+                                 boost::property_tree::ptree& metadata_object,
+                                 ErrorCode expect_code) {
   UTUtils::print("-- add test metadata with ptree --");
   return metadata_add(manager, metadata_object, expect_code);
 }
@@ -56,8 +56,9 @@ ObjectId ApiTestHelper::test_add(const Metadata* manager,
  * @param expect_code      [in]  expected result code.
  * @return ObjectId - added object ID.
  */
-ObjectId ApiTestHelper::test_add(const Metadata* manager, Object& metadata_object,
-                           ErrorCode expect_code) {
+ObjectId ApiTestHelper::test_add(const Metadata* manager,
+                                 Object& metadata_object,
+                                 ErrorCode expect_code) {
   UTUtils::print("-- add test metadata with structure --");
   return metadata_add(manager, metadata_object, expect_code);
 }
@@ -71,8 +72,8 @@ ObjectId ApiTestHelper::test_add(const Metadata* manager, Object& metadata_objec
  * @return boost::property_tree::ptree - retrieved metadata.
  */
 void ApiTestHelper::test_get(const Metadata* manager, ObjectId object_id,
-                       ErrorCode expect_code,
-                       boost::property_tree::ptree& metadata_object) {
+                             ErrorCode expect_code,
+                             boost::property_tree::ptree& metadata_object) {
   UTUtils::print("-- get test metadata by object ID with ptree --");
   metadata_get(manager, object_id, expect_code, metadata_object);
 }
@@ -85,7 +86,7 @@ void ApiTestHelper::test_get(const Metadata* manager, ObjectId object_id,
  * @param metadata_object  [out] retrieved metadata object.
  */
 void ApiTestHelper::test_get(const Metadata* manager, ObjectId object_id,
-                       ErrorCode expect_code, Object& metadata_object) {
+                             ErrorCode expect_code, Object& metadata_object) {
   UTUtils::print("-- get test metadata by object ID with structure --");
   metadata_get(manager, object_id, expect_code, metadata_object);
 }
@@ -97,9 +98,10 @@ void ApiTestHelper::test_get(const Metadata* manager, ObjectId object_id,
  * @param expect_code      [in]  expected result code.
  * @param metadata_object  [out] retrieved metadata object.
  */
-void ApiTestHelper::test_get(const Metadata* manager, std::string_view object_name,
-                       ErrorCode expect_code,
-                       boost::property_tree::ptree& metadata_object) {
+void ApiTestHelper::test_get(const Metadata* manager,
+                             std::string_view object_name,
+                             ErrorCode expect_code,
+                             boost::property_tree::ptree& metadata_object) {
   UTUtils::print("-- get test metadata by object name with ptree --");
   metadata_get(manager, object_name, expect_code, metadata_object);
 }
@@ -111,8 +113,9 @@ void ApiTestHelper::test_get(const Metadata* manager, std::string_view object_na
  * @param expect_code      [in]  expected result code.
  * @param metadata_object  [out] retrieved metadata object.
  */
-void ApiTestHelper::test_get(const Metadata* manager, std::string_view object_name,
-                       ErrorCode expect_code, Object& metadata_object) {
+void ApiTestHelper::test_get(const Metadata* manager,
+                             std::string_view object_name,
+                             ErrorCode expect_code, Object& metadata_object) {
   UTUtils::print("-- get test metadata by object name with structure --");
   metadata_get(manager, object_name, expect_code, metadata_object);
 }
@@ -123,8 +126,9 @@ void ApiTestHelper::test_get(const Metadata* manager, std::string_view object_na
  * @param expect_code  [in]  expected result code.
  * @param container    [out] retrieved metadata.
  */
-void ApiTestHelper::test_getall(const Metadata* manager, ErrorCode expect_code,
-                          std::vector<boost::property_tree::ptree>& container) {
+void ApiTestHelper::test_getall(
+    const Metadata* manager, ErrorCode expect_code,
+    std::vector<boost::property_tree::ptree>& container) {
   assert(manager != nullptr);
 
   UTUtils::print("-- get_all test metadata with ptree --");
@@ -147,7 +151,7 @@ void ApiTestHelper::test_getall(const Metadata* manager, ErrorCode expect_code,
  * @param container    [out] retrieved metadata.
  */
 void ApiTestHelper::test_getall_next(Metadata* manager, ErrorCode expect_code,
-                               std::vector<ptree>& container) {
+                                     std::vector<ptree>& container) {
   assert(manager != nullptr);
 
   UTUtils::print("-- get_all-next test metadata with ptree --");
@@ -175,7 +179,7 @@ void ApiTestHelper::test_getall_next(Metadata* manager, ErrorCode expect_code,
  * @param expected   [in]  expected result.
  */
 void ApiTestHelper::test_exists(const Metadata* manager, ObjectId object_id,
-                          bool expected) {
+                                bool expected) {
   UTUtils::print("-- exists test metadata --");
 
   bool actual = manager->exists(object_id);
@@ -188,8 +192,8 @@ void ApiTestHelper::test_exists(const Metadata* manager, ObjectId object_id,
  * @param object_name  [in]  object name of the metadata to be retrieved.
  * @param expected     [in]  expected result.
  */
-void ApiTestHelper::test_exists(const Metadata* manager, std::string_view object_name,
-                          bool expected) {
+void ApiTestHelper::test_exists(const Metadata* manager,
+                                std::string_view object_name, bool expected) {
   UTUtils::print("-- exists test metadata --");
 
   bool actual = manager->exists(object_name);
@@ -204,8 +208,8 @@ void ApiTestHelper::test_exists(const Metadata* manager, std::string_view object
  * @param expect_code      [in]  expected result code.
  */
 void ApiTestHelper::test_update(const Metadata* manager, ObjectId object_id,
-                          boost::property_tree::ptree& metadata_object,
-                          ErrorCode expect_code) {
+                                boost::property_tree::ptree& metadata_object,
+                                ErrorCode expect_code) {
   UTUtils::print("-- update test metadata by object id with ptree --");
   metadata_update(manager, object_id, metadata_object, expect_code);
 }
@@ -233,7 +237,7 @@ void ApiTestHelper::test_update(const Metadata* manager, ObjectId object_id,
  * @param expect_code  [in]  expected result code.
  */
 void ApiTestHelper::test_remove(const Metadata* manager, ObjectId object_id,
-                          ErrorCode expect_code) {
+                                ErrorCode expect_code) {
   assert(manager != nullptr);
 
   UTUtils::print("-- remove test metadata by object ID --");
@@ -250,8 +254,9 @@ void ApiTestHelper::test_remove(const Metadata* manager, ObjectId object_id,
  * @param object_name  [in]  object name of the metadata to be removed.
  * @param expect_code  [in]  expected result code.
  */
-void ApiTestHelper::test_remove(const Metadata* manager, std::string_view object_name,
-                          ErrorCode expect_code) {
+void ApiTestHelper::test_remove(const Metadata* manager,
+                                std::string_view object_name,
+                                ErrorCode expect_code) {
   assert(manager != nullptr);
 
   UTUtils::print("-- remove test metadata by object name --");
@@ -278,8 +283,9 @@ void ApiTestHelper::test_remove(const Metadata* manager, std::string_view object
  * @return ObjectId - added object ID.
  */
 template <typename T>
-ObjectId ApiTestHelper::metadata_add(const Metadata* manager, T& metadata_object,
-                               ErrorCode expect_code) {
+ObjectId ApiTestHelper::metadata_add(const Metadata* manager,
+                                     T& metadata_object,
+                                     ErrorCode expect_code) {
   assert(manager != nullptr);
 
   UTUtils::print(" " + UTUtils::get_tree_string(metadata_object));
@@ -314,7 +320,7 @@ ObjectId ApiTestHelper::metadata_add(const Metadata* manager, T& metadata_object
  */
 template <typename KEY, typename T>
 void ApiTestHelper::metadata_get(const Metadata* manager, KEY object_key,
-                           ErrorCode expect_code, T& metadata_object) {
+                                 ErrorCode expect_code, T& metadata_object) {
   assert(manager != nullptr);
 
   UTUtils::print(" >> object key: ", object_key);
@@ -343,7 +349,7 @@ void ApiTestHelper::metadata_get(const Metadata* manager, KEY object_key,
  */
 template <typename KEY, typename T>
 void ApiTestHelper::metadata_update(const Metadata* manager, KEY object_key,
-                              T& metadata_object, ErrorCode expect_code) {
+                                    T& metadata_object, ErrorCode expect_code) {
   assert(manager != nullptr);
 
   UTUtils::print(" >> object key: ", object_key);

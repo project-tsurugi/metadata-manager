@@ -159,6 +159,8 @@ TEST_F(ApiTestDBAccessFailure, add_table_metadata) {
 
   ptree table_metadata;
   ptree column_metadata;
+
+  // Set dummy data.
   table_metadata.put(Table::NAME, "dummy_name");
   table_metadata.add_child(Table::COLUMNS_NODE, column_metadata);
 
@@ -203,6 +205,7 @@ TEST_F(ApiTestDBAccessFailure, get_table_metadata_by_table_name) {
 
   ptree table_metadata;
   std::string table_name = "table_name";
+
   // Execute the test.
   error = tables->get(table_name, table_metadata);
   EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
@@ -224,6 +227,8 @@ TEST_F(ApiTestDBAccessFailure, update_table_metadata) {
 
   ptree table_metadata;
   ptree column_metadata;
+
+  // Set dummy data.
   table_metadata.put(Table::NAME, "dummy_name");
   table_metadata.add_child(Table::COLUMNS_NODE, column_metadata);
 

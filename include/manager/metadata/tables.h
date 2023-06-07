@@ -24,6 +24,7 @@
 #include <boost/iterator_adaptors.hpp>
 
 #include "manager/metadata/constraints.h"
+#include "manager/metadata/datatypes.h"
 #include "manager/metadata/error_code.h"
 #include "manager/metadata/indexes.h"
 #include "manager/metadata/metadata.h"

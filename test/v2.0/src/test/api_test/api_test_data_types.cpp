@@ -58,13 +58,6 @@ static std::vector<BasicTestParameter> make_datatypes_tuple() {
                        v);
   make_datatypes_tuple(DataTypes::NAME,
                        UtDataTypesMetadata().get_datatype_names(), v);
-  make_datatypes_tuple(DataTypes::PG_DATA_TYPE,
-                       UtDataTypesMetadata().get_pg_datatype_ids(), v);
-  make_datatypes_tuple(DataTypes::PG_DATA_TYPE_NAME,
-                       UtDataTypesMetadata().get_pg_datatype_names(), v);
-  make_datatypes_tuple(DataTypes::PG_DATA_TYPE_QUALIFIED_NAME,
-                       UtDataTypesMetadata().get_pg_datatype_qualified_names(),
-                       v);
   return v;
 }
 
