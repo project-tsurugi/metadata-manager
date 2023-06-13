@@ -69,6 +69,33 @@ ErrorCode DataTypesDaoPg::select(std::string_view key,
  * Private method area
  */
 
+void DataTypesDaoPg::create_prepared_statements() {
+  DaoPg::create_prepared_statements();
+
+  // SELECT statement with pg_dataType specified.
+  SelectStatement statement_type{
+      this->get_source_name(),
+      this->get_select_statement(ColumnName::kPgDataType),
+      DataType::PG_DATA_TYPE};
+  select_statements_.emplace(DataType::PG_DATA_TYPE, statement_type);
+
+  // SELECT statement with pg_dataTypeName specified.
+  SelectStatement statement_type_name{
+      this->get_source_name(),
+      this->get_select_statement(ColumnName::kPgDataTypeName),
+      DataType::PG_DATA_TYPE_NAME};
+  select_statements_.emplace(DataType::PG_DATA_TYPE_NAME,
+                              statement_type_name);
+
+  // SELECT statement with pg_data_type_qualified_name specified.
+  SelectStatement statement_qualified{
+      this->get_source_name(),
+      this->get_select_statement(ColumnName::kPgDataTypeQualifiedName),
+      DataType::PG_DATA_TYPE_QUALIFIED_NAME};
+  select_statements_.emplace(DataType::PG_DATA_TYPE_QUALIFIED_NAME,
+                              statement_qualified);
+}
+
 /**
  * @brief Get a SELECT statement to retrieve metadata matching the criteria
  *   from the metadata table.

@@ -125,13 +125,12 @@ ErrorCode DbcUtils::prepare(const PgConnectionPtr& connection,
   }
 
   // Existence check of prepared statements.
-  auto res_describe =
-      PQdescribePrepared(connection.get(), statement_name.data());
-  if (PQresultStatus(res_describe) == PGRES_COMMAND_OK) {
+  auto res_describe = DbcUtils::make_result_uptr(
+      PQdescribePrepared(connection.get(), statement_name.data()));
+  if (PQresultStatus(res_describe.get()) == PGRES_COMMAND_OK) {
     LOG_DEBUG << "Prepared statement already exists. [" << statement_name.data()
               << "]";
 
-    PQclear(res_describe);
     return ErrorCode::OK;
   }
 

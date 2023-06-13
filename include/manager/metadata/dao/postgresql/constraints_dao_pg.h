@@ -155,9 +155,6 @@ class ConstraintsDaoPg : public DaoPg {
     kFkUpdateAction
   };  // enum class OrdinalPosition
 
-  // Class-specific statements.
-  InsertStatement insert_statement_id_;
-
   /**
    * @brief Get the table source name.
    * @return table source name.
