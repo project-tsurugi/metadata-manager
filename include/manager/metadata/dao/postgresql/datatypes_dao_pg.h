@@ -135,6 +135,11 @@ class DataTypesDaoPg : public DaoPg {
   std::string get_source_name() const override { return kTableName; }
 
   /**
+   * @brief Create prepared statements.
+   */
+  void create_prepared_statements() override;
+
+  /**
    * @brief Get an INSERT statement for metadata table.
    * @return INSERT statement.
    */

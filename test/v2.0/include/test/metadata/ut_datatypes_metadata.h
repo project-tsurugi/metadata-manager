@@ -42,6 +42,9 @@ class UtDataTypesMetadata : public UtMetadata<manager::metadata::DataType> {
 
   std::vector<std::string> get_datatype_ids() const;
   std::vector<std::string> get_datatype_names() const;
+  std::vector<std::string> get_pg_datatype_ids() const;
+  std::vector<std::string> get_pg_datatype_names() const;
+  std::vector<std::string> get_pg_datatype_qualified_names() const;
 };
 
 }  // namespace manager::metadata::testing
