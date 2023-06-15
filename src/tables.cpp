@@ -754,7 +754,7 @@ ErrorCode Tables::param_check_metadata_add(
     LOG_ERROR << Message::PARAMETER_FAILED
               << (boost::format(kLogFormat) % Table::NAME).str();
 
-    error = ErrorCode::INVALID_PARAMETER;
+    error = ErrorCode::INSUFFICIENT_PARAMETERS;
     return error;
   }
 
@@ -773,7 +773,7 @@ ErrorCode Tables::param_check_metadata_add(
       LOG_ERROR << Message::PARAMETER_FAILED
                 << (boost::format(kLogFormat) % column_name).str();
 
-      error = ErrorCode::INVALID_PARAMETER;
+      error = ErrorCode::INSUFFICIENT_PARAMETERS;
       break;
     }
 
@@ -785,7 +785,7 @@ ErrorCode Tables::param_check_metadata_add(
       LOG_ERROR << Message::PARAMETER_FAILED
                 << (boost::format(kLogFormat) % column_name).str();
 
-      error = ErrorCode::INVALID_PARAMETER;
+      error = ErrorCode::INSUFFICIENT_PARAMETERS;
       break;
     }
 
@@ -797,7 +797,7 @@ ErrorCode Tables::param_check_metadata_add(
       LOG_ERROR << Message::PARAMETER_FAILED
                 << (boost::format(kLogFormat) % column_name).str();
 
-      error = ErrorCode::INVALID_PARAMETER;
+      error = ErrorCode::INSUFFICIENT_PARAMETERS;
       break;
     }
     // DataTypes check provider.
@@ -829,7 +829,7 @@ ErrorCode Tables::param_check_metadata_add(
       LOG_ERROR << Message::PARAMETER_FAILED
                 << (boost::format(kLogFormat) % column_name).str();
 
-      error = ErrorCode::INVALID_PARAMETER;
+      error = ErrorCode::INSUFFICIENT_PARAMETERS;
       break;
     }
   }
@@ -869,7 +869,7 @@ ErrorCode Tables::param_check_statistic_update(
                     Table::NUMBER_OF_TUPLES)
                        .str();
     }
-    error = ErrorCode::INVALID_PARAMETER;
+    error = ErrorCode::INSUFFICIENT_PARAMETERS;
   }
 
   return error;
