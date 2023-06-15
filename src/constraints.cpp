@@ -343,7 +343,7 @@ ErrorCode Constraints::param_check_metadata_add(
     LOG_ERROR << Message::PARAMETER_FAILED
               << (boost::format(kLogFormat) % Constraint::TABLE_ID).str();
 
-    error = ErrorCode::INVALID_PARAMETER;
+    error = ErrorCode::INSUFFICIENT_PARAMETERS;
   }
 
   return error;

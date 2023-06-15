@@ -66,6 +66,11 @@ enum class ErrorCode {
   INVALID_PARAMETER,
 
   /**
+   * @brief Insufficient parameter input.
+   */
+  INSUFFICIENT_PARAMETERS,
+
+  /**
    * @brief Failed to access metadata repository.
    */
   DATABASE_ACCESS_FAILURE,

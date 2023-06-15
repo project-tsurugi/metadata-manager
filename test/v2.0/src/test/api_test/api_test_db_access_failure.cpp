@@ -556,7 +556,7 @@ TEST_P(ApiTestDBAccessFailureByColumnStatistics, add_one_column_statistic) {
   error = stats->add(statistic);
 
   if ((table_id <= 0) || (column_number <= 0)) {
-    EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);
+    EXPECT_EQ(ErrorCode::INSUFFICIENT_PARAMETERS, error);
   } else {
     EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
   }

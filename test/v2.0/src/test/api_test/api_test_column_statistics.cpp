@@ -33,7 +33,7 @@ using StatisticsTestData =
                std::vector<manager::metadata::ObjectId>,
                std::vector<manager::metadata::testing::UtColumnStatistics>>;
 
-std::vector<std::string> invalid_names = {"", "undefined_name"};
+manager::metadata::ObjectId table_id_;
 
 }  // namespace
 
@@ -41,13 +41,12 @@ namespace manager::metadata::testing {
 
 using boost::property_tree::ptree;
 
-class ApiTestColumnStatisticsPg : public ::testing::Test {
+class ApiTestColumnStatistics {
  public:
-  manager::metadata::ObjectId table_id_;
-
-  ApiTestColumnStatisticsPg() : table_id_(0) {}
-
-  void SetUp() override {
+  /**
+   * @brief setup the data for testing.
+   */
+  static void test_setup() {
     UTUtils::skip_if_json();
     UTUtils::skip_if_connection_not_opened();
 
@@ -57,13 +56,15 @@ class ApiTestColumnStatisticsPg : public ::testing::Test {
       // Change to a unique table name.
       std::string table_name =
           "ApiTestColumnStatistic_" + UTUtils::generate_narrow_uid();
-
       // Add table metadata.
       TableMetadataHelper::add_table(table_name, &table_id_);
     }
   }
 
-  void TearDown() override {
+  /**
+   * @brief discard the data for testing.
+   */
+  static void test_teardown() {
     if (UTUtils::is_postgresql() && g_environment_->is_open()) {
       UTUtils::print(">> gtest::TearDown()");
 
@@ -71,6 +72,12 @@ class ApiTestColumnStatisticsPg : public ::testing::Test {
       TableMetadataHelper::remove_table(table_id_);
     }
   }
+};  // class ApiTestColumnStatistics
+
+class ApiTestColumnStatisticsPg : public ::testing::Test {
+ public:
+  void SetUp() override { ApiTestColumnStatistics::test_setup(); }
+  void TearDown() override { ApiTestColumnStatistics::test_teardown(); }
 
   /**
    * @brief Create a test data object
@@ -91,16 +98,16 @@ class ApiTestColumnStatisticsPg : public ::testing::Test {
 
     // Add table metadata.
     for (int32_t i = 1; i <= kMakeTableCount; i++) {
-      ObjectId table_id;
+      ObjectId temp_table_id;
       if (i == 1) {
-        table_id = table_id_;
+        temp_table_id = table_id_;
       } else {
         std::string table_name = "ApiTestColumnStatistic_" +
                                  UTUtils::generate_narrow_uid() + "_" +
                                  std::to_string(i);
-        TableMetadataHelper::add_table(table_name, &table_id);
+        TableMetadataHelper::add_table(table_name, &temp_table_id);
       }
-      ptree retrieved_metadata = TableMetadataHelper::get_table(table_id);
+      ptree retrieved_metadata = TableMetadataHelper::get_table(temp_table_id);
 
       columns.clear();
       BOOST_FOREACH (ptree::value_type& column_node,
@@ -112,7 +119,7 @@ class ApiTestColumnStatisticsPg : public ::testing::Test {
       ut_statistics.clear();
       // Add column statistics of the table metadata.
       for (int32_t n = 1; n <= kMakeStatisticCount; n++) {
-        UtColumnStatistics test_data(table_id, n);
+        UtColumnStatistics test_data(temp_table_id, n);
         ObjectId statistic_id = INVALID_OBJECT_ID;
         // Add column statistics.
         auto statistic = test_data.get_metadata_ptree();
@@ -123,7 +130,7 @@ class ApiTestColumnStatisticsPg : public ::testing::Test {
         ut_statistics.push_back(test_data);
       }
       v.push_back(
-          std::make_tuple(table_id, columns, statistic_ids, ut_statistics));
+          std::make_tuple(temp_table_id, columns, statistic_ids, ut_statistics));
     }
     UTUtils::print("<< Create test data.");
 
@@ -136,12 +143,12 @@ class ApiTestColumnStatisticsPg : public ::testing::Test {
 
     // Add table metadata.
     for (auto& tables : test_data) {
-      auto table_id = std::get<0>(tables);
+      auto temp_table_id = std::get<0>(tables);
       for (auto& statistic_id : std::get<2>(tables)) {
         manager->remove(statistic_id);
       }
-      if (table_id != table_id_) {
-        TableMetadataHelper::remove_table(table_id);
+      if (temp_table_id != table_id_) {
+        TableMetadataHelper::remove_table(temp_table_id);
       }
     }
   }
@@ -149,13 +156,43 @@ class ApiTestColumnStatisticsPg : public ::testing::Test {
  private:
   const int32_t kMakeTableCount     = 2;
   const int32_t kMakeStatisticCount = 2;
-};
+};  // class ApiTestColumnStatisticsPg
+
+class ApiTestColumnStatisticsPgIdPattern
+    : public ::testing::TestWithParam<ObjectIdType> {
+ public:
+  static void SetUpTestCase() { ApiTestColumnStatistics::test_setup(); }
+  static void TearDownTestCase() { ApiTestColumnStatistics::test_teardown(); }
+  void SetUp() override {
+    UTUtils::skip_if_json();
+    UTUtils::skip_if_connection_not_opened();
+  }
+};  // class ApiTestColumnStatisticsPgIdPattern
+
+class ApiTestColumnStatisticsPgNamePattern
+    : public ::testing::TestWithParam<std::string> {
+ public:
+  static void SetUpTestCase() { ApiTestColumnStatistics::test_setup(); }
+  static void TearDownTestCase() { ApiTestColumnStatistics::test_teardown(); }
+  void SetUp() override {
+    UTUtils::skip_if_json();
+    UTUtils::skip_if_connection_not_opened();
+  }
+};  // class ApiTestColumnStatisticsPgNamePattern
 
 class ApiTestColumnStatisticsJson : public ::testing::Test {
  public:
   void SetUp() override { UTUtils::skip_if_postgresql(); }
-  void TearDown() override { UTUtils::skip_if_postgresql(); }
-};
+};  // class ApiTestColumnStatisticsJson
+
+INSTANTIATE_TEST_CASE_P(
+    ParameterizedTest, ApiTestColumnStatisticsPgIdPattern,
+    ::testing::Values(-1, 0, INT64_MAX - 1, INT64_MAX,
+                      std::numeric_limits<ObjectIdType>::infinity(),
+                      -std::numeric_limits<ObjectIdType>::infinity(),
+                      std::numeric_limits<ObjectIdType>::quiet_NaN()));
+INSTANTIATE_TEST_CASE_P(ParameterizedTest, ApiTestColumnStatisticsPgNamePattern,
+                        ::testing::Values("table_name_not_exists", ""));
 
 /**
  * @brief Test to add new statistics and get/remove it by columns ID.
@@ -401,109 +438,6 @@ TEST_F(ApiTestColumnStatisticsPg, test_add_exists) {
 }
 
 /**
- * @brief This is a test using an invalid ID.
- */
-TEST_F(ApiTestColumnStatisticsPg, test_invalid_ids) {
-  CALL_TRACE;
-  ErrorCode error;
-
-  // Generate columns statistics manager.
-  // TODO(future): Change when changing Metadata class.
-  auto manager_tmp = get_statistics_ptr(GlobalTestEnvironment::TEST_DB);
-  auto manager = static_cast<Statistics*>(manager_tmp.get());
-
-  error = manager->init();
-  EXPECT_EQ(ErrorCode::OK, error);
-
-  // Test of add to a table ID that does not exist.
-  for (auto invalid_id : g_environment_->invalid_ids) {
-    UtColumnStatistics ut_statistic(invalid_id, 1);
-    ptree statistic = ut_statistic.get_metadata_ptree();
-
-    ApiTestHelper::test_add(manager, statistic, ErrorCode::INVALID_PARAMETER);
-  }
-
-  // Test of get to a statistic ID that does not exist.
-  for (auto invalid_id : g_environment_->invalid_ids) {
-    ptree statistic;
-    ApiTestHelper::test_get(manager, invalid_id, ErrorCode::ID_NOT_FOUND,
-                            statistic);
-  }
-
-  // Test of get to a statistic name that does not exist.
-  for (auto invalid_name : invalid_names) {
-    ptree statistic;
-    ApiTestHelper::test_get(manager, invalid_name, ErrorCode::NAME_NOT_FOUND,
-                            statistic);
-  }
-
-  // Test of get to a column ID that does not exist.
-  for (auto invalid_id : g_environment_->invalid_ids) {
-    ptree statistic;
-    error = manager->get_by_column_id(invalid_id, statistic);
-    EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
-  }
-
-  // Test of get to a column number that does not exist.
-  for (auto invalid_id : g_environment_->invalid_ids) {
-    ptree statistic;
-    error = manager->get_by_column_number(table_id_, invalid_id, statistic);
-    EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
-  }
-
-  // Test of get to a column name that does not exist.
-  for (auto invalid_name : invalid_names) {
-    ptree statistic;
-    error = manager->get_by_column_name(table_id_, invalid_name, statistic);
-    EXPECT_EQ(ErrorCode::NAME_NOT_FOUND, error);
-  }
-
-  // Test of get_all to a table ID that does not exist.
-  for (auto invalid_id : g_environment_->invalid_ids) {
-    std::vector<ptree> container{};
-
-    error = manager->get_all(invalid_id, container);
-    EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
-    EXPECT_EQ(container.size(), 0);
-  }
-
-  // Test of remove to a statistic ID that does not exist.
-  for (auto invalid_id : g_environment_->invalid_ids) {
-    ApiTestHelper::test_remove(manager, invalid_id, ErrorCode::ID_NOT_FOUND);
-  }
-
-  // Test of remove to a statistic name that does not exist.
-  for (auto invalid_name : invalid_names) {
-    ApiTestHelper::test_remove(manager, invalid_name,
-                               ErrorCode::NAME_NOT_FOUND);
-  }
-
-  // Test of remove to a table ID that does not exist.
-  for (auto invalid_id : g_environment_->invalid_ids) {
-    error = manager->remove_by_table_id(invalid_id);
-    EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
-  }
-
-  // Test of remove to a column ID that does not exist.
-  for (auto invalid_id : g_environment_->invalid_ids) {
-    error = manager->remove_by_column_id(invalid_id);
-    EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
-  }
-
-  // Test of remove to a column number that does not exist.
-  for (auto invalid_id : g_environment_->invalid_ids) {
-    error = manager->remove_by_column_number(table_id_, invalid_id);
-    EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
-  }
-
-  // Test of remove to a column name that does not exist.
-  for (auto invalid_name : invalid_names) {
-    error = manager->remove_by_column_name(table_id_, invalid_name);
-    EXPECT_EQ(ErrorCode::NAME_NOT_FOUND, error);
-  }
-}
-
-/**
  * @brief This test executes all APIs without initialization.
  */
 TEST_F(ApiTestColumnStatisticsPg, test_without_initialized) {
@@ -567,6 +501,7 @@ TEST_F(ApiTestColumnStatisticsPg, test_without_initialized) {
     ptree statistic;
     auto object_id = columns_1[0].get<ObjectId>(Column::ID);
 
+    CALL_TRACE;
     ErrorCode error = manager->get_by_column_id(object_id, statistic);
     EXPECT_EQ(ErrorCode::OK, error);
   }
@@ -579,6 +514,7 @@ TEST_F(ApiTestColumnStatisticsPg, test_without_initialized) {
 
     ptree statistic;
 
+    CALL_TRACE;
     ErrorCode error = manager->get_by_column_number(table_id_1, 1, statistic);
     EXPECT_EQ(ErrorCode::OK, error);
   }
@@ -633,6 +569,7 @@ TEST_F(ApiTestColumnStatisticsPg, test_without_initialized) {
     auto manager_tmp = get_statistics_ptr(GlobalTestEnvironment::TEST_DB);
     auto manager = static_cast<Statistics*>(manager_tmp.get());
 
+    CALL_TRACE;
     ErrorCode error = manager->remove_by_table_id(table_id_1);
     EXPECT_EQ(ErrorCode::OK, error);
   }
@@ -645,6 +582,7 @@ TEST_F(ApiTestColumnStatisticsPg, test_without_initialized) {
 
     auto object_id = columns_2[0].get<ObjectId>(Column::ID);
 
+    CALL_TRACE;
     ErrorCode error = manager->remove_by_column_id(object_id);
     EXPECT_EQ(ErrorCode::OK, error);
   }
@@ -655,6 +593,7 @@ TEST_F(ApiTestColumnStatisticsPg, test_without_initialized) {
     auto manager_tmp = get_statistics_ptr(GlobalTestEnvironment::TEST_DB);
     auto manager = static_cast<Statistics*>(manager_tmp.get());
 
+    CALL_TRACE;
     ErrorCode error = manager->remove_by_column_number(table_id_2, 3);
     EXPECT_EQ(ErrorCode::OK, error);
   }
@@ -667,12 +606,157 @@ TEST_F(ApiTestColumnStatisticsPg, test_without_initialized) {
 
     auto object_name = columns_2[1].get<std::string>(Column::NAME);
 
+    CALL_TRACE;
     ErrorCode error = manager->remove_by_column_name(table_id_2, object_name);
     EXPECT_EQ(ErrorCode::OK, error);
   }
 
   // Cleanup of test data.
   cleanup_test_data(test_data);
+}
+
+/**
+ * @brief Test with a table ID value that does not exist.
+ */
+TEST_P(ApiTestColumnStatisticsPgIdPattern, test_invalid_ids) {
+  ErrorCode error;
+
+  // Generate columns statistics manager.
+  // TODO(future): Change when changing Metadata class.
+  auto manager_tmp = get_statistics_ptr(GlobalTestEnvironment::TEST_DB);
+  auto manager = static_cast<Statistics*>(manager_tmp.get());
+
+  auto invalid_id = GetParam();
+
+  UTUtils::print(" >> test table_id: ", invalid_id);
+
+  error = manager->init();
+  EXPECT_EQ(ErrorCode::OK, error);
+
+  // Test of add to a table ID that does not exist.
+  {
+    CALL_TRACE;
+    UtColumnStatistics ut_statistic(invalid_id, 1);
+    ptree statistic = ut_statistic.get_metadata_ptree();
+
+    ErrorCode expect_code;
+    if (invalid_id > 0) {
+      expect_code = ErrorCode::INVALID_PARAMETER;
+    } else {
+      expect_code = ErrorCode::INSUFFICIENT_PARAMETERS;
+    }
+    ApiTestHelper::test_add(manager, statistic, expect_code);
+  }
+
+  // Test of get to a statistic ID that does not exist.
+  {
+    CALL_TRACE;
+    ptree statistic;
+    ApiTestHelper::test_get(manager, invalid_id, ErrorCode::ID_NOT_FOUND,
+                            statistic);
+  }
+
+  // Test of get to a column ID that does not exist.
+  {
+    CALL_TRACE;
+    ptree statistic;
+    error = manager->get_by_column_id(invalid_id, statistic);
+    EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
+  }
+
+  // Test of get to a column number that does not exist.
+  {
+    CALL_TRACE;
+    ptree statistic;
+    error = manager->get_by_column_number(table_id_, invalid_id, statistic);
+    EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
+  }
+
+  // Test of get_all to a table ID that does not exist.
+  {
+    CALL_TRACE;
+    std::vector<ptree> container{};
+    error = manager->get_all(invalid_id, container);
+    EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
+    EXPECT_EQ(container.size(), 0);
+  }
+
+  // Test of remove to a statistic ID that does not exist.
+  {
+    CALL_TRACE;
+    ApiTestHelper::test_remove(manager, invalid_id, ErrorCode::ID_NOT_FOUND);
+  }
+
+  // Test of remove to a table ID that does not exist.
+  {
+    CALL_TRACE;
+  // Test of remove to a table ID that does not exist.
+    error = manager->remove_by_table_id(invalid_id);
+    EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
+  }
+
+  // Test of remove to a column ID that does not exist.
+  {
+    CALL_TRACE;
+    error = manager->remove_by_column_id(invalid_id);
+    EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
+  }
+
+  // Test of remove to a column number that does not exist.
+  {
+    CALL_TRACE;
+    error = manager->remove_by_column_number(table_id_, invalid_id);
+    EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
+  }
+}
+
+/**
+ * @brief Test with a name value that does not exist.
+ */
+TEST_P(ApiTestColumnStatisticsPgNamePattern, test_invalid_names) {
+  ErrorCode error;
+
+  // Generate columns statistics manager.
+  // TODO(future): Change when changing Metadata class.
+  auto manager_tmp = get_statistics_ptr(GlobalTestEnvironment::TEST_DB);
+  auto manager = static_cast<Statistics*>(manager_tmp.get());
+
+  auto invalid_name = GetParam();
+
+  UTUtils::print(" >> test name: ", invalid_name);
+
+  error = manager->init();
+  EXPECT_EQ(ErrorCode::OK, error);
+
+  // Test of get to a statistic name that does not exist.
+  {
+    CALL_TRACE;
+    ptree statistic;
+    ApiTestHelper::test_get(manager, invalid_name, ErrorCode::NAME_NOT_FOUND,
+                            statistic);
+  }
+
+  // Test of get to a column name that does not exist.
+  {
+    CALL_TRACE;
+    ptree statistic;
+    error = manager->get_by_column_name(table_id_, invalid_name, statistic);
+    EXPECT_EQ(ErrorCode::NAME_NOT_FOUND, error);
+  }
+
+  // Test of remove to a statistic name that does not exist.
+  {
+    CALL_TRACE;
+    ApiTestHelper::test_remove(manager, invalid_name,
+                              ErrorCode::NAME_NOT_FOUND);
+  }
+
+  // Test of remove to a column name that does not exist.
+  {
+    CALL_TRACE;
+    error = manager->remove_by_column_name(table_id_, invalid_name);
+    EXPECT_EQ(ErrorCode::NAME_NOT_FOUND, error);
+  }
 }
 
 /**
