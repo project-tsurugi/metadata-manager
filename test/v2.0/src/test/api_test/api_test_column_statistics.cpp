@@ -685,7 +685,7 @@ TEST_F(ApiTestColumnStatisticsJson, test_add) {
   auto manager = get_statistics_ptr(GlobalTestEnvironment::TEST_DB);
 
   // Test to initialize the manager.
-  ApiTestHelper::test_init(manager.get(), ErrorCode::NOT_SUPPORTED);
+  ApiTestHelper::test_init(manager.get(), ErrorCode::OK);
 
   UtColumnStatistics ut_statistic(INT32_MAX, 1);
   ptree inserted_metadata = ut_statistic.get_metadata_ptree();
@@ -705,7 +705,7 @@ TEST_F(ApiTestColumnStatisticsJson, test_get) {
   auto manager = get_statistics_ptr(GlobalTestEnvironment::TEST_DB);
 
   // Test to initialize the manager.
-  ApiTestHelper::test_init(manager.get(), ErrorCode::NOT_SUPPORTED);
+  ApiTestHelper::test_init(manager.get(), ErrorCode::OK);
 
   ptree retrieve_metadata;
 
@@ -728,7 +728,7 @@ TEST_F(ApiTestColumnStatisticsJson, test_getall) {
   auto manager = get_statistics_ptr(GlobalTestEnvironment::TEST_DB);
 
   // Test to initialize the manager.
-  ApiTestHelper::test_init(manager.get(), ErrorCode::NOT_SUPPORTED);
+  ApiTestHelper::test_init(manager.get(), ErrorCode::OK);
 
   std::vector<boost::property_tree::ptree> container = {};
 
@@ -748,7 +748,7 @@ TEST_F(ApiTestColumnStatisticsJson, remove_statistic_metadata) {
   auto manager = get_statistics_ptr(GlobalTestEnvironment::TEST_DB);
 
   // Test to initialize the manager.
-  ApiTestHelper::test_init(manager.get(), ErrorCode::NOT_SUPPORTED);
+  ApiTestHelper::test_init(manager.get(), ErrorCode::OK);
 
   std::vector<boost::property_tree::ptree> container = {};
 

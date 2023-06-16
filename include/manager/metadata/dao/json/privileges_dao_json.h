@@ -16,29 +16,102 @@
 #ifndef MANAGER_METADATA_DAO_JSON_PRIVILEGES_DAO_JSON_H_
 #define MANAGER_METADATA_DAO_JSON_PRIVILEGES_DAO_JSON_H_
 
-#include "manager/metadata/dao/json/db_session_manager_json.h"
-#include "manager/metadata/dao/privileges_dao.h"
+#include <string>
+#include <string_view>
+#include <vector>
+
+#include "manager/metadata/dao/json/dao_json.h"
 #include "manager/metadata/error_code.h"
 
-namespace manager::metadata::db::json {
+namespace manager::metadata::db {
 
-class PrivilegesDAO : public manager::metadata::db::PrivilegesDAO {
+/**
+ * @brief DAO class defined for compatibility.
+ *   This metadata is not supported in JSON.
+ */
+class PrivilegesDaoJson : public DaoJson {
  public:
-  explicit PrivilegesDAO(DBSessionManager* session_manager) {}
+  /**
+    * @brief Construct a new Table Privilege DAO class for JSON data.
+    * @param session pointer to DB session manager for JSON.
+    */
+  explicit PrivilegesDaoJson(DbSessionManagerJson* session)
+        : DaoJson(session, "") {}
 
-  manager::metadata::ErrorCode prepare() const override {
-    // Do nothing and return of ErrorCode::NOT_SUPPORTED.
-    return ErrorCode::OK;
-  };
+  /**
+   * @brief Function defined for compatibility.
+   * @return Always true.
+   */
+  bool exists(std::string_view) const override { return true; }
 
-  manager::metadata::ErrorCode confirm_tables_permission(
-      std::string_view object_key, std::string_view object_value,
-      std::string_view permission, bool& check_result) const override {
+  /**
+   * @brief Function defined for compatibility.
+   * @return Always true.
+   */
+  bool exists(ObjectId) const override { return true; }
+
+  /**
+   * @brief Function defined for compatibility.
+   * @return Always true.
+   */
+  bool exists(const boost::property_tree::ptree&) const override {
+    return true;
+  }
+
+  /**
+   * @brief Unsupported function.
+   * @return Always ErrorCode::NOT_SUPPORTED.
+   */
+  manager::metadata::ErrorCode insert(const boost::property_tree::ptree&,
+                                      ObjectId&) const override {
     // Do nothing and return of ErrorCode::NOT_SUPPORTED.
     return ErrorCode::NOT_SUPPORTED;
   }
-};  // class PrivilegesDAO
 
-}  // namespace manager::metadata::db::json
+  /**
+   * @brief Unsupported function.
+   * @return Always ErrorCode::NOT_SUPPORTED.
+   */
+  manager::metadata::ErrorCode select_all(
+      std::vector<boost::property_tree::ptree>&) const override {
+    // Do nothing and return of ErrorCode::NOT_SUPPORTED.
+    return ErrorCode::NOT_SUPPORTED;
+  }
+
+  /**
+   * @brief Unsupported function.
+   * @return Always ErrorCode::NOT_SUPPORTED.
+   */
+  manager::metadata::ErrorCode select(
+      std::string_view, const std::vector<std::string_view>&,
+      boost::property_tree::ptree&) const override {
+    // Do nothing and return of ErrorCode::NOT_SUPPORTED.
+    return ErrorCode::NOT_SUPPORTED;
+  }
+
+  /**
+   * @brief Unsupported function.
+   * @return Always ErrorCode::NOT_SUPPORTED.
+   */
+  manager::metadata::ErrorCode update(
+      std::string_view, const std::vector<std::string_view>&,
+      const boost::property_tree::ptree&) const override {
+    // Do nothing and return of ErrorCode::NOT_SUPPORTED.
+    return ErrorCode::NOT_SUPPORTED;
+  }
+
+  /**
+   * @brief Unsupported function.
+   * @return Always ErrorCode::NOT_SUPPORTED.
+   */
+  manager::metadata::ErrorCode remove(std::string_view,
+                                      const std::vector<std::string_view>&,
+                                      ObjectId&) const override {
+    // Do nothing and return of ErrorCode::NOT_SUPPORTED.
+    return ErrorCode::NOT_SUPPORTED;
+  }
+};  // class PrivilegesDaoJson
+
+}  // namespace manager::metadata::db
 
 #endif  // MANAGER_METADATA_DAO_JSON_PRIVILEGES_DAO_JSON_H_

@@ -22,9 +22,9 @@
 
 #include <boost/property_tree/ptree.hpp>
 
-#include "manager/metadata/dao/constraints_dao.h"
+#include "manager/metadata/constraints.h"
+#include "manager/metadata/dao/dao.h"
 #include "manager/metadata/error_code.h"
-#include "manager/metadata/metadata.h"
 #include "manager/metadata/provider/provider_base.h"
 
 namespace manager::metadata::db {
@@ -44,7 +44,7 @@ class ConstraintsProvider : public ProviderBase {
   manager::metadata::ErrorCode remove_constraint_metadata(const ObjectId constraint_id);
 
  private:
-  std::shared_ptr<ConstraintsDAO> constraints_dao_ = nullptr;
+  std::shared_ptr<Dao> constraints_dao_ = nullptr;
 
   manager::metadata::ErrorCode get_all_column_metadata(boost::property_tree::ptree& tables) const;
   manager::metadata::ErrorCode get_column_metadata(std::string_view table_id,

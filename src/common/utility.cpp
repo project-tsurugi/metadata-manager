@@ -15,18 +15,70 @@
  */
 #include "manager/metadata/common/utility.h"
 
-#include <iostream>
-
-#include <boost/property_tree/json_parser.hpp>
+#include <charconv>
+#include <type_traits>
 
 #include "manager/metadata/common/message.h"
 #include "manager/metadata/helper/logging_helper.h"
 
 // =============================================================================
-namespace manager::metadata {
+namespace {
 
-namespace json_parser = boost::property_tree::json_parser;
-using boost::property_tree::json_parser_error;
+using manager::metadata::ErrorCode;
+using manager::metadata::Message;
+
+/**
+ * @brief Converts a string to a numeric.
+ * @param str    [in]  String to be converted to a floating point.
+ * @param value  [out] The converted value.
+ * @return ErrorCode::OK if success, otherwise an error code.
+ */
+template <typename T, std::enable_if_t<std::is_floating_point_v<T>,
+                                       std::nullptr_t> = nullptr>
+ErrorCode convert_to_numeric(std::string_view str, T& value) {
+  try {
+    value = std::stof(str.data());
+    LOG_DEBUG << "Convert string to floating point: \"" << str << "\"";
+  } catch (...) {
+    LOG_ERROR << Message::CONVERT_STRING_TO_FLOAT_FAILURE << "\"" << str
+              << "\"";
+    return ErrorCode::INTERNAL_ERROR;
+  }
+
+  return ErrorCode::OK;
+}
+
+/**
+ * @brief Converts a string to a numeric.
+ * @param str    [in]  String to be converted to a integral.
+ * @param value  [out] The converted value.
+ * @return ErrorCode::OK if success, otherwise an error code.
+ */
+template <typename T,
+          std::enable_if_t<std::is_integral_v<T>, std::nullptr_t> = nullptr>
+ErrorCode convert_to_numeric(std::string_view str, T& value) {
+  ErrorCode error = ErrorCode::UNKNOWN;
+  T converted_value{};
+
+  const auto [ptr, err_code] =
+      std::from_chars(std::begin(str), std::end(str), converted_value);
+  if (err_code == std::errc{}) {
+    value = converted_value;
+    error = ErrorCode::OK;
+  } else {
+    LOG_ERROR << Message::CONVERT_STRING_TO_INT_FAILURE
+              << "error: " << static_cast<int>(err_code) << ", value: \"" << str
+              << "\"";
+    error = ErrorCode::INTERNAL_ERROR;
+  }
+
+  return error;
+}
+
+}  // namespace
+
+// =============================================================================
+namespace manager::metadata {
 
 /**
  * @brief Explicit Template Instantiation for str_to_numeric(float type).
@@ -39,119 +91,53 @@ template ErrorCode Utility::str_to_numeric(std::string_view str,
 template ErrorCode Utility::str_to_numeric(std::string_view str,
                                            std::int32_t& return_value);
 /**
+ * @brief Explicit Template Instantiation for str_to_numeric(uint64_t type).
+ */
+template ErrorCode Utility::str_to_numeric(std::string_view str,
+                                           std::uint64_t& return_value);
+/**
  * @brief Explicit Template Instantiation for str_to_numeric(int64_t type).
  */
 template ErrorCode Utility::str_to_numeric(std::string_view str,
                                            std::int64_t& return_value);
 
-/**
- * @brief Converts a string to a numeric.
- * @param (str)           [in]  String to be converted to a numeric.
- * @param (return_value)  [out] The converted numeric.
- * @return ErrorCode::OK if success, otherwise an error code.
- */
 template <typename T>
-[[nodiscard]] ErrorCode Utility::str_to_numeric(std::string_view str,
-                                                T& return_value) {
-  try {
-    return_value = convert_to_numeric<T>(str);
-  } catch (...) {
-    return ErrorCode::INTERNAL_ERROR;
+ErrorCode Utility::str_to_numeric(std::string_view str, T& return_value) {
+  return convert_to_numeric(str, return_value);
+}
+
+bool Utility::str_to_boolean(std::string_view bool_alpha) {
+  bool result = false;
+
+  // Convert to lowercase.
+  std::string bool_alpha_lower = std::string(bool_alpha);
+  std::transform(bool_alpha_lower.begin(), bool_alpha_lower.end(),
+                 bool_alpha_lower.begin(), ::tolower);
+
+  // Convert to Boolean value.
+  std::istringstream is(bool_alpha_lower.c_str());
+  is >> std::boolalpha >> result;
+
+  return result;
+}
+
+std::string Utility::boolean_to_str(const bool value) {
+  std::stringstream ss;
+  ss << std::boolalpha << value;
+  return ss.str();
+}
+
+std::vector<std::string> Utility::split(std::string_view source,
+                                        const char& delimiter) {
+  std::vector<std::string> result;
+  std::stringstream ss{source.data()};
+  std::string buffer;
+
+  while (std::getline(ss, buffer, delimiter)) {
+    result.push_back(buffer);
   }
 
-  return ErrorCode::OK;
-}
-
-/**
- * @brief Converts a JSON string to a property_tree.
- * @param (json)   [in]  JSON string to be converted to a property_tree.
- * @param (ptree)  [out] The converted property_tree..
- * @return ErrorCode::OK if success, otherwise an error code.
- */
-[[nodiscard]] ErrorCode Utility::json_to_ptree(
-    std::string_view json, boost::property_tree::ptree& ptree) {
-  ErrorCode error = ErrorCode::UNKNOWN;
-
-  if (!json.empty()) {
-    std::stringstream ss;
-    ss << json;
-    try {
-      json_parser::read_json(ss, ptree);
-    } catch (json_parser_error& e) {
-      LOG_ERROR << Message::READ_JSON_FAILURE << e.what();
-      error = ErrorCode::INTERNAL_ERROR;
-      return error;
-    } catch (...) {
-      LOG_ERROR << Message::READ_JSON_FAILURE;
-      error = ErrorCode::INTERNAL_ERROR;
-      return error;
-    }
-  }
-
-  return ErrorCode::OK;
-}
-
-/**
- * @brief Converts a property_tree to a JSON string.
- * @param (ptree)  [in]  property_tree to be converted to a JSON string.
- * @param (json)   [out] The converted JSON string.
- * @return ErrorCode::OK if success, otherwise an error code.
- */
-[[nodiscard]] ErrorCode Utility::ptree_to_json(
-    const boost::property_tree::ptree& ptree, std::string& json) {
-  ErrorCode error = ErrorCode::UNKNOWN;
-
-  if (!ptree.empty()) {
-    std::stringstream ss;
-    try {
-      json_parser::write_json(ss, ptree, false);
-    } catch (json_parser_error& e) {
-      LOG_ERROR << Message::WRITE_JSON_FAILURE << e.what();
-      error = ErrorCode::INVALID_PARAMETER;
-      return error;
-    } catch (...) {
-      LOG_ERROR << Message::WRITE_JSON_FAILURE;
-      error = ErrorCode::INVALID_PARAMETER;
-      return error;
-    }
-    json = ss.str();
-  }
-
-  return ErrorCode::OK;
-}
-
-/* =============================================================================
- * Private method area
- */
-
-/**
- * @brief Converts a string to a numeric.
- * @param (str)  [in]  String to be converted to a numeric.
- * @return The converted numeric as a float type value.
- */
-template <>
-float Utility::convert_to_numeric<float>(std::string_view str) {
-  return std::stof(str.data());
-}
-
-/**
- * @brief Converts a string to a numeric.
- * @param (str)  [in]  String to be converted to a numeric.
- * @return The converted numeric as a int32_t type value.
- */
-template <>
-std::int32_t Utility::convert_to_numeric<std::int32_t>(std::string_view str) {
-  return std::stoi(str.data());
-}
-
-/**
- * @brief Converts a string to a numeric.
- * @param (str)  [in]  String to be converted to a numeric.
- * @return The converted numeric as a int64_t type value.
- */
-template <>
-std::int64_t Utility::convert_to_numeric<std::int64_t>(std::string_view str) {
-  return std::stol(str.data());
+  return result;
 }
 
 }  // namespace manager::metadata

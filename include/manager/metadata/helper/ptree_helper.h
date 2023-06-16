@@ -15,15 +15,48 @@
  */
 #pragma once
 
+#include <string>
 #include <string_view>
+#include <type_traits>
 #include <vector>
 
 #include <boost/property_tree/ptree.hpp>
+
+#include "manager/metadata/error_code.h"
 
 namespace ptree_helper {
 
 boost::property_tree::ptree make_array_ptree(const std::vector<int64_t>& v);
 std::vector<int64_t> make_vector_int(const boost::property_tree::ptree& pt,
                                      std::string_view key);
+
+manager::metadata::ErrorCode json_to_ptree(std::string_view json,
+                                           boost::property_tree::ptree& ptree);
+manager::metadata::ErrorCode ptree_to_json(
+    const boost::property_tree::ptree& ptree, std::string& json);
+std::string ptree_to_json(const boost::property_tree::ptree& ptree);
+
+/**
+ * @brief The value for a key is extracted from the ptree and returned
+ *   as a string.
+ * @param ptree  [in]  ptree object.
+ * @param key    [in]  key name.
+ * @return String of extracted values.
+ */
+template <typename T>
+[[nodiscard]] std::string ptree_value_to_string(
+    const boost::property_tree::ptree& ptree, std::string_view key) {
+  std::string result_value;
+
+  auto value = ptree.get_optional<T>(key.data());
+  if (value) {
+    if constexpr (std::is_integral_v<T>) {
+      result_value = std::to_string(value.value());
+    } else {
+      result_value = value.value();
+    }
+  }
+  return result_value;
+}
 
 }  // namespace ptree_helper

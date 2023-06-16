@@ -26,39 +26,67 @@ using manager::metadata::ObjectId;
 
 // tsurugi data type name
 struct DataTypesName {
-  static constexpr char INT32[]   = "INT32";
-  static constexpr char INT64[]   = "INT64";
-  static constexpr char FLOAT32[] = "FLOAT32";
-  static constexpr char FLOAT64[] = "FLOAT64";
-  static constexpr char CHAR[]    = "CHAR";
-  static constexpr char VARCHAR[] = "VARCHAR";
+  static constexpr char INT32[]       = "INT32";
+  static constexpr char INT64[]       = "INT64";
+  static constexpr char FLOAT32[]     = "FLOAT32";
+  static constexpr char FLOAT64[]     = "FLOAT64";
+  static constexpr char CHAR[]        = "CHAR";
+  static constexpr char VARCHAR[]     = "VARCHAR";
+  static constexpr char NUMERIC[]     = "NUMERIC";
+  static constexpr char DATE[]        = "DATE";
+  static constexpr char TIME[]        = "TIME";
+  static constexpr char TIMETZ[]      = "TIMETZ";
+  static constexpr char TIMESTAMP[]   = "TIMESTAMP";
+  static constexpr char TIMESTAMPTZ[] = "TIMESTAMPTZ";
+  static constexpr char INTERVAL[]    = "INTERVAL";
 };
 // PostgreSQL data type oid
 struct PgDataType {
-  static constexpr char INT32[]   = "23";
-  static constexpr char INT64[]   = "20";
-  static constexpr char FLOAT32[] = "700";
-  static constexpr char FLOAT64[] = "701";
-  static constexpr char CHAR[]    = "1042";
-  static constexpr char VARCHAR[] = "1043";
+  static constexpr char INT32[]       = "23";
+  static constexpr char INT64[]       = "20";
+  static constexpr char FLOAT32[]     = "700";
+  static constexpr char FLOAT64[]     = "701";
+  static constexpr char CHAR[]        = "1042";
+  static constexpr char VARCHAR[]     = "1043";
+  static constexpr char NUMERIC[]     = "1700";
+  static constexpr char DATE[]        = "1082";
+  static constexpr char TIME[]        = "1083";
+  static constexpr char TIMETZ[]      = "1266";
+  static constexpr char TIMESTAMP[]   = "1114";
+  static constexpr char TIMESTAMPTZ[] = "1184";
+  static constexpr char INTERVAL[]    = "1186";
 };
 // PostgreSQL data type name
 struct PgDataTypeName {
-  static constexpr char INT32[]   = "integer";
-  static constexpr char INT64[]   = "bigint";
-  static constexpr char FLOAT32[] = "real";
-  static constexpr char FLOAT64[] = "double precision";
-  static constexpr char CHAR[]    = "char";
-  static constexpr char VARCHAR[] = "varchar";
+  static constexpr char INT32[]       = "integer";
+  static constexpr char INT64[]       = "bigint";
+  static constexpr char FLOAT32[]     = "real";
+  static constexpr char FLOAT64[]     = "double precision";
+  static constexpr char CHAR[]        = "char";
+  static constexpr char VARCHAR[]     = "varchar";
+  static constexpr char NUMERIC[]     = "numeric";
+  static constexpr char DATE[]        = "date";
+  static constexpr char TIME[]        = "time";
+  static constexpr char TIMETZ[]      = "timetz";
+  static constexpr char TIMESTAMP[]   = "timestamp";
+  static constexpr char TIMESTAMPTZ[] = "timestamptz";
+  static constexpr char INTERVAL[]    = "interval";
 };
 // PostgreSQL internal qualified data type name
 struct PgDataTypeQualifiedName {
-  static constexpr char INT32[]   = "int4";
-  static constexpr char INT64[]   = "int8";
-  static constexpr char FLOAT32[] = "float4";
-  static constexpr char FLOAT64[] = "float8";
-  static constexpr char CHAR[]    = "bpchar";
-  static constexpr char VARCHAR[] = "varchar";
+  static constexpr char INT32[]       = "int4";
+  static constexpr char INT64[]       = "int8";
+  static constexpr char FLOAT32[]     = "float4";
+  static constexpr char FLOAT64[]     = "float8";
+  static constexpr char CHAR[]        = "bpchar";
+  static constexpr char VARCHAR[]     = "varchar";
+  static constexpr char NUMERIC[]     = "numeric";
+  static constexpr char DATE[]        = "date";
+  static constexpr char TIME[]        = "time";
+  static constexpr char TIMETZ[]      = "timetz";
+  static constexpr char TIMESTAMP[]   = "timestamp";
+  static constexpr char TIMESTAMPTZ[] = "timestamptz";
+  static constexpr char INTERVAL[]    = "interval";
 };
 
 // a list of tsurugi data type id
@@ -69,24 +97,48 @@ std::vector<std::string> DataTypesIdList = {
     std::to_string(static_cast<ObjectId>(DataTypes::DataTypesId::FLOAT64)),
     std::to_string(static_cast<ObjectId>(DataTypes::DataTypesId::CHAR)),
     std::to_string(static_cast<ObjectId>(DataTypes::DataTypesId::VARCHAR)),
+    std::to_string(static_cast<ObjectId>(DataTypes::DataTypesId::NUMERIC)),
+    std::to_string(static_cast<ObjectId>(DataTypes::DataTypesId::DATE)),
+    std::to_string(static_cast<ObjectId>(DataTypes::DataTypesId::TIME)),
+    std::to_string(static_cast<ObjectId>(DataTypes::DataTypesId::TIMETZ)),
+    std::to_string(static_cast<ObjectId>(DataTypes::DataTypesId::TIMESTAMP)),
+    std::to_string(static_cast<ObjectId>(DataTypes::DataTypesId::TIMESTAMPTZ)),
+    std::to_string(static_cast<ObjectId>(DataTypes::DataTypesId::INTERVAL)),
 };
 // a list of tsurugi data type name
 std::vector<std::string> DataTypesNameList = {
-    DataTypesName::INT32,   DataTypesName::INT64, DataTypesName::FLOAT32,
-    DataTypesName::FLOAT64, DataTypesName::CHAR,  DataTypesName::VARCHAR};
+    DataTypesName::INT32,     DataTypesName::INT64,
+    DataTypesName::FLOAT32,   DataTypesName::FLOAT64,
+    DataTypesName::CHAR,      DataTypesName::VARCHAR,
+    DataTypesName::NUMERIC,   DataTypesName::DATE,
+    DataTypesName::TIME,      DataTypesName::TIMETZ,
+    DataTypesName::TIMESTAMP, DataTypesName::TIMESTAMPTZ,
+    DataTypesName::INTERVAL};
 // a list of PostgreSQL data type oid
 std::vector<std::string> PgDataTypeList = {
-    PgDataType::INT32,   PgDataType::INT64, PgDataType::FLOAT32,
-    PgDataType::FLOAT64, PgDataType::CHAR,  PgDataType::VARCHAR};
+    PgDataType::INT32,   PgDataType::INT64,     PgDataType::FLOAT32,
+    PgDataType::FLOAT64, PgDataType::CHAR,      PgDataType::VARCHAR,
+    PgDataType::NUMERIC, PgDataType::DATE,      PgDataType::TIME,
+    PgDataType::TIMETZ,  PgDataType::TIMESTAMP, PgDataType::TIMESTAMPTZ,
+    PgDataType::INTERVAL};
 // a list of PostgreSQL data type name
 std::vector<std::string> PgDataTypeNameList = {
-    PgDataTypeName::INT32,   PgDataTypeName::INT64, PgDataTypeName::FLOAT32,
-    PgDataTypeName::FLOAT64, PgDataTypeName::CHAR,  PgDataTypeName::VARCHAR};
+    PgDataTypeName::INT32,     PgDataTypeName::INT64,
+    PgDataTypeName::FLOAT32,   PgDataTypeName::FLOAT64,
+    PgDataTypeName::CHAR,      PgDataTypeName::VARCHAR,
+    PgDataTypeName::NUMERIC,   PgDataTypeName::DATE,
+    PgDataTypeName::TIME,      PgDataTypeName::TIMETZ,
+    PgDataTypeName::TIMESTAMP, PgDataTypeName::TIMESTAMPTZ,
+    PgDataTypeName::INTERVAL};
 // a list of PostgreSQL qualified data type name
 std::vector<std::string> PgDataTypeQualifiedNameList = {
-    PgDataTypeQualifiedName::INT32,   PgDataTypeQualifiedName::INT64,
-    PgDataTypeQualifiedName::FLOAT32, PgDataTypeQualifiedName::FLOAT64,
-    PgDataTypeQualifiedName::CHAR,    PgDataTypeQualifiedName::VARCHAR};
+    PgDataTypeQualifiedName::INT32,     PgDataTypeQualifiedName::INT64,
+    PgDataTypeQualifiedName::FLOAT32,   PgDataTypeQualifiedName::FLOAT64,
+    PgDataTypeQualifiedName::CHAR,      PgDataTypeQualifiedName::VARCHAR,
+    PgDataTypeQualifiedName::NUMERIC,   PgDataTypeQualifiedName::DATE,
+    PgDataTypeQualifiedName::TIME,      PgDataTypeQualifiedName::TIMETZ,
+    PgDataTypeQualifiedName::TIMESTAMP, PgDataTypeQualifiedName::TIMESTAMPTZ,
+    PgDataTypeQualifiedName::INTERVAL};
 
 }  // namespace
 
@@ -166,6 +218,90 @@ UtDataTypesMetadata::UtDataTypesMetadata() {
     values.put(DataTypes::PG_DATA_TYPE_QUALIFIED_NAME,
                PgDataTypeQualifiedName::VARCHAR);
     metadata_ptree_.add_child(DataTypesName::VARCHAR, values);
+  }
+  // NUMERIC
+  {
+    ptree values;
+    values.put(DataTypes::ID,
+               static_cast<int64_t>(DataTypes::DataTypesId::NUMERIC));
+    values.put(DataTypes::NAME, DataTypesName::NUMERIC);
+    values.put(DataTypes::PG_DATA_TYPE, PgDataType::NUMERIC);
+    values.put(DataTypes::PG_DATA_TYPE_NAME, PgDataTypeName::NUMERIC);
+    values.put(DataTypes::PG_DATA_TYPE_QUALIFIED_NAME,
+               PgDataTypeQualifiedName::NUMERIC);
+    metadata_ptree_.add_child(DataTypesName::NUMERIC, values);
+  }
+  // DATE
+  {
+    ptree values;
+    values.put(DataTypes::ID,
+               static_cast<int64_t>(DataTypes::DataTypesId::DATE));
+    values.put(DataTypes::NAME, DataTypesName::DATE);
+    values.put(DataTypes::PG_DATA_TYPE, PgDataType::DATE);
+    values.put(DataTypes::PG_DATA_TYPE_NAME, PgDataTypeName::DATE);
+    values.put(DataTypes::PG_DATA_TYPE_QUALIFIED_NAME,
+               PgDataTypeQualifiedName::DATE);
+    metadata_ptree_.add_child(DataTypesName::DATE, values);
+  }
+  // TIME
+  {
+    ptree values;
+    values.put(DataTypes::ID,
+               static_cast<int64_t>(DataTypes::DataTypesId::TIME));
+    values.put(DataTypes::NAME, DataTypesName::TIME);
+    values.put(DataTypes::PG_DATA_TYPE, PgDataType::TIME);
+    values.put(DataTypes::PG_DATA_TYPE_NAME, PgDataTypeName::TIME);
+    values.put(DataTypes::PG_DATA_TYPE_QUALIFIED_NAME,
+               PgDataTypeQualifiedName::TIME);
+    metadata_ptree_.add_child(DataTypesName::TIME, values);
+  }
+  // TIMETZ
+  {
+    ptree values;
+    values.put(DataTypes::ID,
+               static_cast<int64_t>(DataTypes::DataTypesId::TIMETZ));
+    values.put(DataTypes::NAME, DataTypesName::TIMETZ);
+    values.put(DataTypes::PG_DATA_TYPE, PgDataType::TIMETZ);
+    values.put(DataTypes::PG_DATA_TYPE_NAME, PgDataTypeName::TIMETZ);
+    values.put(DataTypes::PG_DATA_TYPE_QUALIFIED_NAME,
+               PgDataTypeQualifiedName::TIMETZ);
+    metadata_ptree_.add_child(DataTypesName::TIMETZ, values);
+  }
+  // TIMESTAMP
+  {
+    ptree values;
+    values.put(DataTypes::ID,
+               static_cast<int64_t>(DataTypes::DataTypesId::TIMESTAMP));
+    values.put(DataTypes::NAME, DataTypesName::TIMESTAMP);
+    values.put(DataTypes::PG_DATA_TYPE, PgDataType::TIMESTAMP);
+    values.put(DataTypes::PG_DATA_TYPE_NAME, PgDataTypeName::TIMESTAMP);
+    values.put(DataTypes::PG_DATA_TYPE_QUALIFIED_NAME,
+               PgDataTypeQualifiedName::TIMESTAMP);
+    metadata_ptree_.add_child(DataTypesName::TIMESTAMP, values);
+  }
+  // TIMESTAMPTZ
+  {
+    ptree values;
+    values.put(DataTypes::ID,
+               static_cast<int64_t>(DataTypes::DataTypesId::TIMESTAMPTZ));
+    values.put(DataTypes::NAME, DataTypesName::TIMESTAMPTZ);
+    values.put(DataTypes::PG_DATA_TYPE, PgDataType::TIMESTAMPTZ);
+    values.put(DataTypes::PG_DATA_TYPE_NAME, PgDataTypeName::TIMESTAMPTZ);
+    values.put(DataTypes::PG_DATA_TYPE_QUALIFIED_NAME,
+               PgDataTypeQualifiedName::TIMESTAMPTZ);
+    metadata_ptree_.add_child(DataTypesName::TIMESTAMPTZ, values);
+  }
+  // INTERVAL
+  {
+    ptree values;
+    values.put(DataTypes::ID,
+               static_cast<int64_t>(DataTypes::DataTypesId::INTERVAL));
+    values.put(DataTypes::NAME, DataTypesName::INTERVAL);
+    values.put(DataTypes::PG_DATA_TYPE, PgDataType::INTERVAL);
+    values.put(DataTypes::PG_DATA_TYPE_NAME, PgDataTypeName::INTERVAL);
+    values.put(DataTypes::PG_DATA_TYPE_QUALIFIED_NAME,
+               PgDataTypeQualifiedName::INTERVAL);
+    metadata_ptree_.add_child(DataTypesName::INTERVAL, values);
   }
 }
 

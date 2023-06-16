@@ -17,8 +17,6 @@
 
 #include <boost/property_tree/json_parser.hpp>
 
-#include "manager/metadata/statistics.h"
-
 // =============================================================================
 namespace manager::metadata::db {
 
@@ -31,21 +29,27 @@ using boost::property_tree::ptree;
  */
 ErrorCode StatisticsProvider::init() {
   ErrorCode error = ErrorCode::UNKNOWN;
-  std::shared_ptr<GenericDAO> gdao = nullptr;
 
-  if (statistics_dao_ != nullptr) {
-    // Instance of the StatisticsDAO class has already been obtained.
-    error = ErrorCode::OK;
-  } else {
-    // Get an instance of the StatisticsDAO class.
-    error = session_manager_->get_dao(GenericDAO::TableName::STATISTICS, gdao);
-    if (error != ErrorCode::OK) {
-      return error;
-    }
-    // Set StatisticsDAO instance.
-    statistics_dao_ = std::static_pointer_cast<StatisticsDAO>(gdao);
+  // Establish a connection to the metadata repository.
+  error = session_manager_->connect();
+  if (error != ErrorCode::OK) {
+    return error;
   }
 
+  // StatisticsDAO
+  if (!statistics_dao_) {
+    // Get an instance of the StatisticsDAO.
+    statistics_dao_ = session_manager_->get_statistics_dao();
+
+    // Prepare to access table metadata.
+    error = statistics_dao_->prepare();
+    if (error != ErrorCode::OK) {
+      statistics_dao_.reset();
+      return error;
+    }
+  }
+
+  error = ErrorCode::OK;
   return error;
 }
 
@@ -69,61 +73,14 @@ ErrorCode StatisticsProvider::add_column_statistic(
     return error;
   }
 
-  // column_id
-  boost::optional<ObjectIdType> optional_column_id =
-      object.get_optional<ObjectIdType>(Statistics::COLUMN_ID);
-  // table_id
-  boost::optional<ObjectIdType> optional_table_id =
-      object.get_optional<ObjectIdType>(Statistics::TABLE_ID);
-  // column_number
-  boost::optional<std::int64_t> optional_column_number =
-      object.get_optional<std::int64_t>(Statistics::COLUMN_NUMBER);
-  // column_name
-  boost::optional<std::string> optional_column_name =
-      object.get_optional<std::string>(Statistics::COLUMN_NAME);
-
-  // statistic_name
-  boost::optional<std::string> optional_statistic_name =
-      object.get_optional<std::string>(Statistics::NAME);
-  std::string* statistic_name =
-      (optional_statistic_name ? optional_statistic_name.get_ptr() : nullptr);
-
-  // column_statistic
-  boost::optional<const ptree&> optional_column_statistic =
-      object.get_child_optional(Statistics::COLUMN_STATISTIC);
-  ptree column_statistic;
-  if (optional_column_statistic) {
-    column_statistic = optional_column_statistic.value();
-  }
-
   // Start the transaction.
   error = session_manager_->start_transaction();
   if (error != ErrorCode::OK) {
     return error;
   }
 
-  if (optional_column_id) {
-    // Register column statistics via DAO using column_id.
-    error = statistics_dao_->upsert_column_statistic(
-        optional_column_id.get(), statistic_name, column_statistic,
-        statistic_id);
-  } else {
-    // Set the key items and values to be register.
-    std::string key;
-    std::string value;
-    if (optional_column_number) {
-      key = Statistics::COLUMN_NUMBER;
-      value = std::to_string(optional_column_number.get());
-    } else {
-      key = Statistics::COLUMN_NAME;
-      value = optional_column_name.get();
-    }
-
-    // Register column statistics via DAO.
-    error = statistics_dao_->upsert_column_statistic(
-        optional_table_id.get(), key, value, statistic_name, column_statistic,
-        statistic_id);
-  }
+  // Register column statistics via DAO.
+  error = statistics_dao_->insert(object, statistic_id);
 
   if (error == ErrorCode::OK) {
     // Commit the transaction.
@@ -163,7 +120,11 @@ ErrorCode StatisticsProvider::get_column_statistic(
     return error;
   }
 
-  error = statistics_dao_->select_column_statistic(key, value, object);
+  ptree statistics;
+  error = statistics_dao_->select(key, {value}, statistics);
+  if (error == ErrorCode::OK) {
+    object = statistics.front().second;
+  }
 
   return error;
 }
@@ -192,8 +153,12 @@ ErrorCode StatisticsProvider::get_column_statistic(
     return error;
   }
 
-  error =
-      statistics_dao_->select_column_statistic(table_id, key, value, object);
+  ptree statistics;
+  error = statistics_dao_->select(key, {std::to_string(table_id), value},
+                                   statistics);
+  if (error == ErrorCode::OK) {
+    object = statistics.front().second;
+  }
 
   return error;
 }
@@ -214,7 +179,7 @@ ErrorCode StatisticsProvider::get_column_statistics(
     return error;
   }
 
-  error = statistics_dao_->select_column_statistic(container);
+  error = statistics_dao_->select_all(container);
 
   return error;
 }
@@ -240,7 +205,21 @@ ErrorCode StatisticsProvider::get_column_statistics(
     return error;
   }
 
-  error = statistics_dao_->select_column_statistic(table_id, container);
+  ptree statistics;
+  error = statistics_dao_->select(
+      Statistics::TABLE_ID, {std::to_string(table_id)}, statistics);
+  if (error == ErrorCode::OK) {
+    if (statistics.size() > 0) {
+      std::transform(statistics.begin(), statistics.end(),
+                      std::back_inserter(container),
+                      [](boost::property_tree::ptree::value_type vt) {
+                        return vt.second;
+                      });
+    } else {
+      // Convert the error code.
+      error = ErrorCode::ID_NOT_FOUND;
+    }
+  }
 
   return error;
 }
@@ -272,7 +251,8 @@ ErrorCode StatisticsProvider::remove_column_statistic(
     return error;
   }
 
-  error = statistics_dao_->delete_column_statistic(key, value, statistic_id);
+  // Remove a statistics from the column statistics table.
+  error = statistics_dao_->remove(key, {value}, statistic_id);
   if (error == ErrorCode::OK) {
     // Commit the transaction.
     error = session_manager_->commit();
@@ -299,29 +279,10 @@ ErrorCode StatisticsProvider::remove_column_statistics(
     const ObjectIdType table_id) {
   ErrorCode error = ErrorCode::UNKNOWN;
 
-  // Initialization
-  error = init();
-  if (error != ErrorCode::OK) {
-    return error;
-  }
-
-  // Start the transaction.
-  error = session_manager_->start_transaction();
-  if (error != ErrorCode::OK) {
-    return error;
-  }
-
-  error = statistics_dao_->delete_column_statistic(table_id);
-  if (error == ErrorCode::OK) {
-    // Commit the transaction.
-    error = session_manager_->commit();
-  } else {
-    // Roll back the transaction.
-    ErrorCode rollback_result = session_manager_->rollback();
-    if (rollback_result != ErrorCode::OK) {
-      error = rollback_result;
-    }
-  }
+  ObjectId removed_id = 0;
+  // Remove a statistics from the column statistics table.
+  error = this->remove_column_statistic(Statistics::TABLE_ID,
+                                        std::to_string(table_id), removed_id);
 
   return error;
 }
@@ -355,8 +316,9 @@ ErrorCode StatisticsProvider::remove_column_statistic(
     return error;
   }
 
-  error = statistics_dao_->delete_column_statistic(table_id, key, value,
-                                                   statistic_id);
+  // Remove a statistics from the column statistics table.
+  error = statistics_dao_->remove(key, {std::to_string(table_id), value},
+                                  statistic_id);
   if (error == ErrorCode::OK) {
     // Commit the transaction.
     error = session_manager_->commit();

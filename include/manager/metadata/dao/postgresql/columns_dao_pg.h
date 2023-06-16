@@ -16,35 +16,117 @@
 #ifndef MANAGER_METADATA_DAO_POSTGRESQL_COLUMNS_DAO_PG_H_
 #define MANAGER_METADATA_DAO_POSTGRESQL_COLUMNS_DAO_PG_H_
 
+#include <string>
+#include <string_view>
+#include <vector>
+
 #include <boost/property_tree/ptree.hpp>
 
-#include "manager/metadata/dao/columns_dao.h"
-#include "manager/metadata/dao/postgresql/common_pg.h"
-#include "manager/metadata/dao/postgresql/db_session_manager_pg.h"
+#include "manager/metadata/dao/postgresql/dao_pg.h"
 #include "manager/metadata/error_code.h"
+#include "manager/metadata/tables.h"
 
-namespace manager::metadata::db::postgresql {
+namespace manager::metadata::db {
 
-class ColumnsDAO : public manager::metadata::db::ColumnsDAO {
+/**
+ * @brief DAO class for accessing column metadata for PostgreSQL.
+ */
+class ColumnsDaoPg : public DaoPg {
  public:
+  /**
+   * @brief column metadata table name.
+   */
+  static constexpr const char* const kTableName = "tsurugi_attribute";
+
   /**
    * @brief Column name of the column metadata table in the metadata repository.
    */
   class ColumnName {
    public:
     static constexpr const char* const kFormatVersion = "format_version";
-    static constexpr const char* const kGeneration = "generation";
-    static constexpr const char* const kId = "id";
-    static constexpr const char* const kName = "name";
-    static constexpr const char* const kTableId = "table_id";
-    static constexpr const char* const kColumnNumber = "column_number";
-    static constexpr const char* const kDataTypeId = "data_type_id";
-    static constexpr const char* const kDataLength = "data_length";
-    static constexpr const char* const kVarying = "varying";
-    static constexpr const char* const kIsNotNull = "is_not_null";
-    static constexpr const char* const kDefaultExpr = "default_expression";
-    static constexpr const char* const kIsFuncExpr = "is_funcexpr";
+    static constexpr const char* const kGeneration    = "generation";
+    static constexpr const char* const kId            = "id";
+    static constexpr const char* const kName          = "name";
+    static constexpr const char* const kTableId       = "table_id";
+    static constexpr const char* const kColumnNumber  = "column_number";
+    static constexpr const char* const kDataTypeId    = "data_type_id";
+    static constexpr const char* const kDataLength    = "data_length";
+    static constexpr const char* const kVarying       = "varying";
+    static constexpr const char* const kIsNotNull     = "is_not_null";
+    static constexpr const char* const kDefaultExpr   = "default_expression";
+    static constexpr const char* const kIsFuncExpr    = "is_funcexpr";
   };  // class ColumnName
+
+  // Inheritance constructor.
+  using DaoPg::DaoPg;
+
+  /**
+   * @brief Add metadata object to metadata table.
+   * @param object     [in]  column metadata object to add.
+   * @param object_id  [out] object id of the added row.
+   * @return ErrorCode::OK if success, otherwise an error code.
+   * @note  If success, metadata object is added management metadata.
+   *   e.g. format version, generation, etc...
+   */
+  manager::metadata::ErrorCode insert(const boost::property_tree::ptree& object,
+                                      ObjectId& object_id) const override;
+
+  /**
+   * @brief Function defined for compatibility.
+   * @return Always ErrorCode::OK.
+   */
+  manager::metadata::ErrorCode select_all(
+      std::vector<boost::property_tree::ptree>&) const override {
+    // Do nothing and return of ErrorCode::OK.
+    return ErrorCode::OK;
+  }
+
+  /**
+   * @brief Get a metadata object from a metadata table.
+   * @param key     [in]  key. column name of a column metadata table.
+   * @param values  [in]  value to be filtered.
+   * @param object  [out] constraint metadata to get, where the given
+   *   key equals the given value.
+   * @retval ErrorCode::OK if success.
+   * @retval ErrorCode::ID_NOT_FOUND if the object id does not exist.
+   * @retval ErrorCode::NAME_NOT_FOUND if the object name does not exist.
+   * @retval otherwise an error code.
+   */
+  manager::metadata::ErrorCode select(
+      std::string_view key, const std::vector<std::string_view>& values,
+      boost::property_tree::ptree& object) const override;
+
+  /**
+   * @brief Function defined for compatibility.
+   * @return Always ErrorCode::OK.
+   */
+  manager::metadata::ErrorCode update(
+      std::string_view, const std::vector<std::string_view>&,
+      const boost::property_tree::ptree&) const override {
+    // Do nothing and return of ErrorCode::OK.
+    return ErrorCode::OK;
+  }
+
+  /**
+   * @brief Removes column metadata with the specified key value
+   *   from the column metadata table.
+   * @param key        [in]  key. column name of a column metadata table.
+   * @param values     [in]  value to be filtered.
+   * @param object_id  [out] object id of the deleted row.
+   * @retval ErrorCode::OK if success.
+   * @retval ErrorCode::ID_NOT_FOUND if the object id does not exist.
+   * @retval ErrorCode::NAME_NOT_FOUND if the object name does not exist.
+   * @retval otherwise an error code.
+   */
+  manager::metadata::ErrorCode remove(
+      std::string_view key, const std::vector<std::string_view>& values,
+      ObjectId& object_id) const override;
+
+ private:
+  /**
+   * @brief INSERT statement key by id.
+   */
+  static constexpr const char* const kStatementKeyInsertById = "ColumnId";
 
   /**
    * @brief Column ordinal position of the column metadata table
@@ -66,34 +148,72 @@ class ColumnsDAO : public manager::metadata::db::ColumnsDAO {
   };  // enum class OrdinalPosition
 
   /**
-   * @brief column metadata table name.
+   * @brief Get the table source name.
+   * @return table source name.
    */
-  static constexpr const char* const kTableName = "tsurugi_attribute";
+  std::string get_source_name() const override { return kTableName; }
 
-  explicit ColumnsDAO(DBSessionManager* session_manager);
+  /**
+   * @brief Create prepared statements.
+   */
+  void create_prepared_statements() override;
 
-  manager::metadata::ErrorCode prepare() const override;
+  /**
+   * @brief Get an INSERT statement for metadata table.
+   * @return INSERT statement.
+   */
+  std::string get_insert_statement() const override;
 
-  manager::metadata::ErrorCode insert_column_metadata(
-      const ObjectIdType table_id,
-      const boost::property_tree::ptree& columns_metadata) const override;
+  /**
+   * @brief Get an INSERT statement for metadata with a specified ID.
+   * @return INSERT statement.
+   */
+  std::string get_insert_statement_id() const;
 
-  manager::metadata::ErrorCode select_column_metadata(
-      std::string_view object_key, std::string_view object_value,
-      boost::property_tree::ptree& columns_metadata) const override;
+  /**
+   * @brief Function defined for compatibility.
+   * @return Always empty string.
+   */
+  std::string get_select_all_statement() const override {
+    // Returns an unconditional empty string.
+    return "";
+  }
 
-  manager::metadata::ErrorCode delete_column_metadata(
-      std::string_view object_key,
-      std::string_view object_value) const override;
+  /**
+   * @brief Get a SELECT statement to retrieve metadata matching the criteria
+   *   from the metadata table.
+   * @param key  [in]  column name of metadata table.
+   * @return SELECT statement.
+   */
+  std::string get_select_statement(std::string_view key) const override;
 
- private:
-  ConnectionSPtr connection_;
+  /**
+   * @brief Function defined for compatibility.
+   * @return Always empty string.
+   */
+  std::string get_update_statement(std::string_view) const override {
+    // Returns an unconditional empty string.
+    return "";
+  }
 
-  manager::metadata::ErrorCode convert_pgresult_to_ptree(
-      const PGresult* res, const int row_number,
-      boost::property_tree::ptree& columns_metadata) const;
-};  // class ColumnsDAO
+  /**
+   * @brief Get a DELETE statement to delete metadata from the metadata table.
+   * @param key  [in]  column name of metadata table.
+   * @return DELETE statement.
+   */
+  std::string get_delete_statement(std::string_view key) const override;
 
-}  // namespace manager::metadata::db::postgresql
+  /**
+   * @brief Gets the ptree type column metadata
+   *   converted from the given PGresult type value.
+   * @param pg_result   [in]  the result of a query.
+   * @param row_number  [in]  row number of the PGresult.
+   * @return metadata object.
+   */
+  boost::property_tree::ptree convert_pgresult_to_ptree(
+      const PGresult* pg_result, const int row_number) const;
+};  // class ColumnsDaoPg
+
+}  // namespace manager::metadata::db
 
 #endif  // MANAGER_METADATA_DAO_POSTGRESQL_COLUMNS_DAO_PG_H_

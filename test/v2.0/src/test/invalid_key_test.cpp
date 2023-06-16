@@ -101,6 +101,7 @@ TEST_P(TestById, test_apis_by_id) {
   auto class_name = typeid(*metadata_test->get_metadata_manager()).name();
   auto log_format = boost::format(">> Invalid key test: %1%::%2%(%3%)");
 
+  log_format.clear_binds();
   UTUtils::print(log_format % class_name % "get" % object_id);
   {
     CALL_TRACE;
@@ -111,12 +112,14 @@ TEST_P(TestById, test_apis_by_id) {
     ApiTestHelper::test_get(manager, object_id, expected, retrieve_metadata);
   }
 
+  log_format.clear_binds();
   UTUtils::print(log_format % class_name % "exists" % object_id);
   {
     CALL_TRACE;
     ApiTestHelper::test_exists(manager, object_id, false);
   }
 
+  log_format.clear_binds();
   UTUtils::print(log_format % class_name % "update" % object_id);
   {
     CALL_TRACE;
@@ -129,6 +132,7 @@ TEST_P(TestById, test_apis_by_id) {
     ApiTestHelper::test_update(manager, object_id, updated_metadata, expected);
   }
 
+  log_format.clear_binds();
   UTUtils::print(log_format % class_name % "remove" % object_id);
   {
     CALL_TRACE;
@@ -159,6 +163,7 @@ TEST_P(TestByName, test_apis_by_name) {
   auto class_name = typeid(*metadata_test->get_metadata_manager()).name();
   auto log_format = boost::format(">> Invalid key test: %1%::%2%(%3%)");
 
+  log_format.clear_binds();
   UTUtils::print(log_format % class_name % "get" % object_name);
   {
     CALL_TRACE;
@@ -166,12 +171,14 @@ TEST_P(TestByName, test_apis_by_name) {
                             retrieve_metadata);
   }
 
+  log_format.clear_binds();
   UTUtils::print(log_format % class_name % "exists" % object_name);
   {
     CALL_TRACE;
     ApiTestHelper::test_exists(manager, object_name, false);
   }
 
+  log_format.clear_binds();
   UTUtils::print(log_format % class_name % "remove" % object_name);
   {
     CALL_TRACE;

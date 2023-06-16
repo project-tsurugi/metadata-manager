@@ -275,7 +275,7 @@ TEST_F(ApiTestRolesMetadataJson, test_add) {
   auto managers = get_roles_ptr(GlobalTestEnvironment::TEST_DB);
 
   // Test to initialize the manager.
-  ApiTestHelper::test_init(managers.get(), ErrorCode::NOT_SUPPORTED);
+  ApiTestHelper::test_init(managers.get(), ErrorCode::OK);
 
   ptree inserted_metadata;
 
@@ -294,7 +294,7 @@ TEST_F(ApiTestRolesMetadataJson, test_get) {
   auto managers = get_roles_ptr(GlobalTestEnvironment::TEST_DB);
 
   // Test to initialize the manager.
-  ApiTestHelper::test_init(managers.get(), ErrorCode::NOT_SUPPORTED);
+  ApiTestHelper::test_init(managers.get(), ErrorCode::OK);
 
   ptree retrieve_metadata;
 
@@ -317,7 +317,7 @@ TEST_F(ApiTestRolesMetadataJson, test_getall) {
   auto managers = get_roles_ptr(GlobalTestEnvironment::TEST_DB);
 
   // Test to initialize the manager.
-  ApiTestHelper::test_init(managers.get(), ErrorCode::NOT_SUPPORTED);
+  ApiTestHelper::test_init(managers.get(), ErrorCode::OK);
 
   std::vector<boost::property_tree::ptree> container = {};
 
@@ -336,7 +336,7 @@ TEST_F(ApiTestRolesMetadataJson, remove_role_metadata) {
   auto managers = get_roles_ptr(GlobalTestEnvironment::TEST_DB);
 
   // Test to initialize the manager.
-  ApiTestHelper::test_init(managers.get(), ErrorCode::NOT_SUPPORTED);
+  ApiTestHelper::test_init(managers.get(), ErrorCode::OK);
 
   std::vector<boost::property_tree::ptree> container = {};
 

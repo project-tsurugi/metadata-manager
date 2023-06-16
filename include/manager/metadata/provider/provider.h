@@ -15,8 +15,6 @@
  */
 #pragma once
 
-#include <memory>
-
 #include "manager/metadata/dao/db_session_manager.h"
 
 namespace manager::metadata::db {
@@ -28,6 +26,6 @@ class Provider {
   virtual manager::metadata::ErrorCode init() = 0;
 
  protected:
-  std::unique_ptr<DBSessionManager> session_;
+  DbSessionManager* session_;
 };
 } // namespace manager::metadata::db
