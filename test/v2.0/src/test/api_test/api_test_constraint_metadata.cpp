@@ -140,11 +140,11 @@ TEST_F(ApiTestConstraintMetadata, test_invalid_parameter) {
   {
     ptree constraint_metadata;
     ApiTestHelper::test_add(managers.get(), constraint_metadata,
-                            ErrorCode::INVALID_PARAMETER);
+                            ErrorCode::INSUFFICIENT_PARAMETERS);
 
     constraint_metadata.put(Constraint::TABLE_ID, invalid_id);
     ApiTestHelper::test_add(managers.get(), constraint_metadata,
-                            ErrorCode::INVALID_PARAMETER);
+                            ErrorCode::INSUFFICIENT_PARAMETERS);
   }
 }
 

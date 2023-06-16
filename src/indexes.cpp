@@ -80,7 +80,16 @@ ErrorCode Indexes::add(const boost::property_tree::ptree& object,
   ErrorCode error = ErrorCode::UNKNOWN;
   ObjectId id = INVALID_OBJECT_ID;
 
-  error = provider_->add_index_metadata(object, id);
+  // Parameter value check.
+  error = param_check_metadata_add(object);
+
+  // Adds the index metadata through the provider.
+  ObjectId retval_object_id = 0;
+  if (error == ErrorCode::OK) {
+    error = provider_->add_index_metadata(object, id);
+  }
+
+  // Set a value if object_id is not null.
   if ((error == ErrorCode::OK) && (object_id != nullptr)) {
     *object_id = id;
   }
@@ -251,6 +260,33 @@ ErrorCode Indexes::remove(std::string_view object_name,
   }
 
   log::function_finish("Indexes::remove(object_name)", error);
+
+  return error;
+}
+
+/* =============================================================================
+ * Private method area
+ */
+
+/**
+ * @brief Checks if the parameters for additional are correct.
+ * @param object  [in]  metadata-object
+ * @return ErrorCode::OK if success, otherwise an error code.
+ */
+ErrorCode Indexes::param_check_metadata_add(
+    const boost::property_tree::ptree& object) const {
+  ErrorCode error                        = ErrorCode::UNKNOWN;
+  constexpr const char* const kLogFormat = R"("%s" => undefined or empty)";
+
+  auto table_id = object.get_optional<ObjectId>(Index::TABLE_ID);
+  if (table_id.value_or(0) > 0) {
+    error = ErrorCode::OK;
+  } else {
+    LOG_ERROR << Message::PARAMETER_FAILED << "\"" << Index::TABLE_ID
+              << "\" => undefined or empty";
+
+    error = ErrorCode::INSUFFICIENT_PARAMETERS;
+  }
 
   return error;
 }

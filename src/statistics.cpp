@@ -659,11 +659,10 @@ ErrorCode Statistics::param_check_statistics_add(
       error = ErrorCode::OK;
     } else {
       // ordinal_position and column_name is not specified.
-      LOG_ERROR << Message::PARAMETER_FAILED
-                << (boost::format(kLogFormat) % Statistics::COLUMN_NUMBER %
-                    Statistics::COLUMN_NAME)
-                       .str();
-      error = ErrorCode::INVALID_PARAMETER;
+      LOG_ERROR << Message::PARAMETER_FAILED << Statistics::COLUMN_NUMBER
+                << " and " << Statistics::COLUMN_NAME
+                << " => undefined or empty";
+      error = ErrorCode::INSUFFICIENT_PARAMETERS;
     }
   } else {
     // column_id and table_id is not specified.
@@ -671,7 +670,7 @@ ErrorCode Statistics::param_check_statistics_add(
               << (boost::format(kLogFormat) % Statistics::COLUMN_ID %
                   Statistics::TABLE_ID)
                      .str();
-    error = ErrorCode::INVALID_PARAMETER;
+    error = ErrorCode::INSUFFICIENT_PARAMETERS;
   }
 
   return error;

@@ -57,6 +57,9 @@ class Indexes : public Metadata {
 
  private:
   std::unique_ptr<manager::metadata::db::MetadataProvider> provider_ = nullptr;
+
+  ErrorCode param_check_metadata_add(
+      const boost::property_tree::ptree& object) const;
 };
 
 } // namespace manager::metadata

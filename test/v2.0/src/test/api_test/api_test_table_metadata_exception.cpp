@@ -145,7 +145,7 @@ TEST_F(ApiTestAddTableMetadataException, add_table_metadata) {
   ApiTestHelper::test_init(tables.get(), ErrorCode::OK);
   for (auto invalid_table : invalid_table_metadata_) {
     ApiTestHelper::test_add(tables.get(), invalid_table,
-                            ErrorCode::INVALID_PARAMETER);
+                            ErrorCode::INSUFFICIENT_PARAMETERS);
   }
 }
 
@@ -190,7 +190,7 @@ TEST_F(ApiTestAddTableMetadataException, update_table_metadata) {
   for (auto invalid_table : invalid_table_metadata_) {
     ObjectIdType dummy_table_id = 1;
     ApiTestHelper::test_update(tables.get(), dummy_table_id, invalid_table,
-                               ErrorCode::INVALID_PARAMETER);
+                               ErrorCode::INSUFFICIENT_PARAMETERS);
   }
 }
 
