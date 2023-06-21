@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 tsurugi project.
+ * Copyright 2020-2023 tsurugi project.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -123,34 +123,34 @@ boost::property_tree::ptree DataTypesDaoPg::convert_pgresult_to_ptree(
 
   // Set the value of the format_version column to ptree.
   object.put(
-      DataTypes::FORMAT_VERSION,
+      DataType::FORMAT_VERSION,
       get_result_value(pg_result, row_number, OrdinalPosition::kFormatVersion));
 
   // Set the value of the generation column to ptree.
   object.put(
-      DataTypes::GENERATION,
+      DataType::GENERATION,
       get_result_value(pg_result, row_number, OrdinalPosition::kGeneration));
 
   // Set the value of the id to ptree.
-  object.put(DataTypes::ID,
+  object.put(DataType::ID,
              get_result_value(pg_result, row_number, OrdinalPosition::kId));
 
   // Set the value of the name column to ptree.
-  object.put(DataTypes::NAME,
+  object.put(DataType::NAME,
              get_result_value(pg_result, row_number, OrdinalPosition::kName));
 
   // Set the value of the pg_data_type column to ptree.
   object.put(
-      DataTypes::PG_DATA_TYPE,
+      DataType::PG_DATA_TYPE,
       get_result_value(pg_result, row_number, OrdinalPosition::kPgDataType));
 
   // Set the value of the pg_data_type_name column to ptree.
-  object.put(DataTypes::PG_DATA_TYPE_NAME,
+  object.put(DataType::PG_DATA_TYPE_NAME,
              get_result_value(pg_result, row_number,
                               OrdinalPosition::kPgDataTypeName));
 
   // Set the value of the pg_data_type_qualified_name column to ptree.
-  object.put(DataTypes::PG_DATA_TYPE_QUALIFIED_NAME,
+  object.put(DataType::PG_DATA_TYPE_QUALIFIED_NAME,
              get_result_value(pg_result, row_number,
                               OrdinalPosition::kPgDataTypeQualifiedName));
 

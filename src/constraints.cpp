@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 tsurugi project.
+ * Copyright 2022-2023 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@
 
 #include "manager/metadata/common/message.h"
 #include "manager/metadata/helper/logging_helper.h"
-#include "manager/metadata/helper/ptree_helper.h"
 #include "manager/metadata/provider/constraints_provider.h"
 
 // =============================================================================
@@ -35,118 +34,6 @@ std::unique_ptr<manager::metadata::db::ConstraintsProvider> provider = nullptr;
 namespace manager::metadata {
 
 using boost::property_tree::ptree;
-
-// ==========================================================================
-// Constraint class methods.
-/**
- * @brief Transform constraint metadata from structure object to ptree object.
- * @return ptree object.
- */
-boost::property_tree::ptree Constraint::convert_to_ptree() const {
-  ptree metadata = this->base_convert_to_ptree();
-
-  // ID.
-  if (this->id <= 0) {
-    // If the value is invalid, the put data is erased.
-    metadata.erase(ID);
-  }
-
-  // table ID.
-  if (this->table_id > 0) {
-    // Put only if the value is valid.
-    metadata.put(TABLE_ID, this->table_id);
-  }
-
-  // constraint type.
-  metadata.put(TYPE, static_cast<int64_t>(this->type));
-
-  // column numbers.
-  ptree columns_node = ptree_helper::make_array_ptree(this->columns);
-  metadata.add_child(COLUMNS, columns_node);
-
-  // column IDs.
-  ptree columns_id_node = ptree_helper::make_array_ptree(this->columns_id);
-  metadata.add_child(COLUMNS_ID, columns_id_node);
-
-  // index ID.
-  metadata.put(INDEX_ID, this->index_id);
-
-  // constraint expression.
-  metadata.put(EXPRESSION, this->expression);
-
-  // referenced table name.
-  metadata.put(PK_TABLE, this->pk_table);
-
-  // referenced column numbers.
-  ptree pk_columns_node = ptree_helper::make_array_ptree(this->pk_columns);
-  metadata.add_child(PK_COLUMNS, pk_columns_node);
-
-  // referenced column IDs.
-  ptree pk_columns_id_node = ptree_helper::make_array_ptree(this->pk_columns_id);
-  metadata.add_child(PK_COLUMNS_ID, pk_columns_id_node);
-
-  // referenced rows match type.
-  metadata.put(FK_MATCH_TYPE, static_cast<int64_t>(this->fk_match_type));
-
-  // referenced row delete action.
-  metadata.put(FK_DELETE_ACTION, static_cast<int64_t>(this->fk_delete_action));
-
-  // referenced row update action.
-  metadata.put(FK_UPDATE_ACTION, static_cast<int64_t>(this->fk_update_action));
-
-  return metadata;
-}
-
-/**
- * @brief Transform constraint metadata from ptree object to structure object.
- * @param ptree  [in] ptree object of metadata.
- * @return structure object of metadata.
- */
-void Constraint::convert_from_ptree(const boost::property_tree::ptree& ptree) {
-  this->base_convert_from_ptree(ptree);
-
-  // table ID.
-  this->table_id =
-      ptree.get_optional<ObjectId>(TABLE_ID).value_or(INVALID_OBJECT_ID);
-
-  // constraint type.
-  this->type = static_cast<ConstraintType>(
-      ptree.get_optional<int64_t>(TYPE).value_or(-1));
-
-  // column numbers.
-  this->columns = ptree_helper::make_vector_int(ptree, COLUMNS);
-
-  // column IDs.
-  this->columns_id = ptree_helper::make_vector_int(ptree, COLUMNS_ID);
-
-  // index ID.
-  this->index_id =
-      ptree.get_optional<int64_t>(INDEX_ID).value_or(INVALID_VALUE);
-
-  // constraint expression.
-  this->expression = ptree.get_optional<std::string>(EXPRESSION).value_or("");
-
-  // referenced table name.
-  this->pk_table = ptree.get_optional<std::string>(PK_TABLE).value_or("");
-
-  // referenced column numbers.
-  this->pk_columns = ptree_helper::make_vector_int(ptree, PK_COLUMNS);
-
-  // referenced column IDs.
-  this->pk_columns_id = ptree_helper::make_vector_int(ptree, PK_COLUMNS_ID);
-
-  // referenced rows match type.
-  this->fk_match_type = static_cast<MatchType>(
-      ptree.get_optional<int64_t>(FK_MATCH_TYPE).value_or(-1));
-
-  // referenced row delete action.
-  this->fk_delete_action = static_cast<ActionType>(
-      ptree.get_optional<int64_t>(FK_DELETE_ACTION).value_or(-1));
-
-  // referenced row update action.
-  this->fk_update_action = static_cast<ActionType>(
-      ptree.get_optional<int64_t>(FK_UPDATE_ACTION).value_or(-1));
-}
 
 // ==========================================================================
 // Constraints class methods.

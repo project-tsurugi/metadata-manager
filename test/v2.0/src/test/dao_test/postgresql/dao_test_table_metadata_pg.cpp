@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2022 tsurugi project.
+ * Copyright 2020-2023 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -317,7 +317,7 @@ class DaoTestTableMetadata : public ::testing::Test {
     EXPECT_EQ(ErrorCode::OK, error);
 
     // Update table metadata object to table metadata table.
-    error = tables_dao->update(Tables::ID, {std::to_string(object_id)}, object);
+    error = tables_dao->update(Table::ID, {std::to_string(object_id)}, object);
     EXPECT_EQ(ErrorCode::OK, error);
 
     // Run the API under test.

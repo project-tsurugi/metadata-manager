@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 tsurugi project.
+ * Copyright 2020-2023 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,17 +15,14 @@
  */
 #include <gtest/gtest.h>
 
-#include <memory>
-#include <string>
-
 #include <boost/property_tree/json_parser.hpp>
+#include <boost/property_tree/ptree.hpp>
 
+#include "manager/metadata/common/constants.h"
 #include "manager/metadata/common/message.h"
 #include "manager/metadata/dao/postgresql/db_session_manager_pg.h"
 #include "manager/metadata/dao/postgresql/statistics_dao_pg.h"
 #include "test/common/global_test_environment.h"
-#include "test/common/ut_utils.h"
-#include "test/helper/column_statistics_helper.h"
 #include "test/helper/table_metadata_helper.h"
 #include "test/metadata/ut_column_statistics.h"
 
@@ -232,10 +229,10 @@ ErrorCode DaoTestColumnStatistics::add_one_column_statistic(
   }
 
   ptree object;
-  object.put(Statistics::TABLE_ID, table_id);
-  object.put(Statistics::COLUMN_NUMBER, ordinal_position);
-  object.put(Statistics::NAME, statistic_name);
-  object.put_child(Statistics::COLUMN_STATISTIC, column_statistic);
+  object.put(Statistic::TABLE_ID, table_id);
+  object.put(Statistic::COLUMN_NUMBER, ordinal_position);
+  object.put(Statistic::NAME, statistic_name);
+  object.put_child(Statistic::COLUMN_STATISTIC, column_statistic);
 
   UTUtils::print(" " + UTUtils::get_tree_string(object));
 
@@ -290,7 +287,7 @@ ErrorCode DaoTestColumnStatistics::get_one_column_statistic(
 
   ptree column_statistics;
   error = statistics_dao->select(
-      Statistics::COLUMN_NUMBER,
+      Statistic::COLUMN_NUMBER,
       {std::to_string(table_id), std::to_string(ordinal_position)},
       column_statistics);
 
@@ -298,11 +295,11 @@ ErrorCode DaoTestColumnStatistics::get_one_column_statistic(
     auto column_statistic = column_statistics.front().second;
 
     auto optional_ordinal_position =
-        column_statistic.get_optional<std::int64_t>(Statistics::COLUMN_NUMBER);
+        column_statistic.get_optional<std::int64_t>(Statistic::COLUMN_NUMBER);
     EXPECT_TRUE(optional_ordinal_position);
 
     auto optional_column_statistic =
-        column_statistic.get_child_optional(Statistics::COLUMN_STATISTIC);
+        column_statistic.get_child_optional(Statistic::COLUMN_STATISTIC);
     EXPECT_TRUE(optional_column_statistic);
 
     std::string s_cs_returned =
@@ -344,7 +341,7 @@ ErrorCode DaoTestColumnStatistics::get_all_column_statistics(
 
   std::vector<ptree> column_statistics;
   ptree statistics;
-  error = statistics_dao->select(Statistics::TABLE_ID,
+  error = statistics_dao->select(Statistic::TABLE_ID,
                                   {std::to_string(table_id)}, statistics);
   if (error == ErrorCode::OK) {
     std::transform(statistics.begin(), statistics.end(),
@@ -366,11 +363,11 @@ ErrorCode DaoTestColumnStatistics::get_all_column_statistics(
       ptree c_cs_returned = column_statistics[ordinal_position - 1];
 
       auto optional_ordinal_position =
-          c_cs_returned.get_optional<std::int64_t>(Statistics::COLUMN_NUMBER);
+          c_cs_returned.get_optional<std::int64_t>(Statistic::COLUMN_NUMBER);
       EXPECT_TRUE(optional_ordinal_position);
 
       auto optional_column_statistic =
-          c_cs_returned.get_child_optional(Statistics::COLUMN_STATISTIC);
+          c_cs_returned.get_child_optional(Statistic::COLUMN_STATISTIC);
       EXPECT_TRUE(optional_column_statistic);
 
       std::string s_cs_returned =
@@ -421,7 +418,7 @@ ErrorCode DaoTestColumnStatistics::get_all_column_statistics(
 
   std::vector<ptree> column_statistics;
   ptree statistics;
-  error = statistics_dao->select(Statistics::TABLE_ID,
+  error = statistics_dao->select(Statistic::TABLE_ID,
                                   {std::to_string(table_id)}, statistics);
   if (error == ErrorCode::OK) {
     std::transform(statistics.begin(), statistics.end(),
@@ -439,11 +436,11 @@ ErrorCode DaoTestColumnStatistics::get_all_column_statistics(
     int ordinal_position = 1;
     for (ptree statistic : column_statistics) {
       boost::optional<ptree&> optional_column_statistic =
-          statistic.get_child_optional(Statistics::COLUMN_STATISTIC);
+          statistic.get_child_optional(Statistic::COLUMN_STATISTIC);
       EXPECT_TRUE(optional_column_statistic);
 
       boost::optional<std::int64_t> optional_ordinal_position =
-          statistic.get_optional<std::int64_t>(Statistics::COLUMN_NUMBER);
+          statistic.get_optional<std::int64_t>(Statistic::COLUMN_NUMBER);
       EXPECT_NE(ordinal_position_removed, optional_ordinal_position.get());
 
       if (ordinal_position_removed == ordinal_position) {
@@ -501,7 +498,7 @@ ErrorCode DaoTestColumnStatistics::remove_one_column_statistic(
 
   ObjectIdType ret_statistic_id;
   error = statistics_dao->remove(
-      Statistics::COLUMN_NUMBER,
+      Statistic::COLUMN_NUMBER,
       {std::to_string(table_id), std::to_string(ordinal_position)},
       ret_statistic_id);
 
@@ -548,7 +545,7 @@ ErrorCode DaoTestColumnStatistics::remove_all_column_statistics(
   EXPECT_EQ(ErrorCode::OK, error);
 
   ObjectIdType ret_statistic_id;
-  error = statistics_dao->remove(Statistics::TABLE_ID, {std::to_string(table_id)},
+  error = statistics_dao->remove(Statistic::TABLE_ID, {std::to_string(table_id)},
                                  ret_statistic_id);
 
   if (error == ErrorCode::OK) {
@@ -1099,9 +1096,9 @@ TEST_F(DaoTestColumnStatisticsAllAPIException,
   std::int64_t ordinal_position = 1;
   ObjectIdType ret_statistic_id;
 
-  column_statistic.put(Statistics::TABLE_ID, ret_table_id);
-  column_statistic.put(Statistics::COLUMN_NUMBER, ordinal_position);
-  column_statistic.put(Statistics::NAME, statistic_name);
+  column_statistic.put(Statistic::TABLE_ID, ret_table_id);
+  column_statistic.put(Statistic::COLUMN_NUMBER, ordinal_position);
+  column_statistic.put(Statistic::NAME, statistic_name);
 
   error = statistics_dao->insert(column_statistic, ret_statistic_id);
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2022 tsurugi project.
+ * Copyright 2020-2023 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,10 @@
 
 #include <string>
 #include <vector>
+
 #include <boost/property_tree/ptree.hpp>
-#include "manager/metadata/metadata.h"
+
+#include "manager/metadata/object.h"
 
 namespace manager::metadata {
 /**
@@ -43,7 +45,7 @@ struct Index : public ClassObject {
   static constexpr const char* const TABLE_ID           = "tableId";
   static constexpr const char* const ACCESS_METHOD      = "accessMethod";
   static constexpr const char* const NUMBER_OF_COLUMNS  = "numberOfColumns";
-  static constexpr const char* const NUMBER_OF_KEY_COLUMNS  
+  static constexpr const char* const NUMBER_OF_KEY_COLUMNS
       = "numberOfKeyColumns";
   static constexpr const char* const IS_UNIQUE          = "IsUnique";
   static constexpr const char* const IS_PRIMARY         = "IsPrimary";
@@ -52,14 +54,14 @@ struct Index : public ClassObject {
   static constexpr const char* const OPTIONS            = "options";
 
   ObjectId  table_id;
-  int64_t   access_method;           // refer to enumlation of AccessMethod.
+  int64_t   access_method;           // refer to enumeration of AccessMethod.
   int64_t   number_of_columns;       // include non-key (included) columns.
   int64_t   number_of_key_columns;   // exclude non-key (included) columns.
   bool      is_unique;
   bool      is_primary;
   std::vector<int64_t>  keys;      // include non-key (included) columns.
   std::vector<int64_t>  keys_id;
-  std::vector<int64_t>  options;   // refer to enumlation of Direction.
+  std::vector<int64_t>  options;   // refer to enumeration of Direction.
 
   Index()
       :ClassObject(),
@@ -70,9 +72,18 @@ struct Index : public ClassObject {
         is_unique(false),
         is_primary(false) {}
 
-  virtual boost::property_tree::ptree convert_to_ptree() const override;
-  virtual void convert_from_ptree(
-      const boost::property_tree::ptree& pt) override;
+  /**
+   * @brief Transform constraint metadata from structure object to ptree object.
+   * @return ptree object.
+   */
+  boost::property_tree::ptree convert_to_ptree() const override;
+
+  /**
+   * @brief Transform metadata from ptree object to structure object.
+   * @param pt  [in]  ptree object of metadata.
+   * @return structure object of metadata.
+   */
+  void convert_from_ptree(const boost::property_tree::ptree& pt) override;
 };
 
-} // namespace manager::metadata
+}  // namespace manager::metadata

@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 tsurugi project.
+ * Copyright 2022-2023 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,6 @@
 #include "manager/metadata/common/message.h"
 #include "manager/metadata/helper/logging_helper.h"
 #include "manager/metadata/helper/ptree_helper.h"
-#include "manager/metadata/indexes.h"
 
 namespace manager::metadata::db {
 
@@ -52,8 +51,8 @@ ErrorCode IndexDaoJson::insert(
   object_id = this->oid_generator()->generate(kOidKeyNameIndex);
 
   // Generate management metadata.
-  temp_obj.put<int64_t>(Object::FORMAT_VERSION, Indexes::format_version());
-  temp_obj.put<int64_t>(Object::GENERATION, Indexes::generation());
+  temp_obj.put<int64_t>(Object::FORMAT_VERSION, Object::DEFAULT_FORMAT_VERSION);
+  temp_obj.put<int64_t>(Object::GENERATION, Object::DEFAULT_GENERATION);
   temp_obj.put<ObjectId>(Object::ID, object_id);
 
   ptree root = contents.get_child(kRootNode);

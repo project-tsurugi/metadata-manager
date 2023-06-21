@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 tsurugi project.
+ * Copyright 2021-2023 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -207,7 +207,7 @@ ErrorCode StatisticsProvider::get_column_statistics(
 
   ptree statistics;
   error = statistics_dao_->select(
-      Statistics::TABLE_ID, {std::to_string(table_id)}, statistics);
+      Statistic::TABLE_ID, {std::to_string(table_id)}, statistics);
   if (error == ErrorCode::OK) {
     if (statistics.size() > 0) {
       std::transform(statistics.begin(), statistics.end(),
@@ -281,7 +281,7 @@ ErrorCode StatisticsProvider::remove_column_statistics(
 
   ObjectId removed_id = 0;
   // Remove a statistics from the column statistics table.
-  error = this->remove_column_statistic(Statistics::TABLE_ID,
+  error = this->remove_column_statistic(Statistic::TABLE_ID,
                                         std::to_string(table_id), removed_id);
 
   return error;

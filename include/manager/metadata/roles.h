@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 tsurugi project.
+ * Copyright 2021-2023 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,65 +21,78 @@
 
 #include <boost/property_tree/ptree.hpp>
 
-#include "manager/metadata/error_code.h"
 #include "manager/metadata/metadata.h"
+#include "manager/metadata/role.h"
 
 namespace manager::metadata {
 
 class Roles : public Metadata {
  public:
-  // role metadata-object.
-  // FORMAT_VERSION is defined in base class.
-  // GENERATION is defined in base class.
-
   /**
    * @brief Field name constant indicating the role id of the metadata.
+   * @deprecated Deprecated in the future. Please use Role::ROLE_OID.
    */
-  static constexpr const char* const ROLE_OID = Metadata::ID;
+  static constexpr const char* const ROLE_OID = Role::ROLE_OID;
   /**
    * @brief Field name constant indicating the role name of the metadata.
+   * @deprecated Deprecated in the future. Please use Role::ROLE_ROLNAME.
    */
-  static constexpr const char* const ROLE_ROLNAME = Metadata::NAME;
+  static constexpr const char* const ROLE_ROLNAME = Role::ROLE_ROLNAME;
   /**
    * @brief Field name constant indicating the super of the metadata.
+   * @deprecated Deprecated in the future. Please use Role::ROLE_ROLSUPER.
    */
-  static constexpr const char* const ROLE_ROLSUPER = "super";
+  static constexpr const char* const ROLE_ROLSUPER = Role::ROLE_ROLSUPER;
   /**
    * @brief Field name constant indicating the inherit of the metadata.
+   * @deprecated Deprecated in the future. Please use Role::ROLE_ROLINHERIT.
    */
-  static constexpr const char* const ROLE_ROLINHERIT = "inherit";
+  static constexpr const char* const ROLE_ROLINHERIT = Role::ROLE_ROLINHERIT;
   /**
    * @brief Field name constant indicating the createrole of the metadata.
+   * @deprecated Deprecated in the future. Please use Role::ROLE_ROLCREATEROLE.
    */
-  static constexpr const char* const ROLE_ROLCREATEROLE = "createrole";
+  static constexpr const char* const ROLE_ROLCREATEROLE =
+      Role::ROLE_ROLCREATEROLE;
   /**
    * @brief Field name constant indicating the createdb of the metadata.
+   * @deprecated Deprecated in the future. Please use Role::ROLE_ROLCREATEDB.
    */
-  static constexpr const char* const ROLE_ROLCREATEDB = "createdb";
+  static constexpr const char* const ROLE_ROLCREATEDB = Role::ROLE_ROLCREATEDB;
   /**
    * @brief Field name constant indicating the canlogin of the metadata.
+   * @deprecated Deprecated in the future. Please use Role::ROLE_ROLCANLOGIN.
    */
-  static constexpr const char* const ROLE_ROLCANLOGIN = "canlogin";
+  static constexpr const char* const ROLE_ROLCANLOGIN = Role::ROLE_ROLCANLOGIN;
   /**
    * @brief Field name constant indicating the replication of the metadata.
+   * @deprecated Deprecated in the future. Please use Role::ROLE_ROLREPLICATION.
    */
-  static constexpr const char* const ROLE_ROLREPLICATION = "replication";
+  static constexpr const char* const ROLE_ROLREPLICATION =
+      Role::ROLE_ROLREPLICATION;
   /**
    * @brief Field name constant indicating the bypassrls of the metadata.
+   * @deprecated Deprecated in the future. Please use Role::ROLE_ROLBYPASSRLS.
    */
-  static constexpr const char* const ROLE_ROLBYPASSRLS = "bypassrls";
+  static constexpr const char* const ROLE_ROLBYPASSRLS =
+      Role::ROLE_ROLBYPASSRLS;
   /**
    * @brief Field name constant indicating the connlimit of the metadata.
+   * @deprecated Deprecated in the future. Please use Role::ROLE_ROLCONNLIMIT.
    */
-  static constexpr const char* const ROLE_ROLCONNLIMIT = "connlimit";
+  static constexpr const char* const ROLE_ROLCONNLIMIT =
+      Role::ROLE_ROLCONNLIMIT;
   /**
    * @brief Field name constant indicating the password of the metadata.
+   * @deprecated Deprecated in the future. Please use Role::ROLE_ROLPASSWORD.
    */
-  static constexpr const char* const ROLE_ROLPASSWORD = "password";
+  static constexpr const char* const ROLE_ROLPASSWORD = Role::ROLE_ROLPASSWORD;
   /**
    * @brief Field name constant indicating the validuntil of the metadata.
+   * @deprecated Deprecated in the future. Please use Role::ROLE_ROLVALIDUNTIL.
    */
-  static constexpr const char* const ROLE_ROLVALIDUNTIL = "validuntil";
+  static constexpr const char* const ROLE_ROLVALIDUNTIL =
+      Role::ROLE_ROLVALIDUNTIL;
 
   explicit Roles(std::string_view database)
       : Roles(database, kDefaultComponent) {}
@@ -121,7 +134,6 @@ class Roles : public Metadata {
                    [[maybe_unused]] ObjectIdType* object_id) const override {
     return ErrorCode::UNKNOWN;
   }
-
 };  // class Roles
 
 }  // namespace manager::metadata

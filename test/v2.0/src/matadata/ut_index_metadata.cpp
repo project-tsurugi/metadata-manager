@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 tsurugi project.
+ * Copyright 2022-2023 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 #include "test/metadata/ut_index_metadata.h"
 
 #include "manager/metadata/helper/ptree_helper.h"
-#include "manager/metadata/indexes.h"
+#include "manager/metadata/index.h"
 #include "test/common/ut_utils.h"
 
 namespace manager::metadata::testing {

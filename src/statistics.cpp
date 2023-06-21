@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 tsurugi project.
+ * Copyright 2020-2023 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -138,7 +138,7 @@ ErrorCode Statistics::get(const ObjectIdType object_id,
 
   // Get the column statistics through the provider.
   if (error == ErrorCode::OK) {
-    error = provider->get_column_statistic(Statistics::ID,
+    error = provider->get_column_statistic(Statistic::ID,
                                            std::to_string(object_id), object);
   }
 
@@ -175,7 +175,7 @@ ErrorCode Statistics::get(std::string_view object_name,
   // Get the column statistics through the provider.
   if (error == ErrorCode::OK) {
     error =
-        provider->get_column_statistic(Statistics::NAME, object_name, object);
+        provider->get_column_statistic(Statistic::NAME, object_name, object);
   }
 
   // Log of API function finish.
@@ -213,7 +213,7 @@ ErrorCode Statistics::get_by_column_id(
 
   // Get the column statistics through the provider.
   if (error == ErrorCode::OK) {
-    error = provider->get_column_statistic(Statistics::COLUMN_ID,
+    error = provider->get_column_statistic(Statistic::COLUMN_ID,
                                            std::to_string(column_id), object);
   }
 
@@ -256,7 +256,7 @@ ErrorCode Statistics::get_by_column_number(
 
   // Get the column statistic through the provider.
   if (error == ErrorCode::OK) {
-    error = provider->get_column_statistic(table_id, Statistics::COLUMN_NUMBER,
+    error = provider->get_column_statistic(table_id, Statistic::COLUMN_NUMBER,
                                            std::to_string(ordinal_position),
                                            object);
   }
@@ -302,7 +302,7 @@ ErrorCode Statistics::get_by_column_name(
 
   // Get the column statistic through the provider.
   if (error == ErrorCode::OK) {
-    error = provider->get_column_statistic(table_id, Statistics::COLUMN_NAME,
+    error = provider->get_column_statistic(table_id, Statistic::COLUMN_NAME,
                                            column_name, object);
   }
 
@@ -401,7 +401,7 @@ ErrorCode Statistics::remove(const ObjectIdType object_id) const {
     ObjectIdType retval_object_id = 0;
     // Remove the column statistic through the provider.
     error = provider->remove_column_statistic(
-        Statistics::ID, std::to_string(object_id), retval_object_id);
+        Statistic::ID, std::to_string(object_id), retval_object_id);
   }
 
   // Log of API function finish.
@@ -436,7 +436,7 @@ ErrorCode Statistics::remove(std::string_view object_name,
   ObjectIdType retval_object_id = 0;
   if (error == ErrorCode::OK) {
     // Remove the table metadata through the provider.
-    error = provider->remove_column_statistic(Statistics::NAME, object_name,
+    error = provider->remove_column_statistic(Statistic::NAME, object_name,
                                               retval_object_id);
   }
 
@@ -514,7 +514,7 @@ ErrorCode Statistics::remove_by_column_id(const ObjectIdType column_id) const {
     ObjectIdType retval_object_id = 0;
     // Remove the column statistic through the provider.
     error = provider->remove_column_statistic(
-        Statistics::COLUMN_ID, std::to_string(column_id), retval_object_id);
+        Statistic::COLUMN_ID, std::to_string(column_id), retval_object_id);
   }
 
   // Log of API function finish.
@@ -555,7 +555,7 @@ ErrorCode Statistics::remove_by_column_number(
     ObjectIdType retval_object_id = 0;
     // Remove the column statistic through the provider.
     error = provider->remove_column_statistic(
-        table_id, Statistics::COLUMN_NUMBER, std::to_string(ordinal_position),
+        table_id, Statistic::COLUMN_NUMBER, std::to_string(ordinal_position),
         retval_object_id);
   }
 
@@ -598,7 +598,7 @@ ErrorCode Statistics::remove_by_column_name(
   if (error == ErrorCode::OK) {
     ObjectIdType retval_object_id = 0;
     // Remove the column statistic through the provider.
-    error = provider->remove_column_statistic(table_id, Statistics::COLUMN_NAME,
+    error = provider->remove_column_statistic(table_id, Statistic::COLUMN_NAME,
                                               column_name, retval_object_id);
   }
 
@@ -626,23 +626,23 @@ ErrorCode Statistics::param_check_statistics_add(
   // Check the specified parameters.
   // column_id
   boost::optional<ObjectIdType> column_id =
-      object.get_optional<ObjectIdType>(Statistics::COLUMN_ID);
+      object.get_optional<ObjectIdType>(Statistic::COLUMN_ID);
   bool specified_column_id = (column_id && (column_id.get() > 0));
 
   // table_id
   boost::optional<ObjectIdType> table_id =
-      object.get_optional<ObjectIdType>(Statistics::TABLE_ID);
+      object.get_optional<ObjectIdType>(Statistic::TABLE_ID);
   bool specified_table_id = (table_id && (table_id.get() > 0));
 
   // ordinal_position
   boost::optional<std::int64_t> ordinal_position =
-      object.get_optional<std::int64_t>(Statistics::COLUMN_NUMBER);
+      object.get_optional<std::int64_t>(Statistic::COLUMN_NUMBER);
   bool specified_ordinal_position =
       (ordinal_position && (ordinal_position.get() > 0));
 
   // column_name
   boost::optional<std::string> column_name =
-      object.get_optional<std::string>(Statistics::COLUMN_NAME);
+      object.get_optional<std::string>(Statistic::COLUMN_NAME);
   bool specified_column_name = (column_name && !(column_name.get().empty()));
 
   // Check for required parameters.
@@ -659,16 +659,16 @@ ErrorCode Statistics::param_check_statistics_add(
       error = ErrorCode::OK;
     } else {
       // ordinal_position and column_name is not specified.
-      LOG_ERROR << Message::PARAMETER_FAILED << Statistics::COLUMN_NUMBER
-                << " and " << Statistics::COLUMN_NAME
+      LOG_ERROR << Message::PARAMETER_FAILED << Statistic::COLUMN_NUMBER
+                << " and " << Statistic::COLUMN_NAME
                 << " => undefined or empty";
       error = ErrorCode::INSUFFICIENT_PARAMETERS;
     }
   } else {
     // column_id and table_id is not specified.
     LOG_ERROR << Message::PARAMETER_FAILED
-              << (boost::format(kLogFormat) % Statistics::COLUMN_ID %
-                  Statistics::TABLE_ID)
+              << (boost::format(kLogFormat) % Statistic::COLUMN_ID %
+                  Statistic::TABLE_ID)
                      .str();
     error = ErrorCode::INSUFFICIENT_PARAMETERS;
   }

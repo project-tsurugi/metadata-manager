@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 tsurugi project.
+ * Copyright 2020-2023 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,15 +54,15 @@ static void make_datatypes_tuple(std::string_view key,
 static std::vector<BasicTestParameter> make_datatypes_tuple() {
   std::vector<BasicTestParameter> v;
 
-  make_datatypes_tuple(DataTypes::ID, UtDataTypesMetadata().get_datatype_ids(),
+  make_datatypes_tuple(DataType::ID, UtDataTypesMetadata().get_datatype_ids(),
                        v);
-  make_datatypes_tuple(DataTypes::NAME,
+  make_datatypes_tuple(DataType::NAME,
                        UtDataTypesMetadata().get_datatype_names(), v);
-  make_datatypes_tuple(DataTypes::PG_DATA_TYPE,
+  make_datatypes_tuple(DataType::PG_DATA_TYPE,
                        UtDataTypesMetadata().get_pg_datatype_ids(), v);
-  make_datatypes_tuple(DataTypes::PG_DATA_TYPE_NAME,
+  make_datatypes_tuple(DataType::PG_DATA_TYPE_NAME,
                        UtDataTypesMetadata().get_pg_datatype_names(), v);
-  make_datatypes_tuple(DataTypes::PG_DATA_TYPE_QUALIFIED_NAME,
+  make_datatypes_tuple(DataType::PG_DATA_TYPE_QUALIFIED_NAME,
                        UtDataTypesMetadata().get_pg_datatype_qualified_names(),
                        v);
   return v;
@@ -102,10 +102,10 @@ INSTANTIATE_TEST_CASE_P(
                       std::make_tuple("", "invalid_value"),
                       std::make_tuple("invalid_key", ""),
                       std::make_tuple("invalid_key", "invalid_value"),
-                      std::make_tuple(DataTypes::ID, ""),
-                      std::make_tuple(DataTypes::ID, "invalid_value"),
-                      std::make_tuple(DataTypes::NAME, ""),
-                      std::make_tuple(DataTypes::NAME, "invalid_value")));
+                      std::make_tuple(DataType::ID, ""),
+                      std::make_tuple(DataType::ID, "invalid_value"),
+                      std::make_tuple(DataType::NAME, ""),
+                      std::make_tuple(DataType::NAME, "invalid_value")));
 
 /**
  * @brief Test to init datatype metadata.
@@ -260,7 +260,7 @@ TEST_P(ApiTestDataTypesException, get_non_existing_datatypes_by_key_value) {
 
   ptree datatype;
   ErrorCode error = datatypes->get(key, value, datatype);
-  if (key == DataTypes::ID) {
+  if (key == DataType::ID) {
 #ifdef STORAGE_POSTGRESQL
     if (value == "invalid_value") {
       EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);
@@ -270,7 +270,7 @@ TEST_P(ApiTestDataTypesException, get_non_existing_datatypes_by_key_value) {
 #else
     EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
 #endif
-  } else if (key == DataTypes::NAME) {
+  } else if (key == DataType::NAME) {
     EXPECT_EQ(ErrorCode::NAME_NOT_FOUND, error);
   } else if (!key.empty() && value.empty()) {
     EXPECT_EQ(ErrorCode::NOT_FOUND, error);

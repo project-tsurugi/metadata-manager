@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 tsurugi project.
+ * Copyright 2020-2023 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@
 
 #include <boost/property_tree/ptree.hpp>
 
-#include "manager/metadata/metadata.h"
+#include "manager/metadata/object.h"
 
 namespace manager::metadata::testing {
 

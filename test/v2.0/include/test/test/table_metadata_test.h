@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 tsurugi project.
+ * Copyright 2022-2023 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -155,7 +155,7 @@ class TableMetadataTest : public MetadataTest {
         manager::metadata::Column column;
         column.name               = "new-col";
         column.column_number      = 2;
-        column.data_type_id       = static_cast<int64_t>(DataTypes::DataTypesId::CHAR);
+        column.data_type_id       = static_cast<int64_t>(DataType::DataTypesId::CHAR);
         column.varying            = false;
         column.data_length        = {32};
         column.is_not_null        = false;

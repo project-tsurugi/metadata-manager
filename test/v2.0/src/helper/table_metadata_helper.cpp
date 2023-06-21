@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2022 tsurugi project.
+ * Copyright 2021-2023 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,10 +23,9 @@
 #include <boost/foreach.hpp>
 #include <boost/property_tree/json_parser.hpp>
 
-#include "manager/metadata/datatypes.h"
 #include "manager/metadata/helper/ptree_helper.h"
 #include "manager/metadata/metadata_factory.h"
-#include "manager/metadata/tables.h"
+#include "manager/metadata/table.h"
 #include "test/common/global_test_environment.h"
 #include "test/common/ut_utils.h"
 

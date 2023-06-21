@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 tsurugi project.
+ * Copyright 2021-2023 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,9 +34,9 @@ using manager::metadata::ErrorCode;
 using manager::metadata::FormatVersionType;
 using manager::metadata::GenerationType;
 using manager::metadata::ObjectIdType;
+using manager::metadata::Role;
 using manager::metadata::Roles;
 using manager::metadata::Table;
-using manager::metadata::Tables;
 using manager::metadata::db::PgConnectionPtr;
 
 static constexpr const char* const TEST_DB   = "test";
@@ -222,24 +222,24 @@ void check_roles_expected(const boost::property_tree::ptree& expected,
                           const boost::property_tree::ptree& actual) {
   // Check the value of the format_version.
   auto format_version_actual =
-      actual.get<FormatVersionType>(Roles::FORMAT_VERSION);
+      actual.get<FormatVersionType>(Role::FORMAT_VERSION);
   auto format_version_expect =
-      expected.get_optional<FormatVersionType>(Roles::FORMAT_VERSION);
+      expected.get_optional<FormatVersionType>(Role::FORMAT_VERSION);
   if (format_version_expect) {
     EXPECT_EQ(format_version_actual, format_version_expect.value());
   }
 
   // Check the value of the generation.
-  auto generation_actual = actual.get<GenerationType>(Roles::GENERATION);
+  auto generation_actual = actual.get<GenerationType>(Role::GENERATION);
   auto generation_expect =
-      expected.get_optional<GenerationType>(Roles::GENERATION);
+      expected.get_optional<GenerationType>(Role::GENERATION);
   if (generation_expect) {
     EXPECT_EQ(generation_actual, generation_expect.value());
   }
 
   // Check the value of the oid.
-  auto oid_actual = actual.get<ObjectIdType>(Roles::ROLE_OID);
-  auto oid_expect = expected.get_optional<ObjectIdType>(Roles::ROLE_OID);
+  auto oid_actual = actual.get<ObjectIdType>(Role::ROLE_OID);
+  auto oid_expect = expected.get_optional<ObjectIdType>(Role::ROLE_OID);
   if (oid_expect) {
     EXPECT_EQ(oid_actual, oid_expect.value());
   } else {
@@ -247,87 +247,87 @@ void check_roles_expected(const boost::property_tree::ptree& expected,
   }
 
   // Check the value of the rolname.
-  auto name_actual = actual.get<std::string>(Roles::ROLE_ROLNAME);
-  auto name_expect = expected.get_optional<std::string>(Roles::ROLE_ROLNAME);
+  auto name_actual = actual.get<std::string>(Role::ROLE_ROLNAME);
+  auto name_expect = expected.get_optional<std::string>(Role::ROLE_ROLNAME);
   if (name_expect) {
     EXPECT_EQ(name_actual, name_expect.value());
   }
 
   // Check the value of the rolsuper.
-  auto super_actual = actual.get<std::string>(Roles::ROLE_ROLSUPER);
-  auto super_expect = expected.get_optional<std::string>(Roles::ROLE_ROLSUPER);
+  auto super_actual = actual.get<std::string>(Role::ROLE_ROLSUPER);
+  auto super_expect = expected.get_optional<std::string>(Role::ROLE_ROLSUPER);
   if (super_expect) {
     EXPECT_EQ(super_actual, super_expect.value());
   }
 
   // Check the value of the rolinherit.
-  auto inherit_actual = actual.get<std::string>(Roles::ROLE_ROLINHERIT);
+  auto inherit_actual = actual.get<std::string>(Role::ROLE_ROLINHERIT);
   auto inherit_expect =
-      expected.get_optional<std::string>(Roles::ROLE_ROLINHERIT);
+      expected.get_optional<std::string>(Role::ROLE_ROLINHERIT);
   if (inherit_expect) {
     EXPECT_EQ(inherit_actual, inherit_expect.value());
   }
 
   // Check the value of the rolcreaterole.
-  auto createrole_actual = actual.get<std::string>(Roles::ROLE_ROLCREATEROLE);
+  auto createrole_actual = actual.get<std::string>(Role::ROLE_ROLCREATEROLE);
   auto createrole_expect =
-      expected.get_optional<std::string>(Roles::ROLE_ROLCREATEROLE);
+      expected.get_optional<std::string>(Role::ROLE_ROLCREATEROLE);
   if (createrole_expect) {
     EXPECT_EQ(createrole_actual, createrole_expect.value());
   }
 
   // Check the value of the rolcreatedb.
-  auto createdb_actual = actual.get<std::string>(Roles::ROLE_ROLCREATEDB);
+  auto createdb_actual = actual.get<std::string>(Role::ROLE_ROLCREATEDB);
   auto createdb_expect =
-      expected.get_optional<std::string>(Roles::ROLE_ROLCREATEDB);
+      expected.get_optional<std::string>(Role::ROLE_ROLCREATEDB);
   if (createdb_expect) {
     EXPECT_EQ(createdb_actual, createdb_expect.value());
   }
 
   // Check the value of the rolcanlogin.
-  auto canlogin_actual = actual.get<std::string>(Roles::ROLE_ROLCANLOGIN);
+  auto canlogin_actual = actual.get<std::string>(Role::ROLE_ROLCANLOGIN);
   auto canlogin_expect =
-      expected.get_optional<std::string>(Roles::ROLE_ROLCANLOGIN);
+      expected.get_optional<std::string>(Role::ROLE_ROLCANLOGIN);
   if (canlogin_expect) {
     EXPECT_EQ(canlogin_actual, canlogin_expect.value());
   }
 
   // Check the value of the rolreplication.
-  auto replication_actual = actual.get<std::string>(Roles::ROLE_ROLREPLICATION);
+  auto replication_actual = actual.get<std::string>(Role::ROLE_ROLREPLICATION);
   auto replication_expect =
-      expected.get_optional<std::string>(Roles::ROLE_ROLREPLICATION);
+      expected.get_optional<std::string>(Role::ROLE_ROLREPLICATION);
   if (replication_expect) {
     EXPECT_EQ(replication_actual, replication_expect.value());
   }
 
   // Check the value of the rolbypassrls.
-  auto bypassrls_actual = actual.get<std::string>(Roles::ROLE_ROLBYPASSRLS);
+  auto bypassrls_actual = actual.get<std::string>(Role::ROLE_ROLBYPASSRLS);
   auto bypassrls_expect =
-      expected.get_optional<std::string>(Roles::ROLE_ROLBYPASSRLS);
+      expected.get_optional<std::string>(Role::ROLE_ROLBYPASSRLS);
   if (bypassrls_expect) {
     EXPECT_EQ(bypassrls_actual, bypassrls_expect.value());
   }
 
   // Check the value of the rolconnlimit.
-  auto connlimit_actual = actual.get<std::int32_t>(Roles::ROLE_ROLCONNLIMIT);
+  auto connlimit_actual = actual.get<std::int32_t>(Role::ROLE_ROLCONNLIMIT);
   auto connlimit_expect =
-      expected.get_optional<std::int32_t>(Roles::ROLE_ROLCONNLIMIT);
+      expected.get_optional<std::int32_t>(Role::ROLE_ROLCONNLIMIT);
   if (connlimit_expect) {
     EXPECT_EQ(connlimit_actual, connlimit_expect.value());
   }
 
   // Check the value of the rolpassword.
-  auto password_actual = actual.get<std::string>(Roles::ROLE_ROLPASSWORD);
+  auto password_actual = actual.get<std::string>(Role::ROLE_ROLPASSWORD);
   auto password_expect =
-      expected.get_optional<std::string>(Roles::ROLE_ROLPASSWORD);
+      expected.get_optional<std::string>(Role::ROLE_ROLPASSWORD);
   if (password_expect) {
     EXPECT_EQ(password_actual, password_expect.value());
   }
 
   // Check the value of the rolvaliduntil.
-  auto validuntil_actual = actual.get<std::string>(Roles::ROLE_ROLVALIDUNTIL);
+  auto validuntil_actual = actual.get<std::string>(Role::ROLE_ROLVALIDUNTIL);
   auto validuntil_expect =
-      expected.get_optional<std::string>(Roles::ROLE_ROLVALIDUNTIL);
+      expected.get_optional<std::string>(Role::ROLE_ROLVALIDUNTIL);
   if (validuntil_expect) {
     EXPECT_EQ(validuntil_actual, validuntil_expect.value());
   }
@@ -354,19 +354,19 @@ void roles_test() {
 
   ptree role_metadata;
   ptree expect_metadata;
-  expect_metadata.put(Roles::FORMAT_VERSION, Roles::format_version());
-  expect_metadata.put(Roles::GENERATION, Roles::generation());
-  expect_metadata.put(Roles::ROLE_ROLNAME, ROLE_NAME);
-  expect_metadata.put(Roles::ROLE_ROLSUPER, "false");       // false
-  expect_metadata.put(Roles::ROLE_ROLINHERIT, "false");     // false
-  expect_metadata.put(Roles::ROLE_ROLCREATEROLE, "true");   // true
-  expect_metadata.put(Roles::ROLE_ROLCREATEDB, "true");     // true
-  expect_metadata.put(Roles::ROLE_ROLCANLOGIN, "false");    // false
-  expect_metadata.put(Roles::ROLE_ROLREPLICATION, "true");  // true
-  expect_metadata.put(Roles::ROLE_ROLBYPASSRLS, "false");   // false
-  expect_metadata.put(Roles::ROLE_ROLCONNLIMIT, "10");      // 10
-  expect_metadata.put(Roles::ROLE_ROLPASSWORD, "");         // empty
-  expect_metadata.put(Roles::ROLE_ROLVALIDUNTIL, "");       // empty
+  expect_metadata.put(Role::FORMAT_VERSION, Role::DEFAULT_FORMAT_VERSION);
+  expect_metadata.put(Role::GENERATION, Role::DEFAULT_GENERATION);
+  expect_metadata.put(Role::ROLE_ROLNAME, ROLE_NAME);
+  expect_metadata.put(Role::ROLE_ROLSUPER, "false");       // false
+  expect_metadata.put(Role::ROLE_ROLINHERIT, "false");     // false
+  expect_metadata.put(Role::ROLE_ROLCREATEROLE, "true");   // true
+  expect_metadata.put(Role::ROLE_ROLCREATEDB, "true");     // true
+  expect_metadata.put(Role::ROLE_ROLCANLOGIN, "false");    // false
+  expect_metadata.put(Role::ROLE_ROLREPLICATION, "true");  // true
+  expect_metadata.put(Role::ROLE_ROLBYPASSRLS, "false");   // false
+  expect_metadata.put(Role::ROLE_ROLCONNLIMIT, "10");      // 10
+  expect_metadata.put(Role::ROLE_ROLPASSWORD, "");         // empty
+  expect_metadata.put(Role::ROLE_ROLVALIDUNTIL, "");       // empty
 
   // test getting by role id.
   result = roles->get(role_id, role_metadata);
@@ -521,7 +521,7 @@ void confirm_permission_in_acls(std::string_view role_name,
 
   // TODO(future): Change when changing Metadata class.
   auto tables_tmp = manager::metadata::get_tables_ptr(TEST_DB);
-  auto tables = static_cast<Tables*>(tables_tmp.get());
+  auto tables = static_cast<manager::metadata::Tables*>(tables_tmp.get());
 
   result      = tables->init();
   if (result != ErrorCode::OK) {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2022 tsurugi project.
+ * Copyright 2021-2023 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@
 
 #include "manager/metadata/common/message.h"
 #include "manager/metadata/common/utility.h"
-#include "manager/metadata/datatypes.h"
+#include "manager/metadata/datatype.h"
 #include "manager/metadata/helper/logging_helper.h"
 
 // =============================================================================
@@ -453,14 +453,14 @@ ErrorCode TablesProvider::set_table_statistic(
   std::string key;
   std::string value;
   if (optional_id) {
-    key   = Tables::ID;
+    key   = Table::ID;
     value = std::to_string(optional_id.get());
   } else if (optional_name) {
-    key   = Tables::NAME;
+    key   = Table::NAME;
     value = optional_name.get();
   } else {
-    LOG_ERROR << Message::PARAMETER_FAILED << "\"" << Tables::ID << "\" or \""
-              << Tables::NAME << "\" is required.";
+    LOG_ERROR << Message::PARAMETER_FAILED << "\"" << Table::ID << "\" or \""
+              << Table::NAME << "\" is required.";
     error = ErrorCode::INVALID_PARAMETER;
     return error;
   }

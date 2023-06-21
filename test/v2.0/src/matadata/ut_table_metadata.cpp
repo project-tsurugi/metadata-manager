@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2022 tsurugi project.
+ * Copyright 2020-2023 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,9 @@
 
 #include <utility>
 
-#include "manager/metadata/datatypes.h"
+#include "manager/metadata/datatype.h"
 #include "manager/metadata/helper/ptree_helper.h"
+#include "manager/metadata/table.h"
 #include "manager/metadata/tables.h"
 
 namespace manager::metadata::testing {
@@ -96,7 +97,7 @@ void UtTableMetadata::check_metadata_expected(
     const manager::metadata::Table& actual, const char* file,
     const int64_t line) const {
   // format version
-  check_expected<int32_t>(Tables::format_version(), actual.format_version,
+  check_expected<int32_t>(Table::DEFAULT_FORMAT_VERSION, actual.format_version,
                           Table::FORMAT_VERSION, file, line);
   // generation
   check_expected(Tables::generation(), actual.generation, Table::GENERATION,
@@ -213,7 +214,7 @@ void UtTableMetadata::generate_test_metadata() {
     column.name          = "column_name_1_" + UTUtils::generate_narrow_uid();
     column.table_id      = INVALID_OBJECT_ID;
     column.column_number = 1;
-    column.data_type_id  = static_cast<int64_t>(DataTypes::DataTypesId::INT64);
+    column.data_type_id  = static_cast<int64_t>(DataType::DataTypesId::INT64);
     column.data_length   = {};
     column.varying       = false;
     column.is_not_null   = true;
@@ -224,7 +225,7 @@ void UtTableMetadata::generate_test_metadata() {
     column.name          = "column_name_2_" + UTUtils::generate_narrow_uid();
     column.table_id      = INVALID_OBJECT_ID;
     column.column_number = 2;
-    column.data_type_id = static_cast<int64_t>(DataTypes::DataTypesId::VARCHAR);
+    column.data_type_id = static_cast<int64_t>(DataType::DataTypesId::VARCHAR);
     column.data_length  = {64};
     column.varying      = true;
     column.is_not_null  = false;
@@ -235,7 +236,7 @@ void UtTableMetadata::generate_test_metadata() {
     column.name          = "column_name_3_" + UTUtils::generate_narrow_uid();
     column.table_id      = INVALID_OBJECT_ID;
     column.column_number = 3;
-    column.data_type_id  = static_cast<int64_t>(DataTypes::DataTypesId::CHAR);
+    column.data_type_id  = static_cast<int64_t>(DataType::DataTypesId::CHAR);
     column.data_length   = {5};
     column.varying       = false;
     column.is_not_null   = false;

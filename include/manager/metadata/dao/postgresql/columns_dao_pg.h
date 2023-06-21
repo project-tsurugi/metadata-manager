@@ -22,9 +22,9 @@
 
 #include <boost/property_tree/ptree.hpp>
 
+#include "manager/metadata/column.h"
 #include "manager/metadata/dao/postgresql/dao_pg.h"
 #include "manager/metadata/error_code.h"
-#include "manager/metadata/tables.h"
 
 namespace manager::metadata::db {
 

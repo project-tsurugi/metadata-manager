@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 tsurugi project.
+ * Copyright 2022-2023 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,13 +15,13 @@
  */
 #include "test/metadata/ut_datatypes_metadata.h"
 
-#include "manager/metadata/datatypes.h"
+#include "manager/metadata/datatype.h"
 #include "manager/metadata/helper/ptree_helper.h"
 #include "test/common/ut_utils.h"
 
 namespace {
 
-using manager::metadata::DataTypes;
+using manager::metadata::DataType;
 using manager::metadata::ObjectId;
 
 // tsurugi data type name
@@ -91,19 +91,19 @@ struct PgDataTypeQualifiedName {
 
 // a list of tsurugi data type id
 std::vector<std::string> DataTypesIdList = {
-    std::to_string(static_cast<ObjectId>(DataTypes::DataTypesId::INT32)),
-    std::to_string(static_cast<ObjectId>(DataTypes::DataTypesId::INT64)),
-    std::to_string(static_cast<ObjectId>(DataTypes::DataTypesId::FLOAT32)),
-    std::to_string(static_cast<ObjectId>(DataTypes::DataTypesId::FLOAT64)),
-    std::to_string(static_cast<ObjectId>(DataTypes::DataTypesId::CHAR)),
-    std::to_string(static_cast<ObjectId>(DataTypes::DataTypesId::VARCHAR)),
-    std::to_string(static_cast<ObjectId>(DataTypes::DataTypesId::NUMERIC)),
-    std::to_string(static_cast<ObjectId>(DataTypes::DataTypesId::DATE)),
-    std::to_string(static_cast<ObjectId>(DataTypes::DataTypesId::TIME)),
-    std::to_string(static_cast<ObjectId>(DataTypes::DataTypesId::TIMETZ)),
-    std::to_string(static_cast<ObjectId>(DataTypes::DataTypesId::TIMESTAMP)),
-    std::to_string(static_cast<ObjectId>(DataTypes::DataTypesId::TIMESTAMPTZ)),
-    std::to_string(static_cast<ObjectId>(DataTypes::DataTypesId::INTERVAL)),
+    std::to_string(static_cast<ObjectId>(DataType::DataTypesId::INT32)),
+    std::to_string(static_cast<ObjectId>(DataType::DataTypesId::INT64)),
+    std::to_string(static_cast<ObjectId>(DataType::DataTypesId::FLOAT32)),
+    std::to_string(static_cast<ObjectId>(DataType::DataTypesId::FLOAT64)),
+    std::to_string(static_cast<ObjectId>(DataType::DataTypesId::CHAR)),
+    std::to_string(static_cast<ObjectId>(DataType::DataTypesId::VARCHAR)),
+    std::to_string(static_cast<ObjectId>(DataType::DataTypesId::NUMERIC)),
+    std::to_string(static_cast<ObjectId>(DataType::DataTypesId::DATE)),
+    std::to_string(static_cast<ObjectId>(DataType::DataTypesId::TIME)),
+    std::to_string(static_cast<ObjectId>(DataType::DataTypesId::TIMETZ)),
+    std::to_string(static_cast<ObjectId>(DataType::DataTypesId::TIMESTAMP)),
+    std::to_string(static_cast<ObjectId>(DataType::DataTypesId::TIMESTAMPTZ)),
+    std::to_string(static_cast<ObjectId>(DataType::DataTypesId::INTERVAL)),
 };
 // a list of tsurugi data type name
 std::vector<std::string> DataTypesNameList = {
@@ -150,156 +150,156 @@ UtDataTypesMetadata::UtDataTypesMetadata() {
   // INT32
   {
     ptree values;
-    values.put(DataTypes::ID,
-               static_cast<int64_t>(DataTypes::DataTypesId::INT32));
-    values.put(DataTypes::NAME, DataTypesName::INT32);
-    values.put(DataTypes::PG_DATA_TYPE, PgDataType::INT32);
-    values.put(DataTypes::PG_DATA_TYPE_NAME, PgDataTypeName::INT32);
-    values.put(DataTypes::PG_DATA_TYPE_QUALIFIED_NAME,
+    values.put(DataType::ID,
+               static_cast<int64_t>(DataType::DataTypesId::INT32));
+    values.put(DataType::NAME, DataTypesName::INT32);
+    values.put(DataType::PG_DATA_TYPE, PgDataType::INT32);
+    values.put(DataType::PG_DATA_TYPE_NAME, PgDataTypeName::INT32);
+    values.put(DataType::PG_DATA_TYPE_QUALIFIED_NAME,
                PgDataTypeQualifiedName::INT32);
     metadata_ptree_.add_child(DataTypesName::INT32, values);
   }
   // INT64
   {
     ptree values;
-    values.put(DataTypes::ID,
-               static_cast<int64_t>(DataTypes::DataTypesId::INT64));
-    values.put(DataTypes::NAME, DataTypesName::INT64);
-    values.put(DataTypes::PG_DATA_TYPE, PgDataType::INT64);
-    values.put(DataTypes::PG_DATA_TYPE_NAME, PgDataTypeName::INT64);
-    values.put(DataTypes::PG_DATA_TYPE_QUALIFIED_NAME,
+    values.put(DataType::ID,
+               static_cast<int64_t>(DataType::DataTypesId::INT64));
+    values.put(DataType::NAME, DataTypesName::INT64);
+    values.put(DataType::PG_DATA_TYPE, PgDataType::INT64);
+    values.put(DataType::PG_DATA_TYPE_NAME, PgDataTypeName::INT64);
+    values.put(DataType::PG_DATA_TYPE_QUALIFIED_NAME,
                PgDataTypeQualifiedName::INT64);
     metadata_ptree_.add_child(DataTypesName::INT64, values);
   }
   // FLOAT32
   {
     ptree values;
-    values.put(DataTypes::ID,
-               static_cast<int64_t>(DataTypes::DataTypesId::FLOAT32));
-    values.put(DataTypes::NAME, DataTypesName::FLOAT32);
-    values.put(DataTypes::PG_DATA_TYPE, PgDataType::FLOAT32);
-    values.put(DataTypes::PG_DATA_TYPE_NAME, PgDataTypeName::FLOAT32);
-    values.put(DataTypes::PG_DATA_TYPE_QUALIFIED_NAME,
+    values.put(DataType::ID,
+               static_cast<int64_t>(DataType::DataTypesId::FLOAT32));
+    values.put(DataType::NAME, DataTypesName::FLOAT32);
+    values.put(DataType::PG_DATA_TYPE, PgDataType::FLOAT32);
+    values.put(DataType::PG_DATA_TYPE_NAME, PgDataTypeName::FLOAT32);
+    values.put(DataType::PG_DATA_TYPE_QUALIFIED_NAME,
                PgDataTypeQualifiedName::FLOAT32);
     metadata_ptree_.add_child(DataTypesName::FLOAT32, values);
   }
   // FLOAT64
   {
     ptree values;
-    values.put(DataTypes::ID,
-               static_cast<int64_t>(DataTypes::DataTypesId::FLOAT64));
-    values.put(DataTypes::NAME, DataTypesName::FLOAT64);
-    values.put(DataTypes::PG_DATA_TYPE, PgDataType::FLOAT64);
-    values.put(DataTypes::PG_DATA_TYPE_NAME, PgDataTypeName::FLOAT64);
-    values.put(DataTypes::PG_DATA_TYPE_QUALIFIED_NAME,
+    values.put(DataType::ID,
+               static_cast<int64_t>(DataType::DataTypesId::FLOAT64));
+    values.put(DataType::NAME, DataTypesName::FLOAT64);
+    values.put(DataType::PG_DATA_TYPE, PgDataType::FLOAT64);
+    values.put(DataType::PG_DATA_TYPE_NAME, PgDataTypeName::FLOAT64);
+    values.put(DataType::PG_DATA_TYPE_QUALIFIED_NAME,
                PgDataTypeQualifiedName::FLOAT64);
     metadata_ptree_.add_child(DataTypesName::FLOAT64, values);
   }
   // CHAR
   {
     ptree values;
-    values.put(DataTypes::ID,
-               static_cast<int64_t>(DataTypes::DataTypesId::CHAR));
-    values.put(DataTypes::NAME, DataTypesName::CHAR);
-    values.put(DataTypes::PG_DATA_TYPE, PgDataType::CHAR);
-    values.put(DataTypes::PG_DATA_TYPE_NAME, PgDataTypeName::CHAR);
-    values.put(DataTypes::PG_DATA_TYPE_QUALIFIED_NAME,
+    values.put(DataType::ID,
+               static_cast<int64_t>(DataType::DataTypesId::CHAR));
+    values.put(DataType::NAME, DataTypesName::CHAR);
+    values.put(DataType::PG_DATA_TYPE, PgDataType::CHAR);
+    values.put(DataType::PG_DATA_TYPE_NAME, PgDataTypeName::CHAR);
+    values.put(DataType::PG_DATA_TYPE_QUALIFIED_NAME,
                PgDataTypeQualifiedName::CHAR);
     metadata_ptree_.add_child(DataTypesName::CHAR, values);
   }
   // VARCHAR
   {
     ptree values;
-    values.put(DataTypes::ID,
-               static_cast<int64_t>(DataTypes::DataTypesId::VARCHAR));
-    values.put(DataTypes::NAME, DataTypesName::VARCHAR);
-    values.put(DataTypes::PG_DATA_TYPE, PgDataType::VARCHAR);
-    values.put(DataTypes::PG_DATA_TYPE_NAME, PgDataTypeName::VARCHAR);
-    values.put(DataTypes::PG_DATA_TYPE_QUALIFIED_NAME,
+    values.put(DataType::ID,
+               static_cast<int64_t>(DataType::DataTypesId::VARCHAR));
+    values.put(DataType::NAME, DataTypesName::VARCHAR);
+    values.put(DataType::PG_DATA_TYPE, PgDataType::VARCHAR);
+    values.put(DataType::PG_DATA_TYPE_NAME, PgDataTypeName::VARCHAR);
+    values.put(DataType::PG_DATA_TYPE_QUALIFIED_NAME,
                PgDataTypeQualifiedName::VARCHAR);
     metadata_ptree_.add_child(DataTypesName::VARCHAR, values);
   }
   // NUMERIC
   {
     ptree values;
-    values.put(DataTypes::ID,
-               static_cast<int64_t>(DataTypes::DataTypesId::NUMERIC));
-    values.put(DataTypes::NAME, DataTypesName::NUMERIC);
-    values.put(DataTypes::PG_DATA_TYPE, PgDataType::NUMERIC);
-    values.put(DataTypes::PG_DATA_TYPE_NAME, PgDataTypeName::NUMERIC);
-    values.put(DataTypes::PG_DATA_TYPE_QUALIFIED_NAME,
+    values.put(DataType::ID,
+               static_cast<int64_t>(DataType::DataTypesId::NUMERIC));
+    values.put(DataType::NAME, DataTypesName::NUMERIC);
+    values.put(DataType::PG_DATA_TYPE, PgDataType::NUMERIC);
+    values.put(DataType::PG_DATA_TYPE_NAME, PgDataTypeName::NUMERIC);
+    values.put(DataType::PG_DATA_TYPE_QUALIFIED_NAME,
                PgDataTypeQualifiedName::NUMERIC);
     metadata_ptree_.add_child(DataTypesName::NUMERIC, values);
   }
   // DATE
   {
     ptree values;
-    values.put(DataTypes::ID,
-               static_cast<int64_t>(DataTypes::DataTypesId::DATE));
-    values.put(DataTypes::NAME, DataTypesName::DATE);
-    values.put(DataTypes::PG_DATA_TYPE, PgDataType::DATE);
-    values.put(DataTypes::PG_DATA_TYPE_NAME, PgDataTypeName::DATE);
-    values.put(DataTypes::PG_DATA_TYPE_QUALIFIED_NAME,
+    values.put(DataType::ID,
+               static_cast<int64_t>(DataType::DataTypesId::DATE));
+    values.put(DataType::NAME, DataTypesName::DATE);
+    values.put(DataType::PG_DATA_TYPE, PgDataType::DATE);
+    values.put(DataType::PG_DATA_TYPE_NAME, PgDataTypeName::DATE);
+    values.put(DataType::PG_DATA_TYPE_QUALIFIED_NAME,
                PgDataTypeQualifiedName::DATE);
     metadata_ptree_.add_child(DataTypesName::DATE, values);
   }
   // TIME
   {
     ptree values;
-    values.put(DataTypes::ID,
-               static_cast<int64_t>(DataTypes::DataTypesId::TIME));
-    values.put(DataTypes::NAME, DataTypesName::TIME);
-    values.put(DataTypes::PG_DATA_TYPE, PgDataType::TIME);
-    values.put(DataTypes::PG_DATA_TYPE_NAME, PgDataTypeName::TIME);
-    values.put(DataTypes::PG_DATA_TYPE_QUALIFIED_NAME,
+    values.put(DataType::ID,
+               static_cast<int64_t>(DataType::DataTypesId::TIME));
+    values.put(DataType::NAME, DataTypesName::TIME);
+    values.put(DataType::PG_DATA_TYPE, PgDataType::TIME);
+    values.put(DataType::PG_DATA_TYPE_NAME, PgDataTypeName::TIME);
+    values.put(DataType::PG_DATA_TYPE_QUALIFIED_NAME,
                PgDataTypeQualifiedName::TIME);
     metadata_ptree_.add_child(DataTypesName::TIME, values);
   }
   // TIMETZ
   {
     ptree values;
-    values.put(DataTypes::ID,
-               static_cast<int64_t>(DataTypes::DataTypesId::TIMETZ));
-    values.put(DataTypes::NAME, DataTypesName::TIMETZ);
-    values.put(DataTypes::PG_DATA_TYPE, PgDataType::TIMETZ);
-    values.put(DataTypes::PG_DATA_TYPE_NAME, PgDataTypeName::TIMETZ);
-    values.put(DataTypes::PG_DATA_TYPE_QUALIFIED_NAME,
+    values.put(DataType::ID,
+               static_cast<int64_t>(DataType::DataTypesId::TIMETZ));
+    values.put(DataType::NAME, DataTypesName::TIMETZ);
+    values.put(DataType::PG_DATA_TYPE, PgDataType::TIMETZ);
+    values.put(DataType::PG_DATA_TYPE_NAME, PgDataTypeName::TIMETZ);
+    values.put(DataType::PG_DATA_TYPE_QUALIFIED_NAME,
                PgDataTypeQualifiedName::TIMETZ);
     metadata_ptree_.add_child(DataTypesName::TIMETZ, values);
   }
   // TIMESTAMP
   {
     ptree values;
-    values.put(DataTypes::ID,
-               static_cast<int64_t>(DataTypes::DataTypesId::TIMESTAMP));
-    values.put(DataTypes::NAME, DataTypesName::TIMESTAMP);
-    values.put(DataTypes::PG_DATA_TYPE, PgDataType::TIMESTAMP);
-    values.put(DataTypes::PG_DATA_TYPE_NAME, PgDataTypeName::TIMESTAMP);
-    values.put(DataTypes::PG_DATA_TYPE_QUALIFIED_NAME,
+    values.put(DataType::ID,
+               static_cast<int64_t>(DataType::DataTypesId::TIMESTAMP));
+    values.put(DataType::NAME, DataTypesName::TIMESTAMP);
+    values.put(DataType::PG_DATA_TYPE, PgDataType::TIMESTAMP);
+    values.put(DataType::PG_DATA_TYPE_NAME, PgDataTypeName::TIMESTAMP);
+    values.put(DataType::PG_DATA_TYPE_QUALIFIED_NAME,
                PgDataTypeQualifiedName::TIMESTAMP);
     metadata_ptree_.add_child(DataTypesName::TIMESTAMP, values);
   }
   // TIMESTAMPTZ
   {
     ptree values;
-    values.put(DataTypes::ID,
-               static_cast<int64_t>(DataTypes::DataTypesId::TIMESTAMPTZ));
-    values.put(DataTypes::NAME, DataTypesName::TIMESTAMPTZ);
-    values.put(DataTypes::PG_DATA_TYPE, PgDataType::TIMESTAMPTZ);
-    values.put(DataTypes::PG_DATA_TYPE_NAME, PgDataTypeName::TIMESTAMPTZ);
-    values.put(DataTypes::PG_DATA_TYPE_QUALIFIED_NAME,
+    values.put(DataType::ID,
+               static_cast<int64_t>(DataType::DataTypesId::TIMESTAMPTZ));
+    values.put(DataType::NAME, DataTypesName::TIMESTAMPTZ);
+    values.put(DataType::PG_DATA_TYPE, PgDataType::TIMESTAMPTZ);
+    values.put(DataType::PG_DATA_TYPE_NAME, PgDataTypeName::TIMESTAMPTZ);
+    values.put(DataType::PG_DATA_TYPE_QUALIFIED_NAME,
                PgDataTypeQualifiedName::TIMESTAMPTZ);
     metadata_ptree_.add_child(DataTypesName::TIMESTAMPTZ, values);
   }
   // INTERVAL
   {
     ptree values;
-    values.put(DataTypes::ID,
-               static_cast<int64_t>(DataTypes::DataTypesId::INTERVAL));
-    values.put(DataTypes::NAME, DataTypesName::INTERVAL);
-    values.put(DataTypes::PG_DATA_TYPE, PgDataType::INTERVAL);
-    values.put(DataTypes::PG_DATA_TYPE_NAME, PgDataTypeName::INTERVAL);
-    values.put(DataTypes::PG_DATA_TYPE_QUALIFIED_NAME,
+    values.put(DataType::ID,
+               static_cast<int64_t>(DataType::DataTypesId::INTERVAL));
+    values.put(DataType::NAME, DataTypesName::INTERVAL);
+    values.put(DataType::PG_DATA_TYPE, PgDataType::INTERVAL);
+    values.put(DataType::PG_DATA_TYPE_NAME, PgDataTypeName::INTERVAL);
+    values.put(DataType::PG_DATA_TYPE_QUALIFIED_NAME,
                PgDataTypeQualifiedName::INTERVAL);
     metadata_ptree_.add_child(DataTypesName::INTERVAL, values);
   }
@@ -356,7 +356,7 @@ std::vector<std::string> UtDataTypesMetadata::get_pg_datatype_qualified_names()
 void UtDataTypesMetadata::check_metadata_expected(
     const boost::property_tree::ptree& actual, const char* file,
     const int64_t line) const {
-  auto datatype_name = actual.get_optional<std::string>(DataTypes::NAME);
+  auto datatype_name = actual.get_optional<std::string>(DataType::NAME);
   auto expected_datatype =
       metadata_ptree_.get_child_optional(datatype_name.value_or(""));
   if (!expected_datatype) {
@@ -379,22 +379,22 @@ void UtDataTypesMetadata::check_metadata_expected(
     const boost::property_tree::ptree& actual, const char* file,
     const int64_t line) const {
   // tsurugi data type id
-  check_expected<ObjectId>(expected, actual, DataTypes::ID, file, line);
+  check_expected<ObjectId>(expected, actual, DataType::ID, file, line);
 
   // tsurugi data type name
-  check_expected<std::string>(expected, actual, DataTypes::NAME, file, line);
+  check_expected<std::string>(expected, actual, DataType::NAME, file, line);
 
   // PostgreSQL data type oid
-  check_expected<ObjectId>(expected, actual, DataTypes::PG_DATA_TYPE, file,
+  check_expected<ObjectId>(expected, actual, DataType::PG_DATA_TYPE, file,
                            line);
 
   // PostgreSQL data type name
-  check_expected<std::string>(expected, actual, DataTypes::PG_DATA_TYPE_NAME,
+  check_expected<std::string>(expected, actual, DataType::PG_DATA_TYPE_NAME,
                               file, line);
 
   // PostgreSQL data type qualified name
   check_expected<std::string>(
-      expected, actual, DataTypes::PG_DATA_TYPE_QUALIFIED_NAME, file, line);
+      expected, actual, DataType::PG_DATA_TYPE_QUALIFIED_NAME, file, line);
 }
 
 }  // namespace manager::metadata::testing

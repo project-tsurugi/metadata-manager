@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 tsurugi project.
+ * Copyright 2020-2023 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@ using boost::property_tree::ptree;
 using boost::property_tree::ptree_error;
 
 using manager::metadata::Column;
-using manager::metadata::DataTypes;
+using manager::metadata::DataType;
 using manager::metadata::ErrorCode;
 using manager::metadata::ObjectIdType;
 using manager::metadata::Table;
@@ -404,13 +404,13 @@ ErrorCode add_table_metadata() {
   auto tables = manager::metadata::get_tables_ptr(TEST_DB);  // use Template-Method.
   // TODO(future): Change when changing Metadata class.
   auto datatypes_tmp = manager::metadata::get_datatypes_ptr(TEST_DB);
-  auto datatypes = static_cast<DataTypes*>(datatypes_tmp.get());
+  auto datatypes = static_cast<manager::metadata::DataTypes*>(datatypes_tmp.get());
 
   //
   // table-metadata
   //
-  new_table_metadata.put(Table::FORMAT_VERSION, Tables::format_version());
-  new_table_metadata.put(Table::GENERATION, Tables::generation());
+  new_table_metadata.put(Table::FORMAT_VERSION, Table::DEFAULT_FORMAT_VERSION);
+  new_table_metadata.put(Table::GENERATION, Table::DEFAULT_GENERATION);
   new_table_metadata.put(Table::NAME, get_table_name());
   new_table_metadata.put(Table::NAMESPACE, "public");
   new_table_metadata.put(Table::NUMBER_OF_TUPLES, "123");
@@ -435,15 +435,15 @@ ErrorCode add_table_metadata() {
     column.put(Column::NAME, column_name[0]);
     column.put(Column::COLUMN_NUMBER,
                static_cast<int>(ordinal_position::column_1));
-    datatypes->get(DataTypes::PG_DATA_TYPE_QUALIFIED_NAME, "float4",
+    datatypes->get(DataType::PG_DATA_TYPE_QUALIFIED_NAME, "float4",
                    datatype_metadata);
     ObjectIdType data_type_id =
-        datatype_metadata.get<ObjectIdType>(DataTypes::ID);
+        datatype_metadata.get<ObjectIdType>(DataType::ID);
     if (!data_type_id) {
       return ErrorCode::NOT_FOUND;
     } else {
-      if (DataTypes::DataTypesId::FLOAT32 !=
-          static_cast<DataTypes::DataTypesId>(data_type_id)) {
+      if (DataType::DataTypesId::FLOAT32 !=
+          static_cast<DataType::DataTypesId>(data_type_id)) {
         return ErrorCode::UNKNOWN;
       }
     }
@@ -457,12 +457,12 @@ ErrorCode add_table_metadata() {
     column.put(Column::COLUMN_NUMBER,
                static_cast<int>(ordinal_position::column_2));
     datatypes->get("VARCHAR", datatype_metadata);
-    data_type_id = datatype_metadata.get<ObjectIdType>(DataTypes::ID);
+    data_type_id = datatype_metadata.get<ObjectIdType>(DataType::ID);
     if (!data_type_id) {
       return ErrorCode::NOT_FOUND;
     } else {
-      if (DataTypes::DataTypesId::VARCHAR !=
-          static_cast<DataTypes::DataTypesId>(data_type_id)) {
+      if (DataType::DataTypesId::VARCHAR !=
+          static_cast<DataType::DataTypesId>(data_type_id)) {
         return ErrorCode::UNKNOWN;
       }
     }
@@ -478,12 +478,12 @@ ErrorCode add_table_metadata() {
     column.put(Column::COLUMN_NUMBER,
                static_cast<int>(ordinal_position::column_3));
     datatypes->get("CHAR", datatype_metadata);
-    data_type_id = datatype_metadata.get<ObjectIdType>(DataTypes::ID);
+    data_type_id = datatype_metadata.get<ObjectIdType>(DataType::ID);
     if (!data_type_id) {
       return ErrorCode::NOT_FOUND;
     } else {
-      if (DataTypes::DataTypesId::CHAR !=
-          static_cast<DataTypes::DataTypesId>(data_type_id)) {
+      if (DataType::DataTypesId::CHAR !=
+          static_cast<DataType::DataTypesId>(data_type_id)) {
         return ErrorCode::UNKNOWN;
       }
     }
@@ -635,7 +635,7 @@ ErrorCode test_tables_update() {
       column.put(Column::COLUMN_NUMBER, 1);
       datatypes->get("INT64", datatype);
       column.put(Column::DATA_TYPE_ID,
-                 datatype.get<ObjectIdType>(DataTypes::ID));
+                 datatype.get<ObjectIdType>(DataType::ID));
       column.erase(Column::DATA_LENGTH);
       column.put<bool>(Column::VARYING, false);
       column.put<bool>(Column::IS_NOT_NULL, true);
@@ -651,7 +651,7 @@ ErrorCode test_tables_update() {
       column.put(Column::COLUMN_NUMBER, 2);
       datatypes->get("VARCHAR", datatype);
       column.put(Column::DATA_TYPE_ID,
-                 datatype.get<ObjectIdType>(DataTypes::ID));
+                 datatype.get<ObjectIdType>(DataType::ID));
       column.put(Column::DATA_LENGTH, 123);
       column.put<bool>(Column::VARYING, true);
       column.put<bool>(Column::IS_NOT_NULL, false);
@@ -664,7 +664,7 @@ ErrorCode test_tables_update() {
       column.put(Column::COLUMN_NUMBER, 3);
       datatypes->get("INT32", datatype);
       column.put(Column::DATA_TYPE_ID,
-                 datatype.get<ObjectIdType>(DataTypes::ID));
+                 datatype.get<ObjectIdType>(DataType::ID));
       column.put<bool>(Column::VARYING, false);
       column.put<bool>(Column::IS_NOT_NULL, false);
       column.put(Column::DEFAULT_EXPR, 9999);
@@ -821,7 +821,7 @@ ErrorCode datatypes_test() {
       }
 
       std::string data_type_name =
-          datatype_id.get<std::string>(DataTypes::NAME);
+          datatype_id.get<std::string>(DataType::NAME);
       if (data_type_name != datatype.second) {
         std::cout << "DataTypes Name error. [" << datatype.first
                   << "] expected:[" << datatype.second << "], actual:["
@@ -830,7 +830,7 @@ ErrorCode datatypes_test() {
       }
 
       ObjectIdType data_type_id =
-          datatype_name.get<ObjectIdType>(DataTypes::ID);
+          datatype_name.get<ObjectIdType>(DataType::ID);
       if (data_type_id != datatype.first) {
         std::cout << "DataTypes ID error. [" << datatype.second
                   << "] expected:[" << datatype.first << "], actual:["
@@ -839,8 +839,8 @@ ErrorCode datatypes_test() {
       }
 
       uint16_t format_version =
-          datatype_name.get<uint16_t>(DataTypes::FORMAT_VERSION);
-      uint32_t generation = datatype_name.get<uint32_t>(DataTypes::GENERATION);
+          datatype_name.get<uint16_t>(DataType::FORMAT_VERSION);
+      uint32_t generation = datatype_name.get<uint32_t>(DataType::GENERATION);
 
       std::cout << "DataTypes -> FORMAT_VERSION:[" << format_version
                 << "] / GENERATION:[" << generation << "] / ID:["

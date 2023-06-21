@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 tsurugi project.
+ * Copyright 2020-2023 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,38 +23,40 @@
 
 #include "manager/metadata/error_code.h"
 #include "manager/metadata/metadata.h"
+#include "manager/metadata/statistic.h"
 
 namespace manager::metadata {
 
 class Statistics : public Metadata {
  public:
-  // statistics object.
-  // FORMAT_VERSION is defined in base class.
-  // GENERATION is defined in base class.
-  // ID is defined in base class.
-  // NAME is defined in base class.
-
   /**
    * @brief Field name constant indicating the table id of the metadata.
+   * @deprecated Deprecated in the future. Please use Statistic::TABLE_ID.
    */
-  static constexpr const char* const TABLE_ID = "tableId";
+  static constexpr const char* const TABLE_ID = Statistic::TABLE_ID;
   /**
    * @brief Field name constant indicating the column number of the metadata.
+   * @deprecated Deprecated in the future. Please use Statistic::COLUMN_NUMBER.
    */
-  static constexpr const char* const COLUMN_NUMBER = "columnNumber";
+  static constexpr const char* const COLUMN_NUMBER = Statistic::COLUMN_NUMBER;
   /**
    * @brief Field name constant indicating the columns id of the metadata.
+   * @deprecated Deprecated in the future. Please use Statistic::COLUMN_ID.
    */
-  static constexpr const char* const COLUMN_ID = "columnId";
+  static constexpr const char* const COLUMN_ID = Statistic::COLUMN_ID;
   /**
    * @brief Field name constant indicating the columns name of the metadata.
+   * @deprecated Deprecated in the future. Please use Statistic::COLUMN_NAME.
    */
-  static constexpr const char* const COLUMN_NAME = "columnName";
+  static constexpr const char* const COLUMN_NAME = Statistic::COLUMN_NAME;
   /**
    * @brief Field name constant indicating the columns statistic of the
    *   metadata.
+   * @deprecated Deprecated in the future. Please use
+   *   Statistic::COLUMN_STATISTIC.
    */
-  static constexpr const char* const COLUMN_STATISTIC = "columnStatistic";
+  static constexpr const char* const COLUMN_STATISTIC =
+      Statistic::COLUMN_STATISTIC;
 
   explicit Statistics(std::string_view database)
       : Statistics(database, kDefaultComponent) {}
@@ -81,6 +83,7 @@ class Statistics : public Metadata {
   ErrorCode get_by_column_name(const ObjectIdType table_id,
                                std::string_view column_name,
                                boost::property_tree::ptree& object) const;
+
   ErrorCode get_all(
       std::vector<boost::property_tree::ptree>& container) const override;
   ErrorCode get_all(const ObjectIdType table_id,

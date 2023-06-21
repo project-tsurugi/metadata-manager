@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2022 tsurugi project.
+ * Copyright 2020-2023 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ namespace {
 
 using boost::property_tree::ptree;
 using manager::metadata::Column;
-using manager::metadata::DataTypes;
+using manager::metadata::DataType;
 using manager::metadata::Constraint;
 using manager::metadata::ErrorCode;
 using manager::metadata::FormatVersionType;
@@ -299,11 +299,11 @@ void check_expected(const ptree& expected, const ptree& actual,
  */
 void check_table_metadata_expected(const ptree& expected, const ptree& actual) {
   // format version
-  EXPECT_EQ(Tables::format_version(),
+  EXPECT_EQ(Table::DEFAULT_FORMAT_VERSION,
             actual.get<FormatVersionType>(Table::FORMAT_VERSION));
 
   // generation
-  EXPECT_EQ(Tables::generation(),
+  EXPECT_EQ(Table::DEFAULT_GENERATION,
             actual.get<GenerationType>(Table::GENERATION));
 
   // table name
@@ -486,7 +486,7 @@ ErrorCode tables_test() {
   column.put(Column::NAME, "col-1");
   column.put(Column::COLUMN_NUMBER, 1);
   column.put(Column::DATA_TYPE_ID,
-      static_cast<int64_t>(DataTypes::DataTypesId::INT64));
+      static_cast<int64_t>(DataType::DataTypesId::INT64));
   column.put(Column::IS_NOT_NULL, "true");
   column.put(Column::VARYING, "false");
   column.put(Column::IS_FUNCEXPR, "false");
@@ -497,7 +497,7 @@ ErrorCode tables_test() {
   column.put(Column::COLUMN_NUMBER, 2);
   column.put(Column::IS_NOT_NULL, "false");
   column.put(Column::DATA_TYPE_ID,
-      static_cast<int64_t>(DataTypes::DataTypesId::VARCHAR));
+      static_cast<int64_t>(DataType::DataTypesId::VARCHAR));
   column.put(Column::VARYING, "true");
   {
     ptree elements;
@@ -609,7 +609,7 @@ ErrorCode tables_test() {
           "-update");
   update_column.put(Column::COLUMN_NUMBER, 1);
   update_column.put(Column::DATA_TYPE_ID,
-      static_cast<int64_t>(DataTypes::DataTypesId::INT64));
+      static_cast<int64_t>(DataType::DataTypesId::INT64));
   update_column.erase(Column::DATA_LENGTH);
   update_column.put<bool>(Column::VARYING, false);
   update_column.put<bool>(Column::IS_NOT_NULL, true);
@@ -622,7 +622,7 @@ ErrorCode tables_test() {
   update_column.put(Column::NAME, "new-col-3");
   update_column.put(Column::COLUMN_NUMBER, 2);
   update_column.put(Column::DATA_TYPE_ID,
-      static_cast<int64_t>(DataTypes::DataTypesId::VARCHAR));
+      static_cast<int64_t>(DataType::DataTypesId::VARCHAR));
   update_column.put<bool>(Column::VARYING, false);
   update_column.put<bool>(Column::IS_NOT_NULL, true);
   {

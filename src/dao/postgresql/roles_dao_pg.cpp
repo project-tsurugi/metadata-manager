@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 tsurugi project.
+ * Copyright 2021-2023 tsurugi project.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -74,14 +74,14 @@ void RolesDaoPg::create_prepared_statements() {
       this->get_source_name(),
       this->get_select_statement(PgCatalog::PgAuth::ColumnName::kOid),
       PgCatalog::PgAuth::ColumnName::kOid};
-  select_statements_.emplace(Roles::ROLE_OID, select_statement_oid);
+  select_statements_.emplace(Role::ROLE_OID, select_statement_oid);
 
   // SELECT statements with name specified.
   SelectStatement select_statement_name{
       this->get_source_name(),
       this->get_select_statement(PgCatalog::PgAuth::ColumnName::kName),
       PgCatalog::PgAuth::ColumnName::kName};
-  select_statements_.emplace(Roles::ROLE_ROLNAME, select_statement_name);
+  select_statements_.emplace(Role::ROLE_ROLNAME, select_statement_name);
 }
 
 std::string RolesDaoPg::get_select_statement(std::string_view key) const {
@@ -113,67 +113,67 @@ boost::property_tree::ptree RolesDaoPg::convert_pgresult_to_ptree(
   boost::property_tree::ptree object;
 
   // Set the value of the format_version to ptree.
-  object.put(Roles::FORMAT_VERSION, Roles::format_version());
+  object.put(Role::FORMAT_VERSION, Object::DEFAULT_FORMAT_VERSION);
 
   // Set the value of the generation to ptree.
-  object.put(Roles::GENERATION, Roles::generation());
+  object.put(Role::GENERATION, Object::DEFAULT_GENERATION);
 
   // Set the value of the oid column to ptree.
-  object.put(Roles::ROLE_OID,
+  object.put(Role::ROLE_OID,
              get_result_value(pg_result, row_number, OrdinalPosition::kOid));
 
   // Set the value of the rolname column to ptree.
-  object.put(Roles::ROLE_ROLNAME,
+  object.put(Role::ROLE_ROLNAME,
              get_result_value(pg_result, row_number, OrdinalPosition::kName));
 
   // Set the value of the rolsuper column to ptree.
   object.put(
-      Roles::ROLE_ROLSUPER,
+      Role::ROLE_ROLSUPER,
       get_result_value<bool>(pg_result, row_number, OrdinalPosition::kSuper));
 
   // Set the value of the rolinherit column to ptree.
   object.put(
-      Roles::ROLE_ROLINHERIT,
+      Role::ROLE_ROLINHERIT,
       get_result_value<bool>(pg_result, row_number, OrdinalPosition::kInherit));
 
   // Set the value of the rolcreaterole column to ptree.
-  object.put(Roles::ROLE_ROLCREATEROLE,
+  object.put(Role::ROLE_ROLCREATEROLE,
              get_result_value<bool>(pg_result, row_number,
                                     OrdinalPosition::kCreateRole));
 
   // Set the value of the rolcreatedb column to ptree.
-  object.put(Roles::ROLE_ROLCREATEDB,
+  object.put(Role::ROLE_ROLCREATEDB,
              get_result_value<bool>(pg_result, row_number,
                                     OrdinalPosition::kCreateDb));
 
   // Set the value of the rolcanlogin column to ptree.
-  object.put(Roles::ROLE_ROLCANLOGIN,
+  object.put(Role::ROLE_ROLCANLOGIN,
              get_result_value<bool>(pg_result, row_number,
                                     OrdinalPosition::kCanLogin));
 
   // Set the value of the rolreplication column to ptree.
-  object.put(Roles::ROLE_ROLREPLICATION,
+  object.put(Role::ROLE_ROLREPLICATION,
              get_result_value<bool>(pg_result, row_number,
                                     OrdinalPosition::kReplication));
 
   // Set the value of the rolbypassrls column to ptree.
-  object.put(Roles::ROLE_ROLBYPASSRLS,
+  object.put(Role::ROLE_ROLBYPASSRLS,
              get_result_value<bool>(pg_result, row_number,
                                     OrdinalPosition::kBypassRls));
 
   // Set the value of the rolconnlimit column to ptree.
   object.put(
-      Roles::ROLE_ROLCONNLIMIT,
+      Role::ROLE_ROLCONNLIMIT,
       get_result_value(pg_result, row_number, OrdinalPosition::kConnLimit));
 
   // Set the value of the rolpassword column to ptree.
   object.put(
-      Roles::ROLE_ROLPASSWORD,
+      Role::ROLE_ROLPASSWORD,
       get_result_value(pg_result, row_number, OrdinalPosition::kPassword));
 
   // Set the value of the rolvaliduntil column to ptree.
   object.put(
-      Roles::ROLE_ROLVALIDUNTIL,
+      Role::ROLE_ROLVALIDUNTIL,
       get_result_value(pg_result, row_number, OrdinalPosition::kValidUntil));
 
   return object;
