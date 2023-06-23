@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 tsurugi project.
+ * Copyright 2022-2023 tsurugi project.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,13 +35,13 @@ class IndexDaoPg : public DaoPg {
   /**
    * @brief index metadata table name.
    */
-  static constexpr const char* const kTableName = "tsurugi_index";
+  static constexpr const char* const kTableName = "indexes";
 
   /**
    * @brief Column name of the index metadata table in the metadata repository.
    */
   struct ColumnName {
-    // tsurugi_index table schema.
+    // indexes table schema.
     static constexpr const char* const kFormatVersion = "format_version";
     static constexpr const char* const kGeneration    = "generation";
     static constexpr const char* const kId            = "id";
