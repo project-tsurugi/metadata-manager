@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 tsurugi project.
+ * Copyright 2020-2023 tsurugi project.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,7 +36,7 @@ class TablesDaoPg : public DaoPg {
   /**
    * @brief table metadata table name.
    */
-  static constexpr const char* const kTableName = "tsurugi_class";
+  static constexpr const char* const kTableName = "tables";
 
   /**
    * @brief Column name of the table metadata table in the metadata repository.

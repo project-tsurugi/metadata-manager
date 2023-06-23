@@ -1,3 +1,3 @@
 \c tsurugi
 
-DROP SCHEMA IF EXISTS tsurugi_catalog CASCADE;
+DROP SCHEMA IF EXISTS tg_catalog CASCADE;

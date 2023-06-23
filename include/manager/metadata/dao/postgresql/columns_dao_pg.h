@@ -36,7 +36,7 @@ class ColumnsDaoPg : public DaoPg {
   /**
    * @brief column metadata table name.
    */
-  static constexpr const char* const kTableName = "tsurugi_attribute";
+  static constexpr const char* const kTableName = "columns";
 
   /**
    * @brief Column name of the column metadata table in the metadata repository.

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2022 tsurugi project.
+ * Copyright 2020-2023 tsurugi project.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,7 +37,7 @@ using PgConnectionPtr = std::shared_ptr<PGconn>;
 using ResultPtr = std::unique_ptr<PGresult, std::function<void(PGresult*)>>;
 
 static constexpr const char* const kSchemaPublic         = "public";
-static constexpr const char* const kSchemaTsurugiCatalog = "tsurugi_catalog";
+static constexpr const char* const kSchemaTsurugiCatalog = "tg_catalog";
 static constexpr const char* const kEmptyStringJson      = "{}";
 
 class PgErrorCode {
