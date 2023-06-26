@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 tsurugi project.
+ * Copyright 2022-2023 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +17,7 @@
 
 #include <gtest/gtest.h>
 
-#include "manager/metadata/metadata.h"
 #include "test/common/global_test_environment.h"
-#include "test/common/ut_utils.h"
 #include "test/helper/api_test_helper.h"
 #include "test/helper/table_metadata_helper.h"
 

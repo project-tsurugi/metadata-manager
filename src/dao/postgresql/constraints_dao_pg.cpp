@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 tsurugi project.
+ * Copyright 2022-2023 tsurugi project.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,11 +43,11 @@ ErrorCode ConstraintsDaoPg::insert(const boost::property_tree::ptree& object,
   }
 
   // format_version
-  std::string s_format_version = std::to_string(Constraints::format_version());
+  std::string s_format_version = std::to_string(Object::DEFAULT_FORMAT_VERSION);
   params.emplace_back(s_format_version.c_str());
 
   // generation
-  std::string s_generation = std::to_string(Constraints::generation());
+  std::string s_generation = std::to_string(Object::DEFAULT_GENERATION);
   params.emplace_back(s_generation.c_str());
 
   // Use an ID-specified INSERT statement.
