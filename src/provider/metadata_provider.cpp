@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 tsurugi project.
+ * Copyright 2022-2023 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,10 +17,9 @@
 
 #include <boost/foreach.hpp>
 
+#include "manager/metadata/common/constants.h"
 #include "manager/metadata/datatypes.h"
-#include "manager/metadata/metadata.h"
 #include "manager/metadata/index.h"
-#include "manager/metadata/indexes.h"
 #include "manager/metadata/dao/dao.h"
 #include "manager/metadata/dao/db_session_manager.h"
 

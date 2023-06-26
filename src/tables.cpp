@@ -51,7 +51,8 @@ using helper::TableMetadataHelper;
  * @return ptree object.
  */
 boost::property_tree::ptree Column::convert_to_ptree() const {
-  auto pt = this->base_convert_to_ptree();
+  auto pt = Object::convert_to_ptree();
+
   pt.put(TABLE_ID,      this->table_id);
   pt.put(COLUMN_NUMBER, this->column_number);
   pt.put(DATA_TYPE_ID,  this->data_type_id);
@@ -71,7 +72,8 @@ boost::property_tree::ptree Column::convert_to_ptree() const {
  * @return  structure object of metadata.
  */
 void Column::convert_from_ptree(const boost::property_tree::ptree& pt) {
-  this->base_convert_from_ptree(pt);
+  Object::convert_from_ptree(pt);
+
   auto opt_table_id = pt.get_optional<ObjectId>(TABLE_ID);
   this->table_id    = opt_table_id.get_value_or(INVALID_OBJECT_ID);
 
@@ -103,7 +105,7 @@ void Column::convert_from_ptree(const boost::property_tree::ptree& pt) {
  * @return ptree object.
  */
 boost::property_tree::ptree Table::convert_to_ptree() const {
-  ptree pt = this->base_convert_to_ptree();
+  ptree pt = ClassObject::convert_to_ptree();
   pt.put<int64_t>(Table::NUMBER_OF_TUPLES, this->number_of_tuples);
 
   // columns metadata
@@ -131,7 +133,7 @@ boost::property_tree::ptree Table::convert_to_ptree() const {
  * @return  structure object of metadata.
  */
 void Table::convert_from_ptree(const boost::property_tree::ptree& pt) {
-  this->base_convert_from_ptree(pt);
+  ClassObject::convert_from_ptree(pt);
 
   auto number_of_tuples  = pt.get_optional<int64_t>(Table::NUMBER_OF_TUPLES);
   this->number_of_tuples = number_of_tuples.get_value_or(INVALID_VALUE);

@@ -24,6 +24,7 @@
 
 #include "manager/metadata/error_code.h"
 #include "manager/metadata/metadata.h"
+#include "manager/metadata/object.h"
 
 namespace manager::metadata {
 
@@ -112,7 +113,7 @@ class DataTypes : public Metadata {
       : DataTypes(database, kDefaultComponent) {}
   DataTypes(std::string_view database, std::string_view component);
 
-  DataTypes(const DataTypes&) = delete;
+  DataTypes(const DataTypes&)            = delete;
   DataTypes& operator=(const DataTypes&) = delete;
 
   ErrorCode init() const override;
@@ -138,7 +139,8 @@ class DataTypes : public Metadata {
   }
 
   ErrorCode update([[maybe_unused]] const ObjectIdType object_id,
-                   [[maybe_unused]] const boost::property_tree::ptree& object) const override {
+                   [[maybe_unused]] const boost::property_tree::ptree& object)
+      const override {
     return ErrorCode::UNKNOWN;
   }
 
@@ -150,7 +152,6 @@ class DataTypes : public Metadata {
                    [[maybe_unused]] ObjectIdType* object_id) const override {
     return ErrorCode::UNKNOWN;
   }
-
 };  // class DataTypes
 
 }  // namespace manager::metadata

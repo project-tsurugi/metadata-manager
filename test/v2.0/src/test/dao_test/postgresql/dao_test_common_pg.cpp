@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 tsurugi project.
+ * Copyright 2020-2023 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,21 +15,14 @@
  */
 #include <gtest/gtest.h>
 
-#include <cmath>
-#include <iostream>
-#include <limits>
-#include <tuple>
-#include <vector>
+#include <boost/property_tree/ptree.hpp>
 
 #include "manager/metadata/common/config.h"
+#include "manager/metadata/common/constants.h"
 #include "manager/metadata/dao/postgresql/dbc_utils_pg.h"
 #include "manager/metadata/dao/postgresql/pg_common.h"
 #include "manager/metadata/error_code.h"
 #include "test/common/ut_utils.h"
-
-// extern "C" {
-// #include <libpq-fe.h>
-// }
 
 namespace manager::metadata::testing {
 

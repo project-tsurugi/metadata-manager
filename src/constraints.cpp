@@ -43,7 +43,7 @@ using boost::property_tree::ptree;
  * @return ptree object.
  */
 boost::property_tree::ptree Constraint::convert_to_ptree() const {
-  ptree metadata = this->base_convert_to_ptree();
+  ptree metadata = Object::convert_to_ptree();
 
   // ID.
   if (this->id <= 0) {
@@ -103,7 +103,7 @@ boost::property_tree::ptree Constraint::convert_to_ptree() const {
  * @return structure object of metadata.
  */
 void Constraint::convert_from_ptree(const boost::property_tree::ptree& ptree) {
-  this->base_convert_from_ptree(ptree);
+  Object::convert_from_ptree(ptree);
 
   // table ID.
   this->table_id =

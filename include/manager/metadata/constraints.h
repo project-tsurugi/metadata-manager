@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 tsurugi project.
+ * Copyright 2022-2023 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,10 +18,11 @@
 
 #include <string>
 #include <vector>
-#include <memory>
+
 #include <boost/property_tree/ptree.hpp>
 
 #include "manager/metadata/metadata.h"
+#include "manager/metadata/object.h"
 
 namespace manager::metadata {
 
@@ -185,7 +186,7 @@ class Constraints : public Metadata {
  private:
   manager::metadata::ErrorCode param_check_metadata_add(
       const boost::property_tree::ptree& object) const;
-};
+};  // class Constraints
 
 }  // namespace manager::metadata
 
