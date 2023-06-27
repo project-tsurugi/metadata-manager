@@ -72,7 +72,17 @@ struct Index : public ClassObject {
         is_unique(false),
         is_primary(false) {}
 
+  /**
+   * @brief Transform constraint metadata from structure object to ptree object.
+   * @return ptree object.
+   */
   boost::property_tree::ptree convert_to_ptree() const override;
+
+  /**
+   * @brief Transform metadata from ptree object to structure object.
+   * @param pt  [in]  ptree object of metadata.
+   * @return structure object of metadata.
+   */
   void convert_from_ptree(const boost::property_tree::ptree& pt) override;
 };
 

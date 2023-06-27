@@ -23,7 +23,7 @@
 
 #include "manager/metadata/dao/postgresql/dao_pg.h"
 #include "manager/metadata/error_code.h"
-#include "manager/metadata/indexes.h"
+#include "manager/metadata/index.h"
 
 namespace manager::metadata::db {
 
