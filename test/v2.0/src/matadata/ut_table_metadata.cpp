@@ -19,6 +19,7 @@
 
 #include "manager/metadata/datatypes.h"
 #include "manager/metadata/helper/ptree_helper.h"
+#include "manager/metadata/table.h"
 #include "manager/metadata/tables.h"
 
 namespace manager::metadata::testing {

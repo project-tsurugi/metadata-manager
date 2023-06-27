@@ -409,8 +409,8 @@ ErrorCode add_table_metadata() {
   //
   // table-metadata
   //
-  new_table_metadata.put(Table::FORMAT_VERSION, Tables::format_version());
-  new_table_metadata.put(Table::GENERATION, Tables::generation());
+  new_table_metadata.put(Table::FORMAT_VERSION, Table::DEFAULT_FORMAT_VERSION);
+  new_table_metadata.put(Table::GENERATION, Table::DEFAULT_GENERATION);
   new_table_metadata.put(Table::NAME, get_table_name());
   new_table_metadata.put(Table::NAMESPACE, "public");
   new_table_metadata.put(Table::NUMBER_OF_TUPLES, "123");

@@ -25,7 +25,6 @@
 #include "manager/metadata/constraint.h"
 #include "manager/metadata/dao/json/dao_json.h"
 #include "manager/metadata/error_code.h"
-#include "manager/metadata/tables.h"
 
 namespace manager::metadata::db {
 

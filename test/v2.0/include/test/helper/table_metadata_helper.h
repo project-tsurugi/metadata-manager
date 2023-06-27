@@ -24,7 +24,6 @@
 
 #include <boost/property_tree/ptree.hpp>
 
-#include "manager/metadata/tables.h"
 #include "test/helper/metadata_helper.h"
 #include "test/metadata/ut_table_metadata.h"
 

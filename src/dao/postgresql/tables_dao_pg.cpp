@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 tsurugi project.
+ * Copyright 2020-2023 tsurugi project.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,11 +36,11 @@ ErrorCode TablesDaoPg::insert(const boost::property_tree::ptree& object,
 
   std::vector<const char*> params;
   // format_version
-  std::string s_format_version = std::to_string(Tables::format_version());
+  std::string s_format_version = std::to_string(Object::DEFAULT_FORMAT_VERSION);
   params.emplace_back(s_format_version.c_str());
 
   // generation
-  std::string s_generation = std::to_string(Tables::generation());
+  std::string s_generation = std::to_string(Object::DEFAULT_GENERATION);
   params.emplace_back(s_generation.c_str());
 
   // name

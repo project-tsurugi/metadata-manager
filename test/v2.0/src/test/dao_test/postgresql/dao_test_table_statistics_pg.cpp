@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 tsurugi project.
+ * Copyright 2020-2023 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,18 +16,16 @@
 #include <gtest/gtest.h>
 
 #include <cmath>
-#include <limits>
-#include <memory>
-#include <string>
-#include <tuple>
+
+#include <boost/property_tree/ptree.hpp>
 
 #include "manager/metadata/dao/postgresql/db_session_manager_pg.h"
 #include "manager/metadata/dao/postgresql/tables_dao_pg.h"
 #include "manager/metadata/error_code.h"
 #include "test/common/global_test_environment.h"
 #include "test/common/ut_utils.h"
-#include "test/helper/postgresql/table_statistics_helper_pg.h"
 #include "test/helper/table_metadata_helper.h"
+#include "test/helper/postgresql/table_statistics_helper_pg.h"
 
 namespace manager::metadata::testing {
 
@@ -105,7 +103,7 @@ TEST_P(DaoTestTableStatisticsByTableIdException,
   object.put(Table::NUMBER_OF_TUPLES, reltuples);
 
   // Run the API under test.
-  error = tables_dao->update(Tables::ID, {std::to_string(table_id_not_exists)},
+  error = tables_dao->update(Table::ID, {std::to_string(table_id_not_exists)},
                              object);
   EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
 
@@ -143,7 +141,7 @@ TEST_P(DaoTestTableStatisticsByTableNameException,
   object.put(Table::NUMBER_OF_TUPLES, reltuples);
 
   // Run the API under test.
-  error = tables_dao->update(Tables::NAME, {table_name_not_exists}, object);
+  error = tables_dao->update(Table::NAME, {table_name_not_exists}, object);
   EXPECT_EQ(ErrorCode::NAME_NOT_FOUND, error);
 
   // Run the API under test.
@@ -172,7 +170,7 @@ TEST_P(DaoTestTableStatisticsByTableIdException,
   auto table_id_not_exists = GetParam();
   ptree table_stats;
   // Run the API under test.
-  error = tables_dao->select(Tables::ID, {std::to_string(table_id_not_exists)},
+  error = tables_dao->select(Table::ID, {std::to_string(table_id_not_exists)},
                              table_stats);
   EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
 
@@ -201,7 +199,7 @@ TEST_P(DaoTestTableStatisticsByTableNameException,
   ptree table_stats;
   // Run the API under test.
   error =
-      tables_dao->select(Tables::NAME, {table_name_not_exists}, table_stats);
+      tables_dao->select(Table::NAME, {table_name_not_exists}, table_stats);
   EXPECT_EQ(ErrorCode::NAME_NOT_FOUND, error);
 }
 
@@ -237,7 +235,7 @@ TEST_P(DaoTestTableStatisticsByTableIdHappy,
 
   // Get table metadata.
   ptree table_object;
-  error = tables_dao->select(Tables::ID, {std::to_string(ret_table_id)},
+  error = tables_dao->select(Table::ID, {std::to_string(ret_table_id)},
                              table_object);
 
   // The number of rows is NULL in the table metadata table.
@@ -249,7 +247,7 @@ TEST_P(DaoTestTableStatisticsByTableIdHappy,
   table_object.put(Table::NUMBER_OF_TUPLES, reltuples_to_add);
 
   // Run the API under test.
-  error = tables_dao->update(Tables::ID, {std::to_string(ret_table_id)},
+  error = tables_dao->update(Table::ID, {std::to_string(ret_table_id)},
                              table_object);
   EXPECT_EQ(ErrorCode::OK, error);
 
@@ -259,7 +257,7 @@ TEST_P(DaoTestTableStatisticsByTableIdHappy,
 
   ptree table_stats_added;
   // Run the API under test.
-  error = tables_dao->select(Tables::ID, {std::to_string(ret_table_id)},
+  error = tables_dao->select(Table::ID, {std::to_string(ret_table_id)},
                              table_stats_added);
   EXPECT_EQ(ErrorCode::OK, error);
 
@@ -293,7 +291,7 @@ TEST_P(DaoTestTableStatisticsByTableIdHappy,
   table_object.put(Table::NUMBER_OF_TUPLES, tuples_to_update);
 
   // Run the API under test.
-  error = tables_dao->update(Tables::ID, {std::to_string(ret_table_id)},
+  error = tables_dao->update(Table::ID, {std::to_string(ret_table_id)},
                              table_object);
   EXPECT_EQ(ErrorCode::OK, error);
 
@@ -303,7 +301,7 @@ TEST_P(DaoTestTableStatisticsByTableIdHappy,
 
   ptree table_stats_updated;
   // Run the API under test.
-  error = tables_dao->select(Tables::ID, {std::to_string(ret_table_id)},
+  error = tables_dao->select(Table::ID, {std::to_string(ret_table_id)},
                              table_stats_updated);
   EXPECT_EQ(ErrorCode::OK, error);
 
@@ -365,7 +363,7 @@ TEST_P(DaoTestTableStatisticsByTableNameHappy,
 
   // Get table metadata.
   ptree table_object;
-  error = tables_dao->select(Tables::ID, {std::to_string(ret_table_id)},
+  error = tables_dao->select(Table::ID, {std::to_string(ret_table_id)},
                              table_object);
 
   // The number of rows is NULL in the table metadata table.
@@ -377,7 +375,7 @@ TEST_P(DaoTestTableStatisticsByTableNameHappy,
   table_object.put(Table::NUMBER_OF_TUPLES, reltuples_to_add);
 
   // Run the API under test.
-  error = tables_dao->update(Tables::NAME, {table_name}, table_object);
+  error = tables_dao->update(Table::NAME, {table_name}, table_object);
   EXPECT_EQ(ErrorCode::OK, error);
 
   // Run the API under test.
@@ -386,7 +384,7 @@ TEST_P(DaoTestTableStatisticsByTableNameHappy,
 
   ptree table_stats_added;
   // Run the API under test.
-  error = tables_dao->select(Tables::NAME, {table_name}, table_stats_added);
+  error = tables_dao->select(Table::NAME, {table_name}, table_stats_added);
   EXPECT_EQ(ErrorCode::OK, error);
 
   auto add_metadata_id =
@@ -429,7 +427,7 @@ TEST_P(DaoTestTableStatisticsByTableNameHappy,
 
   ptree table_stats_updated;
   // Run the API under test.
-  error = tables_dao->select(Tables::NAME, {table_name}, table_stats_updated);
+  error = tables_dao->select(Table::NAME, {table_name}, table_stats_updated);
   EXPECT_EQ(ErrorCode::OK, error);
 
   auto upd_metadata_id =

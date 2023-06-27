@@ -35,7 +35,6 @@ using manager::metadata::FormatVersionType;
 using manager::metadata::GenerationType;
 using manager::metadata::ObjectIdType;
 using manager::metadata::Table;
-using manager::metadata::Tables;
 
 static constexpr const char* const TEST_DB   = "test";
 static constexpr const char* const ROLE_NAME = "tsurugi_ut_role_user_1";
@@ -299,11 +298,11 @@ void check_expected(const ptree& expected, const ptree& actual,
  */
 void check_table_metadata_expected(const ptree& expected, const ptree& actual) {
   // format version
-  EXPECT_EQ(Tables::format_version(),
+  EXPECT_EQ(Table::DEFAULT_FORMAT_VERSION,
             actual.get<FormatVersionType>(Table::FORMAT_VERSION));
 
   // generation
-  EXPECT_EQ(Tables::generation(),
+  EXPECT_EQ(Table::DEFAULT_GENERATION,
             actual.get<GenerationType>(Table::GENERATION));
 
   // table name

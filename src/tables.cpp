@@ -44,122 +44,6 @@ namespace manager::metadata {
 using boost::property_tree::ptree;
 using helper::TableMetadataHelper;
 
-// ==========================================================================
-// Column struct methods.
-/**
- * @brief  Transform column metadata from structure object to ptree object.
- * @return ptree object.
- */
-boost::property_tree::ptree Column::convert_to_ptree() const {
-  auto pt = Object::convert_to_ptree();
-
-  pt.put(TABLE_ID,      this->table_id);
-  pt.put(COLUMN_NUMBER, this->column_number);
-  pt.put(DATA_TYPE_ID,  this->data_type_id);
-  pt.put(VARYING,       this->varying);
-  pt.put(IS_NOT_NULL,   this->is_not_null);
-  pt.put(DEFAULT_EXPR,  this->default_expression);
-  pt.put(IS_FUNCEXPR,   this->is_funcexpr);
-  pt.push_back(std::make_pair(
-      DATA_LENGTH, ptree_helper::make_array_ptree(this->data_length)));
-
-  return pt;
-}
-
-/**
- * @brief   Transform column metadata from ptree object to structure object.
- * @param   pt [in] ptree object of metadata.
- * @return  structure object of metadata.
- */
-void Column::convert_from_ptree(const boost::property_tree::ptree& pt) {
-  Object::convert_from_ptree(pt);
-
-  auto opt_table_id = pt.get_optional<ObjectId>(TABLE_ID);
-  this->table_id    = opt_table_id.get_value_or(INVALID_OBJECT_ID);
-
-  auto opt_column_number = pt.get_optional<int64_t>(COLUMN_NUMBER);
-  this->column_number    = opt_column_number.get_value_or(INVALID_VALUE);
-
-  auto opt_data_type_id = pt.get_optional<ObjectId>(DATA_TYPE_ID);
-  this->data_type_id    = opt_data_type_id.get_value_or(INVALID_OBJECT_ID);
-
-  this->data_length = ptree_helper::make_vector_int(pt, DATA_LENGTH);
-
-  auto opt_varying = pt.get_optional<bool>(VARYING);
-  this->varying    = opt_varying.get_value_or(false);
-
-  auto opt_is_not_null = pt.get_optional<bool>(IS_NOT_NULL);
-  this->is_not_null    = opt_is_not_null.get_value_or(false);
-
-  auto opt_default_expression = pt.get_optional<std::string>(DEFAULT_EXPR);
-  this->default_expression    = opt_default_expression.get_value_or("");
-
-  auto opt_is_funcexpr = pt.get_optional<bool>(IS_FUNCEXPR);
-  this->is_funcexpr    = opt_is_funcexpr.get_value_or(false);
-}
-
-// ==========================================================================
-// Table struct methods.
-/**
- * @brief  Transform table metadata from structure object to ptree object.
- * @return ptree object.
- */
-boost::property_tree::ptree Table::convert_to_ptree() const {
-  ptree pt = ClassObject::convert_to_ptree();
-  pt.put<int64_t>(Table::NUMBER_OF_TUPLES, this->number_of_tuples);
-
-  // columns metadata
-  ptree ptree_columns;
-  for (const auto& column : columns) {
-    ptree child = column.convert_to_ptree();
-    ptree_columns.push_back(std::make_pair("", child));
-  }
-  pt.add_child(Table::COLUMNS_NODE, ptree_columns);
-
-  // constraints metadata
-  ptree ptree_constraints;
-  for (const auto& constraint : this->constraints) {
-    ptree child = constraint.convert_to_ptree();
-    ptree_constraints.push_back(std::make_pair("", child));
-  }
-  pt.add_child(Table::CONSTRAINTS_NODE, ptree_constraints);
-
-  return pt;
-}
-
-/**
- * @brief   Transform table metadata from ptree object to structure object.
- * @param   ptree [in] ptree object of metadata.
- * @return  structure object of metadata.
- */
-void Table::convert_from_ptree(const boost::property_tree::ptree& pt) {
-  ClassObject::convert_from_ptree(pt);
-
-  auto number_of_tuples  = pt.get_optional<int64_t>(Table::NUMBER_OF_TUPLES);
-  this->number_of_tuples = number_of_tuples.get_value_or(INVALID_VALUE);
-
-  // columns metadata
-  this->columns.clear();
-  BOOST_FOREACH (const auto& node, pt.get_child(Table::COLUMNS_NODE)) {
-    const ptree& ptree_column = node.second;
-    Column column;
-    column.convert_from_ptree(ptree_column);
-    this->columns.emplace_back(column);
-  }
-
-  // constraints metadata
-  this->constraints.clear();
-  BOOST_FOREACH (const auto& node, pt.get_child(Table::CONSTRAINTS_NODE)) {
-    const ptree& ptree_constraint = node.second;
-
-    Constraint constraint;
-    constraint.convert_from_ptree(ptree_constraint);
-    this->constraints.emplace_back(constraint);
-  }
-}
-
-// ==========================================================================
-// Tables class methods.
 /**
  * @brief Constructor
  * @param database   [in]  database name.
@@ -783,7 +667,8 @@ ErrorCode Tables::param_check_metadata_add(
     boost::optional<std::int64_t> column_number =
         column.get_optional<std::int64_t>(metadata::Column::COLUMN_NUMBER);
     if (!column_number || (column_number.get() <= 0)) {
-      std::string column_name = "Column." + std::string(metadata::Column::COLUMN_NUMBER);
+      std::string column_name =
+          "Column." + std::string(metadata::Column::COLUMN_NUMBER);
       LOG_ERROR << Message::PARAMETER_FAILED
                 << (boost::format(kLogFormat) % column_name).str();
 
@@ -825,9 +710,11 @@ ErrorCode Tables::param_check_metadata_add(
     }
 
     // nullable
-    auto nullable = column.get_optional<std::string>(metadata::Column::IS_NOT_NULL);
+    auto nullable =
+        column.get_optional<std::string>(metadata::Column::IS_NOT_NULL);
     if (!nullable || (nullable.get().empty())) {
-      std::string column_name = "Column." + std::string(metadata::Column::IS_NOT_NULL);
+      std::string column_name =
+          "Column." + std::string(metadata::Column::IS_NOT_NULL);
       LOG_ERROR << Message::PARAMETER_FAILED
                 << (boost::format(kLogFormat) % column_name).str();
 

@@ -22,7 +22,6 @@
 #include "manager/metadata/datatypes.h"
 #include "manager/metadata/roles.h"
 #include "manager/metadata/statistics.h"
-#include "manager/metadata/tables.h"
 #include "test/common/global_test_environment.h"
 #include "test/common/ut_utils.h"
 #include "test/helper/api_test_helper.h"
