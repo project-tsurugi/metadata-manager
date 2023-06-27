@@ -18,7 +18,7 @@
 #include <boost/foreach.hpp>
 
 #include "manager/metadata/common/constants.h"
-#include "manager/metadata/datatypes.h"
+#include "manager/metadata/datatype.h"
 #include "manager/metadata/index.h"
 #include "manager/metadata/dao/dao.h"
 #include "manager/metadata/dao/db_session_manager.h"

@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2022 tsurugi project.
+ * Copyright 2021-2023 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,158 +34,158 @@ ErrorCode DataTypesDaoJson::prepare() {
     ptree datatype;
 
     // INT32 :
-    datatype.put(DataTypes::FORMAT_VERSION, DataTypes::format_version());
-    datatype.put(DataTypes::GENERATION, DataTypes::generation());
-    datatype.put(DataTypes::ID,
-                 static_cast<ObjectId>(DataTypes::DataTypesId::INT32));
-    datatype.put(DataTypes::NAME, "INT32");
-    datatype.put(DataTypes::PG_DATA_TYPE, PgType::TypeOid::kInt4);
-    datatype.put(DataTypes::PG_DATA_TYPE_NAME, "integer");
-    datatype.put(DataTypes::PG_DATA_TYPE_QUALIFIED_NAME,
+    datatype.put(DataType::FORMAT_VERSION, Object::DEFAULT_FORMAT_VERSION);
+    datatype.put(DataType::GENERATION, Object::DEFAULT_GENERATION);
+    datatype.put(DataType::ID,
+                 static_cast<ObjectId>(DataType::DataTypesId::INT32));
+    datatype.put(DataType::NAME, "INT32");
+    datatype.put(DataType::PG_DATA_TYPE, PgType::TypeOid::kInt4);
+    datatype.put(DataType::PG_DATA_TYPE_NAME, "integer");
+    datatype.put(DataType::PG_DATA_TYPE_QUALIFIED_NAME,
                  PgType::TypeName::kInt4);
     datatypes.push_back(std::make_pair("", datatype));
 
     // INT64 :
-    datatype.put(DataTypes::FORMAT_VERSION, DataTypes::format_version());
-    datatype.put(DataTypes::GENERATION, DataTypes::generation());
-    datatype.put(DataTypes::ID,
-                 static_cast<ObjectId>(DataTypes::DataTypesId::INT64));
-    datatype.put(DataTypes::NAME, "INT64");
-    datatype.put(DataTypes::PG_DATA_TYPE, PgType::TypeOid::kInt8);
-    datatype.put(DataTypes::PG_DATA_TYPE_NAME, "bigint");
-    datatype.put(DataTypes::PG_DATA_TYPE_QUALIFIED_NAME,
+    datatype.put(DataType::FORMAT_VERSION, Object::DEFAULT_FORMAT_VERSION);
+    datatype.put(DataType::GENERATION, Object::DEFAULT_GENERATION);
+    datatype.put(DataType::ID,
+                 static_cast<ObjectId>(DataType::DataTypesId::INT64));
+    datatype.put(DataType::NAME, "INT64");
+    datatype.put(DataType::PG_DATA_TYPE, PgType::TypeOid::kInt8);
+    datatype.put(DataType::PG_DATA_TYPE_NAME, "bigint");
+    datatype.put(DataType::PG_DATA_TYPE_QUALIFIED_NAME,
                  PgType::TypeName::kInt8);
     datatypes.push_back(std::make_pair("", datatype));
 
     // FLOAT32 :
-    datatype.put(DataTypes::FORMAT_VERSION, DataTypes::format_version());
-    datatype.put(DataTypes::GENERATION, DataTypes::generation());
-    datatype.put(DataTypes::ID,
-                 static_cast<ObjectId>(DataTypes::DataTypesId::FLOAT32));
-    datatype.put(DataTypes::NAME, "FLOAT32");
-    datatype.put(DataTypes::PG_DATA_TYPE, PgType::TypeOid::kFloat4);
-    datatype.put(DataTypes::PG_DATA_TYPE_NAME, "real");
-    datatype.put(DataTypes::PG_DATA_TYPE_QUALIFIED_NAME,
+    datatype.put(DataType::FORMAT_VERSION, Object::DEFAULT_FORMAT_VERSION);
+    datatype.put(DataType::GENERATION, Object::DEFAULT_GENERATION);
+    datatype.put(DataType::ID,
+                 static_cast<ObjectId>(DataType::DataTypesId::FLOAT32));
+    datatype.put(DataType::NAME, "FLOAT32");
+    datatype.put(DataType::PG_DATA_TYPE, PgType::TypeOid::kFloat4);
+    datatype.put(DataType::PG_DATA_TYPE_NAME, "real");
+    datatype.put(DataType::PG_DATA_TYPE_QUALIFIED_NAME,
                  PgType::TypeName::kFloat4);
     datatypes.push_back(std::make_pair("", datatype));
 
     // FLOAT64 :
-    datatype.put(DataTypes::FORMAT_VERSION, DataTypes::format_version());
-    datatype.put(DataTypes::GENERATION, DataTypes::generation());
-    datatype.put(DataTypes::ID,
-                 static_cast<ObjectId>(DataTypes::DataTypesId::FLOAT64));
-    datatype.put(DataTypes::NAME, "FLOAT64");
-    datatype.put(DataTypes::PG_DATA_TYPE, PgType::TypeOid::kFloat8);
-    datatype.put(DataTypes::PG_DATA_TYPE_NAME, "double precision");
-    datatype.put(DataTypes::PG_DATA_TYPE_QUALIFIED_NAME,
+    datatype.put(DataType::FORMAT_VERSION, Object::DEFAULT_FORMAT_VERSION);
+    datatype.put(DataType::GENERATION, Object::DEFAULT_GENERATION);
+    datatype.put(DataType::ID,
+                 static_cast<ObjectId>(DataType::DataTypesId::FLOAT64));
+    datatype.put(DataType::NAME, "FLOAT64");
+    datatype.put(DataType::PG_DATA_TYPE, PgType::TypeOid::kFloat8);
+    datatype.put(DataType::PG_DATA_TYPE_NAME, "double precision");
+    datatype.put(DataType::PG_DATA_TYPE_QUALIFIED_NAME,
                  PgType::TypeName::kFloat8);
     datatypes.push_back(std::make_pair("", datatype));
 
     // CHAR : character, char
-    datatype.put(DataTypes::FORMAT_VERSION, DataTypes::format_version());
-    datatype.put(DataTypes::GENERATION, DataTypes::generation());
-    datatype.put(DataTypes::ID,
-                 static_cast<ObjectId>(DataTypes::DataTypesId::CHAR));
-    datatype.put(DataTypes::NAME, "CHAR");
-    datatype.put(DataTypes::PG_DATA_TYPE, PgType::TypeOid::kBpchar);
-    datatype.put(DataTypes::PG_DATA_TYPE_NAME, "char");
-    datatype.put(DataTypes::PG_DATA_TYPE_QUALIFIED_NAME,
+    datatype.put(DataType::FORMAT_VERSION, Object::DEFAULT_FORMAT_VERSION);
+    datatype.put(DataType::GENERATION, Object::DEFAULT_GENERATION);
+    datatype.put(DataType::ID,
+                 static_cast<ObjectId>(DataType::DataTypesId::CHAR));
+    datatype.put(DataType::NAME, "CHAR");
+    datatype.put(DataType::PG_DATA_TYPE, PgType::TypeOid::kBpchar);
+    datatype.put(DataType::PG_DATA_TYPE_NAME, "char");
+    datatype.put(DataType::PG_DATA_TYPE_QUALIFIED_NAME,
                  PgType::TypeName::kBpchar);
     datatypes.push_back(std::make_pair("", datatype));
 
     // VARCHAR : character varying, varchar
-    datatype.put(DataTypes::FORMAT_VERSION, DataTypes::format_version());
-    datatype.put(DataTypes::GENERATION, DataTypes::generation());
-    datatype.put(DataTypes::ID,
-                 static_cast<ObjectId>(DataTypes::DataTypesId::VARCHAR));
-    datatype.put(DataTypes::NAME, "VARCHAR");
-    datatype.put(DataTypes::PG_DATA_TYPE, PgType::TypeOid::kVarchar);
-    datatype.put(DataTypes::PG_DATA_TYPE_NAME, "varchar");
-    datatype.put(DataTypes::PG_DATA_TYPE_QUALIFIED_NAME,
+    datatype.put(DataType::FORMAT_VERSION, Object::DEFAULT_FORMAT_VERSION);
+    datatype.put(DataType::GENERATION, Object::DEFAULT_GENERATION);
+    datatype.put(DataType::ID,
+                 static_cast<ObjectId>(DataType::DataTypesId::VARCHAR));
+    datatype.put(DataType::NAME, "VARCHAR");
+    datatype.put(DataType::PG_DATA_TYPE, PgType::TypeOid::kVarchar);
+    datatype.put(DataType::PG_DATA_TYPE_NAME, "varchar");
+    datatype.put(DataType::PG_DATA_TYPE_QUALIFIED_NAME,
                  PgType::TypeName::kVarchar);
     datatypes.push_back(std::make_pair("", datatype));
 
     // NUMERIC : numeric, decimal
-    datatype.put(DataTypes::FORMAT_VERSION, DataTypes::format_version());
-    datatype.put(DataTypes::GENERATION, DataTypes::generation());
-    datatype.put(DataTypes::ID,
-                 static_cast<ObjectIdType>(DataTypes::DataTypesId::NUMERIC));
-    datatype.put(DataTypes::NAME, "NUMERIC");
-    datatype.put(DataTypes::PG_DATA_TYPE, PgType::TypeOid::kNumeric);
-    datatype.put(DataTypes::PG_DATA_TYPE_NAME, "numeric");
-    datatype.put(DataTypes::PG_DATA_TYPE_QUALIFIED_NAME,
+    datatype.put(DataType::FORMAT_VERSION, Object::DEFAULT_FORMAT_VERSION);
+    datatype.put(DataType::GENERATION, Object::DEFAULT_GENERATION);
+    datatype.put(DataType::ID,
+                 static_cast<ObjectIdType>(DataType::DataTypesId::NUMERIC));
+    datatype.put(DataType::NAME, "NUMERIC");
+    datatype.put(DataType::PG_DATA_TYPE, PgType::TypeOid::kNumeric);
+    datatype.put(DataType::PG_DATA_TYPE_NAME, "numeric");
+    datatype.put(DataType::PG_DATA_TYPE_QUALIFIED_NAME,
                  PgType::TypeName::kNumeric);
     datatypes.push_back(std::make_pair("", datatype));
 
-    // DATE : 
-    datatype.put(DataTypes::FORMAT_VERSION, DataTypes::format_version());
-    datatype.put(DataTypes::GENERATION, DataTypes::generation());
-    datatype.put(DataTypes::ID,
-                 static_cast<ObjectIdType>(DataTypes::DataTypesId::DATE));
-    datatype.put(DataTypes::NAME, "DATE");
-    datatype.put(DataTypes::PG_DATA_TYPE, PgType::TypeOid::kDate);
-    datatype.put(DataTypes::PG_DATA_TYPE_NAME, "date");
-    datatype.put(DataTypes::PG_DATA_TYPE_QUALIFIED_NAME,
+    // DATE :
+    datatype.put(DataType::FORMAT_VERSION, Object::DEFAULT_FORMAT_VERSION);
+    datatype.put(DataType::GENERATION, Object::DEFAULT_GENERATION);
+    datatype.put(DataType::ID,
+                 static_cast<ObjectIdType>(DataType::DataTypesId::DATE));
+    datatype.put(DataType::NAME, "DATE");
+    datatype.put(DataType::PG_DATA_TYPE, PgType::TypeOid::kDate);
+    datatype.put(DataType::PG_DATA_TYPE_NAME, "date");
+    datatype.put(DataType::PG_DATA_TYPE_QUALIFIED_NAME,
                  PgType::TypeName::kDate);
     datatypes.push_back(std::make_pair("", datatype));
 
-    // TIME : 
-    datatype.put(DataTypes::FORMAT_VERSION, DataTypes::format_version());
-    datatype.put(DataTypes::GENERATION, DataTypes::generation());
-    datatype.put(DataTypes::ID,
-                 static_cast<ObjectIdType>(DataTypes::DataTypesId::TIME));
-    datatype.put(DataTypes::NAME, "TIME");
-    datatype.put(DataTypes::PG_DATA_TYPE, PgType::TypeOid::kTime);
-    datatype.put(DataTypes::PG_DATA_TYPE_NAME, "time");
-    datatype.put(DataTypes::PG_DATA_TYPE_QUALIFIED_NAME,
+    // TIME :
+    datatype.put(DataType::FORMAT_VERSION, Object::DEFAULT_FORMAT_VERSION);
+    datatype.put(DataType::GENERATION, Object::DEFAULT_GENERATION);
+    datatype.put(DataType::ID,
+                 static_cast<ObjectIdType>(DataType::DataTypesId::TIME));
+    datatype.put(DataType::NAME, "TIME");
+    datatype.put(DataType::PG_DATA_TYPE, PgType::TypeOid::kTime);
+    datatype.put(DataType::PG_DATA_TYPE_NAME, "time");
+    datatype.put(DataType::PG_DATA_TYPE_QUALIFIED_NAME,
                  PgType::TypeName::kTime);
     datatypes.push_back(std::make_pair("", datatype));
 
-    // TIMETZ : 
-    datatype.put(DataTypes::FORMAT_VERSION, DataTypes::format_version());
-    datatype.put(DataTypes::GENERATION, DataTypes::generation());
-    datatype.put(DataTypes::ID,
-                 static_cast<ObjectIdType>(DataTypes::DataTypesId::TIMETZ));
-    datatype.put(DataTypes::NAME, "TIMETZ");
-    datatype.put(DataTypes::PG_DATA_TYPE, PgType::TypeOid::kTimetz);
-    datatype.put(DataTypes::PG_DATA_TYPE_NAME, "timetz");
-    datatype.put(DataTypes::PG_DATA_TYPE_QUALIFIED_NAME,
+    // TIMETZ :
+    datatype.put(DataType::FORMAT_VERSION, Object::DEFAULT_FORMAT_VERSION);
+    datatype.put(DataType::GENERATION, Object::DEFAULT_GENERATION);
+    datatype.put(DataType::ID,
+                 static_cast<ObjectIdType>(DataType::DataTypesId::TIMETZ));
+    datatype.put(DataType::NAME, "TIMETZ");
+    datatype.put(DataType::PG_DATA_TYPE, PgType::TypeOid::kTimetz);
+    datatype.put(DataType::PG_DATA_TYPE_NAME, "timetz");
+    datatype.put(DataType::PG_DATA_TYPE_QUALIFIED_NAME,
                  PgType::TypeName::kTimetz);
     datatypes.push_back(std::make_pair("", datatype));
 
-    // TIMESTAMP : 
-    datatype.put(DataTypes::FORMAT_VERSION, DataTypes::format_version());
-    datatype.put(DataTypes::GENERATION, DataTypes::generation());
-    datatype.put(DataTypes::ID,
-                 static_cast<ObjectIdType>(DataTypes::DataTypesId::TIMESTAMP));
-    datatype.put(DataTypes::NAME, "TIMESTAMP");
-    datatype.put(DataTypes::PG_DATA_TYPE, PgType::TypeOid::kTimestamp);
-    datatype.put(DataTypes::PG_DATA_TYPE_NAME, "timestamp");
-    datatype.put(DataTypes::PG_DATA_TYPE_QUALIFIED_NAME,
+    // TIMESTAMP :
+    datatype.put(DataType::FORMAT_VERSION, Object::DEFAULT_FORMAT_VERSION);
+    datatype.put(DataType::GENERATION, Object::DEFAULT_GENERATION);
+    datatype.put(DataType::ID,
+                 static_cast<ObjectIdType>(DataType::DataTypesId::TIMESTAMP));
+    datatype.put(DataType::NAME, "TIMESTAMP");
+    datatype.put(DataType::PG_DATA_TYPE, PgType::TypeOid::kTimestamp);
+    datatype.put(DataType::PG_DATA_TYPE_NAME, "timestamp");
+    datatype.put(DataType::PG_DATA_TYPE_QUALIFIED_NAME,
                  PgType::TypeName::kTimestamp);
     datatypes.push_back(std::make_pair("", datatype));
 
-    // TIMESTAMPTZ : 
-    datatype.put(DataTypes::FORMAT_VERSION, DataTypes::format_version());
-    datatype.put(DataTypes::GENERATION, DataTypes::generation());
-    datatype.put(DataTypes::ID,
-                 static_cast<ObjectIdType>(DataTypes::DataTypesId::TIMESTAMPTZ));
-    datatype.put(DataTypes::NAME, "TIMESTAMPTZ");
-    datatype.put(DataTypes::PG_DATA_TYPE, PgType::TypeOid::kTimestamptz);
-    datatype.put(DataTypes::PG_DATA_TYPE_NAME, "timestamptz");
-    datatype.put(DataTypes::PG_DATA_TYPE_QUALIFIED_NAME,
+    // TIMESTAMPTZ :
+    datatype.put(DataType::FORMAT_VERSION, Object::DEFAULT_FORMAT_VERSION);
+    datatype.put(DataType::GENERATION, Object::DEFAULT_GENERATION);
+    datatype.put(DataType::ID,
+                 static_cast<ObjectIdType>(DataType::DataTypesId::TIMESTAMPTZ));
+    datatype.put(DataType::NAME, "TIMESTAMPTZ");
+    datatype.put(DataType::PG_DATA_TYPE, PgType::TypeOid::kTimestamptz);
+    datatype.put(DataType::PG_DATA_TYPE_NAME, "timestamptz");
+    datatype.put(DataType::PG_DATA_TYPE_QUALIFIED_NAME,
                  PgType::TypeName::kTimestamptz);
     datatypes.push_back(std::make_pair("", datatype));
 
-    // INTERVAL : 
-    datatype.put(DataTypes::FORMAT_VERSION, DataTypes::format_version());
-    datatype.put(DataTypes::GENERATION, DataTypes::generation());
-    datatype.put(DataTypes::ID,
-                 static_cast<ObjectIdType>(DataTypes::DataTypesId::INTERVAL));
-    datatype.put(DataTypes::NAME, "INTERVAL");
-    datatype.put(DataTypes::PG_DATA_TYPE, PgType::TypeOid::kInterval);
-    datatype.put(DataTypes::PG_DATA_TYPE_NAME, "interval");
-    datatype.put(DataTypes::PG_DATA_TYPE_QUALIFIED_NAME,
+    // INTERVAL :
+    datatype.put(DataType::FORMAT_VERSION, Object::DEFAULT_FORMAT_VERSION);
+    datatype.put(DataType::GENERATION, Object::DEFAULT_GENERATION);
+    datatype.put(DataType::ID,
+                 static_cast<ObjectIdType>(DataType::DataTypesId::INTERVAL));
+    datatype.put(DataType::NAME, "INTERVAL");
+    datatype.put(DataType::PG_DATA_TYPE, PgType::TypeOid::kInterval);
+    datatype.put(DataType::PG_DATA_TYPE_NAME, "interval");
+    datatype.put(DataType::PG_DATA_TYPE_QUALIFIED_NAME,
                  PgType::TypeName::kInterval);
     datatypes.push_back(std::make_pair("", datatype));
   }
@@ -242,7 +242,7 @@ ErrorCode DataTypesDaoJson::select(std::string_view key,
     }
     if (data_value.value() == values[0]) {
       object = temp_obj;
-      error = ErrorCode::OK;
+      error  = ErrorCode::OK;
       break;
     }
   }

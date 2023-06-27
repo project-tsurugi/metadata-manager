@@ -812,7 +812,7 @@ ErrorCode Tables::param_check_metadata_add(
     // Check the data types.
     ptree datatype_metadata;
     error = provider_data_types.get_datatype_metadata(
-        DataTypes::ID, std::to_string(datatype_id.get()), datatype_metadata);
+        DataType::ID, std::to_string(datatype_id.get()), datatype_metadata);
     if (error != ErrorCode::OK) {
       if (error == ErrorCode::ID_NOT_FOUND) {
         error = ErrorCode::INVALID_PARAMETER;

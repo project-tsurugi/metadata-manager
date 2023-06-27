@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2022 tsurugi project.
+ * Copyright 2020-2023 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,97 +16,225 @@
 #ifndef MANAGER_METADATA_DATATYPES_H_
 #define MANAGER_METADATA_DATATYPES_H_
 
-#include <string>
 #include <string_view>
 #include <vector>
 
 #include <boost/property_tree/ptree.hpp>
 
+#include "manager/metadata/datatype.h"
 #include "manager/metadata/error_code.h"
 #include "manager/metadata/metadata.h"
-#include "manager/metadata/object.h"
 
 namespace manager::metadata {
 
-struct DataType : public Object {
-  int64_t pg_data_type;
-  std::string pg_data_type_name;
-  std::string pg_data_type_qualified_name;
-
-  static constexpr const char* const PG_DATA_TYPE = "pg_dataType";
-  static constexpr const char* const PG_DATA_TYPE_NAME = "pg_dataTypeName";
-  static constexpr const char* const PG_DATA_TYPE_QUALIFIED_NAME =
-      "pg_dataTypeQualifiedName";
-
-  DataType() 
-      : pg_data_type(INVALID_VALUE),
-        pg_data_type_name(""),
-        pg_data_type_qualified_name("") 
-      {}
-  boost::property_tree::ptree convert_to_ptree() const override;
-  void convert_from_ptree(const boost::property_tree::ptree& ptree) override;
-};
-
 class DataTypes : public Metadata {
  public:
-  // data type metadata-object.
-  // FORMAT_VERSION is defined in base class.
-  // GENERATION is defined in base class.
-  // ID is defined in base class.
-  // NAME is defined in base class.
-
   /**
    * @brief Field name constant indicating the data type of the metadata.
+   * @deprecated Deprecated in the future. Please use DataType::PG_DATA_TYPE.
    */
-  static constexpr const char* const PG_DATA_TYPE = "pg_dataType";
+  static constexpr const char* const PG_DATA_TYPE = DataType::PG_DATA_TYPE;
   /**
    * @brief Field name constant indicating the data type name of the metadata.
+   * @deprecated Deprecated in the future. Please use
+   *   DataType::PG_DATA_TYPE_NAME.
    */
-  static constexpr const char* const PG_DATA_TYPE_NAME = "pg_dataTypeName";
+  static constexpr const char* const PG_DATA_TYPE_NAME =
+      DataType::PG_DATA_TYPE_NAME;
   /**
    * @brief Field name constant indicating the qualified name of the metadata.
+   * @deprecated Deprecated in the future. Please use
+   *   DataType::PG_DATA_TYPE_QUALIFIED_NAME.
    */
   static constexpr const char* const PG_DATA_TYPE_QUALIFIED_NAME =
-      "pg_dataTypeQualifiedName";
+      DataType::PG_DATA_TYPE_QUALIFIED_NAME;
 
   /**
    * @brief represents data types id.
+   * @deprecated Deprecated in the future. Please use DataType::DataTypesId.
    */
   enum class DataTypesId : ObjectIdType {
-    INT64       = 20,   //!< @brief INT64.
-    INT32       = 23,   //!< @brief INT32.
-    FLOAT32     = 700,  //!< @brief FLOAT32.
-    FLOAT64     = 701,  //!< @brief FLOAT64.
-    CHAR        = 1042, //!< @brief CHAR.
-    VARCHAR     = 1043, //!< @brief VARCHAR.
-    DATE        = 1082, //!< @brief DATE.
-    TIME        = 1083, //!< @brief TIME.
-    TIMESTAMP   = 1114, //!< @brief TIMESTAMP.
-    TIMESTAMPTZ = 1184, //!< @brief TIMESTAMPTZ.
-    INTERVAL    = 1186, //!< @brief INTERVAL.
-    TIMETZ      = 1266, //!< @brief TIMETZ.
-    NUMERIC     = 1700  //!< @brief NUMERIC.
+    /**
+     * @brief INT64
+     * @deprecated Deprecated in the future. Please use
+     *   DataType::DataTypesId::INT64.
+     */
+    INT64 = static_cast<ObjectIdType>(DataType::DataTypesId::INT64),
+    /**
+     * @brief INT32
+     * @deprecated Deprecated in the future. Please use
+     *   DataType::DataTypesId::INT32.
+     */
+    INT32 = static_cast<ObjectIdType>(DataType::DataTypesId::INT32),
+    /**
+     * @brief FLOAT32
+     * @deprecated Deprecated in the future. Please use
+     *   DataType::DataTypesId::FLOAT32.
+     */
+    FLOAT32 = static_cast<ObjectIdType>(DataType::DataTypesId::FLOAT32),
+    /**
+     * @brief FLOAT64
+     * @deprecated Deprecated in the future. Please use
+     *   DataType::DataTypesId::FLOAT64.
+     */
+    FLOAT64 = static_cast<ObjectIdType>(DataType::DataTypesId::FLOAT64),
+    /**
+     * @brief CHAR
+     * @deprecated Deprecated in the future. Please use
+     *   DataType::DataTypesId::CHAR.
+     */
+    CHAR = static_cast<ObjectIdType>(DataType::DataTypesId::CHAR),
+    /**
+     * @brief VARCHAR
+     * @deprecated Deprecated in the future. Please use
+     *   DataType::DataTypesId::VARCHAR.
+     */
+    VARCHAR = static_cast<ObjectIdType>(DataType::DataTypesId::VARCHAR),
+    /**
+     * @brief DATE
+     * @deprecated Deprecated in the future. Please use
+     *   DataType::DataTypesId::DATE.
+     */
+    DATE = static_cast<ObjectIdType>(DataType::DataTypesId::DATE),
+    /**
+     * @brief TIME
+     * @deprecated Deprecated in the future. Please use
+     *   DataType::DataTypesId::TIME.
+     */
+    TIME = static_cast<ObjectIdType>(DataType::DataTypesId::TIME),
+    /**
+     * @brief TIMESTAMP
+     * @deprecated Deprecated in the future. Please use
+     *   DataType::DataTypesId::TIMESTAMP.
+     */
+    TIMESTAMP = static_cast<ObjectIdType>(DataType::DataTypesId::TIMESTAMP),
+    /**
+     * @brief TIMESTAMPTZ
+     * @deprecated Deprecated in the future. Please use
+     *   DataType::DataTypesId::TIMESTAMPTZ.
+     */
+    TIMESTAMPTZ = static_cast<ObjectIdType>(DataType::DataTypesId::TIMESTAMPTZ),
+    /**
+     * @brief INTERVAL
+     * @deprecated Deprecated in the future. Please use
+     *   DataType::DataTypesId::INTERVAL.
+     */
+    INTERVAL = static_cast<ObjectIdType>(DataType::DataTypesId::INTERVAL),
+    /**
+     * @brief TIMETZ
+     * @deprecated Deprecated in the future. Please use
+     *   DataType::DataTypesId::TIMETZ.
+     */
+    TIMETZ = static_cast<ObjectIdType>(DataType::DataTypesId::TIMETZ),
+    /**
+     * @brief NUMERIC
+     * @deprecated Deprecated in the future. Please use
+     *   DataType::DataTypesId::NUMERIC.
+     */
+    NUMERIC = static_cast<ObjectIdType>(DataType::DataTypesId::NUMERIC)
   };
 
   /**
    * @brief Interval Fields option.
+   * @deprecated Deprecated in the future. Please use DataType::IntervalFields.
    */
   enum class IntervalFields : int64_t {
-    OMITTED = 0x7FFF,           //!< @brief fields parameter omitted.
-    YEAR = 0x0004,              //!< @brief YEAR.
-    MONTH = 0x0002,             //!< @brief MONTH.
-    DAY = 0x0008,               //!< @brief DAY.
-    HOUR = 0x0400,              //!< @brief HOUR.
-    MINUTE = 0x0800,            //!< @brief MIUNTE.
-    SECOND = 0x1000,            //!< @brief SECOND.
-    YEAR_TO_MONTH = 0x0006,     //!< @brief YEAR TO MONTH.
-    DAY_TO_HOUR = 0x0408,       //!< @brief DAY TO HOUR.
-    DAY_TO_MINUTE = 0x0C08,     //!< @brief DAY TO MINUTE.
-    DAY_TO_SECOND = 0x1C08,     //!< @brief DAY TO SECOND.
-    HOUR_TO_MINUTE = 0x0C00,    //!< @brief HOUR TO MINUTE.
-    HOUR_TO_SECOND = 0x1C00,    //!< @brief HOUR TO SECOND.
-    MINUTE_TO_SECOND = 0x1800,  //!< @brief MINUTE TO SECOND.
-    UNKNOWN = INVALID_VALUE,    //!< @brief Unknown.
+    /**
+     * @brief fields parameter omitted.
+     * @deprecated Deprecated in the future. Please use
+     *   DataType::IntervalFields::OMITTED.
+     */
+    OMITTED = static_cast<int64_t>(DataType::IntervalFields::OMITTED),
+    /**
+     * @brief YEAR.
+     * @deprecated Deprecated in the future. Please use
+     *   DataType::IntervalFields::YEAR.
+     */
+    YEAR = static_cast<int64_t>(DataType::IntervalFields::YEAR),
+    /**
+     * @brief MONTH.
+     * @deprecated Deprecated in the future. Please use
+     *   DataType::IntervalFields::MONTH.
+     */
+    MONTH = static_cast<int64_t>(DataType::IntervalFields::MONTH),
+    /**
+     * @brief DAY.
+     * @deprecated Deprecated in the future. Please use
+     *   DataType::IntervalFields::DAY.
+     */
+    DAY = static_cast<int64_t>(DataType::IntervalFields::DAY),
+    /**
+     * @brief HOUR.
+     * @deprecated Deprecated in the future. Please use
+     *   DataType::IntervalFields::HOUR.
+     */
+    HOUR = static_cast<int64_t>(DataType::IntervalFields::HOUR),
+    /**
+     * @brief MINUTE.
+     * @deprecated Deprecated in the future. Please use
+     *   DataType::IntervalFields::MINUTE.
+     */
+    MINUTE = static_cast<int64_t>(DataType::IntervalFields::MINUTE),
+    /**
+     * @brief SECOND.
+     * @deprecated Deprecated in the future. Please use
+     *   DataType::IntervalFields::SECOND.
+     */
+    SECOND = static_cast<int64_t>(DataType::IntervalFields::SECOND),
+    /**
+     * @brief YEAR TO MONTH.
+     * @deprecated Deprecated in the future. Please use
+     *   DataType::IntervalFields::YEAR_TO_MONTH.
+     */
+    YEAR_TO_MONTH =
+        static_cast<int64_t>(DataType::IntervalFields::YEAR_TO_MONTH),
+    /**
+     * @brief DAY TO HOUR.
+     * @deprecated Deprecated in the future. Please use
+     *   DataType::IntervalFields::DAY_TO_HOUR.
+     */
+    DAY_TO_HOUR = static_cast<int64_t>(DataType::IntervalFields::DAY_TO_HOUR),
+    /**
+     * @brief DAY TO MINUTE.
+     * @deprecated Deprecated in the future. Please use
+     *   DataType::IntervalFields::DAY_TO_MINUTE.
+     */
+    DAY_TO_MINUTE =
+        static_cast<int64_t>(DataType::IntervalFields::DAY_TO_MINUTE),
+    /**
+     * @brief DAY TO SECOND.
+     * @deprecated Deprecated in the future. Please use
+     *   DataType::IntervalFields::DAY_TO_SECOND.
+     */
+    DAY_TO_SECOND =
+        static_cast<int64_t>(DataType::IntervalFields::DAY_TO_SECOND),
+    /**
+     * @brief HOUR TO MINUTE.
+     * @deprecated Deprecated in the future. Please use
+     *   DataType::IntervalFields::HOUR_TO_MINUTE.
+     */
+    HOUR_TO_MINUTE =
+        static_cast<int64_t>(DataType::IntervalFields::HOUR_TO_MINUTE),
+    /**
+     * @brief HOUR TO SECOND.
+     * @deprecated Deprecated in the future. Please use
+     *   DataType::IntervalFields::HOUR_TO_SECOND.
+     */
+    HOUR_TO_SECOND =
+        static_cast<int64_t>(DataType::IntervalFields::HOUR_TO_SECOND),
+    /**
+     * @brief MINUTE TO SECOND.
+     * @deprecated Deprecated in the future. Please use
+     *   DataType::IntervalFields::MINUTE_TO_SECOND.
+     */
+    MINUTE_TO_SECOND =
+        static_cast<int64_t>(DataType::IntervalFields::MINUTE_TO_SECOND),
+    /**
+     * @brief Unknown.
+     * @deprecated Deprecated in the future. Please use
+     *   DataType::IntervalFields::UNKNOWN.
+     */
+    UNKNOWN = static_cast<int64_t>(DataType::IntervalFields::UNKNOWN),
   };
 
   explicit DataTypes(std::string_view database)

@@ -21,7 +21,7 @@
 
 #include "manager/metadata/common/message.h"
 #include "manager/metadata/common/utility.h"
-#include "manager/metadata/datatypes.h"
+#include "manager/metadata/datatype.h"
 #include "manager/metadata/helper/logging_helper.h"
 
 // =============================================================================

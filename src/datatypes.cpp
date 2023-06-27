@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 tsurugi project.
+ * Copyright 2020-2023 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,45 +31,6 @@ std::unique_ptr<manager::metadata::db::DataTypesProvider> provider = nullptr;
 // =============================================================================
 namespace manager::metadata {
 
-// ==========================================================================
-// DataType struct methods.
-/** 
- * @brief  Transform datatype metadata from structure object to ptree object.
- * @return ptree object.
- */
-boost::property_tree::ptree DataType::convert_to_ptree() const
-{
-  auto pt = Object::convert_to_ptree();
-
-  pt.put<int64_t>(PG_DATA_TYPE, this->pg_data_type);
-  pt.put(PG_DATA_TYPE_NAME, this->pg_data_type_name);
-  pt.put(PG_DATA_TYPE_QUALIFIED_NAME, this->pg_data_type_qualified_name);
-
-  return pt;
-}
-
-/**
- * @brief   Transform datatype metadata from ptree object to structure object.
- * @param   ptree [in] ptree object of metdata.
- * @return  structure object of metadata.
- */
-void DataType::convert_from_ptree(const boost::property_tree::ptree& pt)
-{
-  Object::convert_from_ptree(pt);
-
-  auto opt_int = pt.get_optional<int64_t>(DataType::PG_DATA_TYPE);
-  this->pg_data_type = opt_int ? opt_int.get() : INVALID_VALUE;
-
-  auto opt_str = pt.get_optional<std::string>(DataType::PG_DATA_TYPE_NAME);
-  this->pg_data_type_name = opt_str ? opt_str.get() : "";
-
-  opt_str = 
-      pt.get_optional<std::string>(DataType::PG_DATA_TYPE_QUALIFIED_NAME);
-  this->pg_data_type_qualified_name = opt_str ? opt_str.get() : ""; 
-}
-
-// ==========================================================================
-// DataTypes class methods.
 /**
  * @brief Constructor
  * @param database   [in]  database name.
@@ -128,7 +89,7 @@ ErrorCode DataTypes::get(const ObjectIdType object_id,
 
   // Get the data type metadata through the class method.
   if (error == ErrorCode::OK) {
-    error = provider->get_datatype_metadata(DataTypes::ID,
+    error = provider->get_datatype_metadata(DataType::ID,
                                             std::to_string(object_id), object);
   }
 
@@ -166,7 +127,7 @@ ErrorCode DataTypes::get(std::string_view object_name,
   // Get the data type metadata through the class method.
   if (error == ErrorCode::OK) {
     error =
-        provider->get_datatype_metadata(DataTypes::NAME, object_name, object);
+        provider->get_datatype_metadata(DataType::NAME, object_name, object);
   }
 
   // Log of API function finish.
@@ -206,10 +167,10 @@ ErrorCode DataTypes::get(std::string_view object_key,
     error = ErrorCode::INVALID_PARAMETER;
   } else {
     // Convert the error code.
-    if (object_key == DataTypes::ID) {
+    if (object_key == DataType::ID) {
       LOG_ERROR << Message::PARAMETER_FAILED << "DataType id is empty.";
       error = ErrorCode::ID_NOT_FOUND;
-    } else if (object_key == DataTypes::NAME) {
+    } else if (object_key == DataType::NAME) {
       LOG_ERROR << Message::PARAMETER_FAILED << "DataType name is empty.";
       error = ErrorCode::NAME_NOT_FOUND;
     } else {
