@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 tsurugi project.
+ * Copyright 2020-2023 tsurugi project.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,30 +35,30 @@ ErrorCode StatisticsDaoPg::insert(const boost::property_tree::ptree& object,
   std::vector<const char*> params;
 
   // format_version
-  std::string s_format_version(std::to_string(Statistics::format_version()));
+  std::string s_format_version(std::to_string(Object::DEFAULT_FORMAT_VERSION));
   params.emplace_back(s_format_version.c_str());
 
   // generation
-  std::string s_generation(std::to_string(Statistics::generation()));
+  std::string s_generation(std::to_string(Object::DEFAULT_GENERATION));
   params.emplace_back(s_generation.c_str());
 
   // name
   auto statistic_name = ptree_helper::ptree_value_to_string<std::string>(
-      object, Statistics::NAME);
+      object, Statistic::NAME);
   params.emplace_back(statistic_name.c_str());
 
   // table_id
   auto table_id = ptree_helper::ptree_value_to_string<std::string>(
-      object, Statistics::TABLE_ID);
+      object, Statistic::TABLE_ID);
   // column_id
   auto column_id = ptree_helper::ptree_value_to_string<std::string>(
-      object, Statistics::COLUMN_ID);
+      object, Statistic::COLUMN_ID);
   // column_number
   auto column_number = ptree_helper::ptree_value_to_string<std::int64_t>(
-      object, Statistics::COLUMN_NUMBER);
+      object, Statistic::COLUMN_NUMBER);
   // column_name
   auto column_name = ptree_helper::ptree_value_to_string<std::string>(
-      object, Statistics::COLUMN_NAME);
+      object, Statistic::COLUMN_NAME);
 
   if (!column_id.empty()) {
     // Insert using column id.
@@ -78,7 +78,7 @@ ErrorCode StatisticsDaoPg::insert(const boost::property_tree::ptree& object,
 
   ptree p_statistic;
   // column_statistic
-  auto opt_statistic = object.get_child_optional(Statistics::COLUMN_STATISTIC);
+  auto opt_statistic = object.get_child_optional(Statistic::COLUMN_STATISTIC);
   if (opt_statistic) {
     p_statistic = opt_statistic.value();
   }
@@ -93,10 +93,10 @@ ErrorCode StatisticsDaoPg::insert(const boost::property_tree::ptree& object,
     statement_key = Statement::kDefaultKey;
   } else if (!column_number.empty()) {
     // Use the INSERT statement with column number specification.
-    statement_key = Statistics::COLUMN_NUMBER;
+    statement_key = Statistic::COLUMN_NUMBER;
   } else {
     // Use the INSERT statement with column name specification.
-    statement_key = Statistics::COLUMN_NAME;
+    statement_key = Statistic::COLUMN_NAME;
   }
 
   // Set INSERT statement.
@@ -243,16 +243,16 @@ void StatisticsDaoPg::create_prepared_statements() {
     InsertStatement statement_name{
         this->get_source_name(),
         this->get_insert_statement_columns(ColumnsDaoPg::ColumnName::kName),
-        Statistics::COLUMN_NAME};
-    insert_statements_.emplace(Statistics::COLUMN_NAME, statement_name);
+        Statistic::COLUMN_NAME};
+    insert_statements_.emplace(Statistic::COLUMN_NAME, statement_name);
 
     // INSERT statement with column number specified.
     InsertStatement statement_number{
         this->get_source_name(),
         this->get_insert_statement_columns(
             ColumnsDaoPg::ColumnName::kColumnNumber),
-        Statistics::COLUMN_NUMBER};
-    insert_statements_.emplace(Statistics::COLUMN_NUMBER, statement_number);
+        Statistic::COLUMN_NUMBER};
+    insert_statements_.emplace(Statistic::COLUMN_NUMBER, statement_number);
   }
 
   {
@@ -260,7 +260,7 @@ void StatisticsDaoPg::create_prepared_statements() {
     SelectAllStatement statement{this->get_source_name(),
                                  this->get_select_statement_tid(),
                                  ColumnsDaoPg::ColumnName::kTableId};
-    select_all_statements_.emplace(Statistics::TABLE_ID,
+    select_all_statements_.emplace(Statistic::TABLE_ID,
                                    statement);
   }
 
@@ -269,29 +269,29 @@ void StatisticsDaoPg::create_prepared_statements() {
     SelectStatement statement_tid{this->get_source_name(),
                                   this->get_select_statement_tid(),
                                   ColumnsDaoPg::ColumnName::kTableId};
-    select_statements_.emplace(Statistics::TABLE_ID, statement_tid);
+    select_statements_.emplace(Statistic::TABLE_ID, statement_tid);
 
     // SELECT statement with column id specified.
     SelectStatement statement_id{
         this->get_source_name(),
         this->get_select_statement(ColumnName::kColumnId),
-        Statistics::COLUMN_ID};
-    select_statements_.emplace(Statistics::COLUMN_ID, statement_id);
+        Statistic::COLUMN_ID};
+    select_statements_.emplace(Statistic::COLUMN_ID, statement_id);
 
     // SELECT statement with column name specified.
     SelectStatement statement_name{
         this->get_source_name(),
         this->get_select_statement_columns(ColumnsDaoPg::ColumnName::kName),
-        Statistics::COLUMN_NAME};
-    select_statements_.emplace(Statistics::COLUMN_NAME, statement_name);
+        Statistic::COLUMN_NAME};
+    select_statements_.emplace(Statistic::COLUMN_NAME, statement_name);
 
     // SELECT statement with column number specified.
     SelectStatement statement_number{
         this->get_source_name(),
         this->get_select_statement_columns(
             ColumnsDaoPg::ColumnName::kColumnNumber),
-        Statistics::COLUMN_NUMBER};
-    select_statements_.emplace(Statistics::COLUMN_NUMBER, statement_number);
+        Statistic::COLUMN_NUMBER};
+    select_statements_.emplace(Statistic::COLUMN_NUMBER, statement_number);
   }
 
   {
@@ -299,29 +299,29 @@ void StatisticsDaoPg::create_prepared_statements() {
     DeleteStatement statement_tid{this->get_source_name(),
                                   this->get_delete_statement_tid(),
                                   ColumnsDaoPg::ColumnName::kTableId};
-    delete_statements_.emplace(Statistics::TABLE_ID, statement_tid);
+    delete_statements_.emplace(Statistic::TABLE_ID, statement_tid);
 
     // DELETE statement with column id specified.
     DeleteStatement statement_cid{
         this->get_source_name(),
         this->get_delete_statement(ColumnName::kColumnId),
-        Statistics::COLUMN_ID};
-    delete_statements_.emplace(Statistics::COLUMN_ID, statement_cid);
+        Statistic::COLUMN_ID};
+    delete_statements_.emplace(Statistic::COLUMN_ID, statement_cid);
 
     // DELETE statement with column name specified.
     DeleteStatement statement_column_name{
         this->get_source_name(),
         this->get_delete_statement_columns(ColumnsDaoPg::ColumnName::kName),
-        Statistics::COLUMN_NAME};
-    delete_statements_.emplace(Statistics::COLUMN_NAME, statement_column_name);
+        Statistic::COLUMN_NAME};
+    delete_statements_.emplace(Statistic::COLUMN_NAME, statement_column_name);
 
     // DELETE statement with column number specified.
     DeleteStatement statement_column_number{
         this->get_source_name(),
         this->get_delete_statement_columns(
             ColumnsDaoPg::ColumnName::kColumnNumber),
-        Statistics::COLUMN_NUMBER};
-    delete_statements_.emplace(Statistics::COLUMN_NUMBER,
+        Statistic::COLUMN_NUMBER};
+    delete_statements_.emplace(Statistic::COLUMN_NUMBER,
                                statement_column_number);
   }
 }
@@ -508,13 +508,13 @@ ErrorCode StatisticsDaoPg::get_not_found_error_code(
     std::string_view key) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
-  if (key == Statistics::TABLE_ID) {
+  if (key == Statistic::TABLE_ID) {
     error = ErrorCode::ID_NOT_FOUND;
-  } else if (key == Statistics::COLUMN_ID) {
+  } else if (key == Statistic::COLUMN_ID) {
     error = ErrorCode::ID_NOT_FOUND;
-  } else if (key == Statistics::COLUMN_NUMBER) {
+  } else if (key == Statistic::COLUMN_NUMBER) {
     error = ErrorCode::ID_NOT_FOUND;
-  } else if (key == Statistics::COLUMN_NAME) {
+  } else if (key == Statistic::COLUMN_NAME) {
     error = ErrorCode::NAME_NOT_FOUND;
   } else {
     error = Dao::get_not_found_error_code(key);
@@ -529,39 +529,39 @@ boost::property_tree::ptree StatisticsDaoPg::convert_pgresult_to_ptree(
 
   // Set the value of the format_version column to ptree.
   object.put(
-      Statistics::FORMAT_VERSION,
+      Statistic::FORMAT_VERSION,
       get_result_value(pg_result, row_number, OrdinalPosition::kFormatVersion));
 
   // Set the value of the generation column to ptree.
   object.put(
-      Statistics::GENERATION,
+      Statistic::GENERATION,
       get_result_value(pg_result, row_number, OrdinalPosition::kGeneration));
 
   // Set the value of the id column to ptree.
-  object.put(Statistics::ID,
+  object.put(Statistic::ID,
              get_result_value(pg_result, row_number, OrdinalPosition::kId));
 
   // Set the value of the name column to ptree.
-  object.put(Statistics::NAME,
+  object.put(Statistic::NAME,
              get_result_value(pg_result, row_number, OrdinalPosition::kName));
 
   // Set the value of the table id column to ptree.
-  object.put(Statistics::TABLE_ID, get_result_value(pg_result, row_number,
+  object.put(Statistic::TABLE_ID, get_result_value(pg_result, row_number,
                                                     OrdinalPosition::kTableId));
 
   // Set the value of the ordinal position column to ptree.
   object.put(
-      Statistics::COLUMN_NUMBER,
+      Statistic::COLUMN_NUMBER,
       get_result_value(pg_result, row_number, OrdinalPosition::kColumnNumber));
 
   // Set the value of the column id column to ptree.
   object.put(
-      Statistics::COLUMN_ID,
+      Statistic::COLUMN_ID,
       get_result_value(pg_result, row_number, OrdinalPosition::kColumnId));
 
   // Set the value of the column name column to ptree.
   object.put(
-      Statistics::COLUMN_NAME,
+      Statistic::COLUMN_NAME,
       get_result_value(pg_result, row_number, OrdinalPosition::kColumnName));
 
   // Set the value of the column statistic column column to ptree.
@@ -570,7 +570,7 @@ boost::property_tree::ptree StatisticsDaoPg::convert_pgresult_to_ptree(
       get_result_value(pg_result, row_number,
                        OrdinalPosition::kColumnStatistic),
       column_statistic);
-  object.add_child(Statistics::COLUMN_STATISTIC, column_statistic);
+  object.add_child(Statistic::COLUMN_STATISTIC, column_statistic);
 
   return object;
 }

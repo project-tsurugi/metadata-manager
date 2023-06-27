@@ -23,7 +23,7 @@
 #include <boost/property_tree/ptree.hpp>
 
 #include "manager/metadata/dao/postgresql/dao_pg.h"
-#include "manager/metadata/statistics.h"
+#include "manager/metadata/statistic.h"
 
 namespace manager::metadata::db {
 

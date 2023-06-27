@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 tsurugi project.
+ * Copyright 2022-2023 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
 
 #include <random>
 
-#include "manager/metadata/statistics.h"
+#include "manager/metadata/statistic.h"
 #include "test/common/ut_utils.h"
 
 namespace {
@@ -50,43 +50,43 @@ void UtColumnStatistics::check_metadata_expected(
     const boost::property_tree::ptree& actual, const char* file,
     const int64_t line) const {
   // column statistics id
-  auto opt_id_expected = expected.get_optional<ObjectId>(Statistics::ID);
+  auto opt_id_expected = expected.get_optional<ObjectId>(Statistic::ID);
   if (opt_id_expected) {
-    check_expected<ObjectId>(expected, actual, Statistics::ID, file, line);
+    check_expected<ObjectId>(expected, actual, Statistic::ID, file, line);
   } else {
-    auto opt_id_actual = actual.get_optional<ObjectId>(Statistics::ID);
+    auto opt_id_actual = actual.get_optional<ObjectId>(Statistic::ID);
     EXPECT_GT_EX(opt_id_actual.get_value_or(INVALID_OBJECT_ID), 0, file, line);
   }
 
   // column statistics column id.
   auto opt_column_id_expected =
-      expected.get_optional<ObjectId>(Statistics::COLUMN_ID);
+      expected.get_optional<ObjectId>(Statistic::COLUMN_ID);
   if (opt_column_id_expected) {
-    check_expected<ObjectId>(expected, actual, Statistics::COLUMN_ID, file,
+    check_expected<ObjectId>(expected, actual, Statistic::COLUMN_ID, file,
                              line);
   } else {
     auto opt_column_id_actual =
-        actual.get_optional<ObjectId>(Statistics::COLUMN_ID);
+        actual.get_optional<ObjectId>(Statistic::COLUMN_ID);
     EXPECT_GT_EX(opt_column_id_actual.get_value_or(INVALID_OBJECT_ID), 0, file,
                  line);
   }
 
   // column statistics name.
-  check_expected<std::string>(expected, actual, Statistics::NAME, file, line);
+  check_expected<std::string>(expected, actual, Statistic::NAME, file, line);
 
   // column statistics table id.
-  check_expected<ObjectId>(expected, actual, Statistics::TABLE_ID, file, line);
+  check_expected<ObjectId>(expected, actual, Statistic::TABLE_ID, file, line);
 
   // column statistics column number.
-  check_expected<int64_t>(expected, actual, Statistics::COLUMN_NUMBER, file,
+  check_expected<int64_t>(expected, actual, Statistic::COLUMN_NUMBER, file,
                           line);
 
   // column statistics column name.
-  check_expected<ObjectId>(expected, actual, Statistics::COLUMN_NAME, file,
+  check_expected<ObjectId>(expected, actual, Statistic::COLUMN_NAME, file,
                            line);
 
   // column statistics column statistic.
-  check_child_expected(expected, actual, Statistics::COLUMN_STATISTIC, file,
+  check_child_expected(expected, actual, Statistic::COLUMN_STATISTIC, file,
                        line);
 }
 
@@ -95,7 +95,7 @@ void UtColumnStatistics::check_metadata_expected(
  * @return boost::property_tree::ptree - column statistic.
  */
 boost::property_tree::ptree UtColumnStatistics::get_column_statistic() const {
-  return metadata_ptree_.get_child(Statistics::COLUMN_STATISTIC);
+  return metadata_ptree_.get_child(Statistic::COLUMN_STATISTIC);
 }
 
 /**
@@ -109,11 +109,11 @@ void UtColumnStatistics::generate_test_metadata() {
           : statistic_name_;
 
   // name
-  metadata_ptree_.put(Statistics::NAME, statistic_name);
+  metadata_ptree_.put(Statistic::NAME, statistic_name);
   // table_id
-  metadata_ptree_.put(Statistics::TABLE_ID, table_id_);
+  metadata_ptree_.put(Statistic::TABLE_ID, table_id_);
   // column_number
-  metadata_ptree_.put(Statistics::COLUMN_NUMBER, column_number_);
+  metadata_ptree_.put(Statistic::COLUMN_NUMBER, column_number_);
   // column_statistic
   {
     std::random_device rd;
@@ -137,7 +137,7 @@ void UtColumnStatistics::generate_test_metadata() {
     column_statistics.add_child("elem_count_histogram",
                                 generate_histogram_array());
 
-    metadata_ptree_.add_child(Statistics::COLUMN_STATISTIC, column_statistics);
+    metadata_ptree_.add_child(Statistic::COLUMN_STATISTIC, column_statistics);
 
     metadata_struct_->name = statistic_name;
   }

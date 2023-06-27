@@ -116,8 +116,8 @@ class StatisticsMetadataTest : public MetadataTest {
     std::string metadata_name = "metadata_name_" +
                                 UTUtils::generate_narrow_uid() + "_" +
                                 std::to_string(unique_num);
-    object.put(Statistics::NAME, metadata_name);
-    object.put(Statistics::COLUMN_NUMBER, unique_num);
+    object.put(Statistic::NAME, metadata_name);
+    object.put(Statistic::COLUMN_NUMBER, unique_num);
   };
 };
 
