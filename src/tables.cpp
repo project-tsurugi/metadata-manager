@@ -621,7 +621,7 @@ ErrorCode Tables::get_acls(std::string_view token,
     if (error == ErrorCode::OK) {
       ptree role_metadata;
       // Get the role metadata through the provider.
-      error = provider_roles->get_role_metadata(Roles::ROLE_ROLNAME, user_name,
+      error = provider_roles->get_role_metadata(Role::ROLE_ROLNAME, user_name,
                                                 role_metadata);
     }
   }
@@ -689,7 +689,7 @@ ErrorCode Tables::confirm_permission_in_acls(const ObjectIdType object_id,
   // Get the table metadata through the provider.
   if (error == ErrorCode::OK) {
     std::string s_object_id = std::to_string(object_id);
-    error = provider->confirm_permission(Metadata::ID, s_object_id, permission,
+    error = provider->confirm_permission(Role::ROLE_OID, s_object_id, permission,
                                          check_result);
   }
 
@@ -727,7 +727,7 @@ ErrorCode Tables::confirm_permission_in_acls(std::string_view object_name,
 
   // Get the table metadata through the provider.
   if (error == ErrorCode::OK) {
-    error = provider->confirm_permission(Metadata::NAME, object_name,
+    error = provider->confirm_permission(Role::ROLE_ROLNAME, object_name,
                                          permission, check_result);
   }
 

@@ -20,7 +20,6 @@
 #include <boost/property_tree/ptree.hpp>
 
 #include "manager/metadata/datatypes.h"
-#include "manager/metadata/roles.h"
 #include "manager/metadata/statistics.h"
 #include "manager/metadata/tables.h"
 #include "test/common/global_test_environment.h"

@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 tsurugi project.
+ * Copyright 2021-2023 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -87,7 +87,7 @@ ErrorCode Roles::get(const ObjectIdType object_id,
   // Get the role metadata through the provider.
   if (error == ErrorCode::OK) {
     std::string s_object_id = std::to_string(object_id);
-    error = provider->get_role_metadata(Roles::ROLE_OID, s_object_id, object);
+    error = provider->get_role_metadata(Role::ROLE_OID, s_object_id, object);
   }
 
   // Log of API function finish.
@@ -122,7 +122,7 @@ ErrorCode Roles::get(std::string_view object_name,
   // Get the role metadata through the provider.
   if (error == ErrorCode::OK) {
     error =
-        provider->get_role_metadata(Roles::ROLE_ROLNAME, object_name, object);
+        provider->get_role_metadata(Role::ROLE_ROLNAME, object_name, object);
   }
 
   // Log of API function finish.

@@ -21,7 +21,6 @@
 #include "manager/metadata/dao/postgresql/db_session_manager_pg.h"
 #include "manager/metadata/dao/postgresql/roles_dao_pg.h"
 #include "test/common/global_test_environment.h"
-#include "test/common/ut_utils.h"
 #include "test/helper/role_metadata_helper.h"
 #include "test/metadata/ut_role_metadata.h"
 
@@ -77,7 +76,7 @@ TEST_F(DaoTestRolesMetadata, select_role_metadata) {
 
   ptree role_metadata;
   // Test getting by role name.
-  error = roles_dao->select(Roles::ROLE_ROLNAME, {UtRoleMetadata::kRoleName},
+  error = roles_dao->select(Role::ROLE_ROLNAME, {UtRoleMetadata::kRoleName},
                             role_metadata);
   EXPECT_EQ(ErrorCode::OK, error);
 
@@ -93,7 +92,7 @@ TEST_F(DaoTestRolesMetadata, select_role_metadata) {
   role_metadata.clear();
 
   // Test getting by role id.
-  error = roles_dao->select(Roles::ROLE_OID, {std::to_string(this->role_id_)},
+  error = roles_dao->select(Role::ROLE_OID, {std::to_string(this->role_id_)},
                             role_metadata);
   EXPECT_EQ(ErrorCode::OK, error);
 
@@ -104,20 +103,20 @@ TEST_F(DaoTestRolesMetadata, select_role_metadata) {
   ut_metadata.check_metadata_expected(role_metadata, __FILE__, __LINE__);
 
   // Testing for invalid parameters.
-  error = roles_dao->select(Roles::ROLE_ROLCANLOGIN, {""}, role_metadata);
+  error = roles_dao->select(Role::ROLE_ROLCANLOGIN, {""}, role_metadata);
   EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);
 
-  error = roles_dao->select(Roles::ROLE_OID, {"0"}, role_metadata);
+  error = roles_dao->select(Role::ROLE_OID, {"0"}, role_metadata);
   EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
 
-  error = roles_dao->select(Roles::ROLE_OID, {""}, role_metadata);
+  error = roles_dao->select(Role::ROLE_OID, {""}, role_metadata);
   EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);
 
-  error = roles_dao->select(Roles::ROLE_ROLNAME, {"invalid_role_name"},
+  error = roles_dao->select(Role::ROLE_ROLNAME, {"invalid_role_name"},
                             role_metadata);
   EXPECT_EQ(ErrorCode::NAME_NOT_FOUND, error);
 
-  error = roles_dao->select(Roles::ROLE_ROLNAME, {""}, role_metadata);
+  error = roles_dao->select(Role::ROLE_ROLNAME, {""}, role_metadata);
   EXPECT_EQ(ErrorCode::NAME_NOT_FOUND, error);
 
   error = roles_dao->select("", {""}, role_metadata);
