@@ -22,7 +22,7 @@
 
 #include <boost/property_tree/ptree.hpp>
 
-#include "manager/metadata/constraints.h"
+#include "manager/metadata/constraint.h"
 #include "manager/metadata/dao/postgresql/dao_pg.h"
 #include "manager/metadata/error_code.h"
 
