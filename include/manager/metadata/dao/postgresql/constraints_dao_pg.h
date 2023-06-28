@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 tsurugi project.
+ * Copyright 2022-2023 tsurugi project.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,7 +41,7 @@ class ConstraintsDaoPg : public DaoPg {
   /**
    * @brief constraint metadata table name.
    */
-  static constexpr const char* const kTableName = "tsurugi_constraint";
+  static constexpr const char* const kTableName = "constraints";
 
   /**
    * @brief Column name of the constraint metadata table
