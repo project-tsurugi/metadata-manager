@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 tsurugi project.
+ * Copyright 2023 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,13 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#include "manager/metadata/common/utility.h"
+
 #include <gtest/gtest.h>
 
 #include <cmath>
 #include <limits>
 #include <tuple>
-
-#include "manager/metadata/common/utility.h"
 
 namespace manager::metadata::testing {
 

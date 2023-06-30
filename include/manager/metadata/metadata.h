@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2022 tsurugi project.
+ * Copyright 2020-2023 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,125 +15,25 @@
  */
 #pragma once
 
+#include <memory>
 #include <string>
 #include <string_view>
 #include <vector>
-#include <memory>
 
-#include <boost/property_tree/ptree.hpp>
 #include <boost/iterator_adaptors.hpp>
+#include <boost/property_tree/ptree.hpp>
 
+#include "manager/metadata/common/constants.h"
 #include "manager/metadata/error_code.h"
+#include "manager/metadata/object.h"
 
 namespace manager::metadata {
-
-using FormatVersion     = std::int32_t;
-using FormatVersionType = FormatVersion;
-using Generation        = std::int64_t;
-using GenerationType    = Generation;
-using ObjectId          = std::int64_t;
-using ObjectIdType      = ObjectId;
-
-static constexpr const ObjectId INVALID_OBJECT_ID = -1;
-static constexpr const int64_t INVALID_VALUE      = -1;
-
-/**
- * @brief This class manage common metadata of all metadata objects.
- */
-struct Object {
-  /**
-   * @brief Field name constant indicating the format version of the metadata.
-   */
-  static constexpr const char* FORMAT_VERSION = "formatVersion";
-  static constexpr int64_t DEFAULT_FORMAT_VERSION = 1;
-  /**
-   * @brief Field name constant indicating the generation of the metadata.
-   */
-  static constexpr const char* GENERATION = "generation";
-  static constexpr int64_t DEFAULT_GENERATION = 1;
-  /**
-   * @brief Field name constant indicating the object id of the metadata.
-   */
-  static constexpr const char* ID = "id";
-  /**
-   * @brief Field name constant indicating the column name of the metadata.
-   */
-  static constexpr const char* NAME = "name";
-
-  int64_t format_version;  //!< format version of metadata table schema.
-  int64_t generation;      //!< generation.
-  int64_t id;              //!< object ID.
-  std::string name;        //!< object name.
-
-  Object()
-      : format_version(DEFAULT_FORMAT_VERSION), 
-        generation(DEFAULT_GENERATION), 
-        id(INVALID_OBJECT_ID), 
-        name("") {}
-  /** 
-   * @brief  Transform metadata from structure object to ptree object.
-   * @return ptree object.
-   */
-  virtual boost::property_tree::ptree convert_to_ptree() const = 0;
-
-  /**
-   * @brief   Transform metadata from ptree object to structure object.
-   * @param   pt [in] ptree object of metdata.
-   * @return  structure object of metadata.
-   */
-  virtual void convert_from_ptree(const boost::property_tree::ptree& pt) = 0;
-
- protected:
-  virtual boost::property_tree::ptree base_convert_to_ptree() const;
-  virtual void base_convert_from_ptree(const boost::property_tree::ptree& pt);
-};
-
-/**
- * @brief This class manage common metadata of class metadata objects.
- * @note  Class  metadata objects are such as table objects.
- * e.g.) table, index, view, materialized-view, etc...
- */
-struct ClassObject : public Object {
-  static constexpr const char* const DATABASE_NAME = "databaseName";
-  static constexpr const char* const SCHEMA_NAME   = "schemaName";
-  static constexpr const char* const NAMESPACE     = "namespace";
-  static constexpr const char* const OWNER_ID      = "ownerId";
-  static constexpr const char* const ACL           = "acl";
-
-  std::string database_name;  //!< 1st namespace of full qualified object name.
-  std::string schema_name;    //!< 2nd namespace of full qualified object name.
-  std::string namespace_name;
-  int64_t owner_id;
-  std::string acl;  //!< access control list.
-
-  ClassObject()
-      : Object(),
-        database_name(""),
-        schema_name(""),
-        namespace_name(""),
-        owner_id(INVALID_OBJECT_ID),
-        acl("") {}
-
-  virtual boost::property_tree::ptree base_convert_to_ptree() const override;
-  virtual void base_convert_from_ptree(
-      const boost::property_tree::ptree& pt) override;
-  virtual boost::property_tree::ptree convert_to_ptree() const override;
-  virtual void convert_from_ptree(
-      const boost::property_tree::ptree& pt) override;
-  /**
-   * @brief Obtain a full qualified object name.
-   * e.g. database.schema.table
-   * @return a full qualified object name.
-   */
-  std::string full_qualified_name() {
-    return database_name + '.' + schema_name + '.' + this->name;
-  }
-};
 
 class Iterator {
  public:
   virtual ~Iterator() {}
-  virtual bool has_next() const = 0;
+
+  virtual bool has_next() const       = 0;
   virtual ErrorCode next(Object& obj) = 0;
 };
 
@@ -144,18 +44,22 @@ class Metadata {
  public:
   /**
    * @brief Field name constant indicating the format version of the metadata.
+   * @deprecated Deprecated in the future. Please use Object::FORMAT_VERSION.
    */
   static constexpr const char* const FORMAT_VERSION = "formatVersion";
   /**
    * @brief Field name constant indicating the generation of the metadata.
+   * @deprecated Deprecated in the future. Please use Object::GENERATION.
    */
   static constexpr const char* const GENERATION = "generation";
   /**
    * @brief Field name constant indicating the object id of the metadata.
+   * @deprecated Deprecated in the future. Please use Object::ID.
    */
   static constexpr const char* const ID = "id";
   /**
    * @brief Field name constant indicating the object name of the metadata.
+   * @deprecated Deprecated in the future. Please use Object::NAME.
    */
   static constexpr const char* const NAME = "name";
 
@@ -164,8 +68,21 @@ class Metadata {
   Metadata& operator=(const Metadata&) = delete;
   virtual ~Metadata() {}
 
-  static GenerationType generation() { return kGeneration; }
-  static FormatVersionType format_version() { return kFormatVersion; }
+  /**
+   * @brief Get the generation of the metadata.
+   * @return Metadata generation.
+   */
+  static GenerationType generation() {
+    return Object::DEFAULT_GENERATION;
+  }
+
+  /**
+   * @brief Get the format version of the metadata.
+   * @return Metadata format version.
+   */
+  static FormatVersionType format_version() {
+    return Object::DEFAULT_FORMAT_VERSION;
+  }
 
   std::string_view database() const { return database_; }
   std::string_view component() const { return component_; }
@@ -336,7 +253,7 @@ class Metadata {
   ErrorCode get_all();
   ErrorCode next(boost::property_tree::ptree& object);
   ErrorCode next(manager::metadata::Object& object);
-  
+
   // for iterator
   std::unique_ptr<Iterator> iterator();
   size_t size() const { return objects_.size(); }
@@ -349,9 +266,6 @@ class Metadata {
   static const Generation kLatestVersion               = 0;
 
  private:
-  static constexpr Generation kGeneration       = 1;
-  static constexpr FormatVersion kFormatVersion = 1;
-
   std::string database_;
   std::string component_;
   std::vector<boost::property_tree::ptree> objects_;
@@ -360,9 +274,11 @@ class Metadata {
 
 class MetadataIterator : public Iterator {
  public:
-  MetadataIterator(const Metadata* metadata) : metadata_(metadata), cursor_(0) {}
-  virtual bool has_next() const override;
-  virtual ErrorCode next(Object& obj) override;
+  explicit MetadataIterator(const Metadata* metadata)
+      : metadata_(metadata), cursor_(0) {}
+
+  bool has_next() const override;
+  ErrorCode next(Object& obj) override;
  private:
   const Metadata* metadata_;
   size_t cursor_;

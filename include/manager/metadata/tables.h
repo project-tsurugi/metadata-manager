@@ -28,6 +28,7 @@
 #include "manager/metadata/error_code.h"
 #include "manager/metadata/indexes.h"
 #include "manager/metadata/metadata.h"
+#include "manager/metadata/object.h"
 
 namespace manager::metadata {
 

@@ -21,7 +21,7 @@
 
 #include <boost/property_tree/ptree.hpp>
 
-#include "manager/metadata/metadata.h"
+#include "manager/metadata/common/constants.h"
 #include "test/helper/metadata_helper.h"
 
 #if defined(STORAGE_POSTGRESQL)

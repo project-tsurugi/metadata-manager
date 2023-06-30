@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2022 tsurugi project.
+ * Copyright 2020-2023 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,18 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#include "test/test/invalid_key_test.h"
+
 #include <gtest/gtest.h>
-
-#include <limits>
-#include <memory>
-#include <string>
-#include <tuple>
-#include <vector>
-
 #include <boost/format.hpp>
 #include <boost/property_tree/ptree.hpp>
 
-#include "manager/metadata/constraints.h"
 #include "manager/metadata/datatypes.h"
 #include "manager/metadata/roles.h"
 #include "manager/metadata/statistics.h"
@@ -34,7 +28,6 @@
 #include "test/helper/api_test_helper.h"
 #include "test/helper/column_statistics_helper.h"
 #include "test/metadata/ut_column_statistics.h"
-#include "test/test/invalid_key_test.h"
 
 namespace manager::metadata::testing {
 
