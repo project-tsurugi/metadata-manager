@@ -1,14 +1,14 @@
 【Project-Tsurugi Internal User Only】
 
-# `metadata-manager`リリース手順 （検討資料）
+# metadata-managerリリース手順 （検討資料）
 
-2023.07.10 KCC
+2023.07.12 KCC
 
 ---
 
 ## 目次
 
-- [`metadata-manager`リリース手順 （検討資料）](#metadata-managerリリース手順-検討資料)
+- [metadata-managerリリース手順 （検討資料）](#metadata-managerリリース手順-検討資料)
   - [目次](#目次)
   - [1 はじめに](#1-はじめに)
     - [1.1 本書の目的](#11-本書の目的)
@@ -16,12 +16,12 @@
   - [2 リリースの流れ](#2-リリースの流れ)
   - [3 リリース前手順](#3-リリース前手順)
     - [3.1 ビルド](#31-ビルド)
-      - [3.1.1 `metadata-manager`](#311-metadata-manager)
-      - [3.1.2 `frontend`](#312-frontend)
-      - [3.1.3 `ogawayama`](#313-ogawayama)
-    - [3.2 結合テスト](#32-結合テスト)
+      - [3.1.1 metadata-manager](#311-metadata-manager)
+      - [3.1.2 frontend](#312-frontend)
+      - [3.1.3 ogawayama](#313-ogawayama)
+    - [3.2 レグレッションテスト](#32-レグレッションテスト)
   - [4 リリース手順](#4-リリース手順)
-    - [4.1 リリース手順](#41-リリース手順)
+    - [4.1 リリース](#41-リリース)
     - [4.2 リリース通知](#42-リリース通知)
 
 ---
@@ -52,12 +52,12 @@ participant Remote as GitHub
 rect rgb(255, 255, 255)
   activate UsrMetaMng
     rect rgb(255, 255, 255)
-      Note over UsrMetaMng,Local: リリース前の結合テスト
+      Note over UsrMetaMng,Local: リリース前のレグレッションテスト
       UsrMetaMng ->> Local: リリース用の metadata-manager をビルド＆インストール
       Local -->> Local: 
       UsrMetaMng ->> Local: リリース用の metadata-manager を用いて<br>frontend, ogawayamaをリビルド＆インストール
       Local -->> Local: 
-      UsrMetaMng ->> Local: 結合テスト
+      UsrMetaMng ->> Local: レグレッションテスト
       Local -->> Local: 
     end
 
@@ -100,16 +100,16 @@ end
 
 ### 3.1 ビルド
 
-#### 3.1.1 `metadata-manager`
+#### 3.1.1 metadata-manager
 
-1. `README`の[`How to build`]に従い、リリース予定の`metadata-manager`をリビルドおよびインストールする。
+1. READMEの `How to build` に従い、リリース予定のmetadata-managerをリビルドおよびインストールする。
 
-#### 3.1.2 `frontend`
+#### 3.1.2 frontend
 
-> ビルド環境がない場合は、事前に`frontend`の`README`に従い、`frontend`のビルド環境を構築する。  
-> [`How to build frontend`] > [`Install required packages.`] ~ [`Clone frontend.`]
+> ビルド環境がない場合は、事前にfrontendのREADMEに従い、frontendのビルド環境を構築する。  
+> README: `How to build frontend` > `Install required packages.` ~ `Clone frontend.`
 
-1. サブモジュールの`metadata-manager`をリリースする`metadata-manager`に入れ替える。
+1. サブモジュールのmetadata-manager (`third_party/metadata-manager`) をリリースするmetadata-managerに入れ替える。
 
     ```sh
     cd /path/to/frontend
@@ -122,7 +122,7 @@ end
     ln -s /path/to/release/metadata-manager third_party/metadata-manager
     ```
 
-2. `frontend`をリビルドおよびインストールする。
+2. frontendをリビルドおよびインストールする。
 
    ```sh
    cd /path/to/frontend
@@ -130,40 +130,40 @@ end
    make install
    ```
 
-#### 3.1.3 `ogawayama`
+#### 3.1.3 ogawayama
 
-> ビルド環境がない場合は、事前に`ogawayama`の`README`に従い、`ogawayama`のビルド環境を構築する。  
-> [`How to build`]
+> ビルド環境がない場合は、事前にogawayamaのREADMEに従い、ogawayamaのビルド環境を構築する。  
+> README: `How to build`
 
-1. `ogawayama`の`README`に従い、`ogawayama`の取得およびサブモジュールの取得を行う。
-2. サブモジュールの`metadata-manager`をリリースする`metadata-manager`に入れ替える。  
-   ※入れ替え手順は ［[`2.1.2 frontend`](#212-frontend)］>［`frontend`のビルド環境がある場合］を参照。
-3. `ogawayama`の`README`に従い、`ogawayama`をリビルドおよびインストールする。  
-   [`How to build`]
+1. ogawayamaのREADMEに従い、ogawayamaの取得およびサブモジュールの取得を行う。
+2. サブモジュールのmetadata-manager (`third_party/metadata-manager`) をリリースするmetadata-managerに入れ替える。  
+   ※入れ替え手順は [`3.1.2 frontend`](#312-frontend) > `frontendのビルド環境がある場合`を参照。
+3. ogawayamaのREADMEに従い、ogawayamaをリビルドおよびインストールする。  
+   README: `How to build`
 
-### 3.2 結合テスト
+### 3.2 レグレッションテスト
 
-1. `PostgreSQL`を起動する。
+1. PostgreSQLを起動する。
 
    ```sh
    pg_ctl start
    ```
 
-2. 結合テストを実行する。
+2. レグレッションテストを実行する。
 
    ```sh
    cd /path/to/frontend
    make tests
    ```
 
-   `$HOME/.local/bin`以外に`oltp`がインストールされている場合、`oltp`コマンドが存在しない旨のエラーが表示される。  
+   `$HOME/.local/bin`以外にoltpがインストールされている場合、`oltp`コマンドが存在しない旨のエラーが表示される。  
 
    ```shell-session
    test.sh: line 7: /home/postgres/.local/bin/oltp: No such file or directory
    test.sh: line 8: /home/postgres/.local/bin/oltp: No such file or directory
    ```
 
-   この場合、手動で`oltp`を起動した後に結合テストを実行する必要がある。
+   この場合、手動でoltpを起動した後にレグレッションテストを実行する必要がある。
 
    ```sh
    oltp start
@@ -172,13 +172,13 @@ end
 
 ## 4 リリース手順
 
-### 4.1 リリース手順
+### 4.1 リリース
 
-1. `metadata-manager`のリリース対象ブランチをリモートリポジトリのメインブランチにマージする。
+1. metadata-managerのリリース対象ブランチをリモートリポジトリのメインブランチにマージする。
 
 ### 4.2 リリース通知
 
-1. `metadata-manager`のリリース通知を各コンポーネント担当に通知する。  
+1. metadata-managerのリリース通知を各コンポーネント担当に通知する。  
    ※通知方法等は別途検討
 
 <!--
