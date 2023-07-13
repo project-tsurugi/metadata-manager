@@ -2,7 +2,7 @@
 
 # metadata-managerリリース手順 （検討資料）
 
-2023.07.12 KCC
+2023.07.13 KCC
 
 ---
 
@@ -23,6 +23,9 @@
   - [4 リリース手順](#4-リリース手順)
     - [4.1 リリース](#41-リリース)
     - [4.2 リリース通知](#42-リリース通知)
+  - [5 その他](#5-その他)
+    - [5.1 タグ付けルール](#51-タグ付けルール)
+    - [5.2 リリース通知](#52-リリース通知)
 
 ---
 
@@ -106,82 +109,87 @@ end
 
 #### 3.1.2 frontend
 
-> ビルド環境がない場合は、事前にfrontendのREADMEに従い、frontendのビルド環境を構築する。  
-> README: `How to build frontend` > `Install required packages.` ~ `Clone frontend.`
-
-1. サブモジュールのmetadata-manager (`third_party/metadata-manager`) をリリースするmetadata-managerに入れ替える。
-
-    ```sh
-    cd /path/to/frontend
-    rm -rf third_party/metadata-manager
-
-    ## e.g., GitHubの metadata-manager リポジトリのブランチと入れ替える場合
-    git clone -b <ブランチ名> git@github.com:project-tsurugi/metadata-manager.git third_party/metadata-manager
-
-    ## e.g., 開発環境の metadata-manager と入れ替える場合
-    ln -s /path/to/release/metadata-manager third_party/metadata-manager
-    ```
-
-2. frontendをリビルドおよびインストールする。
-
-   ```sh
-   cd /path/to/frontend
-   make clean && make
-   make install
-   ```
+1. frontendのREADMEに従い、frontendの取得およびサブモジュールの取得を行う。  
+   > **－ 参考 －**  
+   > README: `How to build frontend` > `1. Install required packages.` ~ `3. Clone frontend.`
+2. サブモジュールのmetadata-manager (`third_party/metadata-manager`) をリリースするmetadata-managerに入れ替える。
+3. frontendのREADMEに従い、frontendをリビルドおよびインストールする。  
+   > **－ 参考 －**  
+   > README: `How to build frontend` > `4. Build and Install tsurugi.` ~
 
 #### 3.1.3 ogawayama
 
-> ビルド環境がない場合は、事前にogawayamaのREADMEに従い、ogawayamaのビルド環境を構築する。  
-> README: `How to build`
-
 1. ogawayamaのREADMEに従い、ogawayamaの取得およびサブモジュールの取得を行う。
+   > **－ 参考 －**  
+   > README: `How to build`
 2. サブモジュールのmetadata-manager (`third_party/metadata-manager`) をリリースするmetadata-managerに入れ替える。  
    ※入れ替え手順は [`3.1.2 frontend`](#312-frontend) > `frontendのビルド環境がある場合`を参照。
 3. ogawayamaのREADMEに従い、ogawayamaをリビルドおよびインストールする。  
-   README: `How to build`
+   > **－ 参考 －**  
+   > README: `How to build`
 
 ### 3.2 レグレッションテスト
 
-1. PostgreSQLを起動する。
-
-   ```sh
-   pg_ctl start
-   ```
-
-2. レグレッションテストを実行する。
-
-   ```sh
-   cd /path/to/frontend
-   make tests
-   ```
-
-   `$HOME/.local/bin`以外にoltpがインストールされている場合、`oltp`コマンドが存在しない旨のエラーが表示される。  
-
-   ```shell-session
-   test.sh: line 7: /home/postgres/.local/bin/oltp: No such file or directory
-   test.sh: line 8: /home/postgres/.local/bin/oltp: No such file or directory
-   ```
-
-   この場合、手動でoltpを起動した後にレグレッションテストを実行する必要がある。
-
-   ```sh
-   oltp start
-   make installcheck
-   ```
+1. frontendのREADMEに従い、レグレッションテストを実施する。  
+   > **－ 参考 －**  
+   > README: `Regression tests`
 
 ## 4 リリース手順
 
 ### 4.1 リリース
 
 1. metadata-managerのリリース対象ブランチをリモートリポジトリのメインブランチにマージする。
-2. リモートリポジトリにタグ付けをする。  
-   ※タグ名の命名規則およびコメント内容については別途検討
+2. マージコミットのコミットIDを確認する。  
+   ※確認したコミットIDは、リリース通知で使用する。
+3. リモートリポジトリにタグ付けをする。  
+   ※詳細は［[5.1 タグ付けルール](#51-タグ付けルール)］を参照。
 
 ### 4.2 リリース通知
 
 1. metadata-managerのリリース通知を各コンポーネント担当に通知する。  
-   ※通知方法等は別途検討
+   ※詳細は［[5.2 リリース通知](#52-リリース通知)］を参照。
+
+> **課題**  
+> frontend担当、ogawayama担当のアクション
+
+## 5 その他
+
+### 5.1 タグ付けルール
+
+タグ名は以下の命名規則に則って付与する。
+
+> **課題**  
+> タグ名の命名規則を検討する  
+> `release-`＋バージョン番号（e.g., `release-1.0`）
+
+<!-- > `release-`＋バージョン番号（e.g. `release-1.0`） -->
+
+また、タグ付けの際のコメントについては、任意とする。
+
+### 5.2 リリース通知
+
+リリースの通知は、metadata-managerリポジトリのリリース通知用のissueにて行う。  
+
+> **課題**  
+> issueは1つでリリース毎にコメント追加か、リリース毎にissueを新規に作成するか。
+
+リリース通知の内容は、issueコメントに記載する。記載内容は以下のとおり。
+
+> **課題**  
+> リリース通知(issueコメント)の内容
+
+  ```text
+  リリースバージョン (タグ名と同等)
+  コミットID
+  ```
+
+  ```text
+  release-1.0
+  31b474ae8c7889f21baed92b15a4ec5d5e65f46b
+  ```
+
+> **課題**  
+> frontend担当、ogawayama担当のアクション
 
 <!--
 ## 4 リリース手順 (`frontend`)
