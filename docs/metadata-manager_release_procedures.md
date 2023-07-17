@@ -1,20 +1,21 @@
 【Project-Tsurugi Internal User Only】
 
-# metadata-managerリリース手順 （検討資料）
+# metadata-managerリリース手順
 
-2023.07.13 KCC
+2023.07.18 KCC
 
 ---
 
 ## 目次
 
-- [metadata-managerリリース手順 （検討資料）](#metadata-managerリリース手順-検討資料)
+- [metadata-managerリリース手順](#metadata-managerリリース手順)
   - [目次](#目次)
   - [1 はじめに](#1-はじめに)
     - [1.1 本書の目的](#11-本書の目的)
     - [1.2 前提条件](#12-前提条件)
   - [2 リリースの流れ](#2-リリースの流れ)
   - [3 リリース前手順](#3-リリース前手順)
+    - [3.1 リリース予告の通知](#31-リリース予告の通知)
     - [3.1 ビルド](#31-ビルド)
       - [3.1.1 metadata-manager](#311-metadata-manager)
       - [3.1.2 frontend](#312-frontend)
@@ -22,10 +23,11 @@
     - [3.2 レグレッションテスト](#32-レグレッションテスト)
   - [4 リリース手順](#4-リリース手順)
     - [4.1 リリース](#41-リリース)
-    - [4.2 リリース通知](#42-リリース通知)
+    - [4.2 リリースの通知](#42-リリースの通知)
   - [5 その他](#5-その他)
     - [5.1 タグ付けルール](#51-タグ付けルール)
-    - [5.2 リリース通知](#52-リリース通知)
+    - [5.2 リリース予告](#52-リリース予告)
+    - [5.3 リリース通知](#53-リリース通知)
 
 ---
 
@@ -54,23 +56,34 @@ participant Remote as GitHub
 
 rect rgb(255, 255, 255)
   activate UsrMetaMng
-    rect rgb(255, 255, 255)
-      Note over UsrMetaMng,Local: リリース前のレグレッションテスト
-      UsrMetaMng ->> Local: リリース用の metadata-manager をビルド＆インストール
-      Local -->> Local: 
-      UsrMetaMng ->> Local: リリース用の metadata-manager を用いて<br>frontend, ogawayamaをリビルド＆インストール
-      Local -->> Local: 
-      UsrMetaMng ->> Local: レグレッションテスト
-      Local -->> Local: 
+    rect rgb(247, 252, 252)
+      Note over UsrMetaMng,Remote: 開発ブランチへのリリース
+      UsrMetaMng ->> Remote: metadata-manager を開発ブランチにコミット
+
+      rect rgb(247, 252, 252)
+        Note over UsrMetaMng,UsrOgawayama: リリース予告
+        UsrMetaMng -) UsrFrontend: メタデータ管理基盤のリリース予告を連絡
+        UsrMetaMng -) UsrOgawayama: メタデータ管理基盤のリリース予告を連絡
+      end
+
+      rect rgb(247, 252, 252)
+        Note over UsrMetaMng,Local: リリース前のレグレッションテスト
+        UsrMetaMng ->> Local: リリース用の metadata-manager をビルド＆インストール
+        Local -->> Local: 
+        UsrMetaMng ->> Local: リリース用の metadata-manager を用いて<br>frontend, ogawayamaをリビルド＆インストール
+        Local -->> Local: 
+        UsrMetaMng ->> Local: レグレッションテスト
+        Local -->> Local: 
+      end
     end
 
-    Note over UsrMetaMng,Remote: リリース
+    Note over UsrMetaMng,Remote: メインブランチへのリリース
     UsrMetaMng ->> Remote: metadata-manager をメインブランチにコミット
 
     rect rgb(255, 255, 255)
       Note over UsrMetaMng,UsrOgawayama: リリース通知
-      UsrMetaMng -) UsrFrontend: メタデータ管理基盤の更新を通知
-      UsrMetaMng -) UsrOgawayama: メタデータ管理基盤の更新を通知
+      UsrMetaMng -) UsrFrontend: メタデータ管理基盤のリリースを連絡
+      UsrMetaMng -) UsrOgawayama: メタデータ管理基盤のリリースを連絡
     end
   deactivate UsrMetaMng
 
@@ -100,6 +113,11 @@ end
 ```
 
 ## 3 リリース前手順
+
+### 3.1 リリース予告の通知
+
+1. metadata-managerのリリース予告通知を各コンポーネント担当に通知する。  
+   ※詳細は［[5.2 リリース予告](#52-リリース予告)］を参照。
 
 ### 3.1 ビルド
 
@@ -138,19 +156,17 @@ end
 
 ### 4.1 リリース
 
-1. metadata-managerのリリース対象ブランチをリモートリポジトリのメインブランチにマージする。
+1. metadata-managerの開発ブランチをメインブランチにマージする。
 2. マージコミットのコミットIDを確認する。  
    ※確認したコミットIDは、リリース通知で使用する。
 3. リモートリポジトリにタグ付けをする。  
    ※詳細は［[5.1 タグ付けルール](#51-タグ付けルール)］を参照。
 
-### 4.2 リリース通知
+### 4.2 リリースの通知
 
-1. metadata-managerのリリース通知を各コンポーネント担当に通知する。  
-   ※詳細は［[5.2 リリース通知](#52-リリース通知)］を参照。
-
-> **課題**  
-> frontend担当、ogawayama担当のアクション
+1. metadata-managerのリリース通知を各コンポーネント担当に連絡する。  
+   ※詳細は［[5.3 リリース通知](#53-リリース通知)］を参照。
+2. 各コンポーネントにて、metadata-managerの更新、テスト、リリースなどを実施し、リリース通知のissueコメント等にて連絡する。
 
 ## 5 その他
 
@@ -160,43 +176,23 @@ end
 
 > **課題**  
 > タグ名の命名規則を検討する  
-> `release-`＋バージョン番号（e.g., `release-1.0`）
-
-<!-- > `release-`＋バージョン番号（e.g. `release-1.0`） -->
+> `v`＋バージョン番号（e.g., `v1.0.0`）
 
 また、タグ付けの際のコメントについては、任意とする。
 
-### 5.2 リリース通知
+### 5.2 リリース予告
 
-リリースの通知は、metadata-managerリポジトリのリリース通知用のissueにて行う。  
+リリース予告は、リリース毎にmetadata-managerリポジトリのissueを新規に作成し、下記の内容を記載する。  
 
-> **課題**  
-> issueは1つでリリース毎にコメント追加か、リリース毎にissueを新規に作成するか。
+- ブランチ名
+- リリースバージョン (タグ名と同等)
+- コミットID
+- 特記事項など (e.g. 影響の有無や範囲など)
 
-リリース通知の内容は、issueコメントに記載する。記載内容は以下のとおり。
+### 5.3 リリース通知
 
-> **課題**  
-> リリース通知(issueコメント)の内容
+リリース通知は、リリース毎にmetadata-managerリポジトリのissueを新規に作成し、下記の内容を記載する。  
 
-  ```text
-  リリースバージョン (タグ名と同等)
-  コミットID
-  ```
-
-  ```text
-  release-1.0
-  31b474ae8c7889f21baed92b15a4ec5d5e65f46b
-  ```
-
-> **課題**  
-> frontend担当、ogawayama担当のアクション
-
-<!--
-## 4 リリース手順 (`frontend`)
-
-コンポーネントの各種手順およびルールに従い、`metadata-manager`を最新に更新しリリースする。
-
-## 5. リリース手順 (`ogawayama`)
-
-コンポーネントの各種手順およびルールに従い、`metadata-manager`を最新に更新しリリースする。
--->
+- リリース予告のissue
+- リリースバージョン (タグ名と同等)
+- コミットID
