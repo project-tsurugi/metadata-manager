@@ -155,7 +155,7 @@ class TableMetadataTest : public MetadataTest {
         manager::metadata::Column column;
         column.name               = "new-col";
         column.column_number      = 2;
-        column.data_type_id       = static_cast<int64_t>(DataType::DataTypesId::CHAR);
+        column.data_type_id       = static_cast<int64_t>(DataType::DataTypeId::CHAR);
         column.varying            = false;
         column.data_length        = {32};
         column.is_not_null        = false;

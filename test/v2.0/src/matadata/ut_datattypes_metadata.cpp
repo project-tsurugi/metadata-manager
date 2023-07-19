@@ -90,20 +90,20 @@ struct PgDataTypeQualifiedName {
 };
 
 // a list of tsurugi data type id
-std::vector<std::string> DataTypesIdList = {
-    std::to_string(static_cast<ObjectId>(DataType::DataTypesId::INT32)),
-    std::to_string(static_cast<ObjectId>(DataType::DataTypesId::INT64)),
-    std::to_string(static_cast<ObjectId>(DataType::DataTypesId::FLOAT32)),
-    std::to_string(static_cast<ObjectId>(DataType::DataTypesId::FLOAT64)),
-    std::to_string(static_cast<ObjectId>(DataType::DataTypesId::CHAR)),
-    std::to_string(static_cast<ObjectId>(DataType::DataTypesId::VARCHAR)),
-    std::to_string(static_cast<ObjectId>(DataType::DataTypesId::NUMERIC)),
-    std::to_string(static_cast<ObjectId>(DataType::DataTypesId::DATE)),
-    std::to_string(static_cast<ObjectId>(DataType::DataTypesId::TIME)),
-    std::to_string(static_cast<ObjectId>(DataType::DataTypesId::TIMETZ)),
-    std::to_string(static_cast<ObjectId>(DataType::DataTypesId::TIMESTAMP)),
-    std::to_string(static_cast<ObjectId>(DataType::DataTypesId::TIMESTAMPTZ)),
-    std::to_string(static_cast<ObjectId>(DataType::DataTypesId::INTERVAL)),
+std::vector<std::string> DataTypeIdList = {
+    std::to_string(static_cast<ObjectId>(DataType::DataTypeId::INT32)),
+    std::to_string(static_cast<ObjectId>(DataType::DataTypeId::INT64)),
+    std::to_string(static_cast<ObjectId>(DataType::DataTypeId::FLOAT32)),
+    std::to_string(static_cast<ObjectId>(DataType::DataTypeId::FLOAT64)),
+    std::to_string(static_cast<ObjectId>(DataType::DataTypeId::CHAR)),
+    std::to_string(static_cast<ObjectId>(DataType::DataTypeId::VARCHAR)),
+    std::to_string(static_cast<ObjectId>(DataType::DataTypeId::NUMERIC)),
+    std::to_string(static_cast<ObjectId>(DataType::DataTypeId::DATE)),
+    std::to_string(static_cast<ObjectId>(DataType::DataTypeId::TIME)),
+    std::to_string(static_cast<ObjectId>(DataType::DataTypeId::TIMETZ)),
+    std::to_string(static_cast<ObjectId>(DataType::DataTypeId::TIMESTAMP)),
+    std::to_string(static_cast<ObjectId>(DataType::DataTypeId::TIMESTAMPTZ)),
+    std::to_string(static_cast<ObjectId>(DataType::DataTypeId::INTERVAL)),
 };
 // a list of tsurugi data type name
 std::vector<std::string> DataTypesNameList = {
@@ -151,7 +151,7 @@ UtDataTypesMetadata::UtDataTypesMetadata() {
   {
     ptree values;
     values.put(DataType::ID,
-               static_cast<int64_t>(DataType::DataTypesId::INT32));
+               static_cast<int64_t>(DataType::DataTypeId::INT32));
     values.put(DataType::NAME, DataTypesName::INT32);
     values.put(DataType::PG_DATA_TYPE, PgDataType::INT32);
     values.put(DataType::PG_DATA_TYPE_NAME, PgDataTypeName::INT32);
@@ -163,7 +163,7 @@ UtDataTypesMetadata::UtDataTypesMetadata() {
   {
     ptree values;
     values.put(DataType::ID,
-               static_cast<int64_t>(DataType::DataTypesId::INT64));
+               static_cast<int64_t>(DataType::DataTypeId::INT64));
     values.put(DataType::NAME, DataTypesName::INT64);
     values.put(DataType::PG_DATA_TYPE, PgDataType::INT64);
     values.put(DataType::PG_DATA_TYPE_NAME, PgDataTypeName::INT64);
@@ -175,7 +175,7 @@ UtDataTypesMetadata::UtDataTypesMetadata() {
   {
     ptree values;
     values.put(DataType::ID,
-               static_cast<int64_t>(DataType::DataTypesId::FLOAT32));
+               static_cast<int64_t>(DataType::DataTypeId::FLOAT32));
     values.put(DataType::NAME, DataTypesName::FLOAT32);
     values.put(DataType::PG_DATA_TYPE, PgDataType::FLOAT32);
     values.put(DataType::PG_DATA_TYPE_NAME, PgDataTypeName::FLOAT32);
@@ -187,7 +187,7 @@ UtDataTypesMetadata::UtDataTypesMetadata() {
   {
     ptree values;
     values.put(DataType::ID,
-               static_cast<int64_t>(DataType::DataTypesId::FLOAT64));
+               static_cast<int64_t>(DataType::DataTypeId::FLOAT64));
     values.put(DataType::NAME, DataTypesName::FLOAT64);
     values.put(DataType::PG_DATA_TYPE, PgDataType::FLOAT64);
     values.put(DataType::PG_DATA_TYPE_NAME, PgDataTypeName::FLOAT64);
@@ -199,7 +199,7 @@ UtDataTypesMetadata::UtDataTypesMetadata() {
   {
     ptree values;
     values.put(DataType::ID,
-               static_cast<int64_t>(DataType::DataTypesId::CHAR));
+               static_cast<int64_t>(DataType::DataTypeId::CHAR));
     values.put(DataType::NAME, DataTypesName::CHAR);
     values.put(DataType::PG_DATA_TYPE, PgDataType::CHAR);
     values.put(DataType::PG_DATA_TYPE_NAME, PgDataTypeName::CHAR);
@@ -211,7 +211,7 @@ UtDataTypesMetadata::UtDataTypesMetadata() {
   {
     ptree values;
     values.put(DataType::ID,
-               static_cast<int64_t>(DataType::DataTypesId::VARCHAR));
+               static_cast<int64_t>(DataType::DataTypeId::VARCHAR));
     values.put(DataType::NAME, DataTypesName::VARCHAR);
     values.put(DataType::PG_DATA_TYPE, PgDataType::VARCHAR);
     values.put(DataType::PG_DATA_TYPE_NAME, PgDataTypeName::VARCHAR);
@@ -223,7 +223,7 @@ UtDataTypesMetadata::UtDataTypesMetadata() {
   {
     ptree values;
     values.put(DataType::ID,
-               static_cast<int64_t>(DataType::DataTypesId::NUMERIC));
+               static_cast<int64_t>(DataType::DataTypeId::NUMERIC));
     values.put(DataType::NAME, DataTypesName::NUMERIC);
     values.put(DataType::PG_DATA_TYPE, PgDataType::NUMERIC);
     values.put(DataType::PG_DATA_TYPE_NAME, PgDataTypeName::NUMERIC);
@@ -235,7 +235,7 @@ UtDataTypesMetadata::UtDataTypesMetadata() {
   {
     ptree values;
     values.put(DataType::ID,
-               static_cast<int64_t>(DataType::DataTypesId::DATE));
+               static_cast<int64_t>(DataType::DataTypeId::DATE));
     values.put(DataType::NAME, DataTypesName::DATE);
     values.put(DataType::PG_DATA_TYPE, PgDataType::DATE);
     values.put(DataType::PG_DATA_TYPE_NAME, PgDataTypeName::DATE);
@@ -247,7 +247,7 @@ UtDataTypesMetadata::UtDataTypesMetadata() {
   {
     ptree values;
     values.put(DataType::ID,
-               static_cast<int64_t>(DataType::DataTypesId::TIME));
+               static_cast<int64_t>(DataType::DataTypeId::TIME));
     values.put(DataType::NAME, DataTypesName::TIME);
     values.put(DataType::PG_DATA_TYPE, PgDataType::TIME);
     values.put(DataType::PG_DATA_TYPE_NAME, PgDataTypeName::TIME);
@@ -259,7 +259,7 @@ UtDataTypesMetadata::UtDataTypesMetadata() {
   {
     ptree values;
     values.put(DataType::ID,
-               static_cast<int64_t>(DataType::DataTypesId::TIMETZ));
+               static_cast<int64_t>(DataType::DataTypeId::TIMETZ));
     values.put(DataType::NAME, DataTypesName::TIMETZ);
     values.put(DataType::PG_DATA_TYPE, PgDataType::TIMETZ);
     values.put(DataType::PG_DATA_TYPE_NAME, PgDataTypeName::TIMETZ);
@@ -271,7 +271,7 @@ UtDataTypesMetadata::UtDataTypesMetadata() {
   {
     ptree values;
     values.put(DataType::ID,
-               static_cast<int64_t>(DataType::DataTypesId::TIMESTAMP));
+               static_cast<int64_t>(DataType::DataTypeId::TIMESTAMP));
     values.put(DataType::NAME, DataTypesName::TIMESTAMP);
     values.put(DataType::PG_DATA_TYPE, PgDataType::TIMESTAMP);
     values.put(DataType::PG_DATA_TYPE_NAME, PgDataTypeName::TIMESTAMP);
@@ -283,7 +283,7 @@ UtDataTypesMetadata::UtDataTypesMetadata() {
   {
     ptree values;
     values.put(DataType::ID,
-               static_cast<int64_t>(DataType::DataTypesId::TIMESTAMPTZ));
+               static_cast<int64_t>(DataType::DataTypeId::TIMESTAMPTZ));
     values.put(DataType::NAME, DataTypesName::TIMESTAMPTZ);
     values.put(DataType::PG_DATA_TYPE, PgDataType::TIMESTAMPTZ);
     values.put(DataType::PG_DATA_TYPE_NAME, PgDataTypeName::TIMESTAMPTZ);
@@ -295,7 +295,7 @@ UtDataTypesMetadata::UtDataTypesMetadata() {
   {
     ptree values;
     values.put(DataType::ID,
-               static_cast<int64_t>(DataType::DataTypesId::INTERVAL));
+               static_cast<int64_t>(DataType::DataTypeId::INTERVAL));
     values.put(DataType::NAME, DataTypesName::INTERVAL);
     values.put(DataType::PG_DATA_TYPE, PgDataType::INTERVAL);
     values.put(DataType::PG_DATA_TYPE_NAME, PgDataTypeName::INTERVAL);
@@ -310,7 +310,7 @@ UtDataTypesMetadata::UtDataTypesMetadata() {
  * @return Tsurugi data type IDs.
  */
 std::vector<std::string> UtDataTypesMetadata::get_datatype_ids() const {
-  return DataTypesIdList;
+  return DataTypeIdList;
 }
 
 /**

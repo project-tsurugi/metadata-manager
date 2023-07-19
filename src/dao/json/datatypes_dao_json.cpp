@@ -37,7 +37,7 @@ ErrorCode DataTypesDaoJson::prepare() {
     datatype.put(DataType::FORMAT_VERSION, Object::DEFAULT_FORMAT_VERSION);
     datatype.put(DataType::GENERATION, Object::DEFAULT_GENERATION);
     datatype.put(DataType::ID,
-                 static_cast<ObjectId>(DataType::DataTypesId::INT32));
+                 static_cast<ObjectId>(DataType::DataTypeId::INT32));
     datatype.put(DataType::NAME, "INT32");
     datatype.put(DataType::PG_DATA_TYPE, PgType::TypeOid::kInt4);
     datatype.put(DataType::PG_DATA_TYPE_NAME, "integer");
@@ -49,7 +49,7 @@ ErrorCode DataTypesDaoJson::prepare() {
     datatype.put(DataType::FORMAT_VERSION, Object::DEFAULT_FORMAT_VERSION);
     datatype.put(DataType::GENERATION, Object::DEFAULT_GENERATION);
     datatype.put(DataType::ID,
-                 static_cast<ObjectId>(DataType::DataTypesId::INT64));
+                 static_cast<ObjectId>(DataType::DataTypeId::INT64));
     datatype.put(DataType::NAME, "INT64");
     datatype.put(DataType::PG_DATA_TYPE, PgType::TypeOid::kInt8);
     datatype.put(DataType::PG_DATA_TYPE_NAME, "bigint");
@@ -61,7 +61,7 @@ ErrorCode DataTypesDaoJson::prepare() {
     datatype.put(DataType::FORMAT_VERSION, Object::DEFAULT_FORMAT_VERSION);
     datatype.put(DataType::GENERATION, Object::DEFAULT_GENERATION);
     datatype.put(DataType::ID,
-                 static_cast<ObjectId>(DataType::DataTypesId::FLOAT32));
+                 static_cast<ObjectId>(DataType::DataTypeId::FLOAT32));
     datatype.put(DataType::NAME, "FLOAT32");
     datatype.put(DataType::PG_DATA_TYPE, PgType::TypeOid::kFloat4);
     datatype.put(DataType::PG_DATA_TYPE_NAME, "real");
@@ -73,7 +73,7 @@ ErrorCode DataTypesDaoJson::prepare() {
     datatype.put(DataType::FORMAT_VERSION, Object::DEFAULT_FORMAT_VERSION);
     datatype.put(DataType::GENERATION, Object::DEFAULT_GENERATION);
     datatype.put(DataType::ID,
-                 static_cast<ObjectId>(DataType::DataTypesId::FLOAT64));
+                 static_cast<ObjectId>(DataType::DataTypeId::FLOAT64));
     datatype.put(DataType::NAME, "FLOAT64");
     datatype.put(DataType::PG_DATA_TYPE, PgType::TypeOid::kFloat8);
     datatype.put(DataType::PG_DATA_TYPE_NAME, "double precision");
@@ -85,7 +85,7 @@ ErrorCode DataTypesDaoJson::prepare() {
     datatype.put(DataType::FORMAT_VERSION, Object::DEFAULT_FORMAT_VERSION);
     datatype.put(DataType::GENERATION, Object::DEFAULT_GENERATION);
     datatype.put(DataType::ID,
-                 static_cast<ObjectId>(DataType::DataTypesId::CHAR));
+                 static_cast<ObjectId>(DataType::DataTypeId::CHAR));
     datatype.put(DataType::NAME, "CHAR");
     datatype.put(DataType::PG_DATA_TYPE, PgType::TypeOid::kBpchar);
     datatype.put(DataType::PG_DATA_TYPE_NAME, "char");
@@ -97,7 +97,7 @@ ErrorCode DataTypesDaoJson::prepare() {
     datatype.put(DataType::FORMAT_VERSION, Object::DEFAULT_FORMAT_VERSION);
     datatype.put(DataType::GENERATION, Object::DEFAULT_GENERATION);
     datatype.put(DataType::ID,
-                 static_cast<ObjectId>(DataType::DataTypesId::VARCHAR));
+                 static_cast<ObjectId>(DataType::DataTypeId::VARCHAR));
     datatype.put(DataType::NAME, "VARCHAR");
     datatype.put(DataType::PG_DATA_TYPE, PgType::TypeOid::kVarchar);
     datatype.put(DataType::PG_DATA_TYPE_NAME, "varchar");
@@ -109,7 +109,7 @@ ErrorCode DataTypesDaoJson::prepare() {
     datatype.put(DataType::FORMAT_VERSION, Object::DEFAULT_FORMAT_VERSION);
     datatype.put(DataType::GENERATION, Object::DEFAULT_GENERATION);
     datatype.put(DataType::ID,
-                 static_cast<ObjectIdType>(DataType::DataTypesId::NUMERIC));
+                 static_cast<ObjectIdType>(DataType::DataTypeId::NUMERIC));
     datatype.put(DataType::NAME, "NUMERIC");
     datatype.put(DataType::PG_DATA_TYPE, PgType::TypeOid::kNumeric);
     datatype.put(DataType::PG_DATA_TYPE_NAME, "numeric");
@@ -121,7 +121,7 @@ ErrorCode DataTypesDaoJson::prepare() {
     datatype.put(DataType::FORMAT_VERSION, Object::DEFAULT_FORMAT_VERSION);
     datatype.put(DataType::GENERATION, Object::DEFAULT_GENERATION);
     datatype.put(DataType::ID,
-                 static_cast<ObjectIdType>(DataType::DataTypesId::DATE));
+                 static_cast<ObjectIdType>(DataType::DataTypeId::DATE));
     datatype.put(DataType::NAME, "DATE");
     datatype.put(DataType::PG_DATA_TYPE, PgType::TypeOid::kDate);
     datatype.put(DataType::PG_DATA_TYPE_NAME, "date");
@@ -133,7 +133,7 @@ ErrorCode DataTypesDaoJson::prepare() {
     datatype.put(DataType::FORMAT_VERSION, Object::DEFAULT_FORMAT_VERSION);
     datatype.put(DataType::GENERATION, Object::DEFAULT_GENERATION);
     datatype.put(DataType::ID,
-                 static_cast<ObjectIdType>(DataType::DataTypesId::TIME));
+                 static_cast<ObjectIdType>(DataType::DataTypeId::TIME));
     datatype.put(DataType::NAME, "TIME");
     datatype.put(DataType::PG_DATA_TYPE, PgType::TypeOid::kTime);
     datatype.put(DataType::PG_DATA_TYPE_NAME, "time");
@@ -145,7 +145,7 @@ ErrorCode DataTypesDaoJson::prepare() {
     datatype.put(DataType::FORMAT_VERSION, Object::DEFAULT_FORMAT_VERSION);
     datatype.put(DataType::GENERATION, Object::DEFAULT_GENERATION);
     datatype.put(DataType::ID,
-                 static_cast<ObjectIdType>(DataType::DataTypesId::TIMETZ));
+                 static_cast<ObjectIdType>(DataType::DataTypeId::TIMETZ));
     datatype.put(DataType::NAME, "TIMETZ");
     datatype.put(DataType::PG_DATA_TYPE, PgType::TypeOid::kTimetz);
     datatype.put(DataType::PG_DATA_TYPE_NAME, "timetz");
@@ -157,7 +157,7 @@ ErrorCode DataTypesDaoJson::prepare() {
     datatype.put(DataType::FORMAT_VERSION, Object::DEFAULT_FORMAT_VERSION);
     datatype.put(DataType::GENERATION, Object::DEFAULT_GENERATION);
     datatype.put(DataType::ID,
-                 static_cast<ObjectIdType>(DataType::DataTypesId::TIMESTAMP));
+                 static_cast<ObjectIdType>(DataType::DataTypeId::TIMESTAMP));
     datatype.put(DataType::NAME, "TIMESTAMP");
     datatype.put(DataType::PG_DATA_TYPE, PgType::TypeOid::kTimestamp);
     datatype.put(DataType::PG_DATA_TYPE_NAME, "timestamp");
@@ -169,7 +169,7 @@ ErrorCode DataTypesDaoJson::prepare() {
     datatype.put(DataType::FORMAT_VERSION, Object::DEFAULT_FORMAT_VERSION);
     datatype.put(DataType::GENERATION, Object::DEFAULT_GENERATION);
     datatype.put(DataType::ID,
-                 static_cast<ObjectIdType>(DataType::DataTypesId::TIMESTAMPTZ));
+                 static_cast<ObjectIdType>(DataType::DataTypeId::TIMESTAMPTZ));
     datatype.put(DataType::NAME, "TIMESTAMPTZ");
     datatype.put(DataType::PG_DATA_TYPE, PgType::TypeOid::kTimestamptz);
     datatype.put(DataType::PG_DATA_TYPE_NAME, "timestamptz");
@@ -181,7 +181,7 @@ ErrorCode DataTypesDaoJson::prepare() {
     datatype.put(DataType::FORMAT_VERSION, Object::DEFAULT_FORMAT_VERSION);
     datatype.put(DataType::GENERATION, Object::DEFAULT_GENERATION);
     datatype.put(DataType::ID,
-                 static_cast<ObjectIdType>(DataType::DataTypesId::INTERVAL));
+                 static_cast<ObjectIdType>(DataType::DataTypeId::INTERVAL));
     datatype.put(DataType::NAME, "INTERVAL");
     datatype.put(DataType::PG_DATA_TYPE, PgType::TypeOid::kInterval);
     datatype.put(DataType::PG_DATA_TYPE_NAME, "interval");

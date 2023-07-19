@@ -442,8 +442,8 @@ ErrorCode add_table_metadata() {
     if (!data_type_id) {
       return ErrorCode::NOT_FOUND;
     } else {
-      if (DataType::DataTypesId::FLOAT32 !=
-          static_cast<DataType::DataTypesId>(data_type_id)) {
+      if (DataType::DataTypeId::FLOAT32 !=
+          static_cast<DataType::DataTypeId>(data_type_id)) {
         return ErrorCode::UNKNOWN;
       }
     }
@@ -461,8 +461,8 @@ ErrorCode add_table_metadata() {
     if (!data_type_id) {
       return ErrorCode::NOT_FOUND;
     } else {
-      if (DataType::DataTypesId::VARCHAR !=
-          static_cast<DataType::DataTypesId>(data_type_id)) {
+      if (DataType::DataTypeId::VARCHAR !=
+          static_cast<DataType::DataTypeId>(data_type_id)) {
         return ErrorCode::UNKNOWN;
       }
     }
@@ -482,8 +482,8 @@ ErrorCode add_table_metadata() {
     if (!data_type_id) {
       return ErrorCode::NOT_FOUND;
     } else {
-      if (DataType::DataTypesId::CHAR !=
-          static_cast<DataType::DataTypesId>(data_type_id)) {
+      if (DataType::DataTypeId::CHAR !=
+          static_cast<DataType::DataTypeId>(data_type_id)) {
         return ErrorCode::UNKNOWN;
       }
     }

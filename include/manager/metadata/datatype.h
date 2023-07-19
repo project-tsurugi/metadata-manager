@@ -40,7 +40,7 @@ struct DataType : public Object {
   /**
    * @brief represents data types id.
    */
-  enum class DataTypesId : ObjectIdType {
+  enum class DataTypeId : ObjectIdType {
     INT64       = 20,    //!< @brief INT64.
     INT32       = 23,    //!< @brief INT32.
     FLOAT32     = 700,   //!< @brief FLOAT32.
@@ -59,7 +59,7 @@ struct DataType : public Object {
   /**
    * @brief Interval Fields option.
    */
-  enum class IntervalFields : int64_t {
+  enum class IntervalField : int64_t {
     OMITTED          = 0x7FFF,         //!< @brief fields parameter omitted.
     YEAR             = 0x0004,         //!< @brief YEAR.
     MONTH            = 0x0002,         //!< @brief MONTH.

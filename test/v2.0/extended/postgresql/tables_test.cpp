@@ -486,7 +486,7 @@ ErrorCode tables_test() {
   column.put(Column::NAME, "col-1");
   column.put(Column::COLUMN_NUMBER, 1);
   column.put(Column::DATA_TYPE_ID,
-      static_cast<int64_t>(DataType::DataTypesId::INT64));
+      static_cast<int64_t>(DataType::DataTypeId::INT64));
   column.put(Column::IS_NOT_NULL, "true");
   column.put(Column::VARYING, "false");
   column.put(Column::IS_FUNCEXPR, "false");
@@ -497,7 +497,7 @@ ErrorCode tables_test() {
   column.put(Column::COLUMN_NUMBER, 2);
   column.put(Column::IS_NOT_NULL, "false");
   column.put(Column::DATA_TYPE_ID,
-      static_cast<int64_t>(DataType::DataTypesId::VARCHAR));
+      static_cast<int64_t>(DataType::DataTypeId::VARCHAR));
   column.put(Column::VARYING, "true");
   {
     ptree elements;
@@ -609,7 +609,7 @@ ErrorCode tables_test() {
           "-update");
   update_column.put(Column::COLUMN_NUMBER, 1);
   update_column.put(Column::DATA_TYPE_ID,
-      static_cast<int64_t>(DataType::DataTypesId::INT64));
+      static_cast<int64_t>(DataType::DataTypeId::INT64));
   update_column.erase(Column::DATA_LENGTH);
   update_column.put<bool>(Column::VARYING, false);
   update_column.put<bool>(Column::IS_NOT_NULL, true);
@@ -622,7 +622,7 @@ ErrorCode tables_test() {
   update_column.put(Column::NAME, "new-col-3");
   update_column.put(Column::COLUMN_NUMBER, 2);
   update_column.put(Column::DATA_TYPE_ID,
-      static_cast<int64_t>(DataType::DataTypesId::VARCHAR));
+      static_cast<int64_t>(DataType::DataTypeId::VARCHAR));
   update_column.put<bool>(Column::VARYING, false);
   update_column.put<bool>(Column::IS_NOT_NULL, true);
   {

@@ -213,7 +213,7 @@ void UtTableMetadata::generate_test_metadata() {
     column.name          = "column_name_1_" + UTUtils::generate_narrow_uid();
     column.table_id      = INVALID_OBJECT_ID;
     column.column_number = 1;
-    column.data_type_id  = static_cast<int64_t>(DataType::DataTypesId::INT64);
+    column.data_type_id  = static_cast<int64_t>(DataType::DataTypeId::INT64);
     column.data_length   = {};
     column.varying       = false;
     column.is_not_null   = true;
@@ -224,7 +224,7 @@ void UtTableMetadata::generate_test_metadata() {
     column.name          = "column_name_2_" + UTUtils::generate_narrow_uid();
     column.table_id      = INVALID_OBJECT_ID;
     column.column_number = 2;
-    column.data_type_id = static_cast<int64_t>(DataType::DataTypesId::VARCHAR);
+    column.data_type_id = static_cast<int64_t>(DataType::DataTypeId::VARCHAR);
     column.data_length  = {64};
     column.varying      = true;
     column.is_not_null  = false;
@@ -235,7 +235,7 @@ void UtTableMetadata::generate_test_metadata() {
     column.name          = "column_name_3_" + UTUtils::generate_narrow_uid();
     column.table_id      = INVALID_OBJECT_ID;
     column.column_number = 3;
-    column.data_type_id  = static_cast<int64_t>(DataType::DataTypesId::CHAR);
+    column.data_type_id  = static_cast<int64_t>(DataType::DataTypeId::CHAR);
     column.data_length   = {5};
     column.varying       = false;
     column.is_not_null   = false;
