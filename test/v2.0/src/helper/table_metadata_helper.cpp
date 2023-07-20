@@ -26,7 +26,7 @@
 #include "manager/metadata/datatypes.h"
 #include "manager/metadata/helper/ptree_helper.h"
 #include "manager/metadata/metadata_factory.h"
-#include "manager/metadata/tables.h"
+#include "manager/metadata/table.h"
 #include "test/common/global_test_environment.h"
 #include "test/common/ut_utils.h"
 

@@ -24,7 +24,7 @@
 
 #include "manager/metadata/dao/postgresql/dao_pg.h"
 #include "manager/metadata/error_code.h"
-#include "manager/metadata/tables.h"
+#include "manager/metadata/table.h"
 
 namespace manager::metadata::db {
 

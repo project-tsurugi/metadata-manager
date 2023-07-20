@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2022 tsurugi project.
+ * Copyright 2020-2023 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -436,7 +436,7 @@ TEST_P(ApiTestDBAccessFailureByTableIdReltuples,
 
   // set table metadata.
   ptree table_meta;
-  table_meta.put(Tables::ID, table_id);
+  table_meta.put(Table::ID, table_id);
   table_meta.put(Table::NUMBER_OF_TUPLES, reltuples);
 
   // Execute the test.
