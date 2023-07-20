@@ -2,7 +2,7 @@
 
 # metadata-managerリリース手順
 
-2023.07.18 KCC
+2023.07.20 KCC
 
 ---
 
@@ -14,20 +14,14 @@
     - [1.1 本書の目的](#11-本書の目的)
     - [1.2 前提条件](#12-前提条件)
   - [2 リリースの流れ](#2-リリースの流れ)
-  - [3 リリース前手順](#3-リリース前手順)
-    - [3.1 リリース予告の通知](#31-リリース予告の通知)
-    - [3.1 ビルド](#31-ビルド)
-      - [3.1.1 metadata-manager](#311-metadata-manager)
-      - [3.1.2 frontend](#312-frontend)
-      - [3.1.3 ogawayama](#313-ogawayama)
-    - [3.2 レグレッションテスト](#32-レグレッションテスト)
-  - [4 リリース手順](#4-リリース手順)
-    - [4.1 リリース](#41-リリース)
-    - [4.2 リリースの通知](#42-リリースの通知)
-  - [5 その他](#5-その他)
-    - [5.1 タグ付けルール](#51-タグ付けルール)
-    - [5.2 リリース予告](#52-リリース予告)
-    - [5.3 リリース通知](#53-リリース通知)
+    - [リリース](#リリース)
+      - [RC版 (Release Candidate)](#rc版-release-candidate)
+      - [プレリリース版](#プレリリース版)
+      - [正式版](#正式版)
+  - [3 担当毎の作業](#3-担当毎の作業)
+    - [metadata-manager担当](#metadata-manager担当)
+    - [ogawayama担当](#ogawayama担当)
+    - [frontend担当](#frontend担当)
 
 ---
 
@@ -46,153 +40,186 @@
 `metadata-manager`をメインブランチにリリースする際の作業の流れを示す。
 
 ```mermaid
-sequenceDiagram
+flowchart TB
+  M_WF_1("RC版リリース")
+  F_WF_1[["frontend"]]
+  M_WF_5("正式版プレリリース")
+  O_WF_1[["ogawayama"]]
+  M_WF_7("正式版リリース")
 
-actor UsrMetaMng as metadata-manager担当
-actor UsrFrontend as frontend担当
-actor UsrOgawayama as ogawayama担当
-participant Local as 各開発環境
-participant Remote as GitHub
+  F_WF_2[["[frontend]<br>metadata-managerの最新化"]]
+  O_WF_2[["[ogawayama]<br>metadata-managerの最新化"]]
 
-rect rgb(255, 255, 255)
-  activate UsrMetaMng
-    rect rgb(247, 252, 252)
-      Note over UsrMetaMng,Remote: 開発ブランチへのリリース
-      UsrMetaMng ->> Remote: metadata-manager を開発ブランチにコミット
+  M_WF_1 -. "metadata-manager<br>リリース予告の通知" .-> F_WF_1
+  M_WF_1 --> M_WF_5
+  M_WF_1 -. "metadata-manager<br>リリース予告の通知" .-> O_WF_1
 
-      rect rgb(247, 252, 252)
-        Note over UsrMetaMng,UsrOgawayama: リリース予告
-        UsrMetaMng -) UsrFrontend: メタデータ管理基盤のリリース予告を連絡
-        UsrMetaMng -) UsrOgawayama: メタデータ管理基盤のリリース予告を連絡
-      end
-
-      rect rgb(247, 252, 252)
-        Note over UsrMetaMng,Local: リリース前のレグレッションテスト
-        UsrMetaMng ->> Local: リリース用の metadata-manager をビルド＆インストール
-        Local -->> Local: 
-        UsrMetaMng ->> Local: リリース用の metadata-manager を用いて<br>frontend, ogawayamaをリビルド＆インストール
-        Local -->> Local: 
-        UsrMetaMng ->> Local: レグレッションテスト
-        Local -->> Local: 
-      end
-    end
-
-    Note over UsrMetaMng,Remote: メインブランチへのリリース
-    UsrMetaMng ->> Remote: metadata-manager をメインブランチにコミット
-
-    rect rgb(255, 255, 255)
-      Note over UsrMetaMng,UsrOgawayama: リリース通知
-      UsrMetaMng -) UsrFrontend: メタデータ管理基盤のリリースを連絡
-      UsrMetaMng -) UsrOgawayama: メタデータ管理基盤のリリースを連絡
-    end
-  deactivate UsrMetaMng
-
-  rect rgb(255, 255, 255)
-    par frontend
-      activate UsrFrontend
-        Note over UsrFrontend,Remote: metadata-manager 更新作業
-        UsrFrontend ->> Local: サブモジュールの metadata-manager を最新に更新
-        Remote -->> Local: 最新の metadata-manager を取得
-        UsrFrontend ->> Local: ビルド・テストなど
-        Local -->> Local: 
-        UsrFrontend ->> Remote: frontend をメインブランチにコミット
-      deactivate UsrFrontend
-
-    and ogawayama
-      activate UsrOgawayama
-        Note over UsrOgawayama,Remote: metadata-manager 更新作業
-        UsrOgawayama ->> Local: サブモジュールの metadata-manager を最新に更新
-        Remote -->> Local: 最新の metadata-manager を取得
-        UsrOgawayama ->> Local: ビルド・テストなど
-        Local -->> Local: 
-        UsrOgawayama ->> Remote: ogawayama をメインブランチにコミット
-      deactivate UsrOgawayama
-    end
-  end
-end
+  M_WF_5 -. "metadata-manager<br>リリースの通知" .-> F_WF_2
+  M_WF_5 -. "metadata-manager<br>リリースの通知" .-> O_WF_2
+  F_WF_2 -. "最新化完了" .-> M_WF_7
+  O_WF_2 -. "最新化完了" .-> M_WF_7
 ```
 
-## 3 リリース前手順
+### リリース
 
-### 3.1 リリース予告の通知
+リリースの管理は、GitHubのリリースを用いて実現する。  
+リリースは、開発ブランチのリリースであるRC版 (Release Candidate)と、メインブランチの正式リリースとなる正式版に大別される。  
+また、正式版はプレリリースと正式リリースに分かれ、ogawayamaおよびfrontendにおけるサブモジュール(metadata-manager)の更新状況によって遷移する。
 
-1. metadata-managerのリリース予告通知を各コンポーネント担当に通知する。  
-   ※詳細は［[5.2 リリース予告](#52-リリース予告)］を参照。
+```mermaid
+stateDiagram
+  RC : RC版
+  PRE : 正式版 (プレリリース)
+  GA : 正式版
+  [*] --> RC : 開発ブランチのテスト完了
+  RC --> PRE : メインブランチへのマージ・<br>レグレッションテストの完了
+  PRE --> GA : ogawayama, frontendにて<br>サブモジュール更新完了
+  GA --> [*]
+```
 
-### 3.1 ビルド
+#### RC版 (Release Candidate)
 
-#### 3.1.1 metadata-manager
+- 開発ブランチの一過性のリリースバージョン。
+- 通常は使用されないが、大規模開発やインタフェース変更など、必要に応じて正式リリース前に他コンポーネントで使用する事を目的としたバージョンとなる。
 
-1. READMEの `How to build` に従い、リリース予定のmetadata-managerをリビルドおよびインストールする。
+#### プレリリース版
 
-#### 3.1.2 frontend
+- 開発ブランチをマージしたメインブランチのプレリリースバージョン。
+- ogawayamaおよびfrontendにおけるサブモジュール更新およびテストを行うためのリリースバージョンとなる。
+- 正式版と差分がない最新状態ではあるが、GitHub上にて`pre-release`としてマークされたバージョンとなる。
 
-1. frontendのREADMEに従い、frontendの取得およびサブモジュールの取得を行う。  
-   > **－ 参考 －**  
-   > README: `How to build frontend` > `1. Install required packages.` ~ `3. Clone frontend.`
-2. サブモジュールのmetadata-manager (`third_party/metadata-manager`) をリリースするmetadata-managerに入れ替える。
-3. frontendのREADMEに従い、frontendをリビルドおよびインストールする。  
-   > **－ 参考 －**  
-   > README: `How to build frontend` > `4. Build and Install tsurugi.` ~
+#### 正式版
 
-#### 3.1.3 ogawayama
+- メインブランチの正式公開の最新リリースバージョン。
+- ogawayamaおよびfrontendにおけるサブモジュール更新が完了し、コンポーネント間の同期がとれたバージョンとなる。
+- GitHub上にて`Latest`としてマークされたバージョンとなり、プレリリース版との違いはリリース状態のみ。
 
-1. ogawayamaのREADMEに従い、ogawayamaの取得およびサブモジュールの取得を行う。
-   > **－ 参考 －**  
-   > README: `How to build`
-2. サブモジュールのmetadata-manager (`third_party/metadata-manager`) をリリースするmetadata-managerに入れ替える。  
-   ※入れ替え手順は [`3.1.2 frontend`](#312-frontend) > `frontendのビルド環境がある場合`を参照。
-3. ogawayamaのREADMEに従い、ogawayamaをリビルドおよびインストールする。  
-   > **－ 参考 －**  
-   > README: `How to build`
+## 3 担当毎の作業
 
-### 3.2 レグレッションテスト
+### metadata-manager担当
 
-1. frontendのREADMEに従い、レグレッションテストを実施する。  
-   > **－ 参考 －**  
-   > README: `Regression tests`
+```mermaid
+flowchart TB
+  subgraph metadata [metadata-manager担当]
+    M_WF_1("RC版 リリース<br>[開発ブランチ]")
+    M_WF_2("リリース予告通知<br>[開発ブランチ]")
+    M_WF_3("レグレッションテストなど<br>[開発ブランチ]")
+    M_WF_4("開発ブランチをメインブランチにマージ")
+    M_WF_5("正式版 プレリリース<br>[メインブランチ]")
+    M_WF_6("リリース通知<br>[メインブランチ]")
+    M_WF_7("正式版 リリース<br>[メインブランチ]")
+  end
 
-## 4 リリース手順
+  subgraph ogawayama [ogawayama担当]
+    O_WF[["metadata-managerの最新化"]]
+  end
+  subgraph frontend [frontend担当]
+    F_WF[["metadata-managerの最新化"]]
+  end
 
-### 4.1 リリース
+  M_WF_1 --> M_WF_2
+  M_WF_2 --> M_WF_3
+  M_WF_3 --> M_WF_4
+  M_WF_4 --> M_WF_5
+  M_WF_5 --> M_WF_6
+  M_WF_6 -.-> ogawayama
+  M_WF_6 -.-> frontend
+  ogawayama -. "metadata-manager<br>更新完了連絡" .-> M_WF_7
+  frontend -. "metadata-manager<br>更新完了連絡" .-> M_WF_7
+```
 
-1. metadata-managerの開発ブランチをメインブランチにマージする。
-2. マージコミットのコミットIDを確認する。  
-   ※確認したコミットIDは、リリース通知で使用する。
-3. リモートリポジトリにタグ付けをする。  
-   ※詳細は［[5.1 タグ付けルール](#51-タグ付けルール)］を参照。
+1. metadata-managerの開発ブランチにコミットする。
+2. GitHubにてRC版のリリースを作成する。
+   - **`GitHub` > `Releases`**
+     - `Choose a tag`: リリースバージョン (e.g., `v1.0.0-rc.1`)
+     - `Target`: 開発ブランチ (e.g., `new-feature`)
+     - `Release title`: リリースバージョン (e.g., `v1.0.0-rc.1`)
+     - `Describe this`: リリース内容 (e.g., 変更内容など)
+     - `Set as a pre-release`
+3. リリース通知用のIssueを作成する。
+   - **リリース予告** (メインブランチ (`master`) 更新の事前告知)
+     - リリースURL (e.g., `https://github.com/project-xxxxxx/metadata-manager/releases/tag/v1.0.0-rc.1`)
+     - リリース内容 (GitHubリリースの `Describe this` と同等の内容)
+     - 特記事項など (e.g., 影響の有無や範囲など)
+4. メインブランチへのマージ前作業 (レグレッションテストなど)
+5. 開発ブランチをメインブランチにマージする。
+6. GitHubにて正式版リリースを作成する。
+   - **`GitHub` > `Releases`**
+     - `Choose a tag`: リリースバージョン (e.g., `v1.0.0`)
+     - `Target`: メインブランチ (e.g., `master`)
+     - `Release title`: リリースバージョン (e.g., `v1.0.0`)
+     - `Describe this`: リリース内容 (e.g., 変更内容など)
+     - `Set as a pre-release`
+7. リリース通知用のIssueにコメントを追加する。
+   - **リリース通知** (メインブランチ (`master`) 更新の連絡)
+     - リリースURL (e.g., `https://github.com/project-xxxxxx/metadata-manager/releases/tag/v1.0.0`)
+     - リリース内容 (GitHubリリースの `Describe this` と同等の内容)
+     - 特記事項など (e.g., 影響の有無や範囲など)
+8. ogawayamaおよびfrontend担当より更新完了の連絡待ち。
+9. [6]にて作成したリリースを`Latest release`に変更する。
+   - **`GitHub` > `Releases`**
+     - `Set as the latest release`
 
-### 4.2 リリースの通知
+### ogawayama担当
 
-1. metadata-managerのリリース通知を各コンポーネント担当に連絡する。  
-   ※詳細は［[5.3 リリース通知](#53-リリース通知)］を参照。
-2. 各コンポーネントにて、metadata-managerの更新、テスト、リリースなどを実施し、リリース通知のissueコメント等にて連絡する。
+```mermaid
+flowchart TB
+  M_WF_1("[Issue]<br>(metadata-manager リリース通知)")
+  M_WF_2("[Issue]<br>(metadata-manager リリース通知)")
 
-## 5 その他
+  M_WF_1 -.-> O_WF_1
 
-### 5.1 タグ付けルール
+  subgraph ogawayama [ogawayama担当]
+    O_WF_1("サブモジュールのアップデート<br>(metadata-manager)")
+    O_WF_2("テストの実施")
+    O_WF_3("メインブランチの更新")
 
-タグ名は以下の命名規則に則って付与する。
+    O_WF_1 --> O_WF_2
+    O_WF_2 --> O_WF_3
+  end
 
-> **課題**  
-> タグ名の命名規則を検討する  
-> `v`＋バージョン番号（e.g., `v1.0.0`）
+  O_WF_2 -. "テスト結果の連絡" .-> M_WF_2
+  O_WF_3 -. "メインブランチ更新の連絡" .-> M_WF_2
+```
 
-また、タグ付けの際のコメントについては、任意とする。
+1. metadata-managerのメインブランチの更新を確認する。
+2. ogawayamaのサブモジュールをアップデートする。
+   - metadata-manager
+3. レグレッションテストを実施する。
+4. リリース通知用のIssueにコメントを追加する。
+   - テスト結果
+5. ogawayamaのメインブランチにサブモジュールの更新をコミットする。
+6. リリース通知用のIssueにコメントを追加する。
+   - メインブランチの更新
 
-### 5.2 リリース予告
+### frontend担当
 
-リリース予告は、リリース毎にmetadata-managerリポジトリのissueを新規に作成し、下記の内容を記載する。  
+```mermaid
+flowchart TB
+  M_WF_1("[Issue]<br>(metadata-manager リリース通知)<br>(ogawayama リリース通知)")
+  M_WF_2("[Issue]<br>(metadata-manager リリース通知)<br>(ogawayama リリース通知)")
 
-- ブランチ名
-- リリースバージョン (タグ名と同等)
-- コミットID
-- 特記事項など (e.g. 影響の有無や範囲など)
+  M_WF_1 -.-> F_WF_1
+  subgraph frontend [frontend担当]
+    F_WF_1("サブモジュールのアップデート<br>(metadata-manager)<br>(ogawayama)")
+    F_WF_2("テストの実施")
+    F_WF_3("メインブランチの更新")
 
-### 5.3 リリース通知
+    F_WF_1 --> F_WF_2
+    F_WF_2 --> F_WF_3
+  end
 
-リリース通知は、リリース毎にmetadata-managerリポジトリのissueを新規に作成し、下記の内容を記載する。  
+  F_WF_2 -. "テスト結果の連絡" .-> M_WF_2
+  F_WF_3 -. "メインブランチ更新の連絡" .-> M_WF_2
+```
 
-- リリース予告のissue
-- リリースバージョン (タグ名と同等)
-- コミットID
+1. metadata-managerおよびogawayamaのメインブランチの更新を確認する。
+2. frontendのサブモジュールをアップデートする。
+   - metadata-manager
+   - ogawayama
+3. レグレッションテストを実施する。
+4. リリース通知用のIssueにコメントを追加する。
+   - テスト結果
+5. frontendのメインブランチにサブモジュールの更新をコミットする。
+6. リリース通知用のIssueにコメントを追加する。
+   - メインブランチの更新
