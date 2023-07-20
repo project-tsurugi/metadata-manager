@@ -119,6 +119,10 @@ cmake -G Ninja -DBUILD_DOCUMENTS=ON ..
 ninja doxygen
 ```
 
+## How to release
+
+see [metadata-manager_release_procedures.md](docs/metadata-manager_release_procedures.md).
+
 ## License
 
 [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0)
