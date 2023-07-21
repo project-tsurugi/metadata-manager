@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 tsurugi project.
+ * Copyright 2020-2023 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,13 +16,9 @@
 #include "manager/metadata/indexes.h"
 
 #include <memory>
-#include <jwt-cpp/jwt.h>
 
-#include "manager/metadata/common/config.h"
-#include "manager/metadata/common/jwt_claims.h"
 #include "manager/metadata/common/message.h"
 #include "manager/metadata/helper/logging_helper.h"
-#include "manager/metadata/helper/ptree_helper.h"
 #include "manager/metadata/provider/provider_factory.h"
 
 // =============================================================================
@@ -39,7 +35,8 @@ using boost::property_tree::ptree;
  */
 Indexes::Indexes(std::string_view database, std::string_view component)
     : Metadata(database, component) {
-  provider_ = manager::metadata::db::get_metadata_provider();
+  // Get the instance of the metadata provider.
+  provider_ = db::get_metadata_provider_ptr();
 }
 
 /**
@@ -74,7 +71,7 @@ ErrorCode Indexes::add(const boost::property_tree::ptree& object) const {
  */
 ErrorCode Indexes::add(const boost::property_tree::ptree& object,
                       ObjectId* object_id) const {
-  
+
   log::function_start("Indexes::add()");
 
   ErrorCode error = ErrorCode::UNKNOWN;
@@ -95,7 +92,7 @@ ErrorCode Indexes::add(const boost::property_tree::ptree& object,
   }
 
   log::function_finish("Index::add()", error);
-  
+
   return error;
 }
 
@@ -159,7 +156,7 @@ ErrorCode Indexes::get(std::string_view object_name,
 
 /**
  * @brief Get all index metadata objects from the metadata table.
- *   If no index metadata existst, return the container as empty.
+ *   If no index metadata exists, return the container as empty.
  * @param objects  [out] Container of metadata objects.
  * @return ErrorCode::OK if success, otherwise an error code.
  */
@@ -232,7 +229,7 @@ ErrorCode Indexes::remove(const ObjectId object_id) const {
 }
 
 /**
- * @brief Remove a indexmetadata object which has the specified name.
+ * @brief Remove a index metadata object which has the specified name.
  * @param object_name  [in]  object name.
  * @param object_id    [out] ID of removed object.
  * @retval ErrorCode::OK if success,

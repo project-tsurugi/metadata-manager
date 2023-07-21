@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 tsurugi project.
+ * Copyright 2021-2023 tsurugi project.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,9 +56,10 @@ class DbSessionManagerPg : public DbSessionManager {
 
   /**
    * @brief Get an instance of a DAO for index metadata.
-   * @return DAO instance.
+   * @param dao  [out] DAO instance.
+   * @return ErrorCode::OK if success, otherwise an error code.
    */
-  std::shared_ptr<Dao> get_indexes_dao() override;
+  ErrorCode get_indexes_dao(std::shared_ptr<Dao>& dao) override;
 
   /**
    * @brief Get an instance of a DAO for constraint metadata.
@@ -93,7 +94,6 @@ class DbSessionManagerPg : public DbSessionManager {
 
   /**
    * @brief Starts a transaction scope managed by this DBSessionManager.
-   * @param none.
    * @return ErrorCode::OK if success, otherwise an error code.
    */
   ErrorCode start_transaction() override;
@@ -101,7 +101,6 @@ class DbSessionManagerPg : public DbSessionManager {
   /**
    * @brief Commits all transactions currently started for all DAO contexts
    *   managed by this DBSessionManager.
-   * @param none.
    * @return ErrorCode::OK if success, otherwise an error code.
    */
   ErrorCode commit() override;
@@ -109,7 +108,6 @@ class DbSessionManagerPg : public DbSessionManager {
   /**
    * @brief Rollbacks all transactions currently started for all DAO contexts
    *   managed by this DBSessionManager.
-   * @param none.
    * @return ErrorCode::OK if success, otherwise an error code.
    */
   ErrorCode rollback() override;
@@ -126,10 +124,19 @@ class DbSessionManagerPg : public DbSessionManager {
   /**
    * @brief Sends a query to set always-secure search path
    *   to the metadata repository.
-   * @param none.
    * @return ErrorCode::OK if success, otherwise an error code.
    */
   ErrorCode set_always_secure_search_path() const;
+
+  /**
+   * @brief Create and initialize an instance of the DAO.
+   * @param dao  [in/out] DAO of the metadata.
+   * @return ErrorCode::OK if success, otherwise an error code.
+   */
+  template <typename T, typename = std::enable_if_t<std::is_base_of_v<Dao, T>>>
+  ErrorCode create_dao_instance(std::shared_ptr<Dao>& dao) {
+    return DbSessionManager::create_dao_instance<T>(dao, this);
+  }
 };  // class DBSessionManager
 
 }  // namespace manager::metadata::db

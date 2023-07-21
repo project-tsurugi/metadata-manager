@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 tsurugi project.
+ * Copyright 2020-2023 tsurugi project.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -64,9 +64,9 @@ std::shared_ptr<Dao> DbSessionManagerPg::get_columns_dao() {
   return std::make_shared<ColumnsDaoPg>(this);
 }
 
-std::shared_ptr<Dao> DbSessionManagerPg::get_indexes_dao() {
-  // Create an instance of DAO.
-  return std::make_shared<IndexDaoPg>(this);
+ErrorCode DbSessionManagerPg::get_indexes_dao(std::shared_ptr<Dao>& dao) {
+  // Generate an instance of indexes DAO.
+  return this->create_dao_instance<IndexDaoPg>(dao);
 }
 
 std::shared_ptr<Dao> DbSessionManagerPg::get_constraints_dao() {
