@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 tsurugi project.
+ * Copyright 2022-2023 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +16,9 @@
 #include "manager/metadata/provider/provider_factory.h"
 
 namespace manager::metadata::db {
-  /**
-   * @brief
-   */
-  std::unique_ptr<MetadataProvider> get_metadata_provider() {
-    return std::make_unique<MetadataProvider>();
-  }
 
-} // namespace manager::metadata
+std::unique_ptr<MetadataProvider> get_metadata_provider_ptr() {
+  return std::make_unique<MetadataProvider>();
+}
+
+}  // namespace manager::metadata::db

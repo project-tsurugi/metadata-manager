@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 tsurugi project.
+ * Copyright 2022-2023 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -132,11 +132,12 @@ ErrorCode IndexDaoJson::update(
     return error;
   }
 
-  ptree temp_obj;
-  error = find_metadata_object(contents, key, values[0], temp_obj);
+  ptree temp_objects;
+  error = find_metadata_object(contents, key, values[0], temp_objects);
   if (error != ErrorCode::OK) {
     return error;
   }
+  ptree temp_obj = temp_objects.front().second;
 
   ObjectId object_id;
   delete_metadata_object(contents, key, values[0], object_id);
@@ -149,13 +150,13 @@ ErrorCode IndexDaoJson::update(
   auto id =
       temp_obj.get_optional<ObjectId>(Object::ID).value_or(INVALID_OBJECT_ID);
 
-  temp_obj = object;
-  temp_obj.put<int64_t>(Object::FORMAT_VERSION, format_version);
-  temp_obj.put<int64_t>(Object::GENERATION, generation);
-  temp_obj.put<ObjectId>(Object::ID, id);
+  auto new_obj = object;
+  new_obj.put<int64_t>(Object::FORMAT_VERSION, format_version);
+  new_obj.put<int64_t>(Object::GENERATION, generation);
+  new_obj.put<ObjectId>(Object::ID, id);
 
   ptree root = contents.get_child(kRootNode);
-  root.push_back(std::make_pair("", temp_obj));
+  root.push_back(std::make_pair("", new_obj));
   contents.put_child(kRootNode, root);
 
   // Set updated content.
@@ -202,21 +203,20 @@ ErrorCode IndexDaoJson::find_metadata_object(
     std::string_view value, boost::property_tree::ptree& object) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
-  // Initialize the error code.
-  error = Dao::get_not_found_error_code(key);
-
+  object.clear();
   BOOST_FOREACH (const auto& node, objects.get_child(IndexDaoJson::kRootNode)) {
     const auto& temp_obj = node.second;
 
-    std::string key_value(
+    // Get the value of the key.
+    std::string data_value(
         ptree_helper::ptree_value_to_string<std::string>(temp_obj, key));
-    if (key_value == value) {
-      // find the object.
-      object = temp_obj;
-      error = ErrorCode::OK;
-      break;
+    // If the key value matches, the metadata is added.
+    if (data_value == value) {
+      // Add metadata.
+      object.push_back(std::make_pair("", temp_obj));
     }
   }
+  error = (!object.empty() ? ErrorCode::OK : get_not_found_error_code(key));
 
   return error;
 }
@@ -229,36 +229,27 @@ ErrorCode IndexDaoJson::delete_metadata_object(
   // Initialize the error code.
   error = Dao::get_not_found_error_code(key);
 
+  object_id   = -1;
   ptree& node = objects.get_child(IndexDaoJson::kRootNode);
   for (ptree::iterator ite = node.begin(); ite != node.end();) {
     const auto& temp_obj = ite->second;
-    auto id = temp_obj.get_optional<std::string>(Object::ID);
-    if (!id) {
-      error = ErrorCode::INTERNAL_ERROR;
-      break;
-    }
 
-    if (key == Object::ID) {
-      if (id.get() == value) {
-        // find the object.
-        ite = node.erase(ite);
-        object_id = std::stoul(id.get());
-        error = ErrorCode::OK;
-        break;
-      }
-    } else if (key == Object::NAME) {
-      auto name = temp_obj.get_optional<std::string>(Object::NAME);
-      if (name && (name.get() == value)) {
-        // find the object.
-        ite = node.erase(ite);
-        object_id = std::stoul(id.get());
-        error = ErrorCode::OK;
-        break;
-      }
-    } else {
-      // Unsupported keys.
-      error = ErrorCode::NOT_SUPPORTED;
-      break;
+    // Get the value of the key.
+    std::string data_value(
+        ptree_helper::ptree_value_to_string<std::string>(temp_obj, key));
+    // If the key value matches, the metadata is removed.
+    if (data_value == value) {
+      auto opt_oid_value = temp_obj.get_optional<ObjectId>(Object::ID);
+      auto tmp_object_id = opt_oid_value.get_value_or(-1);
+
+      LOG_DEBUG << "Remove index metadata. " << key << "=\"" << value
+                << "\" ID=" << tmp_object_id;
+
+      // Remove index metadata.
+      ite = node.erase(ite);
+
+      object_id = (object_id == -1 ? tmp_object_id : object_id);
+      error     = ErrorCode::OK;
     }
     ++ite;
   }

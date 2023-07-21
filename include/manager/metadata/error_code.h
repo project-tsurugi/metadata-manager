@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 tsurugi project.
+ * Copyright 2020-2023 tsurugi project.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,38 +20,38 @@ namespace manager::metadata {
 
 enum class ErrorCode {
   /**
-   *  @brief Success.
+   * @brief Success.
    */
   OK = 0,
 
   /**
-   *  @brief The target object not found.
+   * @brief The target object not found.
    */
   NOT_FOUND,
 
   /**
-   *  @brief ID of the metadata-object not found from metadata-table.
+   * @brief ID of the metadata-object not found from metadata-table.
    */
   ID_NOT_FOUND,
 
   /**
-   *  @brief name of the metadata-object not found from metadata-table.
+   * @brief name of the metadata-object not found from metadata-table.
    */
   NAME_NOT_FOUND,
 
   /**
-   *  @brief Current in the Metadata stepped over the last row (a result of
-   * successful processing).
+   * @brief Current in the Metadata stepped over the last row (a result of
+   *   successful processing).
    */
   END_OF_ROW,
 
   /**
-   *  @brief the object with same parameter exists.
+   * @brief the object with same parameter exists.
    */
   ALREADY_EXISTS,
 
   /**
-   *  @brief The target object not supported.
+   * @brief The target object not supported.
    */
   NOT_SUPPORTED,
 
@@ -77,14 +77,14 @@ enum class ErrorCode {
 
   /**
    * @brief Service class instance is not initialized.
-   * Connection is not established,
-   * Failed to send prepared statement query to metadata store or
-   * Failed to set always-secure search path.
+   *   Connection is not established,
+   *   Failed to send prepared statement query to metadata store or
+   *   Failed to set always-secure search path.
    */
   NOT_INITIALIZED,
 
   /**
-   * @brief
+   * @brief Will result in multiple rows.
    */
   RESULT_MULTIPLE_ROWS,
 

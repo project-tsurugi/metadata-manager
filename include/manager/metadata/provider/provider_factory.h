@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 tsurugi project.
+ * Copyright 2022-2023 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,15 @@
 #pragma once
 
 #include <memory>
+
 #include "manager/metadata/provider/metadata_provider.h"
 
 namespace manager::metadata::db {
-  std::unique_ptr<MetadataProvider> get_metadata_provider();
-} // namespace manager::metadata::db
+
+/**
+ * @brief Generate the metadata provider.
+ * @return Metadata provider.
+ */
+std::unique_ptr<MetadataProvider> get_metadata_provider_ptr();
+
+}  // namespace manager::metadata::db
