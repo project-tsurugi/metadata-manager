@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 tsurugi project.
+ * Copyright 2021-2023 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,9 +15,6 @@
  */
 #include <gtest/gtest.h>
 
-#include <memory>
-#include <string>
-
 #include <boost/foreach.hpp>
 #include <boost/property_tree/ptree.hpp>
 
@@ -27,7 +24,6 @@
 #include "manager/metadata/dao/json/tables_dao_json.h"
 #include "test/common/global_test_environment.h"
 #include "test/common/ut_utils.h"
-#include "test/helper/table_metadata_helper.h"
 #include "test/metadata/ut_table_metadata.h"
 
 namespace manager::metadata::testing {
@@ -315,7 +311,7 @@ class DaoTestTableMetadata : public ::testing::Test {
     error = db_session_manager.start_transaction();
     EXPECT_EQ(ErrorCode::OK, error);
 
-    error = tables_dao->update(Tables::ID, {std::to_string(object_id)}, object);
+    error = tables_dao->update(Table::ID, {std::to_string(object_id)}, object);
     if (error == ErrorCode::OK) {
       EXPECT_EQ(ErrorCode::OK, error);
     } else {

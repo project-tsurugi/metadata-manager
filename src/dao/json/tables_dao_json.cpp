@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2022 tsurugi project.
+ * Copyright 2021-2023 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,9 +53,9 @@ ErrorCode TablesDaoJson::insert(const boost::property_tree::ptree& object,
   ptree tmp_object = object;
 
   // format_version
-  tmp_object.put(Table::FORMAT_VERSION, Tables::format_version());
+  tmp_object.put(Table::FORMAT_VERSION, Object::DEFAULT_FORMAT_VERSION);
   // generation
-  tmp_object.put(Table::GENERATION, Tables::generation());
+  tmp_object.put(Table::GENERATION, Object::DEFAULT_GENERATION);
   // table ID
   tmp_object.put(Table::ID, object_id);
 
@@ -166,10 +166,10 @@ ErrorCode TablesDaoJson::update(
   ptree tmp_table = object;
 
   // format_version
-  tmp_table.put(Table::FORMAT_VERSION, Tables::format_version());
+  tmp_table.put(Table::FORMAT_VERSION, Object::DEFAULT_FORMAT_VERSION);
 
   // generation
-  tmp_table.put(Table::GENERATION, Tables::generation());
+  tmp_table.put(Table::GENERATION, Object::DEFAULT_GENERATION);
 
   // table ID
   tmp_table.put(Table::ID, table_id);

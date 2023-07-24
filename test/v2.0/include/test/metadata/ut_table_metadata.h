@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2022 tsurugi project.
+ * Copyright 2022-2023 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@
 
 #include "test/metadata/ut_metadata.h"
 
-#include "manager/metadata/tables.h"
+#include "manager/metadata/table.h"
 #include "test/metadata/ut_column_metadata.h"
 #include "test/metadata/ut_constraint_metadata.h"
 

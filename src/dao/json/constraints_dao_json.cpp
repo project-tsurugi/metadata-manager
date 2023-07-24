@@ -22,6 +22,7 @@
 #include "manager/metadata/common/message.h"
 #include "manager/metadata/helper/logging_helper.h"
 #include "manager/metadata/helper/ptree_helper.h"
+#include "manager/metadata/table.h"
 
 // =============================================================================
 namespace manager::metadata::db {

@@ -42,11 +42,11 @@ ErrorCode ColumnsDaoPg::insert(const boost::property_tree::ptree& object,
   }
 
   // format_version
-  auto s_format_version = std::to_string(Tables::format_version());
+  auto s_format_version = std::to_string(Object::DEFAULT_FORMAT_VERSION);
   params.emplace_back(s_format_version.c_str());
 
   // generation
-  auto s_generation = std::to_string(Tables::generation());
+  auto s_generation = std::to_string(Object::DEFAULT_GENERATION);
   params.emplace_back(s_generation.c_str());
 
   // Use an ID-specified INSERT statement.
