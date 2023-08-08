@@ -15,7 +15,6 @@
  */
 #pragma once
 
-#include <map>
 #include <memory>
 #include <string_view>
 #include <vector>
@@ -30,6 +29,16 @@ namespace manager::metadata::db {
 
 class MetadataProvider {
  public:
+  /**
+   * @brief Returns an instance of the metadata provider.
+   * @return metadata provider instance.
+   */
+  static MetadataProvider& get_instance() {
+    static MetadataProvider instance;
+
+    return instance;
+  }
+
   /**
    * @brief Initialize and prepare to access the metadata repository.
    * @retval ErrorCode::OK if success.
@@ -97,6 +106,11 @@ class MetadataProvider {
 
  private:
   std::shared_ptr<Dao> index_dao_;
+
+  /**
+   * @brief Constructor
+   */
+  MetadataProvider() {}
 
   /**
    * @brief Start DB transaction control.
