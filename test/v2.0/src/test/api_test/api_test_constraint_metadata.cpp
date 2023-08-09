@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 tsurugi project.
+ * Copyright 2022-2023 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -166,6 +166,7 @@ TEST_F(ApiTestConstraintMetadata, test_without_initialized) {
     // Generate constraints metadata manager.
     auto managers = get_constraints_ptr(GlobalTestEnvironment::TEST_DB);
 
+    CALL_TRACE;
     object_id = ApiTestHelper::test_add(managers.get(), inserted_metadata,
                                         ErrorCode::OK);
   }
@@ -176,6 +177,8 @@ TEST_F(ApiTestConstraintMetadata, test_without_initialized) {
     auto managers = get_constraints_ptr(GlobalTestEnvironment::TEST_DB);
 
     ptree retrieved_metadata;
+
+    CALL_TRACE;
     ApiTestHelper::test_get(managers.get(), object_id, ErrorCode::OK,
                             retrieved_metadata);
   }
@@ -186,6 +189,8 @@ TEST_F(ApiTestConstraintMetadata, test_without_initialized) {
     auto managers = get_constraints_ptr(GlobalTestEnvironment::TEST_DB);
 
     ptree retrieved_metadata;
+
+    CALL_TRACE;
     ApiTestHelper::test_get(managers.get(), object_name, ErrorCode::UNKNOWN,
                             retrieved_metadata);
   }
@@ -196,6 +201,8 @@ TEST_F(ApiTestConstraintMetadata, test_without_initialized) {
     auto managers = get_constraints_ptr(GlobalTestEnvironment::TEST_DB);
 
     Constraint retrieved_metadata;
+
+    CALL_TRACE;
     ApiTestHelper::test_get(managers.get(), object_id, ErrorCode::OK,
                             retrieved_metadata);
   }
@@ -206,6 +213,8 @@ TEST_F(ApiTestConstraintMetadata, test_without_initialized) {
     auto managers = get_constraints_ptr(GlobalTestEnvironment::TEST_DB);
 
     Constraint retrieved_metadata;
+
+    CALL_TRACE;
     ApiTestHelper::test_get(managers.get(), object_name, ErrorCode::UNKNOWN,
                             retrieved_metadata);
   }
@@ -216,7 +225,8 @@ TEST_F(ApiTestConstraintMetadata, test_without_initialized) {
     auto managers = get_constraints_ptr(GlobalTestEnvironment::TEST_DB);
 
     std::vector<ptree> container = {};
-    // Get all constraints metadata.
+
+    CALL_TRACE;
     ApiTestHelper::test_getall(managers.get(), ErrorCode::OK, container);
   }
 
@@ -225,7 +235,7 @@ TEST_F(ApiTestConstraintMetadata, test_without_initialized) {
     // Generate constraints metadata manager.
     auto managers = get_constraints_ptr(GlobalTestEnvironment::TEST_DB);
 
-    // Execute the test.
+    CALL_TRACE;
     ApiTestHelper::test_update(managers.get(), object_id, inserted_metadata,
                                ErrorCode::UNKNOWN);
   }
@@ -235,7 +245,7 @@ TEST_F(ApiTestConstraintMetadata, test_without_initialized) {
     // Generate constraints metadata manager.
     auto managers = get_constraints_ptr(GlobalTestEnvironment::TEST_DB);
 
-    // Remove constraint metadata by constraint id.
+    CALL_TRACE;
     ApiTestHelper::test_remove(managers.get(), object_id, ErrorCode::OK);
   }
 
@@ -244,7 +254,7 @@ TEST_F(ApiTestConstraintMetadata, test_without_initialized) {
     // Generate constraints metadata manager.
     auto managers = get_constraints_ptr(GlobalTestEnvironment::TEST_DB);
 
-    // Remove constraint metadata by constraint name.
+    CALL_TRACE;
     ApiTestHelper::test_remove(managers.get(), object_name, ErrorCode::UNKNOWN);
   }
 }

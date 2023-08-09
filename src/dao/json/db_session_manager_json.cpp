@@ -55,8 +55,9 @@ ErrorCode DbSessionManagerJson::get_indexes_dao(std::shared_ptr<Dao>& dao) {
   return this->create_dao_instance<IndexDaoJson>(dao);
 }
 
-std::shared_ptr<Dao> DbSessionManagerJson::get_constraints_dao() {
-  return std::make_shared<ConstraintsDaoJson>(this);
+ErrorCode DbSessionManagerJson::get_constraints_dao(std::shared_ptr<Dao>& dao) {
+  // Generate an instance of constraints DAO.
+  return this->create_dao_instance<ConstraintsDaoJson>(dao);
 }
 
 std::shared_ptr<Dao> DbSessionManagerJson::get_datatypes_dao() {

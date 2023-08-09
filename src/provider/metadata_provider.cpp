@@ -66,16 +66,9 @@ ErrorCode MetadataProvider::init() {
   }
 
   // Constraint metadata DAO.
-  if (!constraint_dao_) {
-    // Get an instance of the ConstraintsDAO.
-    constraint_dao_ = session.get_constraints_dao();
-
-    // Prepare to access table metadata.
-    error = constraint_dao_->prepare();
-    if (error != ErrorCode::OK) {
-      constraint_dao_.reset();
-      return error;
-    }
+  error = session.get_constraints_dao(constraint_dao_);
+  if (error != ErrorCode::OK) {
+    return error;
   }
 
   // Table privileges DAO.
@@ -179,6 +172,31 @@ ErrorCode MetadataProvider::add_index_metadata(
 
   // Add metadata object to index metadata table.
   error = index_dao_->insert(object, object_id);
+
+  // End the transaction.
+  error = this->end_transaction(error);
+
+  return error;
+}
+
+ErrorCode MetadataProvider::add_constraint_metadata(
+    const boost::property_tree::ptree& object, ObjectId& object_id) {
+  ErrorCode error = ErrorCode::UNKNOWN;
+
+  // Initialization
+  error = init();
+  if (error != ErrorCode::OK) {
+    return error;
+  }
+
+  // Start the transaction.
+  error = this->start_transaction();
+  if (error != ErrorCode::OK) {
+    return error;
+  }
+
+  // Add metadata object to constraint metadata table.
+  error = constraint_dao_->insert(object, object_id);
 
   // End the transaction.
   error = this->end_transaction(error);
@@ -385,6 +403,41 @@ ErrorCode MetadataProvider::get_index_metadata(
   return error;
 }
 
+ErrorCode MetadataProvider::get_constraint_metadata(
+    std::string_view key, std::string_view value,
+    boost::property_tree::ptree& object) {
+  ErrorCode error = ErrorCode::UNKNOWN;
+
+  // Initialization
+  error = this->init();
+  if (error != ErrorCode::OK) {
+    return error;
+  }
+
+  // Get constraint metadata.
+  error = this->select_single(*constraint_dao_, key, {value}, object);
+  // Treat as normal, even if there are multiple rows.
+  error = (error == ErrorCode::RESULT_MULTIPLE_ROWS ? ErrorCode::OK : error);
+
+  return error;
+}
+
+ErrorCode MetadataProvider::get_constraint_metadata(
+    std::vector<boost::property_tree::ptree>& container) {
+  ErrorCode error = ErrorCode::UNKNOWN;
+
+  // Initialization
+  error = init();
+  if (error != ErrorCode::OK) {
+    return error;
+  }
+
+  // Get constraint metadata.
+  error = constraint_dao_->select_all(container);
+
+  return error;
+}
+
 // ============================================================================
 ErrorCode MetadataProvider::update_table_metadata(
     const ObjectId object_id, const boost::property_tree::ptree& object) {
@@ -564,6 +617,33 @@ ErrorCode MetadataProvider::remove_index_metadata(std::string_view key,
 
   // Remove a metadata object from the index metadata table.
   error = index_dao_->remove(key, {value}, object_id);
+
+  // End the transaction.
+  error = this->end_transaction(error);
+
+  return error;
+}
+
+ErrorCode MetadataProvider::remove_constraint_metadata(
+    const ObjectId object_id) {
+  ErrorCode error = ErrorCode::UNKNOWN;
+
+  // Initialization
+  error = init();
+  if (error != ErrorCode::OK) {
+    return error;
+  }
+
+  // Start the transaction.
+  error = this->start_transaction();
+  if (error != ErrorCode::OK) {
+    return error;
+  }
+
+  ObjectId removed_id = 0;
+  // Remove a metadata object from the constraint metadata table.
+  error = constraint_dao_->remove(Constraint::ID, {std::to_string(object_id)},
+                                  removed_id);
 
   // End the transaction.
   error = this->end_transaction(error);

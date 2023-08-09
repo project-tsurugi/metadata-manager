@@ -71,11 +71,9 @@ class DaoTestTableMetadata : public ::testing::Test {
     // ConstraintsDAO
     std::shared_ptr<Dao> constraints_dao;
     {
-      constraints_dao = db_session_manager.get_constraints_dao();
+      error = db_session_manager.get_constraints_dao(constraints_dao);
       ASSERT_NE(nullptr, constraints_dao);
-
-      error = constraints_dao->prepare();
-      EXPECT_EQ(ErrorCode::OK, error);
+      ASSERT_EQ(ErrorCode::OK, error);
     }
 
     error = db_session_manager.start_transaction();
@@ -183,11 +181,9 @@ class DaoTestTableMetadata : public ::testing::Test {
     // ConstraintsDAO
     std::shared_ptr<Dao> constraints_dao;
     {
-      constraints_dao = db_session_manager.get_constraints_dao();
+      error = db_session_manager.get_constraints_dao(constraints_dao);
       ASSERT_NE(nullptr, constraints_dao);
-
-      error = constraints_dao->prepare();
-      EXPECT_EQ(ErrorCode::OK, error);
+      ASSERT_EQ(ErrorCode::OK, error);
     }
 
     ptree temp_object;
