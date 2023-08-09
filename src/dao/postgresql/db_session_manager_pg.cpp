@@ -54,14 +54,14 @@ ErrorCode DbSessionManagerPg::connect() {
   return error;
 }
 
-std::shared_ptr<Dao> DbSessionManagerPg::get_tables_dao() {
-  // Create an instance of DAO.
-  return std::make_shared<TablesDaoPg>(this);
+ErrorCode DbSessionManagerPg::get_tables_dao(std::shared_ptr<Dao>& dao) {
+  // Generate an instance of tables DAO.
+  return this->create_dao_instance<TablesDaoPg>(dao);
 }
 
-std::shared_ptr<Dao> DbSessionManagerPg::get_columns_dao() {
-  // Create an instance of DAO.
-  return std::make_shared<ColumnsDaoPg>(this);
+ErrorCode DbSessionManagerPg::get_columns_dao(std::shared_ptr<Dao>& dao) {
+  // Generate an instance of columns DAO.
+  return this->create_dao_instance<ColumnsDaoPg>(dao);
 }
 
 ErrorCode DbSessionManagerPg::get_indexes_dao(std::shared_ptr<Dao>& dao) {
@@ -84,9 +84,9 @@ std::shared_ptr<Dao> DbSessionManagerPg::get_roles_dao() {
   return std::make_shared<RolesDaoPg>(this);
 }
 
-std::shared_ptr<Dao> DbSessionManagerPg::get_privileges_dao() {
-  // Create an instance of DAO.
-  return std::make_shared<PrivilegesDaoPg>(this);
+ErrorCode DbSessionManagerPg::get_privileges_dao(std::shared_ptr<Dao>& dao) {
+  // Generate an instance of privileges DAO.
+  return this->create_dao_instance<PrivilegesDaoPg>(dao);
 }
 
 std::shared_ptr<Dao> DbSessionManagerPg::get_statistics_dao() {

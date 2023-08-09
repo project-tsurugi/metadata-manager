@@ -40,12 +40,14 @@ using boost::property_tree::ptree;
 // =============================================================================
 // DbSessionManagerJson class methods.
 
-std::shared_ptr<Dao> DbSessionManagerJson::get_tables_dao() {
-  return std::make_shared<TablesDaoJson>(this);
+ErrorCode DbSessionManagerJson::get_tables_dao(std::shared_ptr<Dao>& dao) {
+  // Generate an instance of tables DAO.
+  return this->create_dao_instance<TablesDaoJson>(dao);
 }
 
-std::shared_ptr<Dao> DbSessionManagerJson::get_columns_dao() {
-  return std::make_shared<ColumnsDaoJson>(this);
+ErrorCode DbSessionManagerJson::get_columns_dao(std::shared_ptr<Dao>& dao) {
+  // Generate an instance of columns DAO.
+  return this->create_dao_instance<ColumnsDaoJson>(dao);
 }
 
 ErrorCode DbSessionManagerJson::get_indexes_dao(std::shared_ptr<Dao>& dao) {
@@ -65,8 +67,9 @@ std::shared_ptr<Dao> DbSessionManagerJson::get_roles_dao() {
   return std::make_shared<RolesDaoJson>(this);
 }
 
-std::shared_ptr<Dao> DbSessionManagerJson::get_privileges_dao() {
-  return std::make_shared<PrivilegesDaoJson>(this);
+ErrorCode DbSessionManagerJson::get_privileges_dao(std::shared_ptr<Dao>& dao) {
+  // Generate an instance of privileges DAO.
+  return this->create_dao_instance<PrivilegesDaoJson>(dao);
 }
 
 std::shared_ptr<Dao> DbSessionManagerJson::get_statistics_dao() {

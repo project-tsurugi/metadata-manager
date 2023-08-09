@@ -44,15 +44,17 @@ class DbSessionManagerPg : public DbSessionManager {
 
   /**
    * @brief Get an instance of a DAO for table metadata.
-   * @return DAO instance.
+   * @param dao  [out] DAO instance.
+   * @return ErrorCode::OK if success, otherwise an error code.
    */
-  std::shared_ptr<Dao> get_tables_dao() override;
+  ErrorCode get_tables_dao(std::shared_ptr<Dao>& dao) override;
 
   /**
    * @brief Get an instance of a DAO for column metadata.
-   * @return DAO instance.
+   * @param dao  [out] DAO instance.
+   * @return ErrorCode::OK if success, otherwise an error code.
    */
-  std::shared_ptr<Dao> get_columns_dao() override;
+  ErrorCode get_columns_dao(std::shared_ptr<Dao>& dao) override;
 
   /**
    * @brief Get an instance of a DAO for index metadata.
@@ -82,9 +84,10 @@ class DbSessionManagerPg : public DbSessionManager {
 
   /**
    * @brief Get an instance of a DAO for privilege metadata.
-   * @return DAO instance.
+   * @param dao  [out] DAO instance.
+   * @return ErrorCode::OK if success, otherwise an error code.
    */
-  std::shared_ptr<Dao> get_privileges_dao() override;
+  ErrorCode get_privileges_dao(std::shared_ptr<Dao>& dao) override;
 
   /**
    * @brief Get an instance of a DAO for statistic metadata.

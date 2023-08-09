@@ -277,7 +277,8 @@ class Tables : public Metadata {
 
   explicit Tables(std::string_view database)
       : Tables(database, kDefaultComponent) {}
-  Tables(std::string_view database, std::string_view component);
+  Tables(std::string_view database, std::string_view component)
+      : Metadata(database, component) {}
 
   Tables(const Tables&)            = delete;
   Tables& operator=(const Tables&) = delete;
