@@ -244,6 +244,19 @@ class MetadataProvider {
   ErrorCode get_datatype_metadata(std::string_view key, std::string_view value,
                                   boost::property_tree::ptree& object);
 
+  /**
+   * @brief Get a role object from the PostgreSQL with the specified key value.
+   * @param key     [in]  key of role metadata object.
+   * @param value   [in]  value of role metadata object.
+   * @param object  [out] retrieved role metadata object array.
+   * @retval ErrorCode::OK if success.
+   * @retval ErrorCode::ID_NOT_FOUND if the role id does not exist.
+   * @retval ErrorCode::NAME_NOT_FOUND if the role name does not exist.
+   * @retval otherwise an error code.
+   */
+  ErrorCode get_role_metadata(std::string_view key, std::string_view value,
+                              boost::property_tree::ptree& object);
+
   // ============================================================================
   /**
    * @brief Update a table metadata table with the specified table id.
@@ -403,6 +416,7 @@ class MetadataProvider {
   std::shared_ptr<Dao> privilege_dao_;
   std::shared_ptr<Dao> statistic_dao_;
   std::shared_ptr<Dao> datatype_dao_;
+  std::shared_ptr<Dao> role_dao_;
 
   /**
    * @brief Constructor

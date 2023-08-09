@@ -79,9 +79,10 @@ class DbSessionManagerPg : public DbSessionManager {
 
   /**
    * @brief Get an instance of a DAO for role metadata.
-   * @return DAO instance.
+   * @param dao  [out] DAO instance.
+   * @return ErrorCode::OK if success, otherwise an error code.
    */
-  std::shared_ptr<Dao> get_roles_dao() override;
+  ErrorCode get_roles_dao(std::shared_ptr<Dao>& dao) override;
 
   /**
    * @brief Get an instance of a DAO for privilege metadata.

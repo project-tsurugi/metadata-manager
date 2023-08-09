@@ -91,6 +91,12 @@ ErrorCode MetadataProvider::init() {
     return error;
   }
 
+  // Role metadata DAO.
+  error = session.get_roles_dao(role_dao_);
+  if (error != ErrorCode::OK) {
+    return error;
+  }
+
   error = ErrorCode::OK;
   return error;
 }
@@ -563,6 +569,25 @@ ErrorCode MetadataProvider::get_datatype_metadata(
 
   // Get datatype metadata.
   error = this->select_single(*datatype_dao_, key, {value}, object);
+  // Treat as normal, even if there are multiple rows.
+  error = (error == ErrorCode::RESULT_MULTIPLE_ROWS ? ErrorCode::OK : error);
+
+  return error;
+}
+
+ErrorCode MetadataProvider::get_role_metadata(
+    std::string_view key, std::string_view value,
+    boost::property_tree::ptree& object) {
+  ErrorCode error = ErrorCode::UNKNOWN;
+
+  // Initialization
+  error = this->init();
+  if (error != ErrorCode::OK) {
+    return error;
+  }
+
+  // Get role info.
+  error = this->select_single(*role_dao_, key, {value}, object);
   // Treat as normal, even if there are multiple rows.
   error = (error == ErrorCode::RESULT_MULTIPLE_ROWS ? ErrorCode::OK : error);
 
