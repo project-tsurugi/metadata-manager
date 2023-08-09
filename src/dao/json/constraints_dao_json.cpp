@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2022 tsurugi project.
+ * Copyright 2021-2023 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -200,9 +200,7 @@ ErrorCode ConstraintsDaoJson::get_metadata_object(
 
   LOG_DEBUG << "get_metadata_object \"" << key << "\"=\"" << value << "\"";
 
-  // Initialize the error code.
-  error = Dao::get_not_found_error_code(key);
-
+  object.clear();
   // Getting a metadata object.
   BOOST_FOREACH (const ptree::value_type& root_node,
                  objects.get_child(kRootNode)) {
@@ -213,13 +211,14 @@ ErrorCode ConstraintsDaoJson::get_metadata_object(
                      table.get_child(Table::CONSTRAINTS_NODE)) {
         const ptree& constraint = constraints_node.second;
 
-        std::string key_value(
+        // Get the value of the key.
+        std::string data_value(
             ptree_helper::ptree_value_to_string<std::string>(constraint, key));
-        if (key_value == value) {
+        // If the key value matches, the metadata is added.
+        if (data_value == value) {
           error = ErrorCode::OK;
-          // copy.
-          object = constraint;
-          break;
+          // Add metadata.
+          object.push_back(std::make_pair("", constraint));
         }
       }
     }
@@ -227,14 +226,16 @@ ErrorCode ConstraintsDaoJson::get_metadata_object(
       break;
     }
   }
+  error = (!object.empty() ? ErrorCode::OK : get_not_found_error_code(key));
+
   LOG_DEBUG << "get_metadata_object => ErrorCode:" << error;
 
   return error;
 }
 
 ErrorCode ConstraintsDaoJson::delete_metadata_object(
-      boost::property_tree::ptree& objects, std::string_view key,
-      std::string_view value, ObjectId& object_id) const {
+    boost::property_tree::ptree& objects, std::string_view key,
+    std::string_view value, ObjectId& object_id) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   LOG_DEBUG << "delete_metadata_object \"" << key << "\"=\"" << value << "\"";
@@ -245,6 +246,7 @@ ErrorCode ConstraintsDaoJson::delete_metadata_object(
   // Getting a metadata container.
   ptree& root_node = objects.get_child(kRootNode);
 
+  object_id = -1;
   for (ptree::iterator it_tables = root_node.begin();
        it_tables != root_node.end(); it_tables++) {
     auto opt_constraints =
@@ -259,20 +261,21 @@ ErrorCode ConstraintsDaoJson::delete_metadata_object(
       const ptree& metadata = it_constraints->second;
 
       // Get the value of the key.
-      std::string key_value(
+      std::string data_value(
           ptree_helper::ptree_value_to_string<std::string>(metadata, key));
       // If the key value matches, the metadata is removed.
-      if (key_value == value) {
-        LOG_DEBUG << "Remove constraint metadata. " << key << "=\"" << value
-                  << "\"";
-
+      if (data_value == value) {
         auto opt_oid_value = metadata.get_optional<ObjectId>(Constraint::ID);
-        object_id          = opt_oid_value.get_value_or(-1);
+        auto tmp_object_id = opt_oid_value.get_value_or(-1);
+
+        LOG_DEBUG << "Remove constraint metadata. " << key << "=\"" << value
+                  << "\" ID=" << tmp_object_id;
+
         // Remove constraint metadata.
         it_constraints = constraints_node.erase(it_constraints);
 
-        error = ErrorCode::OK;
-        break;
+        object_id = (object_id == -1 ? tmp_object_id : object_id);
+        error     = ErrorCode::OK;
       } else {
         it_constraints++;
       }
@@ -282,6 +285,5 @@ ErrorCode ConstraintsDaoJson::delete_metadata_object(
 
   return error;
 }
-
 
 }  // namespace manager::metadata::db

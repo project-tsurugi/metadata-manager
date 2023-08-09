@@ -47,6 +47,7 @@ class MetadataProvider {
    */
   ErrorCode init();
 
+  // ============================================================================
   /**
    * @brief Add a table metadata object to the metadata table.
    * @param object     [in]  table metadata to add.
@@ -67,6 +68,17 @@ class MetadataProvider {
   ErrorCode add_index_metadata(const boost::property_tree::ptree& object,
                                ObjectId& object_id);
 
+  /**
+   * @brief Add a constraint metadata object to the metadata table.
+   * @param object     [in]  constraints metadata to add.
+   * @param object_id  [out] ID of the added constraint metadata.
+   * @retval ErrorCode::OK if success.
+   * @retval otherwise an error code.
+   */
+  ErrorCode add_constraint_metadata(const boost::property_tree::ptree& object,
+                                    ObjectId& object_id);
+
+  // ============================================================================
   /**
    * @brief Get a table metadata object from the metadata table with the
    *   specified key value.
@@ -128,6 +140,32 @@ class MetadataProvider {
       std::vector<boost::property_tree::ptree>& objects);
 
   /**
+   * @brief Get a constraint metadata object from the metadata table with the
+   *   specified key value.
+   * @param key     [in]  key of constraint metadata object.
+   * @param value   [in]  key value.
+   * @param object  [out] retrieved constraint metadata object array.
+   * @retval ErrorCode::OK if success.
+   * @retval ErrorCode::ID_NOT_FOUND if the constraint id does not exist.
+   * @retval ErrorCode::NAME_NOT_FOUND if the constraint name does not exist.
+   * @retval ErrorCode::NOT_FOUND if the table id does not exist.
+   * @retval otherwise an error code.
+   */
+  ErrorCode get_constraint_metadata(std::string_view key,
+                                    std::string_view value,
+                                    boost::property_tree::ptree& object);
+
+  /**
+   * @brief Get all constraint metadata object from the metadata table.
+   * @param objects  [out] constraint metadata object to get.
+   * @retval ErrorCode::OK if success.
+   * @retval otherwise an error code.
+   */
+  ErrorCode get_constraint_metadata(
+      std::vector<boost::property_tree::ptree>& objects);
+
+  // ============================================================================
+  /**
    * @brief Update a table metadata table with the specified table id.
    * @param object_id  [in]  Table ID of the table metadata to be updated.
    * @param object     [in]  Table metadata object.
@@ -149,6 +187,7 @@ class MetadataProvider {
   ErrorCode update_index_metadata(const ObjectId object_id,
                                   const boost::property_tree::ptree& object);
 
+  // ============================================================================
   /**
    * @brief Removes all metadata objects with the specified table info
    *   from the metadata table.
@@ -178,6 +217,16 @@ class MetadataProvider {
    */
   ErrorCode remove_index_metadata(std::string_view key, std::string_view value,
                                   ObjectId& object_id);
+
+  /**
+   * @brief Removes a constraint metadata object with the specified object id
+   *   from the metadata table.
+   * @param object_id  [in]  constraint id.
+   * @retval ErrorCode::OK if success.
+   * @retval ErrorCode::ID_NOT_FOUND if the constraint id does not exist.
+   * @retval otherwise an error code.
+   */
+  ErrorCode remove_constraint_metadata(const ObjectId object_id);
 
   // ============================================================================
   /**

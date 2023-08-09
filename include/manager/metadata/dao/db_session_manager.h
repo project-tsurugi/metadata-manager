@@ -71,10 +71,10 @@ class DbSessionManager {
 
   /**
    * @brief Get an instance of a DAO for constraint metadata.
-   *   Returns nullptr if the database connection fails.
-   * @return DAO instance or nullptr.
+   * @param dao  [out] DAO instance or nullptr.
+   * @return DAO instance ErrorCode::OK if success, otherwise an error code.
    */
-  virtual std::shared_ptr<Dao> get_constraints_dao() = 0;
+  virtual ErrorCode get_constraints_dao(std::shared_ptr<Dao>& dao) = 0;
 
   /**
    * @brief Get an instance of a DAO for data-type metadata.

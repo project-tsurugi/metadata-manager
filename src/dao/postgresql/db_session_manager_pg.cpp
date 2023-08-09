@@ -69,9 +69,9 @@ ErrorCode DbSessionManagerPg::get_indexes_dao(std::shared_ptr<Dao>& dao) {
   return this->create_dao_instance<IndexDaoPg>(dao);
 }
 
-std::shared_ptr<Dao> DbSessionManagerPg::get_constraints_dao() {
-  // Create an instance of DAO.
-  return std::make_shared<ConstraintsDaoPg>(this);
+ErrorCode DbSessionManagerPg::get_constraints_dao(std::shared_ptr<Dao>& dao) {
+  // Generate an instance of constraints DAO.
+  return this->create_dao_instance<ConstraintsDaoPg>(dao);
 }
 
 std::shared_ptr<Dao> DbSessionManagerPg::get_datatypes_dao() {

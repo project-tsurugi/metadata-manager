@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 tsurugi project.
+ * Copyright 2022-2023 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,12 +22,12 @@
 #include "manager/metadata/common/message.h"
 #include "manager/metadata/helper/logging_helper.h"
 #include "manager/metadata/helper/ptree_helper.h"
-#include "manager/metadata/provider/constraints_provider.h"
+#include "manager/metadata/provider/metadata_provider.h"
 
 // =============================================================================
 namespace {
 
-std::unique_ptr<manager::metadata::db::ConstraintsProvider> provider = nullptr;
+auto& provider = manager::metadata::db::MetadataProvider::get_instance();
 
 }  // namespace
 
@@ -82,7 +82,8 @@ boost::property_tree::ptree Constraint::convert_to_ptree() const {
   metadata.add_child(PK_COLUMNS, pk_columns_node);
 
   // referenced column IDs.
-  ptree pk_columns_id_node = ptree_helper::make_array_ptree(this->pk_columns_id);
+  ptree pk_columns_id_node =
+      ptree_helper::make_array_ptree(this->pk_columns_id);
   metadata.add_child(PK_COLUMNS_ID, pk_columns_id_node);
 
   // referenced rows match type.
@@ -151,17 +152,6 @@ void Constraint::convert_from_ptree(const boost::property_tree::ptree& ptree) {
 // ==========================================================================
 // Constraints class methods.
 /**
- * @brief Constructor
- * @param database   [in]  database name.
- * @param component  [in]  component name.
- */
-Constraints::Constraints(std::string_view database, std::string_view component)
-    : Metadata(database, component) {
-  // Create the provider.
-  provider = std::make_unique<db::ConstraintsProvider>();
-}
-
-/**
  * @brief Initialization.
  * @param none.
  * @return ErrorCode::OK if success, otherwise an error code.
@@ -173,7 +163,7 @@ ErrorCode Constraints::init() const {
   log::function_start("Constraints::init()");
 
   // Initialize the provider.
-  error = provider->init();
+  error = provider.init();
 
   // Log of API function finish.
   log::function_finish("Constraints::init()", error);
@@ -214,7 +204,7 @@ ErrorCode Constraints::add(const boost::property_tree::ptree& object,
   // Adds the constraint metadata through the provider.
   ObjectId retval_object_id = 0;
   if (error == ErrorCode::OK) {
-    error = provider->add_constraint_metadata(object, retval_object_id);
+    error = provider.add_constraint_metadata(object, retval_object_id);
   }
 
   // Set a value if object_id is not null.
@@ -255,7 +245,8 @@ ErrorCode Constraints::get(const ObjectId object_id,
 
   // Get the constraint metadata through the provider.
   if (error == ErrorCode::OK) {
-    error = provider->get_constraint_metadata(object_id, object);
+    error = provider.get_constraint_metadata(Constraint::ID,
+                                             std::to_string(object_id), object);
   }
 
   // Log of API function finish.
@@ -279,7 +270,7 @@ ErrorCode Constraints::get_all(
   log::function_start("Constraints::get_all()");
 
   // Get the constraint metadata through the provider.
-  error = provider->get_constraint_metadata(container);
+  error = provider.get_constraint_metadata(container);
 
   // Log of API function finish.
   log::function_finish("Constraints::get_all()", error);
@@ -313,7 +304,7 @@ ErrorCode Constraints::remove(const ObjectId object_id) const {
 
   // Remove the constraint metadata through the provider.
   if (error == ErrorCode::OK) {
-    error = provider->remove_constraint_metadata(object_id);
+    error = provider.remove_constraint_metadata(object_id);
   }
 
   // Log of API function finish.

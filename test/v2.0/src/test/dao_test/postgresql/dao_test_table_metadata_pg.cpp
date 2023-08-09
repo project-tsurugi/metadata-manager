@@ -63,9 +63,9 @@ class DaoTestTableMetadata : public ::testing::Test {
     ASSERT_EQ(ErrorCode::OK, error);
 
     // Get ConstraintsDAO.
-    auto constraints_dao = db_session_manager.get_constraints_dao();
+    std::shared_ptr<db::Dao> constraints_dao;
+    error = db_session_manager.get_constraints_dao(constraints_dao);
     ASSERT_NE(nullptr, constraints_dao);
-    error = constraints_dao->prepare();
     ASSERT_EQ(ErrorCode::OK, error);
 
     // Run the API under test.
@@ -142,9 +142,9 @@ class DaoTestTableMetadata : public ::testing::Test {
     ASSERT_EQ(ErrorCode::OK, error);
 
     // Get ConstraintsDAO.
-    auto constraints_dao = db_session_manager.get_constraints_dao();
+    std::shared_ptr<db::Dao> constraints_dao;
+    error = db_session_manager.get_constraints_dao(constraints_dao);
     ASSERT_NE(nullptr, constraints_dao);
-    error = constraints_dao->prepare();
     ASSERT_EQ(ErrorCode::OK, error);
 
     // Run the API under test.
@@ -201,9 +201,9 @@ class DaoTestTableMetadata : public ::testing::Test {
     ASSERT_EQ(ErrorCode::OK, error);
 
     // Get ConstraintsDAO.
-    auto constraints_dao = db_session_manager.get_constraints_dao();
+    std::shared_ptr<db::Dao> constraints_dao;
+    error = db_session_manager.get_constraints_dao(constraints_dao);
     ASSERT_NE(nullptr, constraints_dao);
-    error = constraints_dao->prepare();
     ASSERT_EQ(ErrorCode::OK, error);
 
     // Run the API under test.
