@@ -71,9 +71,10 @@ class DbSessionManagerJson : public DbSessionManager {
 
   /**
    * @brief Get an instance of a DAO for data-type metadata.
-   * @return DAO instance.
+   * @param dao  [out] DAO instance.
+   * @return ErrorCode::OK if success, otherwise an error code.
    */
-  std::shared_ptr<Dao> get_datatypes_dao() override;
+  ErrorCode get_datatypes_dao(std::shared_ptr<Dao>& dao) override;
 
   /**
    * @brief Get an instance of a DAO for role metadata.
