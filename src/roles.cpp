@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 tsurugi project.
+ * Copyright 2021-2023 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,28 +18,17 @@
 #include <memory>
 
 #include "manager/metadata/helper/logging_helper.h"
-#include "manager/metadata/provider/roles_provider.h"
+#include "manager/metadata/provider/metadata_provider.h"
 
 // =============================================================================
 namespace {
 
-std::unique_ptr<manager::metadata::db::RolesProvider> provider = nullptr;
+auto& provider = manager::metadata::db::MetadataProvider::get_instance();
 
 }  // namespace
 
 // =============================================================================
 namespace manager::metadata {
-
-/**
- * @brief Constructor
- * @param (database)   [in]  database name.
- * @param (component)  [in]  component name.
- */
-Roles::Roles(std::string_view database, std::string_view component)
-    : Metadata(database, component) {
-  // Create the provider.
-  provider = std::make_unique<db::RolesProvider>();
-}
 
 /**
  * @brief Initialization.
@@ -51,7 +40,7 @@ ErrorCode Roles::init() const {
   log::function_start("Roles::init()");
 
   // Initialize the provider.
-  ErrorCode error = provider->init();
+  ErrorCode error = provider.init();
 
   // Log of API function finish.
   log::function_finish("Roles::init()", error);
@@ -87,7 +76,7 @@ ErrorCode Roles::get(const ObjectIdType object_id,
   // Get the role metadata through the provider.
   if (error == ErrorCode::OK) {
     std::string s_object_id = std::to_string(object_id);
-    error = provider->get_role_metadata(Roles::ROLE_OID, s_object_id, object);
+    error = provider.get_role_metadata(Roles::ROLE_OID, s_object_id, object);
   }
 
   // Log of API function finish.
@@ -122,7 +111,7 @@ ErrorCode Roles::get(std::string_view object_name,
   // Get the role metadata through the provider.
   if (error == ErrorCode::OK) {
     error =
-        provider->get_role_metadata(Roles::ROLE_ROLNAME, object_name, object);
+        provider.get_role_metadata(Roles::ROLE_ROLNAME, object_name, object);
   }
 
   // Log of API function finish.

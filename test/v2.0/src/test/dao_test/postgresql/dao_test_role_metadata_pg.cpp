@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 tsurugi project.
+ * Copyright 2021-2023 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -71,9 +71,9 @@ TEST_F(DaoTestRolesMetadata, select_role_metadata) {
   error = db_session_manager.connect();
   ASSERT_EQ(ErrorCode::OK, error);
 
-  auto roles_dao = db_session_manager.get_roles_dao();
+  std::shared_ptr<db::Dao> roles_dao;
+  error = db_session_manager.get_roles_dao(roles_dao);
   ASSERT_NE(nullptr, roles_dao);
-  error = roles_dao->prepare();
   ASSERT_EQ(ErrorCode::OK, error);
 
   ptree role_metadata;
@@ -89,7 +89,8 @@ TEST_F(DaoTestRolesMetadata, select_role_metadata) {
   UtRoleMetadata ut_metadata(this->role_id_);
 
   // verifies that returned role metadata equals expected one.
-  ut_metadata.check_metadata_expected(role_metadata, __FILE__, __LINE__);
+  ASSERT_EQ(1, role_metadata.size());
+  ut_metadata.CHECK_METADATA_EXPECTED_OBJ(role_metadata.front().second);
 
   role_metadata.clear();
 
@@ -102,7 +103,8 @@ TEST_F(DaoTestRolesMetadata, select_role_metadata) {
   UTUtils::print(UTUtils::get_tree_string(role_metadata));
 
   // verifies that returned role metadata equals expected one.
-  ut_metadata.check_metadata_expected(role_metadata, __FILE__, __LINE__);
+  ASSERT_EQ(1, role_metadata.size());
+  ut_metadata.CHECK_METADATA_EXPECTED_OBJ(role_metadata.front().second);
 
   // Testing for invalid parameters.
   error = roles_dao->select(Roles::ROLE_ROLCANLOGIN, {""}, role_metadata);

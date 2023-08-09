@@ -79,9 +79,9 @@ ErrorCode DbSessionManagerPg::get_datatypes_dao(std::shared_ptr<Dao>& dao) {
   return this->create_dao_instance<DataTypesDaoPg>(dao);
 }
 
-std::shared_ptr<Dao> DbSessionManagerPg::get_roles_dao() {
-  // Create an instance of DAO.
-  return std::make_shared<RolesDaoPg>(this);
+ErrorCode DbSessionManagerPg::get_roles_dao(std::shared_ptr<Dao>& dao) {
+  // Generate an instance of roles DAO.
+  return this->create_dao_instance<RolesDaoPg>(dao);
 }
 
 ErrorCode DbSessionManagerPg::get_privileges_dao(std::shared_ptr<Dao>& dao) {

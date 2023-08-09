@@ -29,7 +29,7 @@
 #include "manager/metadata/helper/ptree_helper.h"
 #include "manager/metadata/helper/table_metadata_helper.h"
 #include "manager/metadata/provider/metadata_provider.h"
-#include "manager/metadata/provider/roles_provider.h"
+#include "manager/metadata/roles.h"
 
 // =============================================================================
 namespace {
@@ -601,16 +601,10 @@ ErrorCode Tables::get_acls(std::string_view token,
 
   // Check for the presence of role name.
   if (error == ErrorCode::OK) {
-    auto provider_roles = std::make_unique<db::RolesProvider>();
-    // Initialize the provider.
-    error = provider_roles->init();
-
-    if (error == ErrorCode::OK) {
-      ptree role_metadata;
-      // Get the role metadata through the provider.
-      error = provider_roles->get_role_metadata(Roles::ROLE_ROLNAME, user_name,
-                                                role_metadata);
-    }
+    ptree role_metadata;
+    // Get the role metadata through the provider.
+    error = provider.get_role_metadata(Roles::ROLE_ROLNAME, user_name,
+                                       role_metadata);
   }
 
   // Get table metadata by table name.

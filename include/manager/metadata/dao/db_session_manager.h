@@ -85,9 +85,10 @@ class DbSessionManager {
 
   /**
    * @brief Get an instance of a DAO for role metadata.
-   * @return DAO instance.
+   * @param dao  [out] DAO instance.
+   * @return ErrorCode::OK if success, otherwise an error code.
    */
-  virtual std::shared_ptr<Dao> get_roles_dao() = 0;
+  virtual ErrorCode get_roles_dao(std::shared_ptr<Dao>& dao) = 0;
 
   /**
    * @brief Get an instance of a DAO for privilege metadata.
