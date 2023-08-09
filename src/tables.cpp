@@ -28,7 +28,6 @@
 #include "manager/metadata/helper/logging_helper.h"
 #include "manager/metadata/helper/ptree_helper.h"
 #include "manager/metadata/helper/table_metadata_helper.h"
-#include "manager/metadata/provider/datatypes_provider.h"
 #include "manager/metadata/provider/metadata_provider.h"
 #include "manager/metadata/provider/roles_provider.h"
 
@@ -791,16 +790,10 @@ ErrorCode Tables::param_check_metadata_add(
       error = ErrorCode::INSUFFICIENT_PARAMETERS;
       break;
     }
-    // DataTypes check provider.
-    db::DataTypesProvider provider_data_types;
-    error = provider_data_types.init();
-    if (error != ErrorCode::OK) {
-      break;
-    }
 
     // Check the data types.
     ptree datatype_metadata;
-    error = provider_data_types.get_datatype_metadata(
+    error = provider.get_datatype_metadata(
         DataTypes::ID, std::to_string(datatype_id.get()), datatype_metadata);
     if (error != ErrorCode::OK) {
       if (error == ErrorCode::ID_NOT_FOUND) {

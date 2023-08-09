@@ -110,7 +110,8 @@ class DataTypes : public Metadata {
 
   explicit DataTypes(std::string_view database)
       : DataTypes(database, kDefaultComponent) {}
-  DataTypes(std::string_view database, std::string_view component);
+  DataTypes(std::string_view database, std::string_view component)
+      : Metadata(database, component) {}
 
   DataTypes(const DataTypes&) = delete;
   DataTypes& operator=(const DataTypes&) = delete;

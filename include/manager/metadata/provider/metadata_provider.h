@@ -229,6 +229,21 @@ class MetadataProvider {
       const ObjectId table_id,
       std::vector<boost::property_tree::ptree>& objects);
 
+  /**
+   * @brief Get a datatype metadata object from the metadata table with the
+   *   specified key value.
+   * @param key     [in]  key of data type metadata object.
+   * @param value   [in]  value of data type metadata object.
+   * @param object  [out] retrieved data type metadata object array.
+   * @retval ErrorCode::OK if success.
+   * @retval ErrorCode::ID_NOT_FOUND if the data types id does not exist.
+   * @retval ErrorCode::NAME_NOT_FOUND if the data types name does not exist.
+   * @retval ErrorCode::NOT_FOUND if the other data types key does not exist.
+   * @retval otherwise an error code.
+   */
+  ErrorCode get_datatype_metadata(std::string_view key, std::string_view value,
+                                  boost::property_tree::ptree& object);
+
   // ============================================================================
   /**
    * @brief Update a table metadata table with the specified table id.
@@ -387,6 +402,7 @@ class MetadataProvider {
   std::shared_ptr<Dao> constraint_dao_;
   std::shared_ptr<Dao> privilege_dao_;
   std::shared_ptr<Dao> statistic_dao_;
+  std::shared_ptr<Dao> datatype_dao_;
 
   /**
    * @brief Constructor

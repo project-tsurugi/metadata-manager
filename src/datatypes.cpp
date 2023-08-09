@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 tsurugi project.
+ * Copyright 2020-2023 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,12 +19,12 @@
 
 #include "manager/metadata/common/message.h"
 #include "manager/metadata/helper/logging_helper.h"
-#include "manager/metadata/provider/datatypes_provider.h"
+#include "manager/metadata/provider/metadata_provider.h"
 
 // =============================================================================
 namespace {
 
-std::unique_ptr<manager::metadata::db::DataTypesProvider> provider = nullptr;
+auto& provider = manager::metadata::db::MetadataProvider::get_instance();
 
 }  // namespace
 
@@ -33,12 +33,12 @@ namespace manager::metadata {
 
 // ==========================================================================
 // DataType struct methods.
-/** 
+
+/**
  * @brief  Transform datatype metadata from structure object to ptree object.
  * @return ptree object.
  */
-boost::property_tree::ptree DataType::convert_to_ptree() const
-{
+boost::property_tree::ptree DataType::convert_to_ptree() const {
   auto pt = this->base_convert_to_ptree();
   pt.put<int64_t>(PG_DATA_TYPE, this->pg_data_type);
   pt.put(PG_DATA_TYPE_NAME, this->pg_data_type_name);
@@ -49,36 +49,23 @@ boost::property_tree::ptree DataType::convert_to_ptree() const
 
 /**
  * @brief   Transform datatype metadata from ptree object to structure object.
- * @param   ptree [in] ptree object of metdata.
+ * @param   ptree [in] ptree object of metadata.
  * @return  structure object of metadata.
  */
-void DataType::convert_from_ptree(const boost::property_tree::ptree& pt)
-{
+void DataType::convert_from_ptree(const boost::property_tree::ptree& pt) {
   this->base_convert_from_ptree(pt);
-  auto opt_int = pt.get_optional<int64_t>(DataType::PG_DATA_TYPE);
+  auto opt_int       = pt.get_optional<int64_t>(DataType::PG_DATA_TYPE);
   this->pg_data_type = opt_int ? opt_int.get() : INVALID_VALUE;
 
   auto opt_str = pt.get_optional<std::string>(DataType::PG_DATA_TYPE_NAME);
   this->pg_data_type_name = opt_str ? opt_str.get() : "";
 
-  opt_str = 
-      pt.get_optional<std::string>(DataType::PG_DATA_TYPE_QUALIFIED_NAME);
-  this->pg_data_type_qualified_name = opt_str ? opt_str.get() : ""; 
+  opt_str = pt.get_optional<std::string>(DataType::PG_DATA_TYPE_QUALIFIED_NAME);
+  this->pg_data_type_qualified_name = opt_str ? opt_str.get() : "";
 }
 
 // ==========================================================================
 // DataTypes class methods.
-/**
- * @brief Constructor
- * @param database   [in]  database name.
- * @param component  [in]  component name.
- */
-DataTypes::DataTypes(std::string_view database, std::string_view component)
-    : Metadata(database, component) {
-  // Create the provider.
-  provider = std::make_unique<db::DataTypesProvider>();
-}
-
 /**
  * @brief Initialization.
  * @param none.
@@ -89,7 +76,7 @@ ErrorCode DataTypes::init() const {
   log::function_start("DataTypes::init()");
 
   // Initialize the provider.
-  ErrorCode error = provider->init();
+  ErrorCode error = provider.init();
 
   // Log of API function finish.
   log::function_finish("DataTypes::init()", error);
@@ -126,8 +113,8 @@ ErrorCode DataTypes::get(const ObjectIdType object_id,
 
   // Get the data type metadata through the class method.
   if (error == ErrorCode::OK) {
-    error = provider->get_datatype_metadata(DataTypes::ID,
-                                            std::to_string(object_id), object);
+    error = provider.get_datatype_metadata(DataTypes::ID,
+                                           std::to_string(object_id), object);
   }
 
   // Log of API function finish.
@@ -164,7 +151,7 @@ ErrorCode DataTypes::get(std::string_view object_name,
   // Get the data type metadata through the class method.
   if (error == ErrorCode::OK) {
     error =
-        provider->get_datatype_metadata(DataTypes::NAME, object_name, object);
+        provider.get_datatype_metadata(DataTypes::NAME, object_name, object);
   }
 
   // Log of API function finish.
@@ -218,7 +205,7 @@ ErrorCode DataTypes::get(std::string_view object_key,
 
   // Get the data type metadata through the provider.
   if (error == ErrorCode::OK) {
-    error = provider->get_datatype_metadata(s_object_key, object_value, object);
+    error = provider.get_datatype_metadata(s_object_key, object_value, object);
   }
 
   // Log of API function finish.

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 tsurugi project.
+ * Copyright 2020-2023 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -156,7 +156,8 @@ TEST_F(ApiTestDataTypes, test_update) {
 
   ptree updated_metadata;
   // Execute the test.
-  ApiTestHelper::test_update(manager.get(), INT64_MAX, updated_metadata, ErrorCode::UNKNOWN);
+  ApiTestHelper::test_update(manager.get(), INT64_MAX, updated_metadata,
+                             ErrorCode::UNKNOWN);
 }
 
 /**
@@ -200,7 +201,7 @@ TEST_P(ApiTestDataTypesByName, get_datatypes_by_name) {
   UTUtils::print(UTUtils::get_tree_string(datatype));
 
   // Verifies that returned data type metadata equals expected one.
-  UtDataTypesMetadata().check_metadata_expected(datatype, __FILE__, __LINE__);
+  UtDataTypesMetadata().CHECK_METADATA_EXPECTED_OBJ(datatype);
 }
 
 /**
@@ -224,7 +225,7 @@ TEST_P(ApiTestDataTypesByKeyValue, get_datatypes_by_key_value) {
   UTUtils::print(UTUtils::get_tree_string(datatype));
 
   // Verifies that returned data type metadata equals expected one.
-  UtDataTypesMetadata().check_metadata_expected(datatype, __FILE__, __LINE__);
+  UtDataTypesMetadata().CHECK_METADATA_EXPECTED_OBJ(datatype);
 }
 
 /**
@@ -272,7 +273,9 @@ TEST_P(ApiTestDataTypesException, get_non_existing_datatypes_by_key_value) {
 #endif
   } else if (key == DataTypes::NAME) {
     EXPECT_EQ(ErrorCode::NAME_NOT_FOUND, error);
-  } else if (!key.empty() && value.empty()) {
+  } else if (key.empty()) {
+    EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);
+  } else if (value.empty()) {
     EXPECT_EQ(ErrorCode::NOT_FOUND, error);
   } else {
     EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);
