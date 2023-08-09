@@ -27,7 +27,27 @@ namespace manager::metadata {
  *   to the stream.
  */
 std::ostream& operator<<(std::ostream& os, const ErrorCode& ec) {
-  os << static_cast<std::int32_t>(ec);
+  os << std::to_string(static_cast<std::int32_t>(ec));
+  return os;
+}
+
+/**
+ * @brief Outputs a vector element (std::string_view) to a stream.
+ */
+std::ostream& operator<<(std::ostream& os,
+                         const std::vector<std::string_view>& vc) {
+  // Transform key values for logging.
+  std::stringstream ss;
+  std::transform(vc.begin(), vc.end(),
+                 std::ostream_iterator<std::string_view>(ss, ","),
+                 [](std::string_view s) { return s; });
+
+  std::string result(ss.str());
+  if (!result.empty()) {
+    result.pop_back();
+  }
+
+  os << result;
   return os;
 }
 

@@ -24,17 +24,18 @@
 #include "manager/metadata/common/config.h"
 #include "manager/metadata/common/jwt_claims.h"
 #include "manager/metadata/common/message.h"
+#include "manager/metadata/datatypes.h"
 #include "manager/metadata/helper/logging_helper.h"
 #include "manager/metadata/helper/ptree_helper.h"
 #include "manager/metadata/helper/table_metadata_helper.h"
 #include "manager/metadata/provider/datatypes_provider.h"
+#include "manager/metadata/provider/metadata_provider.h"
 #include "manager/metadata/provider/roles_provider.h"
-#include "manager/metadata/provider/tables_provider.h"
 
 // =============================================================================
 namespace {
 
-std::unique_ptr<manager::metadata::db::TablesProvider> provider = nullptr;
+auto& provider = manager::metadata::db::MetadataProvider::get_instance();
 
 }  // namespace
 
@@ -159,17 +160,6 @@ void Table::convert_from_ptree(const boost::property_tree::ptree& pt) {
 // ==========================================================================
 // Tables class methods.
 /**
- * @brief Constructor
- * @param database   [in]  database name.
- * @param component  [in]  component name.
- */
-Tables::Tables(std::string_view database, std::string_view component)
-    : Metadata(database, component) {
-  // Create the provider.
-  provider = std::make_unique<db::TablesProvider>();
-}
-
-/**
  * @brief Initialization.
  * @param none.
  * @return ErrorCode::OK if success, otherwise an error code.
@@ -181,7 +171,7 @@ ErrorCode Tables::init() const {
   log::function_start("Tables::init()");
 
   // Initialize the provider.
-  error = provider->init();
+  error = provider.init();
 
   // Log of API function finish.
   log::function_finish("Tables::init()", error);
@@ -222,7 +212,7 @@ ErrorCode Tables::add(const boost::property_tree::ptree& object,
   // Adds the table metadata through the provider.
   ObjectIdType retval_object_id = INVALID_OBJECT_ID;
   if (error == ErrorCode::OK) {
-    error = provider->add_table_metadata(object, retval_object_id);
+    error = provider.add_table_metadata(object, retval_object_id);
   }
 
   // Set a value if object_id is not null.
@@ -265,7 +255,7 @@ ErrorCode Tables::get(const ObjectIdType object_id,
   if (error == ErrorCode::OK) {
     auto s_object_id = std::to_string(object_id);
 
-    error = provider->get_table_metadata(Table::ID, s_object_id, object);
+    error = provider.get_table_metadata(Table::ID, s_object_id, object);
   }
 
   // Log of API function finish.
@@ -299,7 +289,7 @@ ErrorCode Tables::get(std::string_view object_name,
 
   // Get the table metadata through the provider.
   if (error == ErrorCode::OK) {
-    error = provider->get_table_metadata(Table::NAME, object_name, object);
+    error = provider.get_table_metadata(Table::NAME, object_name, object);
   }
 
   // Log of API function finish.
@@ -322,7 +312,7 @@ ErrorCode Tables::get_all(
   log::function_start("Tables::get_all()");
 
   // Get the table metadata through the provider.
-  error = provider->get_table_metadata(container);
+  error = provider.get_table_metadata(container);
 
   // Log of API function finish.
   log::function_finish("Tables::get_all()", error);
@@ -359,8 +349,8 @@ ErrorCode Tables::get_statistic(const ObjectIdType table_id,
 
   // Get the table statistic through the provider.
   if (error == ErrorCode::OK) {
-    error = provider->get_table_statistic(Table::ID, std::to_string(table_id),
-                                          object);
+    error = provider.get_table_statistic(Table::ID, std::to_string(table_id),
+                                         object);
   }
 
   // Log of API function finish.
@@ -396,7 +386,7 @@ ErrorCode Tables::get_statistic(std::string_view table_name,
 
   // Get the table statistic through the provider.
   if (error == ErrorCode::OK) {
-    error = provider->get_table_statistic(Table::NAME, table_name, object);
+    error = provider.get_table_statistic(Table::NAME, table_name, object);
   }
 
   // Log of API function finish.
@@ -426,7 +416,7 @@ ErrorCode Tables::set_statistic(boost::property_tree::ptree& object) const {
   if (error == ErrorCode::OK) {
     ObjectIdType retval_object_id = 0;
 
-    error = provider->set_table_statistic(object, retval_object_id);
+    error = provider.set_table_statistic(object, retval_object_id);
   }
 
   // Log of API function finish.
@@ -458,7 +448,7 @@ ErrorCode Tables::update(const ObjectIdType object_id,
 
   // Update the table metadata through the provider.
   if (error == ErrorCode::OK) {
-    error = provider->update_table_metadata(object_id, object);
+    error = provider.update_table_metadata(object_id, object);
   }
 
   // Log of API function finish.
@@ -497,8 +487,8 @@ ErrorCode Tables::remove(const ObjectIdType object_id) const {
   if (error == ErrorCode::OK) {
     ObjectIdType retval_object_id = 0;
     // Remove the table metadata through the provider.
-    error = provider->remove_table_metadata(
-        Table::ID, std::to_string(object_id), retval_object_id);
+    error = provider.remove_table_metadata(Table::ID, std::to_string(object_id),
+                                           retval_object_id);
   }
 
   // Log of API function finish.
@@ -535,8 +525,8 @@ ErrorCode Tables::remove(std::string_view object_name,
 
   ObjectIdType retval_object_id = INVALID_OBJECT_ID;
   // Remove the table metadata through the provider.
-  error = provider->remove_table_metadata(Table::NAME, object_name,
-                                          retval_object_id);
+  error = provider.remove_table_metadata(Table::NAME, object_name,
+                                         retval_object_id);
 
   // Set a value if object_id is not null.
   if ((error == ErrorCode::OK) && (object_id != nullptr)) {
@@ -628,7 +618,7 @@ ErrorCode Tables::get_acls(std::string_view token,
   std::vector<ptree> container;
   if (error == ErrorCode::OK) {
     // Get the table metadata through the provider.
-    error = provider->get_table_metadata(container);
+    error = provider.get_table_metadata(container);
   }
 
   // Generate processing results.
@@ -687,8 +677,8 @@ ErrorCode Tables::confirm_permission_in_acls(const ObjectIdType object_id,
   // Get the table metadata through the provider.
   if (error == ErrorCode::OK) {
     std::string s_object_id = std::to_string(object_id);
-    error = provider->confirm_permission(Metadata::ID, s_object_id, permission,
-                                         check_result);
+    error = provider.confirm_permission(Metadata::ID, s_object_id, permission,
+                                        check_result);
   }
 
   // Log of API function finish.
@@ -725,8 +715,8 @@ ErrorCode Tables::confirm_permission_in_acls(std::string_view object_name,
 
   // Get the table metadata through the provider.
   if (error == ErrorCode::OK) {
-    error = provider->confirm_permission(Metadata::NAME, object_name,
-                                         permission, check_result);
+    error = provider.confirm_permission(Metadata::NAME, object_name, permission,
+                                        check_result);
   }
 
   // Log of API function finish.
@@ -781,7 +771,8 @@ ErrorCode Tables::param_check_metadata_add(
     boost::optional<std::int64_t> column_number =
         column.get_optional<std::int64_t>(metadata::Column::COLUMN_NUMBER);
     if (!column_number || (column_number.get() <= 0)) {
-      std::string column_name = "Column." + std::string(metadata::Column::COLUMN_NUMBER);
+      std::string column_name =
+          "Column." + std::string(metadata::Column::COLUMN_NUMBER);
       LOG_ERROR << Message::PARAMETER_FAILED
                 << (boost::format(kLogFormat) % column_name).str();
 
@@ -823,9 +814,11 @@ ErrorCode Tables::param_check_metadata_add(
     }
 
     // nullable
-    auto nullable = column.get_optional<std::string>(metadata::Column::IS_NOT_NULL);
+    auto nullable =
+        column.get_optional<std::string>(metadata::Column::IS_NOT_NULL);
     if (!nullable || (nullable.get().empty())) {
-      std::string column_name = "Column." + std::string(metadata::Column::IS_NOT_NULL);
+      std::string column_name =
+          "Column." + std::string(metadata::Column::IS_NOT_NULL);
       LOG_ERROR << Message::PARAMETER_FAILED
                 << (boost::format(kLogFormat) % column_name).str();
 
