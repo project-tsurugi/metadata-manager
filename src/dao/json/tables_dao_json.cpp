@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2022 tsurugi project.
+ * Copyright 2021-2023 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -252,20 +252,21 @@ ErrorCode TablesDaoJson::get_metadata_object(
 
   LOG_DEBUG << "get_metadata_object \"" << key << "\"=\"" << value << "\"";
 
-  // Initialize the error code.
-  error = Dao::get_not_found_error_code(key);
-
+  object.clear();
   BOOST_FOREACH (const ptree::value_type& node, objects.get_child(kRootNode)) {
     const ptree& temp_obj = node.second;
 
-    std::string key_value(
+    // Get the value of the key.
+    std::string data_value(
         ptree_helper::ptree_value_to_string<std::string>(temp_obj, key));
-    if (key_value == value) {
-      object = temp_obj;
-      error  = ErrorCode::OK;
-      break;
+    // If the key value matches, the metadata is added.
+    if (data_value == value) {
+      // Add metadata.
+      object.push_back(std::make_pair("", temp_obj));
     }
   }
+  error = (!object.empty() ? ErrorCode::OK : get_not_found_error_code(key));
+
   LOG_DEBUG << "get_metadata_object => ErrorCode:" << error;
 
   return error;
@@ -284,26 +285,29 @@ ErrorCode TablesDaoJson::delete_metadata_object(
   // Getting a metadata container.
   ptree& tables_node = objects.get_child(kRootNode);
 
+  object_id = -1;
   for (ptree::iterator it_tables = tables_node.begin();
        it_tables != tables_node.end();) {
     const ptree& metadata = it_tables->second;
 
     // Get the value of the key.
-    auto opt_key_value = metadata.get_optional<std::string>(key.data());
+    std::string data_value(
+        ptree_helper::ptree_value_to_string<std::string>(metadata, key));
     // If the key value matches, the metadata is removed.
-    if (opt_key_value && (opt_key_value.value() == value)) {
-      LOG_DEBUG << "Remove table metadata. " << key << "=\"" << value << "\"";
-
+    if (data_value == value) {
       auto opt_oid_value = metadata.get_optional<ObjectId>(Table::ID);
-      object_id          = opt_oid_value.get_value_or(-1);
+      auto tmp_object_id = opt_oid_value.get_value_or(-1);
+
+      LOG_DEBUG << "Remove table metadata. " << key << "=\"" << value
+                << "\" ID=" << tmp_object_id;
+
       // Remove table metadata.
       it_tables = tables_node.erase(it_tables);
 
-      error = ErrorCode::OK;
-      break;
-    } else {
-      it_tables++;
+      object_id = (object_id == -1 ? tmp_object_id : object_id);
+      error     = ErrorCode::OK;
     }
+    ++it_tables;
   }
   LOG_DEBUG << "delete_metadata_object => ErrorCode:" << error;
 

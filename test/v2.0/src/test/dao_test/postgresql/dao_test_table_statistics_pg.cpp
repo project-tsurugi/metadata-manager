@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 tsurugi project.
+ * Copyright 2020-2023 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -89,9 +89,9 @@ TEST_P(DaoTestTableStatisticsByTableIdException,
   ASSERT_EQ(ErrorCode::OK, error);
 
   // Get TablesDAO.
-  auto tables_dao = db_session_manager.get_tables_dao();
+  std::shared_ptr<db::Dao> tables_dao;
+  error = db_session_manager.get_tables_dao(tables_dao);
   ASSERT_NE(nullptr, tables_dao);
-  error = tables_dao->prepare();
   ASSERT_EQ(ErrorCode::OK, error);
 
   // Run the API under test.
@@ -127,9 +127,9 @@ TEST_P(DaoTestTableStatisticsByTableNameException,
   ASSERT_EQ(ErrorCode::OK, error);
 
   // Get TablesDAO.
-  auto tables_dao = db_session_manager.get_tables_dao();
+  std::shared_ptr<db::Dao> tables_dao;
+  error = db_session_manager.get_tables_dao(tables_dao);
   ASSERT_NE(nullptr, tables_dao);
-  error = tables_dao->prepare();
   ASSERT_EQ(ErrorCode::OK, error);
 
   // Run the API under test.
@@ -164,9 +164,9 @@ TEST_P(DaoTestTableStatisticsByTableIdException,
   ASSERT_EQ(ErrorCode::OK, error);
 
   // Get TablesDAO.
-  auto tables_dao = db_session_manager.get_tables_dao();
+  std::shared_ptr<db::Dao> tables_dao;
+  error = db_session_manager.get_tables_dao(tables_dao);
   ASSERT_NE(nullptr, tables_dao);
-  error = tables_dao->prepare();
   ASSERT_EQ(ErrorCode::OK, error);
 
   auto table_id_not_exists = GetParam();
@@ -192,9 +192,9 @@ TEST_P(DaoTestTableStatisticsByTableNameException,
   ASSERT_EQ(ErrorCode::OK, error);
 
   // Get TablesDAO.
-  auto tables_dao = db_session_manager.get_tables_dao();
+  std::shared_ptr<db::Dao> tables_dao;
+  error = db_session_manager.get_tables_dao(tables_dao);
   ASSERT_NE(nullptr, tables_dao);
-  error = tables_dao->prepare();
   ASSERT_EQ(ErrorCode::OK, error);
 
   std::string table_name_not_exists = GetParam();
@@ -230,15 +230,19 @@ TEST_P(DaoTestTableStatisticsByTableIdHappy,
   TableMetadataHelper::add_table(table_name, &ret_table_id);
 
   // Get TablesDAO.
-  auto tables_dao = db_session_manager.get_tables_dao();
+  std::shared_ptr<db::Dao> tables_dao;
+  error = db_session_manager.get_tables_dao(tables_dao);
   ASSERT_NE(nullptr, tables_dao);
-  error = tables_dao->prepare();
   ASSERT_EQ(ErrorCode::OK, error);
 
   // Get table metadata.
-  ptree table_object;
+  ptree temp_objects;
   error = tables_dao->select(Tables::ID, {std::to_string(ret_table_id)},
-                             table_object);
+                             temp_objects);
+  ASSERT_EQ(ErrorCode::OK, error);
+  EXPECT_EQ(1, temp_objects.size());
+
+  ptree table_object = temp_objects.front().second;
 
   // The number of rows is NULL in the table metadata table.
   // So, adds the number of rows to the table metadata table.
@@ -257,11 +261,13 @@ TEST_P(DaoTestTableStatisticsByTableIdHappy,
   error = db_session_manager.commit();
   EXPECT_EQ(ErrorCode::OK, error);
 
-  ptree table_stats_added;
   // Run the API under test.
   error = tables_dao->select(Tables::ID, {std::to_string(ret_table_id)},
-                             table_stats_added);
-  EXPECT_EQ(ErrorCode::OK, error);
+                             temp_objects);
+  ASSERT_EQ(ErrorCode::OK, error);
+  EXPECT_EQ(1, temp_objects.size());
+
+  ptree table_stats_added = temp_objects.front().second;
 
   auto add_metadata_id =
       table_stats_added.get_optional<ObjectIdType>(Table::ID);
@@ -301,11 +307,13 @@ TEST_P(DaoTestTableStatisticsByTableIdHappy,
   error = db_session_manager.commit();
   EXPECT_EQ(ErrorCode::OK, error);
 
-  ptree table_stats_updated;
   // Run the API under test.
   error = tables_dao->select(Tables::ID, {std::to_string(ret_table_id)},
-                             table_stats_updated);
-  EXPECT_EQ(ErrorCode::OK, error);
+                             temp_objects);
+  ASSERT_EQ(ErrorCode::OK, error);
+  EXPECT_EQ(1, temp_objects.size());
+
+  ptree table_stats_updated = temp_objects.front().second;
 
   auto upd_metadata_id =
       table_stats_updated.get_optional<ObjectIdType>(Table::ID);
@@ -358,15 +366,19 @@ TEST_P(DaoTestTableStatisticsByTableNameHappy,
   TableMetadataHelper::add_table(table_name, &ret_table_id);
 
   // Get TablesDAO.
-  auto tables_dao = db_session_manager.get_tables_dao();
+  std::shared_ptr<db::Dao> tables_dao;
+  error = db_session_manager.get_tables_dao(tables_dao);
   ASSERT_NE(nullptr, tables_dao);
-  error = tables_dao->prepare();
   ASSERT_EQ(ErrorCode::OK, error);
 
   // Get table metadata.
-  ptree table_object;
+  ptree temp_objects;
   error = tables_dao->select(Tables::ID, {std::to_string(ret_table_id)},
-                             table_object);
+                             temp_objects);
+  ASSERT_EQ(ErrorCode::OK, error);
+  EXPECT_EQ(1, temp_objects.size());
+
+  ptree table_object = temp_objects.front().second;
 
   // The number of rows is NULL in the table metadata table.
   // So, adds the number of rows to the table metadata table.
@@ -384,10 +396,12 @@ TEST_P(DaoTestTableStatisticsByTableNameHappy,
   error = db_session_manager.commit();
   EXPECT_EQ(ErrorCode::OK, error);
 
-  ptree table_stats_added;
   // Run the API under test.
-  error = tables_dao->select(Tables::NAME, {table_name}, table_stats_added);
-  EXPECT_EQ(ErrorCode::OK, error);
+  error = tables_dao->select(Tables::NAME, {table_name}, temp_objects);
+  ASSERT_EQ(ErrorCode::OK, error);
+  EXPECT_EQ(1, temp_objects.size());
+
+  ptree table_stats_added = temp_objects.front().second;
 
   auto add_metadata_id =
       table_stats_added.get_optional<ObjectIdType>(Table::ID);
@@ -427,10 +441,12 @@ TEST_P(DaoTestTableStatisticsByTableNameHappy,
   error = db_session_manager.commit();
   EXPECT_EQ(ErrorCode::OK, error);
 
-  ptree table_stats_updated;
   // Run the API under test.
-  error = tables_dao->select(Tables::NAME, {table_name}, table_stats_updated);
-  EXPECT_EQ(ErrorCode::OK, error);
+  error = tables_dao->select(Tables::NAME, {table_name}, temp_objects);
+  ASSERT_EQ(ErrorCode::OK, error);
+  EXPECT_EQ(1, temp_objects.size());
+
+  ptree table_stats_updated = temp_objects.front().second;
 
   auto upd_metadata_id =
       table_stats_updated.get_optional<ObjectIdType>(Table::ID);

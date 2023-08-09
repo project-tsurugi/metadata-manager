@@ -17,6 +17,7 @@
 #define MANAGER_METADATA_HELPER_LOGGING_HELPER_H_
 
 #include <iomanip>
+#include <vector>
 
 #include "manager/metadata/error_code.h"
 #include "manager/metadata/log/log_controller.h"
@@ -48,12 +49,14 @@
 namespace manager::metadata {
 
 std::ostream& operator<<(std::ostream& os, const ErrorCode& ec);
+std::ostream& operator<<(std::ostream& os,
+                         const std::vector<std::string_view>& vc);
 
 namespace log {
 
 void function_start(const char* function);
 void function_finish(const char* function,
-                  const ErrorCode& error = ErrorCode::UNKNOWN);
+                     const ErrorCode& error = ErrorCode::UNKNOWN);
 
 }  // namespace log
 
