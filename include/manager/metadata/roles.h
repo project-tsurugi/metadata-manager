@@ -83,7 +83,8 @@ class Roles : public Metadata {
 
   explicit Roles(std::string_view database)
       : Roles(database, kDefaultComponent) {}
-  Roles(std::string_view database, std::string_view component);
+  Roles(std::string_view database, std::string_view component)
+      : Metadata(database, component) {}
 
   Roles(const Roles&) = delete;
   Roles& operator=(const Roles&) = delete;
