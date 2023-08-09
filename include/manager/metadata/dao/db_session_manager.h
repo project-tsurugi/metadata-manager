@@ -97,9 +97,10 @@ class DbSessionManager {
 
   /**
    * @brief Get an instance of a DAO for statistic metadata.
-   * @return DAO instance.
+   * @param dao  [out] DAO instance.
+   * @return ErrorCode::OK if success, otherwise an error code.
    */
-  virtual std::shared_ptr<Dao> get_statistics_dao() = 0;
+  virtual ErrorCode get_statistics_dao(std::shared_ptr<Dao>& dao) = 0;
 
   /**
    * @brief Starts a transaction scope managed by this DBSessionManager.

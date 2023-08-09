@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 tsurugi project.
+ * Copyright 2020-2023 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -217,7 +217,7 @@ TEST_F(ApiTestColumnStatisticsPg, test_get_by_column_id) {
   // Get by column ID.
   error = manager->get_by_column_id(column_id, retrieved_ptree);
   EXPECT_EQ(ErrorCode::OK, error);
-  ut_statistics[0].check_metadata_expected(retrieved_ptree, __FILE__, __LINE__);
+  ut_statistics[0].CHECK_METADATA_EXPECTED_OBJ(retrieved_ptree);
 
   // Remove by column ID.
   error = manager->remove_by_column_id(column_id);
@@ -231,7 +231,7 @@ TEST_F(ApiTestColumnStatisticsPg, test_get_by_column_id) {
   error = manager->get_by_column_id(columns[1].get<ObjectId>(Column::ID),
                                      retrieved_ptree);
   EXPECT_EQ(ErrorCode::OK, error);
-  ut_statistics[1].check_metadata_expected(retrieved_ptree, __FILE__, __LINE__);
+  ut_statistics[1].CHECK_METADATA_EXPECTED_OBJ(retrieved_ptree);
 
   // Cleanup of test data.
   cleanup_test_data(test_data);
@@ -259,7 +259,7 @@ TEST_F(ApiTestColumnStatisticsPg, test_get_by_column_name) {
   // Get by column name.
   error = manager->get_by_column_name(table_id, column_name, retrieved_ptree);
   EXPECT_EQ(ErrorCode::OK, error);
-  ut_statistics[0].check_metadata_expected(retrieved_ptree, __FILE__, __LINE__);
+  ut_statistics[0].CHECK_METADATA_EXPECTED_OBJ(retrieved_ptree);
 
   // Remove by column name.
   error = manager->remove_by_column_name(table_id, column_name);
@@ -273,7 +273,7 @@ TEST_F(ApiTestColumnStatisticsPg, test_get_by_column_name) {
   error = manager->get_by_column_name(
       table_id, columns[1].get<std::string>(Column::NAME), retrieved_ptree);
   EXPECT_EQ(ErrorCode::OK, error);
-  ut_statistics[1].check_metadata_expected(retrieved_ptree, __FILE__, __LINE__);
+  ut_statistics[1].CHECK_METADATA_EXPECTED_OBJ(retrieved_ptree);
 
   // Cleanup of test data.
   cleanup_test_data(test_data);
@@ -301,7 +301,7 @@ TEST_F(ApiTestColumnStatisticsPg, test_get_by_column_number) {
   // Get by column number.
   error = manager->get_by_column_number(table_id, 1, retrieved_ptree);
   EXPECT_EQ(ErrorCode::OK, error);
-  ut_statistics[0].check_metadata_expected(retrieved_ptree, __FILE__, __LINE__);
+  ut_statistics[0].CHECK_METADATA_EXPECTED_OBJ(retrieved_ptree);
 
   // Remove by column number.
   error = manager->remove_by_column_number(table_id, 1);
@@ -314,7 +314,7 @@ TEST_F(ApiTestColumnStatisticsPg, test_get_by_column_number) {
   // Check for the presence of other data.
   error = manager->get_by_column_number(table_id, 2, retrieved_ptree);
   EXPECT_EQ(ErrorCode::OK, error);
-  ut_statistics[1].check_metadata_expected(retrieved_ptree, __FILE__, __LINE__);
+  ut_statistics[1].CHECK_METADATA_EXPECTED_OBJ(retrieved_ptree);
 
   // Cleanup of test data.
   cleanup_test_data(test_data);
@@ -431,7 +431,7 @@ TEST_F(ApiTestColumnStatisticsPg, test_add_exists) {
             UTUtils::get_tree_string(container_before[1]));
 
   CALL_TRACE;
-  ut_statistic.check_metadata_expected(container_after[0], __FILE__, __LINE__);
+  ut_statistic.CHECK_METADATA_EXPECTED_OBJ(container_after[0]);
 
   // Cleanup of test data.
   cleanup_test_data(test_data);
