@@ -89,9 +89,9 @@ ErrorCode DbSessionManagerPg::get_privileges_dao(std::shared_ptr<Dao>& dao) {
   return this->create_dao_instance<PrivilegesDaoPg>(dao);
 }
 
-std::shared_ptr<Dao> DbSessionManagerPg::get_statistics_dao() {
-  // Create an instance of DAO.
-  return std::make_shared<StatisticsDaoPg>(this);
+ErrorCode DbSessionManagerPg::get_statistics_dao(std::shared_ptr<Dao>& dao) {
+  // Generate an instance of statistics DAO.
+  return this->create_dao_instance<StatisticsDaoPg>(dao);
 }
 
 ErrorCode DbSessionManagerPg::start_transaction() {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 tsurugi project.
+ * Copyright 2020-2023 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,28 +21,17 @@
 
 #include "manager/metadata/common/message.h"
 #include "manager/metadata/helper/logging_helper.h"
-#include "manager/metadata/provider/statistics_provider.h"
+#include "manager/metadata/provider/metadata_provider.h"
 
 // =============================================================================
 namespace {
 
-std::unique_ptr<manager::metadata::db::StatisticsProvider> provider = nullptr;
+auto& provider = manager::metadata::db::MetadataProvider::get_instance();
 
 }  // namespace
 
 // =============================================================================
 namespace manager::metadata {
-
-/**
- * @brief Constructor
- * @param (database)   [in]  database name.
- * @param (component)  [in]  component name.
- */
-Statistics::Statistics(std::string_view database, std::string_view component)
-    : Metadata(database, component) {
-  // Create the provider.
-  provider = std::make_unique<db::StatisticsProvider>();
-}
 
 /**
  * @brief Initialization.
@@ -56,7 +45,7 @@ ErrorCode Statistics::init() const {
   log::function_start("Statistics::init()");
 
   // Initialize the provider.
-  error = provider->init();
+  error = provider.init();
 
   // Log of API function finish.
   log::function_finish("Statistics::init()", error);
@@ -97,7 +86,7 @@ ErrorCode Statistics::add(const boost::property_tree::ptree& object,
   // Adds the column statistics through the provider.
   ObjectIdType retval_object_id = 0;
   if (error == ErrorCode::OK) {
-    error = provider->add_column_statistic(object, retval_object_id);
+    error = provider.add_column_statistic(object, retval_object_id);
   }
 
   // Set a value if object_id is not null.
@@ -138,8 +127,8 @@ ErrorCode Statistics::get(const ObjectIdType object_id,
 
   // Get the column statistics through the provider.
   if (error == ErrorCode::OK) {
-    error = provider->get_column_statistic(Statistics::ID,
-                                           std::to_string(object_id), object);
+    error = provider.get_column_statistic(Statistics::ID,
+                                          std::to_string(object_id), object);
   }
 
   // Log of API function finish.
@@ -175,7 +164,7 @@ ErrorCode Statistics::get(std::string_view object_name,
   // Get the column statistics through the provider.
   if (error == ErrorCode::OK) {
     error =
-        provider->get_column_statistic(Statistics::NAME, object_name, object);
+        provider.get_column_statistic(Statistics::NAME, object_name, object);
   }
 
   // Log of API function finish.
@@ -213,8 +202,8 @@ ErrorCode Statistics::get_by_column_id(
 
   // Get the column statistics through the provider.
   if (error == ErrorCode::OK) {
-    error = provider->get_column_statistic(Statistics::COLUMN_ID,
-                                           std::to_string(column_id), object);
+    error = provider.get_column_statistic(Statistics::COLUMN_ID,
+                                          std::to_string(column_id), object);
   }
 
   // Log of API function finish.
@@ -256,9 +245,9 @@ ErrorCode Statistics::get_by_column_number(
 
   // Get the column statistic through the provider.
   if (error == ErrorCode::OK) {
-    error = provider->get_column_statistic(table_id, Statistics::COLUMN_NUMBER,
-                                           std::to_string(ordinal_position),
-                                           object);
+    error =
+        provider.get_column_statistic(table_id, Statistics::COLUMN_NUMBER,
+                                      std::to_string(ordinal_position), object);
   }
 
   // Log of API function finish.
@@ -302,8 +291,8 @@ ErrorCode Statistics::get_by_column_name(
 
   // Get the column statistic through the provider.
   if (error == ErrorCode::OK) {
-    error = provider->get_column_statistic(table_id, Statistics::COLUMN_NAME,
-                                           column_name, object);
+    error = provider.get_column_statistic(table_id, Statistics::COLUMN_NAME,
+                                          column_name, object);
   }
 
   // Log of API function finish.
@@ -326,7 +315,7 @@ ErrorCode Statistics::get_all(
   log::function_start("Statistics::get_all()");
 
   // Get the column statistic through the provider.
-  error = provider->get_column_statistics(container);
+  error = provider.get_column_statistics(container);
 
   // Log of API function finish.
   log::function_finish("Statistics::get_all()", error);
@@ -365,7 +354,7 @@ ErrorCode Statistics::get_all(
 
   // Get the column statistic through the provider.
   if (error == ErrorCode::OK) {
-    error = provider->get_column_statistics(table_id, container);
+    error = provider.get_column_statistics(table_id, container);
   }
 
   // Log of API function finish.
@@ -400,7 +389,7 @@ ErrorCode Statistics::remove(const ObjectIdType object_id) const {
   if (error == ErrorCode::OK) {
     ObjectIdType retval_object_id = 0;
     // Remove the column statistic through the provider.
-    error = provider->remove_column_statistic(
+    error = provider.remove_column_statistic(
         Statistics::ID, std::to_string(object_id), retval_object_id);
   }
 
@@ -436,8 +425,8 @@ ErrorCode Statistics::remove(std::string_view object_name,
   ObjectIdType retval_object_id = 0;
   if (error == ErrorCode::OK) {
     // Remove the table metadata through the provider.
-    error = provider->remove_column_statistic(Statistics::NAME, object_name,
-                                              retval_object_id);
+    error = provider.remove_column_statistic(Statistics::NAME, object_name,
+                                             retval_object_id);
   }
 
   // Set a value if object_id is not null.
@@ -477,7 +466,7 @@ ErrorCode Statistics::remove_by_table_id(const ObjectIdType table_id) const {
 
   if (error == ErrorCode::OK) {
     // Remove the all column statistics through the provider.
-    error = provider->remove_column_statistics(table_id);
+    error = provider.remove_column_statistics(table_id);
   }
 
   // Log of API function finish.
@@ -513,7 +502,7 @@ ErrorCode Statistics::remove_by_column_id(const ObjectIdType column_id) const {
   if (error == ErrorCode::OK) {
     ObjectIdType retval_object_id = 0;
     // Remove the column statistic through the provider.
-    error = provider->remove_column_statistic(
+    error = provider.remove_column_statistic(
         Statistics::COLUMN_ID, std::to_string(column_id), retval_object_id);
   }
 
@@ -554,7 +543,7 @@ ErrorCode Statistics::remove_by_column_number(
   if (error == ErrorCode::OK) {
     ObjectIdType retval_object_id = 0;
     // Remove the column statistic through the provider.
-    error = provider->remove_column_statistic(
+    error = provider.remove_column_statistic(
         table_id, Statistics::COLUMN_NUMBER, std::to_string(ordinal_position),
         retval_object_id);
   }
@@ -598,8 +587,8 @@ ErrorCode Statistics::remove_by_column_name(
   if (error == ErrorCode::OK) {
     ObjectIdType retval_object_id = 0;
     // Remove the column statistic through the provider.
-    error = provider->remove_column_statistic(table_id, Statistics::COLUMN_NAME,
-                                              column_name, retval_object_id);
+    error = provider.remove_column_statistic(table_id, Statistics::COLUMN_NAME,
+                                             column_name, retval_object_id);
   }
 
   // Log of API function finish.

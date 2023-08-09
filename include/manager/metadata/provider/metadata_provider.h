@@ -78,6 +78,18 @@ class MetadataProvider {
   ErrorCode add_constraint_metadata(const boost::property_tree::ptree& object,
                                     ObjectId& object_id);
 
+  /**
+   * @brief Add a column statistic to the column statistics table.
+   *   If column statistics already exist for the specified table ID and
+   *   column information, they are updated.
+   * @param object     [in]  one column statistic to add or update.
+   * @param object_id  [out] ID of the added column statistic.
+   * @retval ErrorCode::OK if success.
+   * @retval otherwise an error code.
+   */
+  ErrorCode add_column_statistic(const boost::property_tree::ptree& object,
+                                 ObjectId& object_id);
+
   // ============================================================================
   /**
    * @brief Get a table metadata object from the metadata table with the
@@ -164,6 +176,59 @@ class MetadataProvider {
   ErrorCode get_constraint_metadata(
       std::vector<boost::property_tree::ptree>& objects);
 
+  /**
+   * @brief Get a column statistic from the column statistics table with the
+   *   specified key value.
+   * @param key     [in]  key of column statistics object.
+   * @param value   [in]  value of column statistics object.
+   * @param object  [out] retrieved column statistics object array.
+   * @retval ErrorCode::OK if success.
+   * @retval ErrorCode::ID_NOT_FOUND if the statistic id or column id
+   *   does not exist.
+   * @retval ErrorCode::NAME_NOT_FOUND if the statistic name does not exist.
+   * @retval otherwise an error code.
+   */
+  ErrorCode get_column_statistic(std::string_view key, std::string_view value,
+                                 boost::property_tree::ptree& object);
+
+  /**
+   * @brief Get a column statistic from the column statistics table with the
+   *   specified table id and column info.
+   * @param table_id  [in]  table id.
+   * @param key       [in]  key. column name of a column statistic table.
+   * @param value     [in]  value to be filtered.
+   * @param object    [out] retrieved column statistics object array.
+   * @retval ErrorCode::OK if success.
+   * @retval ErrorCode::ID_NOT_FOUND if the ordinal position does not exist.
+   * @retval ErrorCode::NAME_NOT_FOUND if the statistic name does not exist.
+   * @retval otherwise an error code.
+   */
+  ErrorCode get_column_statistic(const ObjectId table_id, std::string_view key,
+                                 std::string_view value,
+                                 boost::property_tree::ptree& object);
+
+  /**
+   * @brief Get all column statistics from the column statistics table.
+   * @param objects  [out] all column statistics.
+   * @retval ErrorCode::OK if success.
+   * @retval otherwise an error code.
+   */
+  ErrorCode get_column_statistics(
+      std::vector<boost::property_tree::ptree>& objects);
+
+  /**
+   * @brief Get all column statistics from the column statistics table
+   *   with the specified table id.
+   * @param table_id  [in]  table id.
+   * @param objects   [out] all column statistics.
+   * @retval ErrorCode::OK if success.
+   * @retval ErrorCode::ID_NOT_FOUND if the table id does not exist.
+   * @retval otherwise an error code.
+   */
+  ErrorCode get_column_statistics(
+      const ObjectId table_id,
+      std::vector<boost::property_tree::ptree>& objects);
+
   // ============================================================================
   /**
    * @brief Update a table metadata table with the specified table id.
@@ -228,6 +293,48 @@ class MetadataProvider {
    */
   ErrorCode remove_constraint_metadata(const ObjectId object_id);
 
+  /**
+   * @brief Removes a column statistic with the specified key value
+   *   from the column statistic table.
+   * @param key        [in]  key of column statistics object.
+   * @param value      [in]  value of column statistics object.
+   * @param object_id  [out] statistic id of the row deleted.
+   * @retval ErrorCode::OK if success.
+   * @retval ErrorCode::ID_NOT_FOUND if the statistic id does not exist.
+   * @retval ErrorCode::NAME_NOT_FOUND if the statistic name does not exist.
+   * @retval otherwise an error code.
+   */
+  ErrorCode remove_column_statistic(std::string_view key,
+                                    std::string_view value,
+                                    ObjectId& object_id);
+
+  /**
+   * @brief Removes a column statistic with the specified table id
+   *   from the column statistic table.
+   * @param table_id  [in]  table id.
+   * @retval ErrorCode::OK if success.
+   * @retval ErrorCode::ID_NOT_FOUND if the table id does not exist.
+   * @retval otherwise an error code.
+   */
+  ErrorCode remove_column_statistics(const ObjectId table_id);
+
+  /**
+   * @brief Removes a column statistic with the specified table id and
+   *   column info from the column statistic table.
+   * @param table_id   [in]  table id.
+   * @param key        [in]  key. column name of a column statistic table.
+   * @param value      [in]  value to be filtered.
+   * @param object_id  [out] statistic id of the row deleted.
+   * @retval ErrorCode::OK if success.
+   * @retval ErrorCode::ID_NOT_FOUND if the ordinal position does not exist.
+   * @retval ErrorCode::NAME_NOT_FOUND if the statistic name does not exist.
+   * @retval otherwise an error code.
+   */
+  ErrorCode remove_column_statistic(const ObjectId table_id,
+                                    std::string_view key,
+                                    std::string_view value,
+                                    ObjectId& object_id);
+
   // ============================================================================
   /**
    * @brief Updates table statistics with the specified table id.
@@ -279,6 +386,7 @@ class MetadataProvider {
   std::shared_ptr<Dao> index_dao_;
   std::shared_ptr<Dao> constraint_dao_;
   std::shared_ptr<Dao> privilege_dao_;
+  std::shared_ptr<Dao> statistic_dao_;
 
   /**
    * @brief Constructor
@@ -326,6 +434,23 @@ class MetadataProvider {
   ErrorCode select_single(const T& dao, std::string_view key,
                           const std::vector<std::string_view> values,
                           boost::property_tree::ptree& object) const;
+
+  /**
+   * @brief Get all metadata objects that match the criteria using
+   *   the specified DAO.
+   * @tparam T Derived class of Dao.
+   * @param dao      [in]  DAO of the metadata.
+   * @param key      [in]  key of metadata object.
+   * @param values   [in]  value of metadata object.
+   * @param objects  [out] retrieved metadata object.
+   * @retval ErrorCode::OK if success.
+   * @retval otherwise an error code.
+   */
+  template <typename T, typename = std::enable_if_t<std::is_base_of_v<Dao, T>>>
+  ErrorCode select_multiple(
+      const T& dao, std::string_view key,
+      const std::vector<std::string_view> values,
+      std::vector<boost::property_tree::ptree>& objects) const;
 };
 
 }  // namespace manager::metadata::db

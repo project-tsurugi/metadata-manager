@@ -91,9 +91,10 @@ class DbSessionManagerPg : public DbSessionManager {
 
   /**
    * @brief Get an instance of a DAO for statistic metadata.
-   * @return DAO instance.
+   * @param dao  [out] DAO instance.
+   * @return ErrorCode::OK if success, otherwise an error code.
    */
-  std::shared_ptr<Dao> get_statistics_dao() override;
+  ErrorCode get_statistics_dao(std::shared_ptr<Dao>& dao) override;
 
   /**
    * @brief Starts a transaction scope managed by this DBSessionManager.

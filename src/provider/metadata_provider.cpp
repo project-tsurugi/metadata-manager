@@ -27,6 +27,7 @@
 #include "manager/metadata/helper/logging_helper.h"
 #include "manager/metadata/index.h"
 #include "manager/metadata/roles.h"
+#include "manager/metadata/statistics.h"
 #include "manager/metadata/tables.h"
 
 namespace manager::metadata::db {
@@ -73,6 +74,12 @@ ErrorCode MetadataProvider::init() {
 
   // Table privileges DAO.
   error = session.get_privileges_dao(privilege_dao_);
+  if (error != ErrorCode::OK) {
+    return error;
+  }
+
+  // Column statistics DAO.
+  error = session.get_statistics_dao(statistic_dao_);
   if (error != ErrorCode::OK) {
     return error;
   }
@@ -197,6 +204,31 @@ ErrorCode MetadataProvider::add_constraint_metadata(
 
   // Add metadata object to constraint metadata table.
   error = constraint_dao_->insert(object, object_id);
+
+  // End the transaction.
+  error = this->end_transaction(error);
+
+  return error;
+}
+
+ErrorCode MetadataProvider::add_column_statistic(
+    const boost::property_tree::ptree& object, ObjectId& object_id) {
+  ErrorCode error = ErrorCode::UNKNOWN;
+
+  // Initialization
+  error = init();
+  if (error != ErrorCode::OK) {
+    return error;
+  }
+
+  // Start the transaction.
+  error = this->start_transaction();
+  if (error != ErrorCode::OK) {
+    return error;
+  }
+
+  // Register column statistics via DAO.
+  error = statistic_dao_->insert(object, object_id);
 
   // End the transaction.
   error = this->end_transaction(error);
@@ -438,6 +470,79 @@ ErrorCode MetadataProvider::get_constraint_metadata(
   return error;
 }
 
+ErrorCode MetadataProvider::get_column_statistic(
+    std::string_view key, std::string_view value,
+    boost::property_tree::ptree& object) {
+  ErrorCode error = ErrorCode::UNKNOWN;
+
+  // Initialization
+  error = this->init();
+  if (error != ErrorCode::OK) {
+    return error;
+  }
+
+  // Get column statistic.
+  error = this->select_single(*statistic_dao_, key, {value}, object);
+  // Treat as normal, even if there are multiple rows.
+  error = (error == ErrorCode::RESULT_MULTIPLE_ROWS ? ErrorCode::OK : error);
+
+  return error;
+}
+
+ErrorCode MetadataProvider::get_column_statistic(
+    const ObjectId table_id, std::string_view key, std::string_view value,
+    boost::property_tree::ptree& object) {
+  ErrorCode error = ErrorCode::UNKNOWN;
+
+  // Initialization
+  error = this->init();
+  if (error != ErrorCode::OK) {
+    return error;
+  }
+
+  // Get column statistic.
+  error = this->select_single(*statistic_dao_, key,
+                              {std::to_string(table_id), value}, object);
+  // Treat as normal, even if there are multiple rows.
+  error = (error == ErrorCode::RESULT_MULTIPLE_ROWS ? ErrorCode::OK : error);
+
+  return error;
+}
+
+ErrorCode MetadataProvider::get_column_statistics(
+    std::vector<boost::property_tree::ptree>& objects) {
+  ErrorCode error = ErrorCode::UNKNOWN;
+
+  // Initialization
+  error = init();
+  if (error != ErrorCode::OK) {
+    return error;
+  }
+
+  // Get column statistic.
+  error = statistic_dao_->select_all(objects);
+
+  return error;
+}
+
+ErrorCode MetadataProvider::get_column_statistics(
+    const ObjectId table_id,
+    std::vector<boost::property_tree::ptree>& objects) {
+  ErrorCode error = ErrorCode::UNKNOWN;
+
+  // Initialization
+  error = init();
+  if (error != ErrorCode::OK) {
+    return error;
+  }
+
+  // Get column statistic.
+  error = this->select_multiple(*statistic_dao_, Statistics::TABLE_ID,
+                                {std::to_string(table_id)}, objects);
+
+  return error;
+}
+
 // ============================================================================
 ErrorCode MetadataProvider::update_table_metadata(
     const ObjectId object_id, const boost::property_tree::ptree& object) {
@@ -644,6 +749,71 @@ ErrorCode MetadataProvider::remove_constraint_metadata(
   // Remove a metadata object from the constraint metadata table.
   error = constraint_dao_->remove(Constraint::ID, {std::to_string(object_id)},
                                   removed_id);
+
+  // End the transaction.
+  error = this->end_transaction(error);
+
+  return error;
+}
+
+ErrorCode MetadataProvider::remove_column_statistic(std::string_view key,
+                                                    std::string_view value,
+                                                    ObjectId& object_id) {
+  ErrorCode error = ErrorCode::UNKNOWN;
+
+  // Initialization
+  error = init();
+  if (error != ErrorCode::OK) {
+    return error;
+  }
+
+  // Start the transaction.
+  error = this->start_transaction();
+  if (error != ErrorCode::OK) {
+    return error;
+  }
+
+  // Remove a statistics from the column statistics table.
+  error = statistic_dao_->remove(key, {value}, object_id);
+
+  // End the transaction.
+  error = this->end_transaction(error);
+
+  return error;
+}
+
+ErrorCode MetadataProvider::remove_column_statistics(const ObjectId table_id) {
+  ErrorCode error = ErrorCode::UNKNOWN;
+
+  ObjectId removed_id = 0;
+  // Remove a statistics from the column statistics table.
+  error = this->remove_column_statistic(Statistics::TABLE_ID,
+                                        std::to_string(table_id), removed_id);
+
+  return error;
+}
+
+ErrorCode MetadataProvider::remove_column_statistic(const ObjectId table_id,
+                                                    std::string_view key,
+                                                    std::string_view value,
+                                                    ObjectId& object_id) {
+  ErrorCode error = ErrorCode::UNKNOWN;
+
+  // Initialization
+  error = init();
+  if (error != ErrorCode::OK) {
+    return error;
+  }
+
+  // Start the transaction.
+  error = this->start_transaction();
+  if (error != ErrorCode::OK) {
+    return error;
+  }
+
+  // Remove a statistics from the column statistics table.
+  error =
+      statistic_dao_->remove(key, {std::to_string(table_id), value}, object_id);
 
   // End the transaction.
   error = this->end_transaction(error);
@@ -899,6 +1069,33 @@ ErrorCode MetadataProvider::select_single(
   } else {
     LOG_DEBUG << "Select the metadata. " << typeid(dao).name() << ":[" << key
               << "][" << values << "]=> ErrorCode:" << error;
+  }
+
+  return error;
+}
+
+template <typename T, typename = std::enable_if_t<std::is_base_of_v<Dao, T>>>
+ErrorCode MetadataProvider::select_multiple(
+    const T& dao, std::string_view key,
+    const std::vector<std::string_view> values,
+    std::vector<boost::property_tree::ptree>& objects) const {
+  ErrorCode error = ErrorCode::UNKNOWN;
+
+  ptree tmp_object;
+  // Select data from the DAO.
+  error = dao.select(key, values, tmp_object);
+
+  objects.clear();
+  if (error == ErrorCode::OK) {
+    std::transform(tmp_object.begin(), tmp_object.end(),
+                   std::back_inserter(objects),
+                   [](ptree::value_type vt) { return vt.second; });
+
+    LOG_DEBUG << "Select the metadata. " << typeid(dao).name() << ":[" << key
+              << "][" << values << "]=> " << tmp_object.size() << " rows";
+  } else {
+    LOG_DEBUG << "Select the metadata. " << typeid(dao).name() << ":[" << key
+              << "][" << values << "]=> ErrorCode: " << error;
   }
 
   return error;

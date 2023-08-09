@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 tsurugi project.
+ * Copyright 2020-2023 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -206,10 +206,9 @@ ErrorCode DaoTestColumnStatistics::add_one_column_statistic(
   error = db_session_manager.connect();
   EXPECT_EQ(ErrorCode::OK, error);
 
-  auto statistics_dao = std::static_pointer_cast<db::StatisticsDaoPg>(
-      db_session_manager.get_statistics_dao());
+  std::shared_ptr<db::Dao> statistics_dao;
+  error = db_session_manager.get_statistics_dao(statistics_dao);
   EXPECT_NE(nullptr, statistics_dao);
-  error = statistics_dao->prepare();
   EXPECT_EQ(ErrorCode::OK, error);
 
   std::string statistic_name = "statistic-name";
@@ -282,10 +281,9 @@ ErrorCode DaoTestColumnStatistics::get_one_column_statistic(
   error = db_session_manager.connect();
   EXPECT_EQ(ErrorCode::OK, error);
 
-  auto statistics_dao = std::static_pointer_cast<db::StatisticsDaoPg>(
-      db_session_manager.get_statistics_dao());
+  std::shared_ptr<db::Dao> statistics_dao;
+  error = db_session_manager.get_statistics_dao(statistics_dao);
   EXPECT_NE(nullptr, statistics_dao);
-  error = statistics_dao->prepare();
   EXPECT_EQ(ErrorCode::OK, error);
 
   ptree column_statistics;
@@ -336,10 +334,9 @@ ErrorCode DaoTestColumnStatistics::get_all_column_statistics(
   error = db_session_manager.connect();
   EXPECT_EQ(ErrorCode::OK, error);
 
-  auto statistics_dao = std::static_pointer_cast<db::StatisticsDaoPg>(
-      db_session_manager.get_statistics_dao());
+  std::shared_ptr<db::Dao> statistics_dao;
+  error = db_session_manager.get_statistics_dao(statistics_dao);
   EXPECT_NE(nullptr, statistics_dao);
-  error = statistics_dao->prepare();
   EXPECT_EQ(ErrorCode::OK, error);
 
   std::vector<ptree> column_statistics;
@@ -413,10 +410,9 @@ ErrorCode DaoTestColumnStatistics::get_all_column_statistics(
   error = db_session_manager.connect();
   EXPECT_EQ(ErrorCode::OK, error);
 
-  auto statistics_dao = std::static_pointer_cast<db::StatisticsDaoPg>(
-      db_session_manager.get_statistics_dao());
+  std::shared_ptr<db::Dao> statistics_dao;
+  error = db_session_manager.get_statistics_dao(statistics_dao);
   EXPECT_NE(nullptr, statistics_dao);
-  error = statistics_dao->prepare();
   EXPECT_EQ(ErrorCode::OK, error);
 
   std::vector<ptree> column_statistics;
@@ -490,10 +486,9 @@ ErrorCode DaoTestColumnStatistics::remove_one_column_statistic(
   error = db_session_manager.connect();
   EXPECT_EQ(ErrorCode::OK, error);
 
-  auto statistics_dao = std::static_pointer_cast<db::StatisticsDaoPg>(
-      db_session_manager.get_statistics_dao());
+  std::shared_ptr<db::Dao> statistics_dao;
+  error = db_session_manager.get_statistics_dao(statistics_dao);
   EXPECT_NE(nullptr, statistics_dao);
-  error = statistics_dao->prepare();
   EXPECT_EQ(ErrorCode::OK, error);
 
   error = db_session_manager.start_transaction();
@@ -538,10 +533,9 @@ ErrorCode DaoTestColumnStatistics::remove_all_column_statistics(
   error = db_session_manager.connect();
   EXPECT_EQ(ErrorCode::OK, error);
 
-  auto statistics_dao = std::static_pointer_cast<db::StatisticsDaoPg>(
-      db_session_manager.get_statistics_dao());
+  std::shared_ptr<db::Dao> statistics_dao;
+  error = db_session_manager.get_statistics_dao(statistics_dao);
   EXPECT_NE(nullptr, statistics_dao);
-  error = statistics_dao->prepare();
   EXPECT_EQ(ErrorCode::OK, error);
 
   error = db_session_manager.start_transaction();
@@ -1086,10 +1080,9 @@ TEST_F(DaoTestColumnStatisticsAllAPIException,
   error = db_session_manager.connect();
   ASSERT_EQ(ErrorCode::OK, error);
 
-  auto statistics_dao = std::static_pointer_cast<db::StatisticsDaoPg>(
-      db_session_manager.get_statistics_dao());
+  std::shared_ptr<db::Dao> statistics_dao;
+  error = db_session_manager.get_statistics_dao(statistics_dao);
   EXPECT_NE(nullptr, statistics_dao);
-  error = statistics_dao->prepare();
   EXPECT_EQ(ErrorCode::OK, error);
 
   error = db_session_manager.start_transaction();
