@@ -20,7 +20,6 @@
 #include <boost/property_tree/ptree.hpp>
 #include "manager/metadata/metadata.h"
 #include "manager/metadata/index.h"
-#include "manager/metadata/provider/metadata_provider.h"
 
 namespace manager::metadata {
 /**
@@ -30,7 +29,9 @@ class Indexes : public Metadata {
  public:
   explicit Indexes(std::string_view database)
       : Indexes(database, kDefaultComponent) {}
-  Indexes(std::string_view database, std::string_view component);
+  Indexes(std::string_view database, std::string_view component)
+      : Metadata(database, component) {}
+
   Indexes(const Indexes&) = delete;
   Indexes& operator=(const Indexes&) = delete;
   virtual ~Indexes() {}
@@ -56,10 +57,8 @@ class Indexes : public Metadata {
                    ObjectId* object_id) const override;
 
  private:
-  std::unique_ptr<manager::metadata::db::MetadataProvider> provider_ = nullptr;
-
   ErrorCode param_check_metadata_add(
       const boost::property_tree::ptree& object) const;
 };
 
-} // namespace manager::metadata
+}  // namespace manager::metadata

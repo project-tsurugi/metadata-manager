@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 tsurugi project.
+ * Copyright 2020-2023 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,32 +16,23 @@
 #include "manager/metadata/indexes.h"
 
 #include <memory>
-#include <jwt-cpp/jwt.h>
 
-#include "manager/metadata/common/config.h"
-#include "manager/metadata/common/jwt_claims.h"
 #include "manager/metadata/common/message.h"
 #include "manager/metadata/helper/logging_helper.h"
-#include "manager/metadata/helper/ptree_helper.h"
-#include "manager/metadata/provider/provider_factory.h"
+#include "manager/metadata/provider/metadata_provider.h"
+
+// =============================================================================
+namespace {
+
+auto& provider = manager::metadata::db::MetadataProvider::get_instance();
+
+}  // namespace
 
 // =============================================================================
 namespace manager::metadata {
 
-using boost::property_tree::ptree;
-
 // ==========================================================================
 // Indexes class methods.
-/**
- * @brief Constructor
- * @param database   [in]  database name.
- * @param component  [in]  component name.
- */
-Indexes::Indexes(std::string_view database, std::string_view component)
-    : Metadata(database, component) {
-  provider_ = manager::metadata::db::get_metadata_provider();
-}
-
 /**
  * @brief Initialization.
  * @return ErrorCode::OK if success, otherwise an error code.
@@ -51,7 +42,7 @@ ErrorCode Indexes::init() const {
 
   log::function_start("Index::init()");
 
-  error = provider_->init();
+  error = provider.init();
 
   log::function_finish("Index::init()", error);
 
@@ -74,7 +65,7 @@ ErrorCode Indexes::add(const boost::property_tree::ptree& object) const {
  */
 ErrorCode Indexes::add(const boost::property_tree::ptree& object,
                       ObjectId* object_id) const {
-  
+
   log::function_start("Indexes::add()");
 
   ErrorCode error = ErrorCode::UNKNOWN;
@@ -86,7 +77,7 @@ ErrorCode Indexes::add(const boost::property_tree::ptree& object,
   // Adds the index metadata through the provider.
   ObjectId retval_object_id = 0;
   if (error == ErrorCode::OK) {
-    error = provider_->add_index_metadata(object, id);
+    error = provider.add_index_metadata(object, id);
   }
 
   // Set a value if object_id is not null.
@@ -95,7 +86,7 @@ ErrorCode Indexes::add(const boost::property_tree::ptree& object,
   }
 
   log::function_finish("Index::add()", error);
-  
+
   return error;
 }
 
@@ -115,8 +106,7 @@ ErrorCode Indexes::get(const ObjectId object_id,
   ErrorCode error = ErrorCode::UNKNOWN;
 
   if (object_id > 0) {
-    error = provider_->get_index_metadata(Object::ID, 
-                                        std::to_string(object_id), 
+    error = provider.get_index_metadata(Object::ID, std::to_string(object_id),
                                         object);
   } else {
     LOG_WARNING
@@ -146,7 +136,7 @@ ErrorCode Indexes::get(std::string_view object_name,
   ErrorCode error = ErrorCode::UNKNOWN;
 
   if (!object_name.empty()) {
-    error = provider_->get_index_metadata(Object::NAME, object_name, object);
+    error = provider.get_index_metadata(Object::NAME, object_name, object);
   } else {
     LOG_WARNING << "An empty value was specified for TableName.";
     error = ErrorCode::INVALID_PARAMETER;
@@ -159,7 +149,7 @@ ErrorCode Indexes::get(std::string_view object_name,
 
 /**
  * @brief Get all index metadata objects from the metadata table.
- *   If no index metadata existst, return the container as empty.
+ *   If no index metadata exists, return the container as empty.
  * @param objects  [out] Container of metadata objects.
  * @return ErrorCode::OK if success, otherwise an error code.
  */
@@ -168,7 +158,7 @@ ErrorCode Indexes::get_all(
 
   log::function_start("Tables::get_all()");
 
-  ErrorCode error = provider_->get_index_metadata(objects);
+  ErrorCode error = provider.get_index_metadata(objects);
 
   log::function_finish("Tables::get_all()", error);
 
@@ -189,7 +179,7 @@ ErrorCode Indexes::update(const ObjectIdType object_id,
   ErrorCode error = ErrorCode::UNKNOWN;
 
   if (object_id > 0) {
-    error = provider_->update_index_metadata(object_id, object);
+    error = provider.update_index_metadata(object_id, object);
   } else {
     LOG_WARNING
         << "An out-of-range value (0 or less) was specified for object ID.: "
@@ -217,7 +207,8 @@ ErrorCode Indexes::remove(const ObjectId object_id) const {
 
   if (object_id > 0) {
     ObjectIdType ret_object_id = INVALID_OBJECT_ID;
-    error = provider_->remove_index_metadata(
+
+    error = provider.remove_index_metadata(
         Object::ID, std::to_string(object_id), ret_object_id);
   } else {
     LOG_WARNING
@@ -232,7 +223,7 @@ ErrorCode Indexes::remove(const ObjectId object_id) const {
 }
 
 /**
- * @brief Remove a indexmetadata object which has the specified name.
+ * @brief Remove a index metadata object which has the specified name.
  * @param object_name  [in]  object name.
  * @param object_id    [out] ID of removed object.
  * @retval ErrorCode::OK if success,
@@ -248,8 +239,9 @@ ErrorCode Indexes::remove(std::string_view object_name,
 
   if (!object_name.empty()) {
     ObjectIdType ret_object_id = INVALID_OBJECT_ID;
-    error = provider_->remove_index_metadata(Object::NAME, object_name,
-                                            ret_object_id);
+
+    error = provider.remove_index_metadata(Object::NAME, object_name,
+                                           ret_object_id);
 
     if ((error == ErrorCode::OK) && (object_id != nullptr)) {
       *object_id = ret_object_id;
@@ -291,4 +283,4 @@ ErrorCode Indexes::param_check_metadata_add(
   return error;
 }
 
-} // namespace manager::metadata
+}  // namespace manager::metadata

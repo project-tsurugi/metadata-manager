@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 tsurugi project.
+ * Copyright 2020-2023 tsurugi project.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -246,15 +246,19 @@ ErrorCode IndexDaoPg::select(std::string_view key,
   // Executes a prepared statement
   error = DbcUtils::execute_statement(pg_conn_, statement.name(), params, res);
   if (error == ErrorCode::OK) {
+    object.clear();
+
     int64_t number_of_tuples = PQntuples(res);
-    if (number_of_tuples == 1) {
-      // Obtain data.
-      object = this->convert_pgresult_to_ptree(res, kFirstRow);
-    } else if (number_of_tuples == 0) {
-      // Not found.
-      error = Dao::get_not_found_error_code(key);
+    if (number_of_tuples >= 1) {
+      for (int row_number = 0; row_number < number_of_tuples; row_number++) {
+        // Convert acquired data to ptree type.
+        object.push_back(
+            std::make_pair("", convert_pgresult_to_ptree(res, row_number)));
+      }
+      error = ErrorCode::OK;
     } else {
-      error = ErrorCode::RESULT_MULTIPLE_ROWS;
+      // Get a NOT_FOUND error code corresponding to the key.
+      error = get_not_found_error_code(key);
     }
   }
   PQclear(res);

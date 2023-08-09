@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 tsurugi project.
+ * Copyright 2021-2023 tsurugi project.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,9 +55,10 @@ class DbSessionManagerJson : public DbSessionManager {
 
   /**
    * @brief Get an instance of a DAO for index metadata.
-   * @return DAO instance.
+   * @param dao  [out] DAO instance.
+   * @return ErrorCode::OK if success, otherwise an error code.
    */
-  std::shared_ptr<Dao> get_indexes_dao() override;
+  ErrorCode get_indexes_dao(std::shared_ptr<Dao>& dao) override;
 
   /**
    * @brief Get an instance of a DAO for constraint metadata.
@@ -197,6 +198,16 @@ class DbSessionManagerJson : public DbSessionManager {
    * @brief Clear the content data.
    */
   void clear_contents() { contents_map_.clear(); }
+
+  /**
+   * @brief Create and initialize an instance of the DAO.
+   * @param dao  [in/out] DAO of the metadata.
+   * @return ErrorCode::OK if success, otherwise an error code.
+   */
+  template <typename T, typename = std::enable_if_t<std::is_base_of_v<Dao, T>>>
+  ErrorCode create_dao_instance(std::shared_ptr<Dao>& dao) {
+    return DbSessionManager::create_dao_instance<T>(dao, this);
+  }
 };  // class DbSessionManagerJson
 
 }  // namespace manager::metadata::db
