@@ -60,8 +60,9 @@ ErrorCode DbSessionManagerJson::get_constraints_dao(std::shared_ptr<Dao>& dao) {
   return this->create_dao_instance<ConstraintsDaoJson>(dao);
 }
 
-std::shared_ptr<Dao> DbSessionManagerJson::get_datatypes_dao() {
-  return std::make_shared<DataTypesDaoJson>(this);
+ErrorCode DbSessionManagerJson::get_datatypes_dao(std::shared_ptr<Dao>& dao) {
+  // Generate an instance of datatypes DAO.
+  return this->create_dao_instance<DataTypesDaoJson>(dao);
 }
 
 std::shared_ptr<Dao> DbSessionManagerJson::get_roles_dao() {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2022 tsurugi project.
+ * Copyright 2021-2023 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -229,20 +229,21 @@ ErrorCode DataTypesDaoJson::select(std::string_view key,
   // Initialize the error code.
   error = get_not_found_error_code(key);
 
+  object.clear();
   BOOST_FOREACH (const auto& node, contents.get_child(kRootNode)) {
     const ptree& temp_obj = node.second;
 
-    boost::optional<std::string> data_value =
-        temp_obj.get_optional<std::string>(key.data());
-    if (!data_value) {
-      LOG_ERROR << Message::PARAMETER_FAILED << "\"" << key.data()
-                << "\" => undefined value";
+    // Get the value of the key.
+    auto data_value = temp_obj.get_optional<std::string>(key.data());
+    if (data_value) {
+      // If the key value matches, the metadata is added.
+      if (data_value.value() == values[0]) {
+        object.push_back(std::make_pair("", temp_obj));
+        error = ErrorCode::OK;
+      }
+    } else {
+      object.clear();
       error = ErrorCode::INVALID_PARAMETER;
-      break;
-    }
-    if (data_value.value() == values[0]) {
-      object = temp_obj;
-      error = ErrorCode::OK;
       break;
     }
   }

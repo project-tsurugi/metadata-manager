@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 tsurugi project.
+ * Copyright 2020-2023 tsurugi project.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,14 +50,19 @@ ErrorCode DataTypesDaoPg::select(std::string_view key,
   error = DbcUtils::exec_prepared(pg_conn_, statement.name(), params, res);
 
   if (error == ErrorCode::OK) {
+    object.clear();
+
     int nrows = PQntuples(res);
-    if (nrows == 1) {
-      object = convert_pgresult_to_ptree(res, kFirstRow);
-    } else if (nrows == 0) {
+    if (nrows >= 1) {
+      for (int row_number = 0; row_number < nrows; row_number++) {
+        // Convert acquired data to ptree type.
+        object.push_back(
+            std::make_pair("", convert_pgresult_to_ptree(res, row_number)));
+      }
+      error = ErrorCode::OK;
+    } else {
       // Get a NOT_FOUND error code corresponding to the key.
       error = get_not_found_error_code(key);
-    } else {
-      error = ErrorCode::INVALID_PARAMETER;
     }
   }
   PQclear(res);

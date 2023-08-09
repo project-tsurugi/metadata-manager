@@ -24,6 +24,7 @@
 #include "manager/metadata/common/utility.h"
 #include "manager/metadata/constraints.h"
 #include "manager/metadata/dao/db_session_manager.h"
+#include "manager/metadata/datatypes.h"
 #include "manager/metadata/helper/logging_helper.h"
 #include "manager/metadata/index.h"
 #include "manager/metadata/roles.h"
@@ -80,6 +81,12 @@ ErrorCode MetadataProvider::init() {
 
   // Column statistics DAO.
   error = session.get_statistics_dao(statistic_dao_);
+  if (error != ErrorCode::OK) {
+    return error;
+  }
+
+  // DataType metadata DAO.
+  error = session.get_datatypes_dao(datatype_dao_);
   if (error != ErrorCode::OK) {
     return error;
   }
@@ -539,6 +546,25 @@ ErrorCode MetadataProvider::get_column_statistics(
   // Get column statistic.
   error = this->select_multiple(*statistic_dao_, Statistics::TABLE_ID,
                                 {std::to_string(table_id)}, objects);
+
+  return error;
+}
+
+ErrorCode MetadataProvider::get_datatype_metadata(
+    std::string_view key, std::string_view value,
+    boost::property_tree::ptree& object) {
+  ErrorCode error = ErrorCode::UNKNOWN;
+
+  // Initialization
+  error = this->init();
+  if (error != ErrorCode::OK) {
+    return error;
+  }
+
+  // Get datatype metadata.
+  error = this->select_single(*datatype_dao_, key, {value}, object);
+  // Treat as normal, even if there are multiple rows.
+  error = (error == ErrorCode::RESULT_MULTIPLE_ROWS ? ErrorCode::OK : error);
 
   return error;
 }
