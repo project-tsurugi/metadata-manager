@@ -58,7 +58,8 @@ class Statistics : public Metadata {
 
   explicit Statistics(std::string_view database)
       : Statistics(database, kDefaultComponent) {}
-  Statistics(std::string_view database, std::string_view component);
+  Statistics(std::string_view database, std::string_view component)
+      : Metadata(database, component) {}
 
   Statistics(const Statistics&)            = delete;
   Statistics& operator=(const Statistics&) = delete;
