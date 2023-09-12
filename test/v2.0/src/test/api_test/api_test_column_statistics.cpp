@@ -225,7 +225,7 @@ TEST_F(ApiTestColumnStatisticsPg, test_get_by_column_id) {
 
   // Check for data availability.
   error = manager->remove_by_column_id(column_id);
-  EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
+  EXPECT_EQ(ErrorCode::NOT_FOUND, error);
 
   // Check for the presence of other data.
   error = manager->get_by_column_id(columns[1].get<ObjectId>(Column::ID),
@@ -267,7 +267,7 @@ TEST_F(ApiTestColumnStatisticsPg, test_get_by_column_name) {
 
   // Check for data availability.
   error = manager->remove_by_column_name(table_id, column_name);
-  EXPECT_EQ(ErrorCode::NAME_NOT_FOUND, error);
+  EXPECT_EQ(ErrorCode::NOT_FOUND, error);
 
   // Check for the presence of other data.
   error = manager->get_by_column_name(
@@ -309,7 +309,7 @@ TEST_F(ApiTestColumnStatisticsPg, test_get_by_column_number) {
 
   // Check for data availability.
   error = manager->remove_by_column_number(table_id, 1);
-  EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
+  EXPECT_EQ(ErrorCode::NOT_FOUND, error);
 
   // Check for the presence of other data.
   error = manager->get_by_column_number(table_id, 2, retrieved_ptree);
@@ -342,11 +342,11 @@ TEST_F(ApiTestColumnStatisticsPg, test_remove_by_table_id) {
     EXPECT_EQ(ErrorCode::OK, error);
 
     error = manager->remove_by_table_id(table_id_1);
-    EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
+    EXPECT_EQ(ErrorCode::NOT_FOUND, error);
 
     std::vector<boost::property_tree::ptree> container;
     error = manager->get_all(table_id_1, container);
-    EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
+    EXPECT_EQ(ErrorCode::NOT_FOUND, error);
     EXPECT_EQ(container.size(), 0);
   }
 
@@ -356,11 +356,11 @@ TEST_F(ApiTestColumnStatisticsPg, test_remove_by_table_id) {
     EXPECT_EQ(ErrorCode::OK, error);
 
     error = manager->remove_by_table_id(table_id_2);
-    EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
+    EXPECT_EQ(ErrorCode::NOT_FOUND, error);
 
     std::vector<boost::property_tree::ptree> container;
     error = manager->get_all(table_id_2, container);
-    EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
+    EXPECT_EQ(ErrorCode::NOT_FOUND, error);
     EXPECT_EQ(container.size(), 0);
   }
 
@@ -661,7 +661,7 @@ TEST_P(ApiTestColumnStatisticsPgIdPattern, test_invalid_ids) {
     CALL_TRACE;
     ptree statistic;
     error = manager->get_by_column_id(invalid_id, statistic);
-    EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
+    EXPECT_EQ(ErrorCode::NOT_FOUND, error);
   }
 
   // Test of get to a column number that does not exist.
@@ -669,7 +669,7 @@ TEST_P(ApiTestColumnStatisticsPgIdPattern, test_invalid_ids) {
     CALL_TRACE;
     ptree statistic;
     error = manager->get_by_column_number(table_id_, invalid_id, statistic);
-    EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
+    EXPECT_EQ(ErrorCode::NOT_FOUND, error);
   }
 
   // Test of get_all to a table ID that does not exist.
@@ -677,7 +677,7 @@ TEST_P(ApiTestColumnStatisticsPgIdPattern, test_invalid_ids) {
     CALL_TRACE;
     std::vector<ptree> container{};
     error = manager->get_all(invalid_id, container);
-    EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
+    EXPECT_EQ(ErrorCode::NOT_FOUND, error);
     EXPECT_EQ(container.size(), 0);
   }
 
@@ -690,23 +690,22 @@ TEST_P(ApiTestColumnStatisticsPgIdPattern, test_invalid_ids) {
   // Test of remove to a table ID that does not exist.
   {
     CALL_TRACE;
-  // Test of remove to a table ID that does not exist.
     error = manager->remove_by_table_id(invalid_id);
-    EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
+    EXPECT_EQ(ErrorCode::NOT_FOUND, error);
   }
 
   // Test of remove to a column ID that does not exist.
   {
     CALL_TRACE;
     error = manager->remove_by_column_id(invalid_id);
-    EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
+    EXPECT_EQ(ErrorCode::NOT_FOUND, error);
   }
 
   // Test of remove to a column number that does not exist.
   {
     CALL_TRACE;
     error = manager->remove_by_column_number(table_id_, invalid_id);
-    EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
+    EXPECT_EQ(ErrorCode::NOT_FOUND, error);
   }
 }
 
@@ -741,7 +740,7 @@ TEST_P(ApiTestColumnStatisticsPgNamePattern, test_invalid_names) {
     CALL_TRACE;
     ptree statistic;
     error = manager->get_by_column_name(table_id_, invalid_name, statistic);
-    EXPECT_EQ(ErrorCode::NAME_NOT_FOUND, error);
+    EXPECT_EQ(ErrorCode::NOT_FOUND, error);
   }
 
   // Test of remove to a statistic name that does not exist.
@@ -755,7 +754,7 @@ TEST_P(ApiTestColumnStatisticsPgNamePattern, test_invalid_names) {
   {
     CALL_TRACE;
     error = manager->remove_by_column_name(table_id_, invalid_name);
-    EXPECT_EQ(ErrorCode::NAME_NOT_FOUND, error);
+    EXPECT_EQ(ErrorCode::NOT_FOUND, error);
   }
 }
 
@@ -774,9 +773,11 @@ TEST_F(ApiTestColumnStatisticsJson, test_add) {
   UtColumnStatistics ut_statistic(INT32_MAX, 1);
   ptree inserted_metadata = ut_statistic.get_metadata_ptree();
 
+  ObjectId object_id = INVALID_OBJECT_ID;
   // Test to add the manager.
-  ApiTestHelper::test_add(manager.get(), inserted_metadata,
-                          ErrorCode::NOT_SUPPORTED);
+  ErrorCode actual = manager->add(inserted_metadata, &object_id);
+  EXPECT_EQ(ErrorCode::OK, actual);
+  EXPECT_EQ(object_id, INVALID_OBJECT_ID);
 }
 
 /**
@@ -792,14 +793,15 @@ TEST_F(ApiTestColumnStatisticsJson, test_get) {
   ApiTestHelper::test_init(manager.get(), ErrorCode::OK);
 
   ptree retrieve_metadata;
-
   // Test to get the manager by statistic id.
-  ApiTestHelper::test_get(manager.get(), INT32_MAX, ErrorCode::NOT_SUPPORTED,
+  ApiTestHelper::test_get(manager.get(), INT32_MAX, ErrorCode::ID_NOT_FOUND,
                           retrieve_metadata);
+  EXPECT_TRUE(retrieve_metadata.empty());
 
   // Test to get the manager by statistic name.
   ApiTestHelper::test_get(manager.get(), "statistics_name",
-                          ErrorCode::NOT_SUPPORTED, retrieve_metadata);
+                          ErrorCode::NAME_NOT_FOUND, retrieve_metadata);
+  EXPECT_TRUE(retrieve_metadata.empty());
 }
 
 /**
@@ -817,8 +819,7 @@ TEST_F(ApiTestColumnStatisticsJson, test_getall) {
   std::vector<boost::property_tree::ptree> container = {};
 
   // Test to gte all the manager.
-  ApiTestHelper::test_getall(manager.get(), ErrorCode::NOT_SUPPORTED,
-                             container);
+  ApiTestHelper::test_getall(manager.get(), ErrorCode::OK, container);
   EXPECT_TRUE(container.empty());
 }
 
@@ -834,15 +835,12 @@ TEST_F(ApiTestColumnStatisticsJson, remove_statistic_metadata) {
   // Test to initialize the manager.
   ApiTestHelper::test_init(manager.get(), ErrorCode::OK);
 
-  std::vector<boost::property_tree::ptree> container = {};
-
   // Test to remove the manager by statistic id.
-  ApiTestHelper::test_remove(manager.get(), INT32_MAX,
-                             ErrorCode::NOT_SUPPORTED);
+  ApiTestHelper::test_remove(manager.get(), INT32_MAX, ErrorCode::ID_NOT_FOUND);
 
   // Test to remove the manager by statistic name.
-  ApiTestHelper::test_remove(manager.get(), "statistic_name",
-                             ErrorCode::NOT_SUPPORTED);
+  ApiTestHelper::test_remove(manager.get(), "invalid_statistic_name",
+                             ErrorCode::NAME_NOT_FOUND);
 }
 
 }  // namespace manager::metadata::testing

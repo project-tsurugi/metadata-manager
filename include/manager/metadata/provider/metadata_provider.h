@@ -49,138 +49,135 @@ class MetadataProvider {
 
   // ============================================================================
   /**
+   * @brief DB transaction control.
+   * @param trans_function  [in]  function to perform transaction processing.
+   * @retval ErrorCode::OK if success.
+   * @retval otherwise an error code.
+   */
+  ErrorCode transaction(std::function<ErrorCode()> trans_function);
+
+  // ============================================================================
+  /**
    * @brief Add a table metadata object to the metadata table.
+   *   If `object_id` is not nullptr, store the id of the added metadata.
    * @param object     [in]  table metadata to add.
    * @param object_id  [out] ID of the added table metadata.
    * @retval ErrorCode::OK if success.
    * @retval otherwise an error code.
    */
   ErrorCode add_table_metadata(const boost::property_tree::ptree& object,
-                               ObjectId& object_id);
+                               ObjectId* object_id = nullptr);
+  /**
+   * @brief Add a column metadata object to the metadata table.
+   *   If `object_id` is not nullptr, store the id of the added metadata.
+   * @param object     [in]  constraints metadata to add.
+   * @param object_id  [out] ID of the added constraint metadata.
+   * @retval ErrorCode::OK if success.
+   * @retval otherwise an error code.
+   */
+  ErrorCode add_column_metadata(const boost::property_tree::ptree& object,
+                                ObjectId* object_id = nullptr);
 
   /**
    * @brief Add an index metadata object to the metadata table.
+   *   If `object_id` is not nullptr, store the id of the added metadata.
    * @param object     [in]  index metadata to add.
    * @param object_id  [out] ID of the added index metadata.
    * @retval ErrorCode::OK if success.
    * @retval otherwise an error code.
    */
   ErrorCode add_index_metadata(const boost::property_tree::ptree& object,
-                               ObjectId& object_id);
+                               ObjectId* object_id = nullptr);
 
   /**
    * @brief Add a constraint metadata object to the metadata table.
+   *   If `object_id` is not nullptr, store the id of the added metadata.
    * @param object     [in]  constraints metadata to add.
    * @param object_id  [out] ID of the added constraint metadata.
    * @retval ErrorCode::OK if success.
    * @retval otherwise an error code.
    */
   ErrorCode add_constraint_metadata(const boost::property_tree::ptree& object,
-                                    ObjectId& object_id);
+                                    ObjectId* object_id = nullptr);
 
   /**
    * @brief Add a column statistic to the column statistics table.
    *   If column statistics already exist for the specified table ID and
    *   column information, they are updated.
+   *   If `object_id` is not nullptr, store the id of the added statistic.
    * @param object     [in]  one column statistic to add or update.
    * @param object_id  [out] ID of the added column statistic.
    * @retval ErrorCode::OK if success.
    * @retval otherwise an error code.
    */
   ErrorCode add_column_statistic(const boost::property_tree::ptree& object,
-                                 ObjectId& object_id);
+                                 ObjectId* object_id = nullptr);
 
   // ============================================================================
   /**
-   * @brief Get a table metadata object from the metadata table with the
+   * @brief Get the table metadata object from the metadata table with the
    *   specified key value.
-   * @param key     [in]  key of table metadata object.
-   * @param value   [in]  value of table metadata object.
-   * @param object  [out] retrieved constraint metadata object array.
+   * @param keys    [in]  key name and value of table metadata object.
+   * @param object  [out] retrieved table metadata object.
    * @retval ErrorCode::OK if success.
    * @retval ErrorCode::ID_NOT_FOUND if the table id does not exist.
    * @retval ErrorCode::NAME_NOT_FOUND if the table name does not exist.
-   * @retval otherwise an error code.
-   */
-  ErrorCode get_table_metadata(std::string_view key, std::string_view value,
-                               boost::property_tree::ptree& object);
-
-  /**
-   * @brief Get all table metadata object from the metadata table.
-   * @param objects  [out] table metadata object to get.
-   * @retval ErrorCode::OK if success.
+   * @retval ErrorCode::NOT_FOUND If the key does not exist.
    * @retval otherwise an error code.
    */
   ErrorCode get_table_metadata(
-      std::vector<boost::property_tree::ptree>& objects);
+      const std::map<std::string_view, std::string_view>& keys,
+      boost::property_tree::ptree& object);
 
   /**
-   * @brief Get a table statistic from the metadata table with the
+   * @brief Get the column metadata object from the metadata table with the
    *   specified key value.
-   * @param key     [in]  key of table metadata object.
-   * @param value   [in]  value of table metadata object.
-   * @param object  [out] one table metadata object to get, where key = value.
+   * @param keys    [in]  key name and value of column metadata object.
+   * @param object  [out] retrieved column metadata object.
    * @retval ErrorCode::OK if success.
-   * @retval ErrorCode::ID_NOT_FOUND if the table id does not exist.
-   * @retval ErrorCode::NAME_NOT_FOUND if the table name does not exist.
+   * @retval ErrorCode::ID_NOT_FOUND if the column id does not exist.
+   * @retval ErrorCode::NAME_NOT_FOUND if the column name does not exist.
+   * @retval ErrorCode::NOT_FOUND If the key does not exist.
    * @retval otherwise an error code.
    */
-  ErrorCode get_table_statistic(std::string_view key, std::string_view value,
-                                boost::property_tree::ptree& object);
+  ErrorCode get_column_metadata(
+      const std::map<std::string_view, std::string_view>& keys,
+      boost::property_tree::ptree& object);
 
   /**
-   * @brief Get a index metadata object from the metadata table with the
+   * @brief Get the index metadata object from the metadata table with the
    *   specified key value.
-   * @param key     [in]  key of index metadata object. e.g. id or name.
-   * @param value   [in]  key value.
+   * @param keys    [in]  key name and value of index metadata object.
    * @param object  [out] retrieved index metadata object.
-   * @retval ErrorCode::OK              if success.
-   * @retval ErrorCode::ID_NOT_FOUND    if the id does not exist.
-   * @retval ErrorCode::NAME_NOT_FOUND  if the name does not exist.
-   * @retval otherwise an error code.
-   */
-  ErrorCode get_index_metadata(std::string_view key, std::string_view value,
-                               boost::property_tree::ptree& object);
-
-  /**
-   * @brief Get all index metadata object from the metadata table.
-   * @param objects [out] table metadata objects.
    * @retval ErrorCode::OK if success.
+   * @retval ErrorCode::ID_NOT_FOUND if the index id does not exist.
+   * @retval ErrorCode::NAME_NOT_FOUND if the index name does not exist.
+   * @retval ErrorCode::NOT_FOUND If the key does not exist.
    * @retval otherwise an error code.
    */
   ErrorCode get_index_metadata(
-      std::vector<boost::property_tree::ptree>& objects);
+      const std::map<std::string_view, std::string_view>& keys,
+      boost::property_tree::ptree& object);
 
   /**
-   * @brief Get a constraint metadata object from the metadata table with the
+   * @brief Get the constraint metadata object from the metadata table with the
    *   specified key value.
-   * @param key     [in]  key of constraint metadata object.
-   * @param value   [in]  key value.
-   * @param object  [out] retrieved constraint metadata object array.
+   * @param keys    [in]  key name and value of constraint metadata object.
+   * @param object  [out] retrieved constraint metadata object.
    * @retval ErrorCode::OK if success.
    * @retval ErrorCode::ID_NOT_FOUND if the constraint id does not exist.
    * @retval ErrorCode::NAME_NOT_FOUND if the constraint name does not exist.
-   * @retval ErrorCode::NOT_FOUND if the table id does not exist.
-   * @retval otherwise an error code.
-   */
-  ErrorCode get_constraint_metadata(std::string_view key,
-                                    std::string_view value,
-                                    boost::property_tree::ptree& object);
-
-  /**
-   * @brief Get all constraint metadata object from the metadata table.
-   * @param objects  [out] constraint metadata object to get.
-   * @retval ErrorCode::OK if success.
+   * @retval ErrorCode::NOT_FOUND If the key does not exist.
    * @retval otherwise an error code.
    */
   ErrorCode get_constraint_metadata(
-      std::vector<boost::property_tree::ptree>& objects);
+      const std::map<std::string_view, std::string_view>& keys,
+      boost::property_tree::ptree& object);
 
   /**
    * @brief Get a column statistic from the column statistics table with the
    *   specified key value.
-   * @param key     [in]  key of column statistics object.
-   * @param value   [in]  value of column statistics object.
+   * @param keys    [in]  key name and value of role object.
    * @param object  [out] retrieved column statistics object array.
    * @retval ErrorCode::OK if success.
    * @retval ErrorCode::ID_NOT_FOUND if the statistic id or column id
@@ -188,225 +185,235 @@ class MetadataProvider {
    * @retval ErrorCode::NAME_NOT_FOUND if the statistic name does not exist.
    * @retval otherwise an error code.
    */
-  ErrorCode get_column_statistic(std::string_view key, std::string_view value,
-                                 boost::property_tree::ptree& object);
+  ErrorCode get_column_statistic(
+      const std::map<std::string_view, std::string_view>& keys,
+      boost::property_tree::ptree& object);
 
   /**
-   * @brief Get a column statistic from the column statistics table with the
-   *   specified table id and column info.
-   * @param table_id  [in]  table id.
-   * @param key       [in]  key. column name of a column statistic table.
-   * @param value     [in]  value to be filtered.
-   * @param object    [out] retrieved column statistics object array.
-   * @retval ErrorCode::OK if success.
-   * @retval ErrorCode::ID_NOT_FOUND if the ordinal position does not exist.
-   * @retval ErrorCode::NAME_NOT_FOUND if the statistic name does not exist.
-   * @retval otherwise an error code.
-   */
-  ErrorCode get_column_statistic(const ObjectId table_id, std::string_view key,
-                                 std::string_view value,
-                                 boost::property_tree::ptree& object);
-
-  /**
-   * @brief Get all column statistics from the column statistics table.
-   * @param objects  [out] all column statistics.
-   * @retval ErrorCode::OK if success.
-   * @retval otherwise an error code.
-   */
-  ErrorCode get_column_statistics(
-      std::vector<boost::property_tree::ptree>& objects);
-
-  /**
-   * @brief Get all column statistics from the column statistics table
-   *   with the specified table id.
-   * @param table_id  [in]  table id.
-   * @param objects   [out] all column statistics.
-   * @retval ErrorCode::OK if success.
-   * @retval ErrorCode::ID_NOT_FOUND if the table id does not exist.
-   * @retval otherwise an error code.
-   */
-  ErrorCode get_column_statistics(
-      const ObjectId table_id,
-      std::vector<boost::property_tree::ptree>& objects);
-
-  /**
-   * @brief Get a datatype metadata object from the metadata table with the
+   * @brief Get the datatype metadata object from the metadata table with the
    *   specified key value.
-   * @param key     [in]  key of data type metadata object.
-   * @param value   [in]  value of data type metadata object.
-   * @param object  [out] retrieved data type metadata object array.
+   * @param keys    [in]  key name and value of datatype metadata object.
+   * @param object  [out] retrieved datatype metadata object.
    * @retval ErrorCode::OK if success.
-   * @retval ErrorCode::ID_NOT_FOUND if the data types id does not exist.
-   * @retval ErrorCode::NAME_NOT_FOUND if the data types name does not exist.
-   * @retval ErrorCode::NOT_FOUND if the other data types key does not exist.
+   * @retval ErrorCode::ID_NOT_FOUND if the datatype id does not exist.
+   * @retval ErrorCode::NAME_NOT_FOUND if the datatype name does not exist.
+   * @retval ErrorCode::NOT_FOUND if the other datatype key does not exist.
    * @retval otherwise an error code.
    */
-  ErrorCode get_datatype_metadata(std::string_view key, std::string_view value,
-                                  boost::property_tree::ptree& object);
+  ErrorCode get_datatype_metadata(
+      const std::map<std::string_view, std::string_view>& keys,
+      boost::property_tree::ptree& object);
 
   /**
-   * @brief Get a role object from the PostgreSQL with the specified key value.
-   * @param key     [in]  key of role metadata object.
-   * @param value   [in]  value of role metadata object.
-   * @param object  [out] retrieved role metadata object array.
+   * @brief Get the role object from the PostgreSQL with the specified key value.
+   * @param keys    [in]  key name and value of role object.
+   * @param object  [out] retrieved role object array.
    * @retval ErrorCode::OK if success.
    * @retval ErrorCode::ID_NOT_FOUND if the role id does not exist.
    * @retval ErrorCode::NAME_NOT_FOUND if the role name does not exist.
    * @retval otherwise an error code.
    */
-  ErrorCode get_role_metadata(std::string_view key, std::string_view value,
-                              boost::property_tree::ptree& object);
+  ErrorCode get_role_metadata(
+      const std::map<std::string_view, std::string_view>& keys,
+      boost::property_tree::ptree& object);
+
+  /**
+   * @brief Get privileges from PostgreSQL for the role with the specified key.
+   * @param keys    [in]  key name and value of role object.
+   * @param object  [out] retrieved privilege object array.
+   * @retval ErrorCode::OK if success.
+   * @retval ErrorCode::ID_NOT_FOUND if the role id does not exist.
+   * @retval ErrorCode::NAME_NOT_FOUND if the role name does not exist.
+   * @retval otherwise an error code.
+   */
+  ErrorCode get_privileges(
+      const std::map<std::string_view, std::string_view>& keys,
+      boost::property_tree::ptree& object);
 
   // ============================================================================
   /**
-   * @brief Update a table metadata table with the specified table id.
-   * @param object_id  [in]  Table ID of the table metadata to be updated.
-   * @param object     [in]  Table metadata object.
+   * @brief Update a table metadata table with the specified key value.
+   * @param keys    [in]  key name and value of table metadata object.
+   * @param object  [in]  table metadata object.
+   * @param rows    [out] number of updated metadata object.
    * @retval ErrorCode::OK if success.
    * @retval ErrorCode::ID_NOT_FOUND if the table id does not exist.
+   * @retval ErrorCode::NAME_NOT_FOUND if the table name does not exist.
+   * @retval ErrorCode::NOT_FOUND If the key does not exist.
    * @retval otherwise an error code.
    */
-  ErrorCode update_table_metadata(const ObjectId object_id,
-                                  const boost::property_tree::ptree& object);
+  ErrorCode update_table_metadata(
+      const std::map<std::string_view, std::string_view>& keys,
+      const boost::property_tree::ptree& object, uint64_t* rows = nullptr);
 
   /**
-   * @brief Update a index metadata table with the specified table id.
-   * @param object_id  [in]  object ID of the index metadata to be updated.
-   * @param object     [in]  Table metadata object.
+   * @brief Update a column metadata table with the specified key value.
+   * @param keys    [in]  key name and value of column metadata object.
+   * @param object  [in]  column metadata object.
+   * @param rows    [out] number of updated metadata object.
    * @retval ErrorCode::OK if success.
-   * @retval ErrorCode::ID_NOT_FOUND if the table id does not exist.
    * @retval otherwise an error code.
    */
-  ErrorCode update_index_metadata(const ObjectId object_id,
-                                  const boost::property_tree::ptree& object);
+  ErrorCode update_column_metadata(
+      const std::map<std::string_view, std::string_view>& keys,
+      const boost::property_tree::ptree& object, uint64_t* rows = nullptr);
+
+  /**
+   * @brief Update a index metadata table with the specified key value.
+   * @param keys    [in]  key name and value of index metadata object.
+   * @param object  [in]  index metadata object.
+   * @param rows    [out] number of updated metadata object.
+   * @retval ErrorCode::OK if success.
+   * @retval otherwise an error code.
+   */
+  ErrorCode update_index_metadata(
+      const std::map<std::string_view, std::string_view>& keys,
+      const boost::property_tree::ptree& object, uint64_t* rows = nullptr);
+
+  /**
+   * @brief Update a constraint metadata table with the specified key value.
+   * @param keys    [in]  key name and value of constraint metadata object.
+   * @param object  [in]  constraint metadata object.
+   * @param rows    [out] number of updated metadata object.
+   * @retval ErrorCode::OK if success.
+   * @retval otherwise an error code.
+   */
+  ErrorCode update_constraint_metadata(
+      const std::map<std::string_view, std::string_view>& keys,
+      const boost::property_tree::ptree& object, uint64_t* rows = nullptr);
 
   // ============================================================================
   /**
-   * @brief Removes all metadata objects with the specified table info
+   * @brief Removes all metadata objects with the specified key value
    *   from the metadata table.
    *   (Metadata: table metadata, column metadata, index metadata,
    *   constraint metadata, column statistics)
-   * @param key        [in]  key of table metadata object.
-   * @param value      [in]  value of table metadata object.
-   * @param object_id  [out] ID of the removed table metadata.
+   * @param keys        [in]  key name and value of table metadata object.
+   * @param object_ids  [out] IDs of the removed table metadata.
    * @retval ErrorCode::OK if success.
    * @retval ErrorCode::ID_NOT_FOUND if the table id does not exist.
    * @retval ErrorCode::NAME_NOT_FOUND if the table name does not exist.
+   * @retval ErrorCode::NOT_FOUND If the key does not exist.
    * @retval otherwise an error code.
    */
-  ErrorCode remove_table_metadata(std::string_view key, std::string_view value,
-                                  ObjectId& object_id);
+  ErrorCode remove_table_metadata(
+      const std::map<std::string_view, std::string_view>& keys,
+      std::vector<ObjectId>* object_ids = nullptr);
 
   /**
-   * @brief Removes a index metadata object with the specified object id
+   * @brief Removes a column metadata object with the specified key value
    *   from the metadata table.
-   * @param key       [in]  key of index metadata object.
-   * @param value     [in]  value of index metadata object.
-   * @param object_id [out] ID of the removed index metadata.
+   * @param keys        [in]  key name and value of column metadata object.
+   * @param object_ids  [out] IDs of the removed column metadata.
+   * @retval ErrorCode::OK if success.
+   * @retval ErrorCode::ID_NOT_FOUND if the column id does not exist.
+   * @retval ErrorCode::NAME_NOT_FOUND if the column name does not exist.
+   * @retval ErrorCode::NOT_FOUND If the key does not exist.
+   * @retval otherwise an error code.
+   */
+  ErrorCode remove_column_metadata(
+      const std::map<std::string_view, std::string_view>& keys,
+      std::vector<ObjectId>* object_ids = nullptr);
+
+  /**
+   * @brief Removes a index metadata object with the specified key value
+   *   from the metadata table.
+   * @param keys        [in]  key name and value of index metadata object.
+   * @param object_ids  [out] IDs of the removed index metadata.
    * @retval ErrorCode::OK if success.
    * @retval ErrorCode::ID_NOT_FOUND if the index id does not exist.
    * @retval ErrorCode::NAME_NOT_FOUND if the index name does not exist.
+   * @retval ErrorCode::NOT_FOUND If the key does not exist.
    * @retval otherwise an error code.
    */
-  ErrorCode remove_index_metadata(std::string_view key, std::string_view value,
-                                  ObjectId& object_id);
+  ErrorCode remove_index_metadata(
+      const std::map<std::string_view, std::string_view>& keys,
+      std::vector<ObjectId>* object_ids = nullptr);
 
   /**
-   * @brief Removes a constraint metadata object with the specified object id
+   * @brief Removes a constraint metadata object with the specified key value
    *   from the metadata table.
-   * @param object_id  [in]  constraint id.
+   * @param keys        [in]  key name and value of constraint metadata object.
+   * @param object_ids  [out] IDs of the removed constraint metadata.
    * @retval ErrorCode::OK if success.
    * @retval ErrorCode::ID_NOT_FOUND if the constraint id does not exist.
+   * @retval ErrorCode::NAME_NOT_FOUND if the constraint name does not exist.
+   * @retval ErrorCode::NOT_FOUND If the key does not exist.
    * @retval otherwise an error code.
    */
-  ErrorCode remove_constraint_metadata(const ObjectId object_id);
+  ErrorCode remove_constraint_metadata(
+      const std::map<std::string_view, std::string_view>& keys,
+      std::vector<ObjectId>* object_ids = nullptr);
 
   /**
-   * @brief Removes a column statistic with the specified key value
+   * @brief Removes a column statistics with the specified key value
    *   from the column statistic table.
-   * @param key        [in]  key of column statistics object.
-   * @param value      [in]  value of column statistics object.
-   * @param object_id  [out] statistic id of the row deleted.
+   * @param keys        [in]  key name and value of column statistic object.
+   * @param object_ids  [out] IDs of the removed column statistic.
    * @retval ErrorCode::OK if success.
    * @retval ErrorCode::ID_NOT_FOUND if the statistic id does not exist.
    * @retval ErrorCode::NAME_NOT_FOUND if the statistic name does not exist.
+   * @retval ErrorCode::NOT_FOUND If the key does not exist.
    * @retval otherwise an error code.
    */
-  ErrorCode remove_column_statistic(std::string_view key,
-                                    std::string_view value,
-                                    ObjectId& object_id);
-
-  /**
-   * @brief Removes a column statistic with the specified table id
-   *   from the column statistic table.
-   * @param table_id  [in]  table id.
-   * @retval ErrorCode::OK if success.
-   * @retval ErrorCode::ID_NOT_FOUND if the table id does not exist.
-   * @retval otherwise an error code.
-   */
-  ErrorCode remove_column_statistics(const ObjectId table_id);
-
-  /**
-   * @brief Removes a column statistic with the specified table id and
-   *   column info from the column statistic table.
-   * @param table_id   [in]  table id.
-   * @param key        [in]  key. column name of a column statistic table.
-   * @param value      [in]  value to be filtered.
-   * @param object_id  [out] statistic id of the row deleted.
-   * @retval ErrorCode::OK if success.
-   * @retval ErrorCode::ID_NOT_FOUND if the ordinal position does not exist.
-   * @retval ErrorCode::NAME_NOT_FOUND if the statistic name does not exist.
-   * @retval otherwise an error code.
-   */
-  ErrorCode remove_column_statistic(const ObjectId table_id,
-                                    std::string_view key,
-                                    std::string_view value,
-                                    ObjectId& object_id);
+  ErrorCode remove_column_statistics(
+      const std::map<std::string_view, std::string_view>& keys,
+      std::vector<ObjectId>* object_ids = nullptr);
 
   // ============================================================================
   /**
-   * @brief Updates table statistics with the specified table id.
-   * @param object     [in]  Table statistic object.
-   * @param object_id  [out] ID of the added table metadata.
-   * @retval ErrorCode::OK if success.
-   * @retval ErrorCode::ID_NOT_FOUND if the table id does not exist.
-   * @retval ErrorCode::NAME_NOT_FOUND if the table name does not exist.
-   * @retval otherwise an error code.
+   * @brief Returns whether the error is related to NotFound.
+   * @param error  [in]  error code.
+   * @retval true: not found.
+   * @retval false: other.
    */
-  ErrorCode set_table_statistic(const boost::property_tree::ptree& object,
-                                ObjectId& object_id);
+  static bool is_not_found(ErrorCode error) {
+    return ((error == ErrorCode::ID_NOT_FOUND) ||
+            (error == ErrorCode::NAME_NOT_FOUND) ||
+            (error == ErrorCode::NOT_FOUND));
+  }
 
-  // ============================================================================
   /**
-   * @brief Gets the presence or absence of the specified permission from the
-   *   PostgreSQL system catalog.
-   * @param key           [in]  key of role metadata object.
-   * @param value         [in]  value of role metadata object.
-   * @param permission    [in]  permissions.
-   * @param check_result  [out] presence or absence of the specified
-   *   permissions.
-   * @retval ErrorCode::OK if success.
-   * @retval ErrorCode::NOT_FOUND if the foreign table does not exist.
-   * @retval ErrorCode::ID_NOT_FOUND if the role id does not exist.
-   * @retval ErrorCode::NAME_NOT_FOUND if the role name does not exist.
-   * @retval ErrorCode::NOT_SUPPORTED If the function is not supported.
-   * @retval otherwise an error code.
+   * @brief Get a NOT_FOUND error code corresponding to the key.
+   * @param key  [in]  key name of the metadata object.
+   * @retval ErrorCode::ID_NOT_FOUND if the key is id.
+   * @retval ErrorCode::NAME_NOT_FOUND if the key is name.
+   * @retval ErrorCode::NOT_FOUND if the key is otherwise.
    */
-  ErrorCode confirm_permission(std::string_view key, std::string_view value,
-                               std::string_view permission, bool& check_result);
+  static ErrorCode get_not_found_error_code(std::string_view key) {
+    return get_not_found_error_code({{key, ""}});
+  }
+
+  /**
+   * @brief Get a NOT_FOUND error code corresponding to the key.
+   * @param keys  [in]  key name of the metadata object.
+   * @retval ErrorCode::ID_NOT_FOUND if the key is id.
+   * @retval ErrorCode::NAME_NOT_FOUND if the key is name.
+   * @retval ErrorCode::NOT_FOUND if the key is otherwise.
+   */
+  static ErrorCode get_not_found_error_code(
+      const std::map<std::string_view, std::string_view>& keys) {
+    if (keys.find(Object::ID) != keys.end()) {
+      return ErrorCode::ID_NOT_FOUND;
+    } else if (keys.find(Object::NAME) != keys.end()) {
+      return ErrorCode::NAME_NOT_FOUND;
+    } else {
+      return ErrorCode::NOT_FOUND;
+    }
+  }
 
  private:
   /**
    * @brief Mapping information between privilege codes and column names.
    */
-  const std::map<char, std::string> privileges_map_ = {
-      {'r',     Dao::PrivilegeColumn::kSelect},
-      {'a',     Dao::PrivilegeColumn::kInsert},
-      {'w',     Dao::PrivilegeColumn::kUpdate},
-      {'d',     Dao::PrivilegeColumn::kDelete},
-      {'D',   Dao::PrivilegeColumn::kTruncate},
-      {'x', Dao::PrivilegeColumn::kReferences},
-      {'t',    Dao::PrivilegeColumn::kTrigger}
+  const std::map<std::string, std::string> privileges_map_ = {
+      {    Dao::PrivilegeColumn::kSelect, "r"},
+      {    Dao::PrivilegeColumn::kInsert, "a"},
+      {    Dao::PrivilegeColumn::kUpdate, "w"},
+      {    Dao::PrivilegeColumn::kDelete, "d"},
+      {  Dao::PrivilegeColumn::kTruncate, "D"},
+      {Dao::PrivilegeColumn::kReferences, "x"},
+      {   Dao::PrivilegeColumn::kTrigger, "t"}
   };
 
   std::shared_ptr<Dao> table_dao_;
@@ -424,63 +431,14 @@ class MetadataProvider {
   MetadataProvider() {}
 
   /**
-   * @brief Start DB transaction control.
-   * @retval ErrorCode::OK if success.
-   * @retval otherwise an error code.
-   */
-  ErrorCode start_transaction() const;
-
-  /**
-   * @brief End DB transaction control.
-   * @param result processing result code.
-   * @retval ErrorCode::OK if success.
-   * @retval otherwise an error code.
-   */
-  ErrorCode end_transaction(const ErrorCode& result) const;
-
-  /**
    * @brief Checks for the presence of specified privileges.
-   * @param object      [in]  ptree of table privileges.
-   * @param privileges  [in]  privileges to check.
+   * @param src  [in]  ptree object before conversion.
+   * @param dst  [in]  ptree object after conversion.
    * @retval ErrorCode::OK if success.
    * @retval otherwise an error code.
    */
-  bool check_of_privilege(const boost::property_tree::ptree& object,
-                          std::string_view privileges) const;
-
-  /**
-   * @brief Get a one metadata object using the specified DAO.
-   *   If more than one is retrieved, the first one is retrieved.
-   * @tparam T Derived class of Dao.
-   * @param dao     [in]  DAO of the metadata.
-   * @param key     [in]  key of metadata object.
-   * @param values  [in]  value of metadata object.
-   * @param object  [out] retrieved metadata object.
-   * @retval ErrorCode::OK if success.
-   * @retval ErrorCode::RESULT_MULTIPLE_ROWS if success (multiple rows).
-   * @retval otherwise an error code.
-   */
-  template <typename T, typename = std::enable_if_t<std::is_base_of_v<Dao, T>>>
-  ErrorCode select_single(const T& dao, std::string_view key,
-                          const std::vector<std::string_view> values,
-                          boost::property_tree::ptree& object) const;
-
-  /**
-   * @brief Get all metadata objects that match the criteria using
-   *   the specified DAO.
-   * @tparam T Derived class of Dao.
-   * @param dao      [in]  DAO of the metadata.
-   * @param key      [in]  key of metadata object.
-   * @param values   [in]  value of metadata object.
-   * @param objects  [out] retrieved metadata object.
-   * @retval ErrorCode::OK if success.
-   * @retval otherwise an error code.
-   */
-  template <typename T, typename = std::enable_if_t<std::is_base_of_v<Dao, T>>>
-  ErrorCode select_multiple(
-      const T& dao, std::string_view key,
-      const std::vector<std::string_view> values,
-      std::vector<boost::property_tree::ptree>& objects) const;
+  void convert_privilege(const boost::property_tree::ptree& src,
+                         boost::property_tree::ptree& dst) const;
 };
 
 }  // namespace manager::metadata::db

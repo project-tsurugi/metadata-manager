@@ -31,6 +31,8 @@ auto& provider = manager::metadata::db::MetadataProvider::get_instance();
 // =============================================================================
 namespace manager::metadata {
 
+using boost::property_tree::ptree;
+
 // ==========================================================================
 // DataType struct methods.
 
@@ -99,26 +101,22 @@ ErrorCode DataTypes::get(const ObjectIdType object_id,
   ErrorCode error = ErrorCode::UNKNOWN;
 
   // Log of API function start.
-  log::function_start("DataTypes::get(DataTypeId)");
+  log::function_start("DataTypes::get(object_id)");
 
-  // Parameter value check.
+  // Get the data type metadata.
   if (object_id > 0) {
-    error = ErrorCode::OK;
+    // Get the data type metadata through the class method.
+    std::string datatype_id(std::to_string(object_id));
+    error = this->get(DataTypes::ID, datatype_id, object);
   } else {
     LOG_WARNING
-        << "An out-of-range value (0 or less) was specified for DataTypeId.: "
+        << "An out-of-range value (0 or less) was specified for object ID.: "
         << object_id;
     error = ErrorCode::ID_NOT_FOUND;
   }
 
-  // Get the data type metadata through the class method.
-  if (error == ErrorCode::OK) {
-    error = provider.get_datatype_metadata(DataTypes::ID,
-                                           std::to_string(object_id), object);
-  }
-
   // Log of API function finish.
-  log::function_finish("DataTypes::get(DataTypeId)", error);
+  log::function_finish("DataTypes::get(object_id)", error);
 
   return error;
 }
@@ -138,24 +136,20 @@ ErrorCode DataTypes::get(std::string_view object_name,
   ErrorCode error = ErrorCode::UNKNOWN;
 
   // Log of API function start.
-  log::function_start("DataTypes::get(DataTypeName)");
+  log::function_start("DataTypes::get(object_name)");
 
   // Parameter value check.
   if (!object_name.empty()) {
     error = ErrorCode::OK;
+    // Get the data type metadata through the class method.
+    error = this->get(DataTypes::NAME, object_name, object);
   } else {
-    LOG_WARNING << "An empty value was specified for DataTypeName.";
+    LOG_WARNING << "An empty value was specified for object name.";
     error = ErrorCode::NAME_NOT_FOUND;
   }
 
-  // Get the data type metadata through the class method.
-  if (error == ErrorCode::OK) {
-    error =
-        provider.get_datatype_metadata(DataTypes::NAME, object_name, object);
-  }
-
   // Log of API function finish.
-  log::function_finish("DataTypes::get(DataTypeName)", error);
+  log::function_finish("DataTypes::get(object_name)", error);
 
   return error;
 }
@@ -203,9 +197,26 @@ ErrorCode DataTypes::get(std::string_view object_key,
     }
   }
 
-  // Get the data type metadata through the provider.
+  // Specify the key for the datatype metadata you want to retrieve.
+  std::map<std::string_view, std::string_view> keys = {
+      {s_object_key, object_value}
+  };
+
+  // Retrieve datatype metadata.
+  ptree tmp_object;
   if (error == ErrorCode::OK) {
-    error = provider.get_datatype_metadata(s_object_key, object_value, object);
+    // Get the datatype metadata through the provider.
+    error = provider.get_datatype_metadata(keys, tmp_object);
+  }
+
+  if (error == ErrorCode::OK) {
+    if (tmp_object.size() == 1) {
+      object = tmp_object.front().second;
+    } else {
+      error = ErrorCode::RESULT_MULTIPLE_ROWS;
+      LOG_WARNING << "Multiple rows retrieved.: " << keys
+                  << " exists " << tmp_object.size() << " rows";
+    }
   }
 
   // Log of API function finish.

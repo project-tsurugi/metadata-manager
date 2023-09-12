@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 tsurugi project.
+ * Copyright 2020-2023 tsurugi project.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -59,11 +59,11 @@ void DaoPg::create_prepared_statements() {
                                    Statement::kDefaultKey};
   insert_statements_.emplace(Statement::kDefaultKey, insert_statement);
 
-  // SELECT-all statements.
-  SelectAllStatement select_all_statement{this->get_source_name(),
-                                          this->get_select_all_statement(),
-                                          Statement::kDefaultKey};
-  select_all_statements_.emplace(Statement::kDefaultKey, select_all_statement);
+  // SELECT statements.
+  SelectStatement select_statement{this->get_source_name(),
+                                   this->get_select_all_statement(),
+                                   Statement::kDefaultKey};
+  select_statements_.emplace(Statement::kDefaultKey, select_statement);
 
   // SELECT statements by ID.
   SelectStatement select_by_id_statement{this->get_source_name(),

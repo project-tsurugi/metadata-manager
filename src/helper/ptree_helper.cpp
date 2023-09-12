@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 tsurugi project.
+ * Copyright 2022-2023 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,23 +25,17 @@ namespace ptree_helper {
 namespace json_parser = boost::property_tree::json_parser;
 
 using boost::property_tree::json_parser_error;
-using boost::property_tree::ptree;
 using manager::metadata::ErrorCode;
 using manager::metadata::Message;
 
 // ==========================================================================
 // ptree_helper functions.
 
-/**
- * @brief Make a ptree object from a std::vector object.
- * @param v  [in]  Vector object to be converted.
- * @return Converted object.
- */
-boost::property_tree::ptree make_array_ptree(const std::vector<int64_t>& v) {
-  ptree child;
+boost::property_tree::ptree make_array_ptree(const std::vector<int64_t>& vc) {
+  boost::property_tree::ptree child;
 
-  for (const auto& value : v) {
-    ptree pt;
+  for (const auto& value : vc) {
+    boost::property_tree::ptree pt;
     pt.put("", value);
     child.push_back(std::make_pair("", pt));
   }
@@ -49,13 +43,6 @@ boost::property_tree::ptree make_array_ptree(const std::vector<int64_t>& v) {
   return child;
 }
 
-/**
- * @brief Make a std::vector object from a ptree object.
- * @param pt  [in]  ptree object to be converted.
- * @param key [in]  Key name of ptree.
- * @return Converted object. If there is no value corresponding to the key,
- *  empty is returned.
- */
 std::vector<int64_t> make_vector_int(const boost::property_tree::ptree& pt,
                                      std::string_view key) {
   std::vector<int64_t> v = {};
@@ -72,21 +59,15 @@ std::vector<int64_t> make_vector_int(const boost::property_tree::ptree& pt,
   return v;
 }
 
-/**
- * @brief Converts a JSON string to a property_tree.
- * @param json   [in]  JSON string to be converted to a property_tree.
- * @param ptree  [out] The converted property_tree..
- * @return ErrorCode::OK if success, otherwise an error code.
- */
-manager::metadata::ErrorCode json_to_ptree(
-    std::string_view json, boost::property_tree::ptree& ptree) {
+manager::metadata::ErrorCode json_to_ptree(std::string_view json,
+                                           boost::property_tree::ptree& pt) {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   if (!json.empty()) {
     std::stringstream ss;
     ss << json;
     try {
-      json_parser::read_json(ss, ptree);
+      json_parser::read_json(ss, pt);
     } catch (json_parser_error& e) {
       LOG_ERROR << Message::READ_JSON_FAILURE << e.what();
       error = ErrorCode::INTERNAL_ERROR;
@@ -101,20 +82,14 @@ manager::metadata::ErrorCode json_to_ptree(
   return ErrorCode::OK;
 }
 
-/**
- * @brief Converts a property_tree to a JSON string.
- * @param ptree  [in]  property_tree to be converted to a JSON string.
- * @param json   [out] The converted JSON string.
- * @return ErrorCode::OK if success, otherwise an error code.
- */
 manager::metadata::ErrorCode ptree_to_json(
-    const boost::property_tree::ptree& ptree, std::string& json) {
+    const boost::property_tree::ptree& pt, std::string& json) {
   ErrorCode error = ErrorCode::UNKNOWN;
 
-  if (!ptree.empty()) {
+  if (!pt.empty()) {
     std::stringstream ss;
     try {
-      json_parser::write_json(ss, ptree, false);
+      json_parser::write_json(ss, pt, false);
     } catch (json_parser_error& e) {
       LOG_ERROR << Message::WRITE_JSON_FAILURE << e.what();
       error = ErrorCode::INVALID_PARAMETER;
@@ -130,17 +105,61 @@ manager::metadata::ErrorCode ptree_to_json(
   return ErrorCode::OK;
 }
 
-/**
- * @brief Converts a property_tree to a JSON string.
- * @param ptree  [in]  property_tree to be converted to a JSON string.
- * @return The converted JSON string.
- */
-std::string ptree_to_json(const boost::property_tree::ptree& ptree) {
+std::string ptree_to_json(const boost::property_tree::ptree& pt) {
   std::string json;
 
-  ptree_to_json(ptree, json);
+  ptree_to_json(pt, json);
 
   return json;
+}
+
+std::vector<boost::property_tree::ptree> array_to_vector(
+    const boost::property_tree::ptree& pt) {
+  std::vector<boost::property_tree::ptree> result = {};
+
+  std::transform(
+      pt.begin(), pt.end(), std::back_inserter(result),
+      [](boost::property_tree::ptree::value_type vt) { return vt.second; });
+
+  return result;
+}
+
+template <typename T>
+boost::property_tree::ptree vector_to_array(const std::vector<T>& vc) {
+  boost::property_tree::ptree root;
+
+  for (const auto& value : vc) {
+    boost::property_tree::ptree child;
+    child.put("", value);
+    root.push_back(std::make_pair("", child));
+  }
+
+  return root;
+}
+
+bool is_array(const boost::property_tree::ptree& pt) {
+  for (const auto& child : pt) {
+    if (!child.first.empty()) {
+      return false;
+    }
+  }
+  return true;
+}
+
+bool is_match(const boost::property_tree::ptree& pt,
+              const std::map<std::string_view, std::string_view>& keys) {
+  for (const auto& key : keys) {
+    // Get the value of the key.
+    std::string data_value(ptree_value_to_string<std::string>(pt, key.first));
+
+    // Check if the value matches.
+    if (data_value != key.second) {
+      // If any one of them is a mismatch, a false is returned.
+      return false;
+    }
+  }
+  // If all matches, a true is returned.
+  return true;
 }
 
 }  // namespace ptree_helper
