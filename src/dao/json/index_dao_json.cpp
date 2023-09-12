@@ -28,9 +28,8 @@ namespace manager::metadata::db {
 
 using boost::property_tree::ptree;
 
-ErrorCode IndexDaoJson::insert(
-    const boost::property_tree::ptree& object,
-    ObjectId& object_id) const {
+ErrorCode IndexDaoJson::insert(const boost::property_tree::ptree& object,
+                               ObjectId& object_id) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   // Check if the object is already exists.
@@ -65,39 +64,13 @@ ErrorCode IndexDaoJson::insert(
 
   // The metadata object is NOT yet persisted, persisted on commit.
 
-  return  ErrorCode::OK;
-}
-
-ErrorCode IndexDaoJson::select_all(
-    std::vector<boost::property_tree::ptree>& objects) const {
-  
-  ErrorCode error = ErrorCode::UNKNOWN;
-
-  ptree contents;
-  // Load the metadata from the JSON file.
-  error = this->session()->load_contents(this->database(), kRootNode, contents);
-  if (error != ErrorCode::OK) {
-    return error;
-  }
-
-  // Convert from ptree structure type to vector<ptree>.
-  auto node = contents.get_child(kRootNode);
-  std::transform(node.begin(), node.end(), std::back_inserter(objects),
-                 [](ptree::value_type v) { return v.second; });
-
-  return error;
+  return ErrorCode::OK;
 }
 
 ErrorCode IndexDaoJson::select(
-    std::string_view key, const std::vector<std::string_view>& values,
+    const std::map<std::string_view, std::string_view>& keys,
     boost::property_tree::ptree& object) const {
   ErrorCode error = ErrorCode::UNKNOWN;
-
-  if (values.size() == 0) {
-    LOG_ERROR << Message::PARAMETER_FAILED << "Key value is unspecified.";
-    error = ErrorCode::INVALID_PARAMETER;
-    return error;
-  }
 
   ptree contents;
   // Load the metadata from the JSON file.
@@ -106,20 +79,18 @@ ErrorCode IndexDaoJson::select(
     return error;
   }
 
-  error = find_metadata_object(contents, key, values[0], object);
+  // Get metadata where the given key equals the given value.
+  error = find_metadata_object(contents, keys, object);
 
   return error;
 }
 
-/**
- * @brief
- */
 ErrorCode IndexDaoJson::update(
-    std::string_view key, const std::vector<std::string_view>& values,
-    const boost::property_tree::ptree& object) const {
+    const std::map<std::string_view, std::string_view>& keys,
+    const boost::property_tree::ptree& object, uint64_t& rows) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
-  if (values.size() == 0) {
+  if (keys.empty()) {
     LOG_ERROR << Message::PARAMETER_FAILED << "Key value is unspecified.";
     error = ErrorCode::INVALID_PARAMETER;
     return error;
@@ -132,51 +103,62 @@ ErrorCode IndexDaoJson::update(
     return error;
   }
 
-  ptree temp_objects;
-  error = find_metadata_object(contents, key, values[0], temp_objects);
+  ptree indexes;
+  // Get metadata where the given key equals the given value.
+  error = find_metadata_object(contents, keys, indexes);
+  if (error != ErrorCode::OK) {
+    return error;
+  } else if (indexes.empty()) {
+    rows  = 0;
+    error = ErrorCode::OK;
+    return error;
+  }
+
+  // Delete a metadata object.
+  std::vector<ObjectId> removed_ids;
+  error = this->delete_metadata_object(contents, keys, removed_ids);
   if (error != ErrorCode::OK) {
     return error;
   }
-  ptree temp_obj = temp_objects.front().second;
 
-  ObjectId object_id;
-  delete_metadata_object(contents, key, values[0], object_id);
+  BOOST_FOREACH (const auto& node, indexes) {
+    const auto& index = node.second;
 
-  // copy management metadata.
-  auto format_version = temp_obj.get_optional<int64_t>(Object::FORMAT_VERSION)
-                            .value_or(INVALID_VALUE);
-  auto generation = temp_obj.get_optional<int64_t>(Object::GENERATION)
-                        .value_or(INVALID_VALUE);
-  auto id =
-      temp_obj.get_optional<ObjectId>(Object::ID).value_or(INVALID_OBJECT_ID);
+    // Copy management metadata.
+    auto index_id =
+        index.get_optional<ObjectId>(Indexes::ID).value_or(INVALID_OBJECT_ID);
 
-  auto new_obj = object;
-  new_obj.put<int64_t>(Object::FORMAT_VERSION, format_version);
-  new_obj.put<int64_t>(Object::GENERATION, generation);
-  new_obj.put<ObjectId>(Object::ID, id);
+    // Copy to the temporary area.
+    ptree new_object = object;
 
-  ptree root = contents.get_child(kRootNode);
-  root.push_back(std::make_pair("", new_obj));
-  contents.put_child(kRootNode, root);
+    // Update format_version.
+    new_object.put(Index::FORMAT_VERSION, Indexes::format_version());
+    // Update generation.
+    new_object.put(Index::GENERATION, Indexes::generation());
+    // Update object id.
+    new_object.put(Index::ID, index_id);
+
+    // Add new element.
+    ptree root_node = contents.get_child(kRootNode);
+    root_node.push_back(std::make_pair("", new_object));
+    contents.put_child(kRootNode, root_node);
+  }
 
   // Set updated content.
   this->session()->set_contents(this->database(), contents);
 
-  error = ErrorCode::OK;
+  // Set number of updated metadata object.
+  if (error == ErrorCode::OK) {
+    rows = indexes.size();
+  }
 
   return error;
 }
 
 ErrorCode IndexDaoJson::remove(
-    std::string_view key, const std::vector<std::string_view>& values,
-    ObjectId& object_id) const {
+    const std::map<std::string_view, std::string_view>& keys,
+    std::vector<ObjectId>& object_ids) const {
   ErrorCode error = ErrorCode::UNKNOWN;
-
-  if (values.size() == 0) {
-    LOG_ERROR << Message::PARAMETER_FAILED << "Key value is unspecified.";
-    error = ErrorCode::INVALID_PARAMETER;
-    return error;
-  }
 
   ptree contents;
   // Load the metadata from the JSON file.
@@ -185,7 +167,9 @@ ErrorCode IndexDaoJson::remove(
     return error;
   }
 
-  error = delete_metadata_object(contents, key, values[0], object_id);
+  // Delete a metadata object.
+  error = this->delete_metadata_object(contents, keys, object_ids);
+
   if (error == ErrorCode::OK) {
     // Set updated content.
     this->session()->set_contents(this->database(), contents);
@@ -199,61 +183,65 @@ ErrorCode IndexDaoJson::remove(
  */
 
 ErrorCode IndexDaoJson::find_metadata_object(
-    const boost::property_tree::ptree& objects, std::string_view key,
-    std::string_view value, boost::property_tree::ptree& object) const {
+    const boost::property_tree::ptree& objects,
+    const std::map<std::string_view, std::string_view>& keys,
+    boost::property_tree::ptree& object) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
-  object.clear();
-  BOOST_FOREACH (const auto& node, objects.get_child(IndexDaoJson::kRootNode)) {
-    const auto& temp_obj = node.second;
+  if (keys.empty()) {
+    // Extract all metadata.
+    LOG_DEBUG << "Select the index metadata. [*]";
+  } else {
+    // Extract metadata with key values.
+    LOG_DEBUG << "Select the index metadata. [" << keys << "]";
+  }
 
-    // Get the value of the key.
-    std::string data_value(
-        ptree_helper::ptree_value_to_string<std::string>(temp_obj, key));
-    // If the key value matches, the metadata is added.
-    if (data_value == value) {
+  object.clear();
+  BOOST_FOREACH (const auto& node, objects.get_child(kRootNode)) {
+    const auto& index = node.second;
+
+    if (ptree_helper::is_match(index, keys)) {
       // Add metadata.
-      object.push_back(std::make_pair("", temp_obj));
+      object.push_back(std::make_pair("", index));
     }
   }
-  error = (!object.empty() ? ErrorCode::OK : get_not_found_error_code(key));
 
+  error = ErrorCode::OK;
   return error;
 }
 
 ErrorCode IndexDaoJson::delete_metadata_object(
-    boost::property_tree::ptree& objects, std::string_view key,
-    std::string_view value, ObjectId& object_id) const {
+    boost::property_tree::ptree& objects,
+    const std::map<std::string_view, std::string_view>& keys,
+    std::vector<ObjectId>& object_ids) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
-  // Initialize the error code.
-  error = Dao::get_not_found_error_code(key);
+  LOG_DEBUG << "Delete the index metadata. [" << keys << "]";
 
-  object_id   = -1;
-  ptree& node = objects.get_child(IndexDaoJson::kRootNode);
-  for (ptree::iterator ite = node.begin(); ite != node.end();) {
-    const auto& temp_obj = ite->second;
+  // Getting a metadata container.
+  ptree& indexes_node = objects.get_child(kRootNode);
 
-    // Get the value of the key.
-    std::string data_value(
-        ptree_helper::ptree_value_to_string<std::string>(temp_obj, key));
-    // If the key value matches, the metadata is removed.
-    if (data_value == value) {
-      auto opt_oid_value = temp_obj.get_optional<ObjectId>(Object::ID);
-      auto tmp_object_id = opt_oid_value.get_value_or(-1);
+  object_ids.clear();
+  for (ptree::iterator it_indexes = indexes_node.begin();
+       it_indexes != indexes_node.end();) {
+    const auto& index = it_indexes->second;
 
-      LOG_DEBUG << "Remove index metadata. " << key << "=\"" << value
-                << "\" ID=" << tmp_object_id;
+    if (ptree_helper::is_match(index, keys)) {
+      auto opt_object_id = index.get_optional<ObjectId>(Index::ID);
+      auto object_id     = opt_object_id.get_value_or(-1);
 
-      // Remove index metadata.
-      ite = node.erase(ite);
+      LOG_DEBUG << "Remove index metadata. " << keys << " ID=" << object_id;
+      LOG_DEBUG << "IndexID: " << object_id;
 
-      object_id = (object_id == -1 ? tmp_object_id : object_id);
-      error     = ErrorCode::OK;
+      // Remove table metadata.
+      it_indexes = indexes_node.erase(it_indexes);
+
+      object_ids.push_back(object_id);
     }
-    ++ite;
+    ++it_indexes;
   }
 
+  error = ErrorCode::OK;
   return error;
 }
 

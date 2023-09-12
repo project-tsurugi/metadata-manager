@@ -186,16 +186,16 @@ class DaoTestTableMetadata : public ::testing::Test {
       ASSERT_EQ(ErrorCode::OK, error);
     }
 
+    // Set condition keys for testing.
+    std::map<std::string_view, std::string_view> keys = {
+        {key, value}
+    };
+
     ptree temp_object;
-    error = tables_dao->select(key, {value}, temp_object);
-    if (error != ErrorCode::OK) {
-      if (key == Tables::ID) {
-        EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
-      } else if (key == Tables::NAME) {
-        EXPECT_EQ(ErrorCode::NAME_NOT_FOUND, error);
-      } else {
-        EXPECT_EQ(ErrorCode::NOT_FOUND, error);
-      }
+    // Run the API under test.
+    error = tables_dao->select(keys, temp_object);
+    EXPECT_EQ(ErrorCode::OK, error);
+    if (temp_object.empty()) {
       return;
     }
 
@@ -205,18 +205,27 @@ class DaoTestTableMetadata : public ::testing::Test {
     if (o_table_id) {
       // column metadata
       if (object.find(Table::COLUMNS_NODE) == object.not_found()) {
+        // Set condition keys for testing.
+        std::map<std::string_view, std::string_view> keys_column = {
+            {Column::TABLE_ID, o_table_id.get()}
+        };
+
         ptree columns;
         error =
-            columns_dao->select(Column::TABLE_ID, {o_table_id.get()}, columns);
+            columns_dao->select(keys_column, columns);
         EXPECT_EQ(ErrorCode::OK, error);
         object.add_child(Table::COLUMNS_NODE, columns);
       }
 
       // constraint metadata
       if (object.find(Table::CONSTRAINTS_NODE) == object.not_found()) {
+        // Set condition keys for testing.
+        std::map<std::string_view, std::string_view> keys_constraint = {
+            {Constraint::TABLE_ID, o_table_id.get()}
+        };
+
         ptree constraints;
-        error = constraints_dao->select(Constraint::TABLE_ID,
-                                        {o_table_id.get()}, constraints);
+        error = constraints_dao->select(keys_constraint, constraints);
         error = (error == ErrorCode::NOT_FOUND ? ErrorCode::OK : error);
         EXPECT_EQ(ErrorCode::OK, error);
         object.add_child(Table::CONSTRAINTS_NODE, constraints);
@@ -246,12 +255,92 @@ class DaoTestTableMetadata : public ::testing::Test {
     error = db_session_manager.start_transaction();
     ASSERT_EQ(ErrorCode::OK, error);
 
-    error = tables_dao->update(Tables::ID, {std::to_string(object_id)}, object);
-    if (error == ErrorCode::OK) {
-      EXPECT_EQ(ErrorCode::OK, error);
-    } else {
-      EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
-      return;
+    // Set condition keys for testing.
+    std::string s_object_id(std::to_string(object_id));
+    std::map<std::string_view, std::string_view> keys = {
+        {Tables::ID, s_object_id}
+    };
+
+    uint64_t updated_rows = -1;
+    error = tables_dao->update(keys, object, updated_rows);
+    EXPECT_EQ(ErrorCode::OK, error);
+    EXPECT_GT(updated_rows, 0);
+
+    // Update metadata object to column metadata table.
+    auto opt_columns_node = object.get_child_optional(Table::COLUMNS_NODE);
+    if (opt_columns_node) {
+      // ColumnsDAO
+      std::shared_ptr<Dao> columns_dao;
+      {
+        error = db_session_manager.get_columns_dao(columns_dao);
+        ASSERT_NE(nullptr, columns_dao);
+        ASSERT_EQ(ErrorCode::OK, error);
+      }
+
+      // Specify the key for the column metadata you want to remove.
+      std::map<std::string_view, std::string_view> keys = {
+          {Column::TABLE_ID, s_object_id}
+      };
+
+      std::vector<ObjectId> removed_ids;
+      // Remove a metadata object from the column metadata table.
+      error = columns_dao->remove(keys, removed_ids);
+
+      if (error == ErrorCode::OK) {
+        BOOST_FOREACH (auto& node, opt_columns_node.get()) {
+          auto& column = node.second;
+
+          // Set the table-id.
+          column.put(Column::TABLE_ID, s_object_id);
+
+          ObjectId temp_oid = INVALID_OBJECT_ID;
+          // Insert the column metadata.
+          error = columns_dao->insert(column, temp_oid);
+          if (error != ErrorCode::OK) {
+            // When an error occurs, the process is aborted.
+            break;
+          }
+        }
+      }
+    }
+
+    // Update metadata object to constraint metadata table.
+    auto opt_constraints_node =
+        object.get_child_optional(Table::CONSTRAINTS_NODE);
+    if (opt_constraints_node) {
+      // ConstraintsDAO
+      std::shared_ptr<Dao> constraints_dao;
+      {
+        error = db_session_manager.get_constraints_dao(constraints_dao);
+        ASSERT_NE(nullptr, constraints_dao);
+        ASSERT_EQ(ErrorCode::OK, error);
+      }
+
+      // Specify the key for the constraint metadata you want to remove.
+      std::map<std::string_view, std::string_view> keys = {
+          {Constraint::TABLE_ID, s_object_id}
+      };
+
+      std::vector<ObjectId> removed_ids;
+      // Remove a metadata object from the constraint metadata table.
+      error = constraints_dao->remove(keys, removed_ids);
+
+      if (error == ErrorCode::OK) {
+        BOOST_FOREACH (auto& node, opt_constraints_node.get()) {
+          auto& constraint = node.second;
+
+          // Set the table-id.
+          constraint.put(Constraint::TABLE_ID, s_object_id);
+
+          ObjectId temp_oid = INVALID_OBJECT_ID;
+          // Insert the constraint metadata.
+          error = constraints_dao->insert(constraint, temp_oid);
+          if (error != ErrorCode::OK) {
+            // When an error occurs, the process is aborted.
+            break;
+          }
+        }
+      }
     }
 
     if (error == ErrorCode::OK) {
@@ -318,10 +407,20 @@ class DaoTestTableMetadata : public ::testing::Test {
     error = db_session_manager.start_transaction();
     EXPECT_EQ(ErrorCode::OK, error);
 
-    ObjectIdType retval_object_id = -1;
-    error = tables_dao->remove(key, {value}, retval_object_id);
+    // Set condition keys for testing.
+    std::map<std::string_view, std::string_view> keys = {
+        {key, value}
+    };
+
+    ObjectId retval_object_id = INVALID_OBJECT_ID;
+
+    std::vector<ObjectId> removed_ids;
+    error = tables_dao->remove(keys, removed_ids);
     EXPECT_EQ(ErrorCode::OK, error);
-    EXPECT_NE(-1, retval_object_id);
+    if (removed_ids.size() == 1) {
+      EXPECT_GT(removed_ids[0], 0);
+      retval_object_id = removed_ids[0];
+    }
 
     if (error == ErrorCode::OK) {
       error = db_session_manager.commit();
@@ -510,16 +609,20 @@ TEST_F(DaoTestTableMetadata, add_update_table_metadata) {
                  column.get<int32_t>(Column::COLUMN_NUMBER) + 1);
     }
 
+    // constraint metadata
+    auto opt_constraint_node =
+        expected_table_metadata.get_child_optional(Table::CONSTRAINTS_NODE);
+    if (opt_constraint_node) {
+      auto& constraint_node = opt_constraint_node.get().front().second;
+      // update constraint.
+      constraint_node.put(
+          Constraint::NAME,
+          constraint_node.get<std::string>(Constraint::NAME) + "-update");
+    }
+
     // update table metadata.
     DaoTestTableMetadata::update_table_metadata(ret_table_id_2,
                                                 expected_table_metadata);
-
-    // When Update is performed, the constraint metadata check should be
-    // exempted.
-    expected_table_metadata.erase(Table::CONSTRAINTS_NODE);
-    ptree empty_constraints;
-    expected_table_metadata.add_child(Table::CONSTRAINTS_NODE,
-                                      empty_constraints);
   }
 
   // get table metadata.

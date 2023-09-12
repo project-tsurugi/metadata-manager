@@ -171,7 +171,8 @@ ErrorCode DbSessionManagerJson::load_contents(
 
     if (error == ErrorCode::OK) {
 #ifndef NDEBUG
-      LOG_DEBUG << ptree_helper::ptree_to_json(contents);
+      LOG_DEBUG << "[" << database << "]"
+                << ptree_helper::ptree_to_json(contents);
 #endif
 
       object = contents;
@@ -181,10 +182,6 @@ ErrorCode DbSessionManagerJson::load_contents(
     }
   } else {
     LOG_DEBUG << "Metadata is already loaded.: " << database;
-#ifndef NDEBUG
-    LOG_DEBUG << ptree_helper::ptree_to_json(
-        contents_map_[std::string(database)].data());
-#endif
 
     object = contents_map_[std::string(database)].data();
     error  = ErrorCode::OK;
@@ -216,7 +213,8 @@ ErrorCode DbSessionManagerJson::save_contents() const {
       try {
         LOG_INFO << "Metadata has been written.: " << database;
 #ifndef NDEBUG
-        LOG_DEBUG << ptree_helper::ptree_to_json(content.data());
+        LOG_DEBUG << "[" << database << "]"
+                  << ptree_helper::ptree_to_json(content.data());
 #endif
 
         json_parser::write_json(database, content.data());

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2022 tsurugi project.
+ * Copyright 2020-2023 tsurugi project.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 #ifndef MANAGER_METADATA_DAO_JSON_TABLES_DAO_JSON_H_
 #define MANAGER_METADATA_DAO_JSON_TABLES_DAO_JSON_H_
 
+#include <map>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -47,7 +48,7 @@ class TablesDaoJson : public DaoJson {
    * @brief Add metadata object to metadata table file.
    * @param object     [in]  table metadata object to add.
    * @param object_id  [out] object id of the added row.
-   * @return ErrorCode::OK if success, otherwise an error code.
+   * @return If success ErrorCode::OK, otherwise error code.
    * @note  If success, metadata object is added management metadata.
    *   e.g. format version, generation, etc...
    */
@@ -55,53 +56,36 @@ class TablesDaoJson : public DaoJson {
                                       ObjectId& object_id) const override;
 
   /**
-   * @brief Get all metadata objects from a metadata table file.
-   *   If the table metadata does not exist, return the container as empty.
-   * @param objects  [out] all tables metadata.
-   * @return ErrorCode::OK if success, otherwise an error code.
-   */
-  manager::metadata::ErrorCode select_all(
-      std::vector<boost::property_tree::ptree>& objects) const override;
-
-  /**
-   * @brief Get a metadata object from a metadata table file.
-   * @param key     [in]  key. column name of a table metadata table.
-   * @param values  [in]  value to be filtered.
-   * @param object  [out] table metadata to get, where the given
-   *   key equals the given value.
-   * @retval ErrorCode::OK if success.
-   * @retval ErrorCode::ID_NOT_FOUND if the object id does not exist.
-   * @retval ErrorCode::NAME_NOT_FOUND if the object name does not exist.
-   * @retval otherwise an error code.
+   * @brief Select a metadata object from the metadata file.
+   * @param keys    [in]  key name and value of the metadata object.
+   * @param object  [out] a selected metadata object.
+   * @return If success ErrorCode::OK, otherwise error code.
    */
   manager::metadata::ErrorCode select(
-      std::string_view key, const std::vector<std::string_view>& values,
+      const std::map<std::string_view, std::string_view>& keys,
       boost::property_tree::ptree& object) const override;
 
   /**
-   * @brief Updates metadata objects in the metadata table.
-   * @param key     [in]  key. column name of a table metadata table.
-   * @param values  [in]  value to be filtered.
-   * @param object  [in]  index metadata object to be update.
-   * @return ErrorCode::OK if success, otherwise an error code.
+   * @brief Update a metadata object into the metadata file.
+   * @param keys    [in]  key name and value of the metadata object.
+   * @param object  [in]  metadata object.
+   * @param rows    [out] number of updated metadata object.
+   * @return If success ErrorCode::OK, otherwise error code.
    */
   manager::metadata::ErrorCode update(
-      std::string_view key, const std::vector<std::string_view>& values,
-      const boost::property_tree::ptree& object) const override;
+      const std::map<std::string_view, std::string_view>& keys,
+      const boost::property_tree::ptree& object, uint64_t& rows) const override;
 
   /**
-   * @brief Remove a metadata object from a metadata table file.
-   * @param key        [in]  key. column name of a table metadata table.
-   * @param values     [in]  value to be filtered.
-   * @param object_id  [out] object id of the deleted row.
-   * @retval ErrorCode::OK if success.
-   * @retval ErrorCode::ID_NOT_FOUND if the object id does not exist.
-   * @retval ErrorCode::NAME_NOT_FOUND if the object name does not exist.
-   * @retval otherwise an error code.
+   * @brief Removes table metadata with the specified key value
+   *   from the table metadata file.
+   * @param keys        [in]  key name and value of the metadata object.
+   * @param object_ids  [out] object id of the deleted row.
+   * @return If success ErrorCode::OK, otherwise error code.
    */
   manager::metadata::ErrorCode remove(
-      std::string_view key, const std::vector<std::string_view>& values,
-      ObjectId& object_id) const override;
+      const std::map<std::string_view, std::string_view>& keys,
+      std::vector<ObjectId>& object_ids) const override;
 
  private:
   // Name of the table metadata management file.
@@ -114,34 +98,28 @@ class TablesDaoJson : public DaoJson {
   static constexpr const char* const kOidKeyNameConstraint = "constraint";
 
   /**
-   * @brief Get metadata-object.
+   * @brief Find metadata object from metadata table.
    * @param objects  [in]  metadata container.
-   * @param key      [in]  key. column name of a table metadata table.
-   * @param value    [in]  value to be filtered.
+   * @param keys     [in]  key name and value of a table metadata table.
    * @param object   [out] metadata-object with the specified name.
-   * @retval ErrorCode::OK if success.
-   * @retval ErrorCode::ID_NOT_FOUND if the object id does not exist.
-   * @retval ErrorCode::NAME_NOT_FOUND if the object name does not exist.
-   * @retval otherwise an error code.
+   * @return If success ErrorCode::OK, otherwise error code.
    */
-  manager::metadata::ErrorCode get_metadata_object(
-      const boost::property_tree::ptree& objects, std::string_view key,
-      std::string_view value, boost::property_tree::ptree& object) const;
+  manager::metadata::ErrorCode find_metadata_object(
+      const boost::property_tree::ptree& objects,
+      const std::map<std::string_view, std::string_view>& keys,
+      boost::property_tree::ptree& object) const;
 
   /**
    * @brief Delete a metadata object from a metadata table file.
-   * @param objects    [in/out] metadata container.
-   * @param key        [in]     key. column name of a table metadata table.
-   * @param value      [in]     value to be filtered.
-   * @param object_id  [out]    table id of the row deleted.
-   * @retval ErrorCode::OK if success.
-   * @retval ErrorCode::ID_NOT_FOUND if the object id does not exist.
-   * @retval ErrorCode::NAME_NOT_FOUND if the object name does not exist.
-   * @retval otherwise an error code.
+   * @param objects     [in/out] metadata container.
+   * @param keys        [in]     key name and value of a table metadata table.
+   * @param object_ids  [out]    table id of the row deleted.
+   * @return If success ErrorCode::OK, otherwise error code.
    */
   manager::metadata::ErrorCode delete_metadata_object(
-      boost::property_tree::ptree& objects, std::string_view key,
-      std::string_view value, ObjectId& object_id) const;
+      boost::property_tree::ptree& objects,
+      const std::map<std::string_view, std::string_view>& keys,
+      std::vector<ObjectId>& object_ids) const;
 };  // class TablesDaoJson
 
 }  // namespace manager::metadata::db

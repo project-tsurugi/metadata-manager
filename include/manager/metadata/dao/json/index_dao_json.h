@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 tsurugi project.
+ * Copyright 2020-2023 tsurugi project.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 #pragma once
 
+#include <map>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -36,17 +37,17 @@ class IndexDaoJson : public DaoJson {
   static constexpr const char* const kRootNode = "indexes";
 
   /**
-    * @brief Construct a new Index Metadata DAO class for JSON data.
-    * @param session pointer to DB session manager for JSON.
-    */
+   * @brief Construct a new Index Metadata DAO class for JSON data.
+   * @param session pointer to DB session manager for JSON.
+   */
   explicit IndexDaoJson(DbSessionManagerJson* session)
       : DaoJson(session, kTableName) {}
 
   /**
-   * @brief Add metadata object to metadata table file.
-   * @param object     [in]  index metadata object to add.
+   * @brief Insert a metadata object into the metadata file.
+   * @param object     [in]  metadata object.
    * @param object_id  [out] object id of the added row.
-   * @return ErrorCode::OK if success, otherwise an error code.
+   * @return If success ErrorCode::OK, otherwise error code.
    * @note  If success, metadata object is added management metadata.
    *   e.g. format version, generation, etc...
    */
@@ -54,53 +55,35 @@ class IndexDaoJson : public DaoJson {
                                       ObjectId& object_id) const override;
 
   /**
-   * @brief Get all metadata objects from a metadata table file.
-   *   If the table metadata does not exist, return the container as empty.
-   * @param objects  [out] all indexes metadata.
-   * @return ErrorCode::OK if success, otherwise an error code.
-   */
-  manager::metadata::ErrorCode select_all(
-      std::vector<boost::property_tree::ptree>& objects) const override;
-
-  /**
-   * @brief Get a metadata object from a metadata table file.
-   * @param key     [in]  key. column name of a index metadata table.
-   * @param values  [in]  value to be filtered.
-   * @param object  [out] index metadata to get, where the given
-   *   key equals the given value.
-   * @retval ErrorCode::OK if success.
-   * @retval ErrorCode::ID_NOT_FOUND if the object id does not exist.
-   * @retval ErrorCode::NAME_NOT_FOUND if the object name does not exist.
-   * @retval otherwise an error code.
+   * @brief Select a metadata object from the metadata file.
+   * @param keys    [in]  key name and value of the metadata object.
+   * @param object  [out] a selected metadata object.
+   * @return If success ErrorCode::OK, otherwise error code.
    */
   manager::metadata::ErrorCode select(
-      std::string_view key, const std::vector<std::string_view>& values,
+      const std::map<std::string_view, std::string_view>& keys,
       boost::property_tree::ptree& object) const override;
 
   /**
-   * @brief Updates metadata objects in the metadata table.
-   * @param key     [in]  key. column name of a index metadata table.
-   * @param values  [in]  value to be filtered.
-   * @param object  [in]  index metadata object to be update.
-   * @return ErrorCode::OK if success, otherwise an error code.
+   * @brief Update a metadata object into the metadata file.
+   * @param keys    [in]  key name and value of the metadata object.
+   * @param object  [in]  metadata object.
+   * @param rows    [out] number of updated metadata object.
+   * @return If success ErrorCode::OK, otherwise error code.
    */
   manager::metadata::ErrorCode update(
-      std::string_view key, const std::vector<std::string_view>& values,
-      const boost::property_tree::ptree& object) const override;
+      const std::map<std::string_view, std::string_view>& keys,
+      const boost::property_tree::ptree& object, uint64_t& rows) const override;
 
   /**
    * @brief Remove a metadata object from a metadata table file.
-   * @param key        [in]  key. column name of a index metadata table.
-   * @param values     [in]  value to be filtered.
-   * @param object_id  [out] object id of the deleted row.
-   * @retval ErrorCode::OK if success.
-   * @retval ErrorCode::ID_NOT_FOUND if the object id does not exist.
-   * @retval ErrorCode::NAME_NOT_FOUND if the object name does not exist.
-   * @retval otherwise an error code.
+   * @param keys        [in]  key name and value of the metadata object.
+   * @param object_ids  [out] object id of the deleted rows.
+   * @return If success ErrorCode::OK, otherwise error code.
    */
   manager::metadata::ErrorCode remove(
-      std::string_view key, const std::vector<std::string_view>& values,
-      ObjectId& object_id) const override;
+      const std::map<std::string_view, std::string_view>& keys,
+      std::vector<ObjectId>& object_ids) const override;
 
  private:
   // Name of the index metadata management file.
@@ -108,37 +91,30 @@ class IndexDaoJson : public DaoJson {
   // Object ID key name for index ID.
   static constexpr const char* const kOidKeyNameIndex = "indexes";
 
-/**
- * @brief Find metadata object from metadata table.
- * @param objects  [in]  container of JSON object.
- * @param key      [in]  key. column name of a table metadata table.
- *   e.g. object ID, object name.
- * @param value    [in]  value to be filtered.
- * @param object   [out] metadata-object with the specified name.
- * @retval ErrorCode::OK if success.
- * @retval ErrorCode::ID_NOT_FOUND if the table id does not exist.
- * @retval ErrorCode::NAME_NOT_FOUND if the table name does not exist.
- * @retval otherwise an error code.
- */
-  ErrorCode find_metadata_object(const boost::property_tree::ptree& objects,
-                                 std::string_view key, std::string_view value,
-                                 boost::property_tree::ptree& object) const;
+  /**
+   * @brief Find metadata object from metadata table.
+   * @param objects  [in]  container of JSON object.
+   * @param keys     [in]  key name and value of the metadata object.
+   *   e.g. object ID, object name.
+   * @param object   [out] metadata-object with the specified name.
+   * @return If success ErrorCode::OK, otherwise error code.
+   */
+  ErrorCode find_metadata_object(
+      const boost::property_tree::ptree& objects,
+      const std::map<std::string_view, std::string_view>& keys,
+      boost::property_tree::ptree& object) const;
 
-
-/**
- * @brief Delete a metadata object from a metadata table file.
- * @param container     [in/out] metadata container.
- * @param object_key    [in]     key. column name of a table metadata table.
- * @param object_value  [in]     value to be filtered.
- * @param table_id      [out]    table id of the row deleted.
- * @retval ErrorCode::OK if success.
- * @retval ErrorCode::ID_NOT_FOUND if the table id does not exist.
- * @retval ErrorCode::NAME_NOT_FOUND if the table name does not exist.
- * @retval otherwise an error code.
- */
-  ErrorCode delete_metadata_object(boost::property_tree::ptree& objects,
-                                   std::string_view key, std::string_view value,
-                                   ObjectId& object_id) const;
+  /**
+   * @brief Delete a metadata object from a metadata table file.
+   * @param objects     [in/out] metadata container.
+   * @param keys        [in]     key name and value of a table metadata table.
+   * @param object_ids  [out]    table id of the row deleted.
+   * @return If success ErrorCode::OK, otherwise error code.
+   */
+  ErrorCode delete_metadata_object(
+      boost::property_tree::ptree& objects,
+      const std::map<std::string_view, std::string_view>& keys,
+      std::vector<ObjectId>& object_ids) const;
 };  // class IndexDaoJson
 
 }  // namespace manager::metadata::db
