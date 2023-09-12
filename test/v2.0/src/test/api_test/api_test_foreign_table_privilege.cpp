@@ -474,12 +474,14 @@ TEST_F(ApiTestForeignTableJson, confirm_permission_in_acls) {
   bool res_permission = false;
   // test by role id.
   error = tables->confirm_permission_in_acls(9999, "r", res_permission);
-  EXPECT_EQ(ErrorCode::NOT_SUPPORTED, error);
+  EXPECT_EQ(ErrorCode::NOT_FOUND, error);
+  EXPECT_FALSE(res_permission);
 
   UTUtils::print("-- confirm permission by role name --");
   // test by role name.
   error = tables->confirm_permission_in_acls("role_name", "r", res_permission);
-  EXPECT_EQ(ErrorCode::NOT_SUPPORTED, error);
+  EXPECT_EQ(ErrorCode::NOT_FOUND, error);
+  EXPECT_FALSE(res_permission);
 }
 
 }  // namespace manager::metadata::testing

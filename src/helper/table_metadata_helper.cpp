@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 tsurugi project.
+ * Copyright 2021-2023 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,9 +20,7 @@
 
 #include <boost/foreach.hpp>
 
-namespace manager::metadata::helper {
-
-using boost::property_tree::ptree;
+namespace table_metadata_helper {
 
 /**
  * @brief Extracts and returns ACL information for a role name
@@ -31,8 +29,8 @@ using boost::property_tree::ptree;
  * @param (acl_list)   [in]  ACL list.
  * @return ACLs string.
  */
-std::string TableMetadataHelper::get_table_acl(std::string_view role_name,
-                                               ptree acl_list) {
+std::string get_table_acl(std::string_view role_name,
+                          boost::property_tree::ptree acl_list) {
   std::string result_acl = "";
 
   BOOST_FOREACH (const auto& node, acl_list) {
@@ -47,7 +45,7 @@ std::string TableMetadataHelper::get_table_acl(std::string_view role_name,
       // Skip because the ACL format is invalid.
       continue;
     }
-    std::string acl_user_name = regex_results[1].str();
+    std::string acl_user_name  = regex_results[1].str();
     std::string acl_permission = regex_results[2].str();
 
     // Conversion of record value (\\ -> \).
@@ -69,4 +67,4 @@ std::string TableMetadataHelper::get_table_acl(std::string_view role_name,
   return result_acl;
 }
 
-}  // namespace manager::metadata::helper
+}  // namespace table_metadata_helper

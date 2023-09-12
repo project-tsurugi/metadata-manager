@@ -30,6 +30,8 @@ auto& provider = manager::metadata::db::MetadataProvider::get_instance();
 // =============================================================================
 namespace manager::metadata {
 
+using boost::property_tree::ptree;
+
 /**
  * @brief Initialization.
  * @param none.
@@ -61,26 +63,38 @@ ErrorCode Roles::get(const ObjectIdType object_id,
   ErrorCode error = ErrorCode::UNKNOWN;
 
   // Log of API function start.
-  log::function_start("Roles::get(RoleId)");
+  log::function_start("Roles::get(object_id)");
 
-  // Parameter value check.
+  // Specify the key for the role object you want to retrieve.
+  std::string role_id(std::to_string(object_id));
+  std::map<std::string_view, std::string_view> keys = {
+      {Roles::ROLE_OID, role_id}
+  };
+
+  // Retrieve role object.
+  ptree tmp_object;
   if (object_id > 0) {
-    error = ErrorCode::OK;
+    // Get the role object through the provider.
+    error = provider.get_role_metadata(keys, tmp_object);
   } else {
     LOG_WARNING
-        << "An out-of-range value (0 or less) was specified for RoleId.: "
+        << "An out-of-range value (0 or less) was specified for object ID.: "
         << object_id;
     error = ErrorCode::ID_NOT_FOUND;
   }
 
-  // Get the role metadata through the provider.
   if (error == ErrorCode::OK) {
-    std::string s_object_id = std::to_string(object_id);
-    error = provider.get_role_metadata(Roles::ROLE_OID, s_object_id, object);
+    if (tmp_object.size() == 1) {
+      object = tmp_object.front().second;
+    } else {
+      error = ErrorCode::RESULT_MULTIPLE_ROWS;
+      LOG_WARNING << "Multiple rows retrieved.: " << keys
+                  << " exists " << tmp_object.size() << " rows";
+    }
   }
 
   // Log of API function finish.
-  log::function_finish("Roles::get(RoleId)", error);
+  log::function_finish("Roles::get(object_id)", error);
 
   return error;
 }
@@ -98,24 +112,35 @@ ErrorCode Roles::get(std::string_view object_name,
   ErrorCode error = ErrorCode::UNKNOWN;
 
   // Log of API function start.
-  log::function_start("Roles::get(RoleName)");
+  log::function_start("Roles::get(object_name)");
 
-  // Parameter value check.
+  // Specify the key for the role object you want to retrieve.
+  std::map<std::string_view, std::string_view> keys = {
+      {Roles::ROLE_ROLNAME, object_name}
+  };
+
+  // Retrieve role object.
+  ptree tmp_object;
   if (!object_name.empty()) {
-    error = ErrorCode::OK;
+    // Get the role object through the provider.
+    error = provider.get_role_metadata(keys, tmp_object);
   } else {
-    LOG_WARNING << "An empty value was specified for RoleName.";
+    LOG_WARNING << "An empty value was specified for object name.";
     error = ErrorCode::NAME_NOT_FOUND;
   }
 
-  // Get the role metadata through the provider.
   if (error == ErrorCode::OK) {
-    error =
-        provider.get_role_metadata(Roles::ROLE_ROLNAME, object_name, object);
+    if (tmp_object.size() == 1) {
+      object = tmp_object.front().second;
+    } else {
+      error = ErrorCode::RESULT_MULTIPLE_ROWS;
+      LOG_WARNING << "Multiple rows retrieved.: " << keys
+                  << " exists " << tmp_object.size() << " rows";
+    }
   }
 
   // Log of API function finish.
-  log::function_finish("Roles::get(RoleName)", error);
+  log::function_finish("Roles::get(object_name)", error);
 
   return error;
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 tsurugi project.
+ * Copyright 2021-2023 tsurugi project.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -97,22 +97,30 @@ bool PrivilegesDaoPg::exists(ObjectId object_id) const {
   return exists;
 }
 
-ErrorCode PrivilegesDaoPg::select(std::string_view key,
-                                  const std::vector<std::string_view>& values,
-                                  boost::property_tree::ptree& object) const {
+ErrorCode PrivilegesDaoPg::select(
+    const std::map<std::string_view, std::string_view>& keys,
+    boost::property_tree::ptree& object) const {
   ErrorCode error = ErrorCode::UNKNOWN;
-
+  std::string statement_key;
   std::vector<const char*> params;
-  // Set key value.
-  std::transform(values.begin(), values.end(), std::back_inserter(params),
-                 [](std::string_view value) { return value.data(); });
+
+  if (keys.empty()) {
+    LOG_ERROR << Message::INVALID_STATEMENT_KEY << "empty string";
+    error = ErrorCode::INVALID_PARAMETER;
+    return error;
+  }
+
+  // Only one search key combination is allowed.
+  const auto& it = keys.begin();
+  statement_key  = it->first;
+  params.emplace_back(it->second.data());
 
   // Set SELECT statement.
   SelectStatement statement;
   try {
-    statement = select_statements_.at(key.data());
+    statement = select_statements_.at(statement_key);
   } catch (...) {
-    LOG_ERROR << Message::INVALID_STATEMENT_KEY << key;
+    LOG_ERROR << Message::INVALID_STATEMENT_KEY << statement_key;
     return ErrorCode::INVALID_PARAMETER;
   }
 
@@ -122,7 +130,9 @@ ErrorCode PrivilegesDaoPg::select(std::string_view key,
 
   if (error == ErrorCode::OK) {
     int nrows = PQntuples(res);
-    if (nrows >= 1) {
+    if (nrows >= 0) {
+      object.clear();
+
       for (int row_number = 0; row_number < nrows; row_number++) {
         // Get the table name.
         std::string table_name(
@@ -133,14 +143,15 @@ ErrorCode PrivilegesDaoPg::select(std::string_view key,
                          convert_pgresult_to_ptree(res, row_number));
       }
     } else {
-      error = ErrorCode::NOT_FOUND;
+      error = ErrorCode::INVALID_PARAMETER;
     }
   } else {
     // If the error code is "undefined_object", it is converted to an
     // undefined error.
     std::string result_error(PQresultErrorField(res, PG_DIAG_SQLSTATE));
     if (result_error == PgErrorCode::kUndefinedObject) {
-      error = get_not_found_error_code(key);
+      object.clear();
+      error = ErrorCode::NOT_FOUND;
     }
   }
   PQclear(res);

@@ -16,6 +16,7 @@
 #ifndef MANAGER_METADATA_DAO_POSTGRESQL_COLUMNS_DAO_PG_H_
 #define MANAGER_METADATA_DAO_POSTGRESQL_COLUMNS_DAO_PG_H_
 
+#include <map>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -61,10 +62,10 @@ class ColumnsDaoPg : public DaoPg {
   using DaoPg::DaoPg;
 
   /**
-   * @brief Add metadata object to metadata table.
-   * @param object     [in]  column metadata object to add.
+   * @brief Insert a metadata object into the metadata table.
+   * @param object     [in]  metadata object.
    * @param object_id  [out] object id of the added row.
-   * @return ErrorCode::OK if success, otherwise an error code.
+   * @return If success ErrorCode::OK, otherwise error code.
    * @note  If success, metadata object is added management metadata.
    *   e.g. format version, generation, etc...
    */
@@ -72,55 +73,35 @@ class ColumnsDaoPg : public DaoPg {
                                       ObjectId& object_id) const override;
 
   /**
-   * @brief Function defined for compatibility.
-   * @return Always ErrorCode::OK.
-   */
-  manager::metadata::ErrorCode select_all(
-      std::vector<boost::property_tree::ptree>&) const override {
-    // Do nothing and return of ErrorCode::OK.
-    return ErrorCode::OK;
-  }
-
-  /**
-   * @brief Get a metadata object from a metadata table.
-   * @param key     [in]  key. column name of a column metadata table.
-   * @param values  [in]  value to be filtered.
-   * @param object  [out] constraint metadata to get, where the given
-   *   key equals the given value.
-   * @retval ErrorCode::OK if success.
-   * @retval ErrorCode::ID_NOT_FOUND if the object id does not exist.
-   * @retval ErrorCode::NAME_NOT_FOUND if the object name does not exist.
-   * @retval otherwise an error code.
+   * @brief Select a metadata object from the metadata table.
+   * @param keys    [in]  key name and value of the metadata object.
+   * @param object  [out] a selected metadata object.
+   * @return If success ErrorCode::OK, otherwise error code.
    */
   manager::metadata::ErrorCode select(
-      std::string_view key, const std::vector<std::string_view>& values,
+      const std::map<std::string_view, std::string_view>& keys,
       boost::property_tree::ptree& object) const override;
 
   /**
-   * @brief Function defined for compatibility.
-   * @return Always ErrorCode::OK.
+   * @brief Unsupported function.
+   * @return Always ErrorCode::NOT_SUPPORTED.
    */
   manager::metadata::ErrorCode update(
-      std::string_view, const std::vector<std::string_view>&,
-      const boost::property_tree::ptree&) const override {
-    // Do nothing and return of ErrorCode::OK.
-    return ErrorCode::OK;
+      const std::map<std::string_view, std::string_view>&,
+      const boost::property_tree::ptree&, uint64_t&) const override {
+    // Do nothing and return of ErrorCode::NOT_SUPPORTED.
+    return ErrorCode::NOT_SUPPORTED;
   }
 
   /**
-   * @brief Removes column metadata with the specified key value
-   *   from the column metadata table.
-   * @param key        [in]  key. column name of a column metadata table.
-   * @param values     [in]  value to be filtered.
-   * @param object_id  [out] object id of the deleted row.
-   * @retval ErrorCode::OK if success.
-   * @retval ErrorCode::ID_NOT_FOUND if the object id does not exist.
-   * @retval ErrorCode::NAME_NOT_FOUND if the object name does not exist.
-   * @retval otherwise an error code.
+   * @brief Remove a metadata object from a metadata table file.
+   * @param keys        [in]  key name and value of the metadata object.
+   * @param object_ids  [out] object id of the deleted rows.
+   * @return If success ErrorCode::OK, otherwise error code.
    */
   manager::metadata::ErrorCode remove(
-      std::string_view key, const std::vector<std::string_view>& values,
-      ObjectId& object_id) const override;
+      const std::map<std::string_view, std::string_view>& keys,
+      std::vector<ObjectId>& object_ids) const override;
 
  private:
   /**

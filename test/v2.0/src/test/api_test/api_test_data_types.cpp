@@ -261,16 +261,13 @@ TEST_P(ApiTestDataTypesException, get_non_existing_datatypes_by_key_value) {
 
   ptree datatype;
   ErrorCode error = datatypes->get(key, value, datatype);
-  if (key == DataTypes::ID) {
 #ifdef STORAGE_POSTGRESQL
+  if (key == DataTypes::ID) {
     if (value == "invalid_value") {
       EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);
     } else {
       EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
     }
-#else
-    EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
-#endif
   } else if (key == DataTypes::NAME) {
     EXPECT_EQ(ErrorCode::NAME_NOT_FOUND, error);
   } else if (key.empty()) {
@@ -280,6 +277,19 @@ TEST_P(ApiTestDataTypesException, get_non_existing_datatypes_by_key_value) {
   } else {
     EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);
   }
+#elif STORAGE_JSON
+  if (key == DataTypes::ID) {
+    EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
+  } else if (key == DataTypes::NAME) {
+    EXPECT_EQ(ErrorCode::NAME_NOT_FOUND, error);
+  } else if (key.empty()) {
+    EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);
+  } else if (value.empty()) {
+    EXPECT_EQ(ErrorCode::NOT_FOUND, error);
+  } else {
+    EXPECT_EQ(ErrorCode::NOT_FOUND, error);
+  }
+#endif
 
   // Verifies that returned data type metadata equals expected one.
   ptree empty_ptree;

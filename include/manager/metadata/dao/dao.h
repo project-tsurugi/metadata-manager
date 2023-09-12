@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2022 tsurugi project.
+ * Copyright 2020-2023 tsurugi project.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 #pragma once
 
+#include <map>
 #include <memory>
 #include <string>
 #include <string_view>
@@ -27,6 +28,7 @@
 #include "manager/metadata/metadata.h"
 
 namespace manager::metadata::db {
+
 /**
  * @brief
  */
@@ -59,7 +61,12 @@ class Dao {
    */
   virtual bool exists(std::string_view name) const {
     boost::property_tree::ptree object;
-    return (this->select(Object::NAME, {name}, object) == ErrorCode::OK);
+    std::map<std::string_view, std::string_view> keys = {
+        {Object::NAME, name}
+    };
+
+    auto error = this->select(keys, object);
+    return ((error == ErrorCode::OK) && (object.size() >= 1));
   }
 
   /**
@@ -70,8 +77,12 @@ class Dao {
    */
   virtual bool exists(ObjectId id) const {
     boost::property_tree::ptree object;
-    return (this->select(Object::ID, {std::to_string(id)}, object) ==
-            ErrorCode::OK);
+    std::map<std::string_view, std::string_view> keys = {
+        {Object::ID, std::to_string(id)}
+    };
+
+    auto error = this->select(keys, object);
+    return ((error == ErrorCode::OK) && (object.size() >= 1));
   }
 
   /**
@@ -94,72 +105,43 @@ class Dao {
    * @param object     [in]  metadata object.
    * @param object_id  [out] object id of the added row.
    * @return If success ErrorCode::OK, otherwise error code.
+   * @note  If success, metadata object is added management metadata.
+   *   e.g. format version, generation, etc...
    */
   virtual manager::metadata::ErrorCode insert(
-      const boost::property_tree::ptree& object,
-      ObjectIdType& object_id) const = 0;
-
-  /**
-   * @brief Select all metadata objects from the metadata table.
-   * @param object  [out] all metadata objects.
-   * @return If success ErrorCode::OK, otherwise error codes.
-   */
-  virtual manager::metadata::ErrorCode select_all(
-      std::vector<boost::property_tree::ptree>& objects) const = 0;
+      const boost::property_tree::ptree&,
+      ObjectIdType&) const = 0;
 
   /**
    * @brief Select a metadata object from the metadata table.
-   * @param key     [in]  key name of the metadata object.
-   * @param values  [in]  value of key.
+   * @param keys    [in]  key name and value of the metadata object.
    * @param object  [out] a selected metadata object.
-   * @retval ErrorCode::OK if success.
-   * @retval ErrorCode::ID_NOT_FOUND if the table id does not exist.
-   * @retval ErrorCode::NAME_NOT_FOUND if the table name does not exist.
-   * @retval otherwise an error code.
+   * @return If success ErrorCode::OK, otherwise error code.
    */
   virtual manager::metadata::ErrorCode select(
-      std::string_view, const std::vector<std::string_view>& values,
-      boost::property_tree::ptree& objects) const = 0;
+      const std::map<std::string_view, std::string_view>&,
+      boost::property_tree::ptree&) const = 0;
 
   /**
    * @brief Update a metadata object into the metadata table.
-   * @param key     [in]  key name of the metadata object.
-   * @param values  [in]  value of key.
+   * @param keys    [in]  key name and value of the metadata object.
    * @param object  [in]  metadata object.
+   * @param rows    [out] number of updated metadata object.
    * @return If success ErrorCode::OK, otherwise error code.
    */
   virtual manager::metadata::ErrorCode update(
-      std::string_view key, const std::vector<std::string_view>& values,
-      const boost::property_tree::ptree& object) const = 0;
+      const std::map<std::string_view, std::string_view>&,
+      const boost::property_tree::ptree&, uint64_t&) const = 0;
 
   /**
-   * @brief Delete a metadata object from the metadata table.
-   * @param key        [in]  key name of the metadata object.
-   * @param values     [in]  value of key.
+   * @brief Update a metadata object into the metadata table.
+   * @param keys       [in]  key name and value of the metadata object.
    * @param object_id  [out] object id of the deleted row.
-   * @return If success ErrorCode::OK, otherwise error codes.
+   * @return If success ErrorCode::OK, otherwise error code.
    */
   virtual manager::metadata::ErrorCode remove(
-      std::string_view key, const std::vector<std::string_view>& values,
-      ObjectId& object_id) const = 0;
-
-  /**
-   * @brief Get a NOT_FOUND error code corresponding to the key.
-   * @param key  [in]  key name of the metadata object.
-   * @retval ErrorCode::ID_NOT_FOUND if the key is id.
-   * @retval ErrorCode::NAME_NOT_FOUND if the key is name.
-   * @retval ErrorCode::NOT_FOUND if the key is otherwise.
-   */
-  virtual manager::metadata::ErrorCode get_not_found_error_code(
-      std::string_view key) const {
-    if (key == Object::ID) {
-      return ErrorCode::ID_NOT_FOUND;
-    } else if (key == Object::NAME) {
-      return ErrorCode::NAME_NOT_FOUND;
-    } else {
-      return ErrorCode::NOT_FOUND;
-    }
-  }
+      const std::map<std::string_view, std::string_view>&,
+      std::vector<ObjectId>&) const = 0;
 };  // class Dao
 
 }  // namespace manager::metadata::db

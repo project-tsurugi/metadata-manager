@@ -201,15 +201,18 @@ ErrorCode Constraints::add(const boost::property_tree::ptree& object,
   // Parameter value check.
   error = param_check_metadata_add(object);
 
-  // Adds the constraint metadata through the provider.
-  ObjectId retval_object_id = 0;
+  ObjectId added_oid = INVALID_OBJECT_ID;
   if (error == ErrorCode::OK) {
-    error = provider.add_constraint_metadata(object, retval_object_id);
+    // Add constraint metadata within a transaction.
+    error = provider.transaction([&object, &added_oid]() -> ErrorCode {
+      // Adds the constraint metadata through the provider.
+      return provider.add_constraint_metadata(object, &added_oid);
+    });
   }
 
   // Set a value if object_id is not null.
   if ((error == ErrorCode::OK) && (object_id != nullptr)) {
-    *object_id = retval_object_id;
+    *object_id = added_oid;
   }
 
   // Log of API function finish.
@@ -231,46 +234,68 @@ ErrorCode Constraints::get(const ObjectId object_id,
   ErrorCode error = ErrorCode::UNKNOWN;
 
   // Log of API function start.
-  log::function_start("Constraints::get(ConstraintId)");
+  log::function_start("Constraints::get(object_id)");
 
-  // Parameter value check.
+  // Specify the key for the table metadata you want to retrieve.
+  std::string constraint_id(std::to_string(object_id));
+  std::map<std::string_view, std::string_view> keys = {
+      {Constraint::ID, constraint_id}
+  };
+
+  // Get the constraint metadata through the provider.
+  ptree tmp_object;
   if (object_id > 0) {
-    error = ErrorCode::OK;
+    error = provider.get_constraint_metadata(keys, tmp_object);
   } else {
     LOG_WARNING
-        << "An out-of-range value (0 or less) was specified for ConstraintId.: "
+        << "An out-of-range value (0 or less) was specified for object ID.: "
         << object_id;
     error = ErrorCode::ID_NOT_FOUND;
   }
 
-  // Get the constraint metadata through the provider.
   if (error == ErrorCode::OK) {
-    error = provider.get_constraint_metadata(Constraint::ID,
-                                             std::to_string(object_id), object);
+    if (tmp_object.size() == 1) {
+      object = tmp_object.front().second;
+    } else {
+      error = ErrorCode::RESULT_MULTIPLE_ROWS;
+      LOG_WARNING << "Multiple rows retrieved.: " << keys
+                  << " exists " << tmp_object.size() << " rows";
+    }
   }
 
   // Log of API function finish.
-  log::function_finish("Constraints::get(ConstraintId)", error);
+  log::function_finish("Constraints::get(object_id)", error);
 
   return error;
 }
 
 /**
  * @brief Gets all constraint metadata object from the constraint metadata
- * table. If the constraint metadata does not exist, return the container as
- * empty.
- * @param container  [out] Container for metadata-objects.
+ *   table. If the constraint metadata does not exist, return the container as
+ *   empty.
+ * @param objects  [out] Container for metadata-objects.
  * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode Constraints::get_all(
-    std::vector<boost::property_tree::ptree>& container) const {
+    std::vector<boost::property_tree::ptree>& objects) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   // Log of API function start.
   log::function_start("Constraints::get_all()");
 
+  ptree tmp_object;
+  std::map<std::string_view, std::string_view> keys = {};
+
   // Get the constraint metadata through the provider.
-  error = provider.get_constraint_metadata(container);
+  error = provider.get_constraint_metadata(keys, tmp_object);
+
+  if (error == ErrorCode::OK) {
+    // Converts object types.
+    objects = ptree_helper::array_to_vector(tmp_object);
+  } else if (error == ErrorCode::NOT_FOUND) {
+    // Converts error code.
+    error = ErrorCode::OK;
+  }
 
   // Log of API function finish.
   log::function_finish("Constraints::get_all()", error);
@@ -290,25 +315,30 @@ ErrorCode Constraints::remove(const ObjectId object_id) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   // Log of API function start.
-  log::function_start("Constraints::remove(ConstraintId)");
+  log::function_start("Constraints::remove(object_id)");
 
-  // Parameter value check.
+  // Remove the constraint metadata.
   if (object_id > 0) {
-    error = ErrorCode::OK;
+    // Specify the key for the constraint metadata you want to remove.
+    std::string constraint_id(std::to_string(object_id));
+    std::map<std::string_view, std::string_view> keys = {
+        {Constraint::ID, constraint_id}
+    };
+
+    // Remove constraint metadata within a transaction.
+    error = provider.transaction([&keys]() -> ErrorCode {
+      // Remove the constraint metadata through the provider.
+      return provider.remove_constraint_metadata(keys);
+    });
   } else {
     LOG_WARNING
-        << "An out-of-range value (0 or less) was specified for ConstraintId.: "
+        << "An out-of-range value (0 or less) was specified for object ID.: "
         << object_id;
     error = ErrorCode::ID_NOT_FOUND;
   }
 
-  // Remove the constraint metadata through the provider.
-  if (error == ErrorCode::OK) {
-    error = provider.remove_constraint_metadata(object_id);
-  }
-
   // Log of API function finish.
-  log::function_finish("Constraints::remove(ConstraintId)", error);
+  log::function_finish("Constraints::remove(object_id)", error);
 
   return error;
 }

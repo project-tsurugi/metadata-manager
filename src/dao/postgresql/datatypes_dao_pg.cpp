@@ -26,43 +26,48 @@ namespace manager::metadata::db {
 
 using boost::property_tree::ptree;
 
-ErrorCode DataTypesDaoPg::select(std::string_view key,
-                                 const std::vector<std::string_view>& values,
-                                 boost::property_tree::ptree& object) const {
+ErrorCode DataTypesDaoPg::select(
+    const std::map<std::string_view, std::string_view>& keys,
+    boost::property_tree::ptree& object) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
-  std::vector<const char*> params;
-  // Set key value.
-  std::transform(values.begin(), values.end(), std::back_inserter(params),
-                 [](std::string_view value) { return value.data(); });
+  if (keys.empty()) {
+    LOG_ERROR << Message::INVALID_STATEMENT_KEY << "Keys is empty.";
+    error = ErrorCode::INVALID_PARAMETER;
+    return error;
+  }
 
+  const auto& it = keys.begin();
   // Set SELECT statement.
   SelectStatement statement;
   try {
-    statement = select_statements_.at(key.data());
+    statement = select_statements_.at(it->first.data());
   } catch (...) {
-    LOG_ERROR << Message::INVALID_STATEMENT_KEY << key;
+    LOG_ERROR << Message::INVALID_STATEMENT_KEY << it->first;
     return ErrorCode::INVALID_PARAMETER;
   }
+
+  // Set SQL paramater.
+  std::vector<const char*> params;
+  // Only one search key combination is allowed.
+  params.push_back(it->second.data());
 
   PGresult* res = nullptr;
   // Execute a prepared statement.
   error = DbcUtils::exec_prepared(pg_conn_, statement.name(), params, res);
 
   if (error == ErrorCode::OK) {
-    object.clear();
-
     int nrows = PQntuples(res);
-    if (nrows >= 1) {
+    if (nrows >= 0) {
+      object.clear();
+
       for (int row_number = 0; row_number < nrows; row_number++) {
         // Convert acquired data to ptree type.
         object.push_back(
             std::make_pair("", convert_pgresult_to_ptree(res, row_number)));
       }
-      error = ErrorCode::OK;
     } else {
-      // Get a NOT_FOUND error code corresponding to the key.
-      error = get_not_found_error_code(key);
+      error = ErrorCode::INVALID_PARAMETER;
     }
   }
   PQclear(res);

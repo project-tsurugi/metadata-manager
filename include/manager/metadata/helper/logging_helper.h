@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2022 tsurugi project.
+ * Copyright 2020-2023 tsurugi project.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 #define MANAGER_METADATA_HELPER_LOGGING_HELPER_H_
 
 #include <iomanip>
+#include <map>
 #include <vector>
 
 #include "manager/metadata/error_code.h"
@@ -51,6 +52,8 @@ namespace manager::metadata {
 std::ostream& operator<<(std::ostream& os, const ErrorCode& ec);
 std::ostream& operator<<(std::ostream& os,
                          const std::vector<std::string_view>& vc);
+std::ostream& operator<<(
+    std::ostream& os, const std::map<std::string_view, std::string_view>& mp);
 
 namespace log {
 

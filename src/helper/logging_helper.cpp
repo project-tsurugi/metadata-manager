@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2022 tsurugi project.
+ * Copyright 2020-2023 tsurugi project.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,6 +41,30 @@ std::ostream& operator<<(std::ostream& os,
   std::transform(vc.begin(), vc.end(),
                  std::ostream_iterator<std::string_view>(ss, ","),
                  [](std::string_view s) { return s; });
+
+  std::string result(ss.str());
+  if (!result.empty()) {
+    result.pop_back();
+  }
+
+  os << result;
+  return os;
+}
+
+/**
+ * @brief Outputs a map element (std::string_view) to a stream.
+ */
+std::ostream& operator<<(
+    std::ostream& os, const std::map<std::string_view, std::string_view>& mp) {
+  // Transform key values for logging.
+  std::stringstream ss;
+  std::transform(
+      mp.begin(), mp.end(), std::ostream_iterator<std::string_view>(ss, ","),
+      [](std::pair<std::string_view, std::string_view> v) {
+        std::stringstream ss;
+        ss << "\"" << v.first << "\": \"" << v.second << "\"";
+        return ss.str();
+      });
 
   std::string result(ss.str());
   if (!result.empty()) {

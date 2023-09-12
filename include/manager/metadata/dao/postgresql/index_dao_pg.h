@@ -15,6 +15,7 @@
  */
 #pragma once
 
+#include <map>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -63,10 +64,10 @@ class IndexDaoPg : public DaoPg {
   using DaoPg::DaoPg;
 
   /**
-   * @brief Add metadata object to metadata table.
-   * @param object     [in]  constraint metadata object to add.
+   * @brief Insert a metadata object into the metadata table.
+   * @param object     [in]  metadata object.
    * @param object_id  [out] object id of the added row.
-   * @return ErrorCode::OK if success, otherwise an error code.
+   * @return If success ErrorCode::OK, otherwise error code.
    * @note  If success, metadata object is added management metadata.
    *   e.g. format version, generation, etc...
    */
@@ -74,56 +75,35 @@ class IndexDaoPg : public DaoPg {
                                       ObjectId& object_id) const override;
 
   /**
-   * @brief Get all metadata objects from a metadata table.
-   *   If the table metadata does not exist, return the container as empty.
-   * @param objects  [out] all constraints metadata.
-   * @return ErrorCode::OK if success, otherwise an error code.
-   */
-  manager::metadata::ErrorCode select_all(
-      std::vector<boost::property_tree::ptree>& objects) const override;
-
-  /**
-   * @brief Get a metadata object from a metadata table.
-   * @param key     [in]  key. column name of a index metadata table.
-   * @param values  [in]  value to be filtered.
-   * @param object  [out] constraint metadata to get, where the given
-   *   key equals the given value.
-   * @retval ErrorCode::OK if success.
-   * @retval ErrorCode::ID_NOT_FOUND if the object id does not exist.
-   * @retval ErrorCode::NAME_NOT_FOUND if the object name does not exist.
-   * @retval otherwise an error code.
+   * @brief Select a metadata object from the metadata table.
+   * @param keys    [in]  key name and value of the metadata object.
+   * @param object  [out] a selected metadata object.
+   * @return If success ErrorCode::OK, otherwise error code.
    */
   manager::metadata::ErrorCode select(
-      std::string_view object_key, const std::vector<std::string_view>& values,
+      const std::map<std::string_view, std::string_view>& keys,
       boost::property_tree::ptree& object) const override;
 
   /**
    * @brief Update a metadata object into the metadata table.
-   * @param key     [in] key name of the index metadata object.
-   * @param values  [in] value of key.
-   * @param object  [in] metadata object.
-   * @retval ErrorCode::OK if success.
-   * @retval ErrorCode::ID_NOT_FOUND if the object id does not exist.
-   * @retval otherwise an error code.
+   * @param keys    [in]  key name and value of the metadata object.
+   * @param object  [in]  metadata object.
+   * @param rows    [out] number of updated metadata object.
+   * @return If success ErrorCode::OK, otherwise error code.
    */
   manager::metadata::ErrorCode update(
-      std::string_view key, const std::vector<std::string_view>& values,
-      const boost::property_tree::ptree& object) const override;
+      const std::map<std::string_view, std::string_view>& keys,
+      const boost::property_tree::ptree& object, uint64_t& rows) const override;
 
   /**
-   * @brief Removes index metadata with the specified key value
-   *   from the index metadata table.
-   * @param key        [in]  key. column name of a index metadata table.
-   * @param values     [in]  value to be filtered.
-   * @param object_id  [out] object id of the deleted row.
-   * @retval ErrorCode::OK if success.
-   * @retval ErrorCode::ID_NOT_FOUND if the object id does not exist.
-   * @retval ErrorCode::NAME_NOT_FOUND if the object name does not exist.
-   * @retval otherwise an error code.
+   * @brief Remove a metadata object from a metadata table file.
+   * @param keys        [in]  key name and value of the metadata object.
+   * @param object_ids  [out] object id of the deleted rows.
+   * @return If success ErrorCode::OK, otherwise error code.
    */
   manager::metadata::ErrorCode remove(
-      std::string_view key, const std::vector<std::string_view>& values,
-      ObjectIdType& object) const override;
+      const std::map<std::string_view, std::string_view>& keys,
+      std::vector<ObjectId>& object_ids) const override;
 
  private:
   /**
@@ -153,6 +133,11 @@ class IndexDaoPg : public DaoPg {
    * @return table source name.
    */
   std::string get_source_name() const override { return kTableName; }
+
+  /**
+   * @brief Create prepared statements.
+   */
+  void create_prepared_statements() override;
 
   /**
    * @brief Get an INSERT statement for metadata table.

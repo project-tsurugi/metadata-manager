@@ -190,55 +190,30 @@ ErrorCode IndexDaoPg::insert(const boost::property_tree::ptree& object,
   return error;
 }
 
-ErrorCode IndexDaoPg::select_all(
-    std::vector<boost::property_tree::ptree>& objects) const {
+ErrorCode IndexDaoPg::select(
+    const std::map<std::string_view, std::string_view>& keys,
+    boost::property_tree::ptree& object) const {
   ErrorCode error = ErrorCode::UNKNOWN;
+  std::string statement_key;
   std::vector<const char*> params;
 
-  // Set SELECT-all statement.
-  SelectAllStatement statement;
-  try {
-    statement = select_all_statements_.at(Statement::kDefaultKey);
-  } catch (...) {
-    LOG_ERROR << Message::INVALID_STATEMENT_KEY << Statement::kDefaultKey;
-    return ErrorCode::INVALID_PARAMETER;
+  if (keys.empty()) {
+    statement_key  = Statement::kDefaultKey;
+    // If no search key is specified, all are returned.
+    params.clear();
+  } else {
+    const auto& it = keys.begin();
+    // Only one search key combination is allowed.
+    statement_key  = it->first;
+    params.push_back(it->second.data());
   }
-
-  PGresult* res = nullptr;
-  // Executes a prepared statement
-  error = DbcUtils::execute_statement(pg_conn_, statement.name(), params, res);
-
-  if (error == ErrorCode::OK) {
-    int64_t number_of_tuples = PQntuples(res);
-    if (number_of_tuples >= 0) {
-      for (int64_t num = 0; num < number_of_tuples; num++) {
-        objects.emplace_back(convert_pgresult_to_ptree(res, num));
-      }
-    } else {
-      error = ErrorCode::INVALID_PARAMETER;
-    }
-  }
-  PQclear(res);
-
-  return error;
-}
-
-ErrorCode IndexDaoPg::select(std::string_view key,
-                             const std::vector<std::string_view>& values,
-                             boost::property_tree::ptree& object) const {
-  ErrorCode error = ErrorCode::UNKNOWN;
-
-  std::vector<const char*> params;
-  // Set key value.
-  std::transform(values.begin(), values.end(), std::back_inserter(params),
-                 [](std::string_view value) { return value.data(); });
 
   // Set SELECT statement.
   SelectStatement statement;
   try {
-    statement = select_statements_.at(key.data());
+    statement = select_statements_.at(statement_key);
   } catch (...) {
-    LOG_ERROR << Message::INVALID_STATEMENT_KEY << key;
+    LOG_ERROR << Message::INVALID_STATEMENT_KEY << statement_key;
     return ErrorCode::INVALID_PARAMETER;
   }
 
@@ -249,16 +224,14 @@ ErrorCode IndexDaoPg::select(std::string_view key,
     object.clear();
 
     int64_t number_of_tuples = PQntuples(res);
-    if (number_of_tuples >= 1) {
+    if (number_of_tuples >= 0) {
       for (int row_number = 0; row_number < number_of_tuples; row_number++) {
         // Convert acquired data to ptree type.
         object.push_back(
             std::make_pair("", convert_pgresult_to_ptree(res, row_number)));
       }
-      error = ErrorCode::OK;
     } else {
-      // Get a NOT_FOUND error code corresponding to the key.
-      error = get_not_found_error_code(key);
+      error = ErrorCode::INVALID_PARAMETER;
     }
   }
   PQclear(res);
@@ -266,11 +239,17 @@ ErrorCode IndexDaoPg::select(std::string_view key,
   return error;
 }
 
-ErrorCode IndexDaoPg::update(std::string_view key,
-                             const std::vector<std::string_view>& values,
-                             const boost::property_tree::ptree& object) const {
+ErrorCode IndexDaoPg::update(
+    const std::map<std::string_view, std::string_view>& keys,
+    const boost::property_tree::ptree& object, uint64_t& rows) const {
   ErrorCode error = ErrorCode::UNKNOWN;
+  std::string statement_key;
   std::vector<const char*> params;
+
+  if (keys.empty()) {
+    error = ErrorCode::NOT_SUPPORTED;
+    return error;
+  }
 
   auto name = object.get_optional<std::string>(Index::NAME);
   params.emplace_back((name ? name.value().c_str() : nullptr));
@@ -341,16 +320,17 @@ ErrorCode IndexDaoPg::update(std::string_view key,
   }
   params.emplace_back((!options_json.empty() ? options_json.c_str() : "{}"));
 
-  // Set key value.
-  std::transform(values.begin(), values.end(), std::back_inserter(params),
-                 [](std::string_view value) { return value.data(); });
+  // Only one search key combination is allowed.
+  const auto& it = keys.begin();
+  statement_key  = it->first;
+  params.emplace_back(it->second.data());
 
   // Set UPDATE statement.
   UpdateStatement statement;
   try {
-    statement = update_statements_.at(key.data());
+    statement = update_statements_.at(statement_key);
   } catch (...) {
-    LOG_ERROR << Message::INVALID_STATEMENT_KEY << key;
+    LOG_ERROR << Message::INVALID_STATEMENT_KEY << statement_key;
     return ErrorCode::INVALID_PARAMETER;
   }
 
@@ -359,14 +339,10 @@ ErrorCode IndexDaoPg::update(std::string_view key,
   error = DbcUtils::execute_statement(pg_conn_, statement.name(), params, res);
 
   if (error == ErrorCode::OK) {
-    uint64_t number_of_rows_affected = 0;
     ErrorCode error_get =
-        DbcUtils::get_number_of_rows_affected(res, number_of_rows_affected);
+        DbcUtils::get_number_of_rows_affected(res, rows);
     if (error_get != ErrorCode::OK) {
       error = error_get;
-    } else if (number_of_rows_affected == 0) {
-      // Not found.
-      error = Dao::get_not_found_error_code(key);
     }
   }
   PQclear(res);
@@ -374,22 +350,29 @@ ErrorCode IndexDaoPg::update(std::string_view key,
   return error;
 }
 
-ErrorCode IndexDaoPg::remove(std::string_view key,
-                             const std::vector<std::string_view>& values,
-                             ObjectIdType& object_id) const {
+ErrorCode IndexDaoPg::remove(
+    const std::map<std::string_view, std::string_view>& keys,
+    std::vector<ObjectId>& object_ids) const {
   ErrorCode error = ErrorCode::UNKNOWN;
-
+  std::string statement_key;
   std::vector<const char*> params;
-  // Set key value.
-  std::transform(values.begin(), values.end(), std::back_inserter(params),
-                 [](std::string_view value) { return value.data(); });
+
+  if (keys.empty()) {
+    error = ErrorCode::NOT_SUPPORTED;
+    return error;
+  }
+
+  // Only one search key combination is allowed.
+  const auto& it = keys.begin();
+  statement_key  = it->first;
+  params.emplace_back(it->second.data());
 
   // Set DELETE statement.
   DeleteStatement statement;
   try {
-    statement = delete_statements_.at(key.data());
+    statement = delete_statements_.at(statement_key);
   } catch (...) {
-    LOG_ERROR << Message::INVALID_STATEMENT_KEY << key;
+    LOG_ERROR << Message::INVALID_STATEMENT_KEY << statement_key;
     return ErrorCode::INVALID_PARAMETER;
   }
 
@@ -399,18 +382,23 @@ ErrorCode IndexDaoPg::remove(std::string_view key,
 
   if (error == ErrorCode::OK) {
     uint64_t number_of_rows_affected = 0;
+
     ErrorCode error_get =
         DbcUtils::get_number_of_rows_affected(res, number_of_rows_affected);
-
     if (error_get != ErrorCode::OK) {
       error = error_get;
-    } else if (number_of_rows_affected >= 1) {
+    } else if (number_of_rows_affected >= 0) {
+      object_ids.clear();
+
       // Obtain the object ID of the deleted metadata object.
-      std::string result_value = PQgetvalue(res, kFirstRow, kFirstColumn);
-      error = Utility::str_to_numeric(result_value, object_id);
-    } else {
-      // Not found.
-      error = Dao::get_not_found_error_code(key);
+      for (int row_number = 0; row_number < number_of_rows_affected;
+           row_number++) {
+        // Obtain the object ID of the deleted metadata object.
+        ObjectId object_id;
+        error = Utility::str_to_numeric(
+            PQgetvalue(res, row_number, kFirstColumn), object_id);
+        object_ids.push_back(object_id);
+      }
     }
   }
   PQclear(res);
@@ -421,6 +409,18 @@ ErrorCode IndexDaoPg::remove(std::string_view key,
 /* =============================================================================
  * Private method area
  */
+
+void IndexDaoPg::create_prepared_statements() {
+  DaoPg::create_prepared_statements();
+
+  {
+    // DELETE statement with table id specified.
+    DeleteStatement statement_name{
+        this->get_source_name(),
+        this->get_delete_statement(ColumnName::kTableId), Index::TABLE_ID};
+    delete_statements_.emplace(Index::TABLE_ID, statement_name);
+  }
+}
 
 std::string IndexDaoPg::get_insert_statement() const {
   boost::format query =

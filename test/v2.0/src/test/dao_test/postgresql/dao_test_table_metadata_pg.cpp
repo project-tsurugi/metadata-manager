@@ -147,8 +147,13 @@ class DaoTestTableMetadata : public ::testing::Test {
     ASSERT_NE(nullptr, constraints_dao);
     ASSERT_EQ(ErrorCode::OK, error);
 
+    // Set condition keys for testing.
+    std::map<std::string_view, std::string_view> keys = {
+        {Table::NAME, object_name}
+    };
+
     // Run the API under test.
-    error = tables_dao->select(Table::NAME, {object_name}, object);
+    error = tables_dao->select(keys, object);
     EXPECT_EQ(ErrorCode::OK, error);
 
     BOOST_FOREACH (ptree::value_type& node, object) {
@@ -158,17 +163,29 @@ class DaoTestTableMetadata : public ::testing::Test {
           table.get_optional<std::string>(Table::ID);
       if (o_table_id) {
         ptree columns;
-        // Run the API under test.
-        error =
-            columns_dao->select(Column::TABLE_ID, {o_table_id.get()}, columns);
-        EXPECT_EQ(ErrorCode::OK, error);
+        {
+          // Set condition keys for testing.
+          std::map<std::string_view, std::string_view> keys = {
+              {Column::TABLE_ID, o_table_id.get()}
+          };
+
+          // Run the API under test.
+          error = columns_dao->select(keys, columns);
+          EXPECT_EQ(ErrorCode::OK, error);
+        }
         table.add_child(Table::COLUMNS_NODE, columns);
 
         ptree constraints;
-        // Run the API under test.
-        error = constraints_dao->select(Constraint::TABLE_ID,
-                                        {o_table_id.get()}, constraints);
-        EXPECT_EQ(ErrorCode::OK, error);
+        {
+          // Set condition keys for testing.
+          std::map<std::string_view, std::string_view> keys = {
+              {Constraint::TABLE_ID, o_table_id.get()}
+          };
+
+          // Run the API under test.
+          error = constraints_dao->select(keys, constraints);
+          EXPECT_EQ(ErrorCode::OK, error);
+        }
         table.add_child(Table::CONSTRAINTS_NODE, constraints);
       }
     }
@@ -206,11 +223,15 @@ class DaoTestTableMetadata : public ::testing::Test {
     ASSERT_NE(nullptr, constraints_dao);
     ASSERT_EQ(ErrorCode::OK, error);
 
+    // Set condition keys for testing.
+    auto s_object_id = std::to_string(object_id);
+    std::map<std::string_view, std::string_view> keys = {
+        {Table::ID, s_object_id}
+    };
+
     // Run the API under test.
-    error = tables_dao->select(Table::ID, {std::to_string(object_id)}, object);
-    if (error == ErrorCode::OK) {
-      EXPECT_EQ(ErrorCode::OK, error);
-    } else {
+    error = tables_dao->select(keys, object);
+    if (error != ErrorCode::OK) {
       EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
       return;
     }
@@ -222,17 +243,29 @@ class DaoTestTableMetadata : public ::testing::Test {
           table.get_optional<std::string>(Table::ID);
       if (o_table_id) {
         ptree columns;
-        // Run the API under test.
-        error =
-            columns_dao->select(Column::TABLE_ID, {o_table_id.get()}, columns);
-        EXPECT_EQ(ErrorCode::OK, error);
+        {
+          // Set condition keys for testing.
+          std::map<std::string_view, std::string_view> keys = {
+              {Column::TABLE_ID, o_table_id.get()}
+          };
+
+          // Run the API under test.
+          error = columns_dao->select(keys, columns);
+          EXPECT_EQ(ErrorCode::OK, error);
+        }
         table.add_child(Table::COLUMNS_NODE, columns);
 
         ptree constraints;
-        // Run the API under test.
-        error = constraints_dao->select(Constraint::TABLE_ID,
-                                        {o_table_id.get()}, constraints);
-        EXPECT_EQ(ErrorCode::OK, error);
+        {
+          // Set condition keys for testing.
+          std::map<std::string_view, std::string_view> keys = {
+              {Constraint::TABLE_ID, o_table_id.get()}
+          };
+
+          // Run the API under test.
+          error = constraints_dao->select(keys, constraints);
+          EXPECT_EQ(ErrorCode::OK, error);
+        }
         table.add_child(Table::CONSTRAINTS_NODE, constraints);
       }
     }
@@ -270,9 +303,17 @@ class DaoTestTableMetadata : public ::testing::Test {
     error = db_session_manager.start_transaction();
     EXPECT_EQ(ErrorCode::OK, error);
 
+    // Set condition keys for testing.
+    auto s_object_id = std::to_string(object_id);
+    std::map<std::string_view, std::string_view> keys = {
+        {Tables::ID, s_object_id}
+    };
+
+    uint64_t updated_rows = 0;
     // Update table metadata object to table metadata table.
-    error = tables_dao->update(Tables::ID, {std::to_string(object_id)}, object);
+    error = tables_dao->update(keys, object, updated_rows);
     EXPECT_EQ(ErrorCode::OK, error);
+    EXPECT_EQ(1, updated_rows);
 
     // Run the API under test.
     error = db_session_manager.commit();
@@ -303,12 +344,20 @@ class DaoTestTableMetadata : public ::testing::Test {
     error = db_session_manager.start_transaction();
     EXPECT_EQ(ErrorCode::OK, error);
 
-    ObjectIdType removed_id = -1;
+    // Set condition keys for testing.
+    auto s_object_id = std::to_string(object_id);
+    std::map<std::string_view, std::string_view> keys = {
+        {Tables::ID, s_object_id}
+    };
+
+    std::vector<ObjectId> removed_ids;
     // Run the API under test.
-    error =
-        tables_dao->remove(Table::ID, {std::to_string(object_id)}, removed_id);
+    error = tables_dao->remove(keys, removed_ids);
     EXPECT_EQ(ErrorCode::OK, error);
-    EXPECT_EQ(object_id, removed_id);
+    EXPECT_EQ(1, removed_ids.size());
+    if (removed_ids.size() == 1) {
+      EXPECT_EQ(object_id, removed_ids[0]);
+    }
 
     if (error == ErrorCode::OK) {
       // Run the API under test.
@@ -348,17 +397,26 @@ class DaoTestTableMetadata : public ::testing::Test {
     error = db_session_manager.start_transaction();
     EXPECT_EQ(ErrorCode::OK, error);
 
-    ObjectIdType removed_id = -1;
+    // Set condition keys for testing.
+    std::map<std::string_view, std::string_view> keys = {
+        {Table::NAME, object_name}
+    };
+
+    ObjectId removed_id = INVALID_OBJECT_ID;
+    std::vector<ObjectId> removed_ids;
     // Run the API under test.
-    error =
-        tables_dao->remove(Table::NAME, {std::string(object_name)}, removed_id);
+    error = tables_dao->remove(keys, removed_ids);
     EXPECT_EQ(ErrorCode::OK, error);
-    EXPECT_NE(-1, removed_id);
+    EXPECT_EQ(1, removed_ids.size());
+    if (removed_ids.size() == 1) {
+      EXPECT_NE(-1, removed_ids[0]);
+      removed_id = removed_ids[0];
+    }
 
     if (error == ErrorCode::OK) {
       // Run the API under test.
       error = db_session_manager.commit();
-      EXPECT_EQ(ErrorCode::OK, error);
+      ASSERT_EQ(ErrorCode::OK, error);
 
       if (error == ErrorCode::OK && object_id != nullptr) {
         *object_id = removed_id;
@@ -366,7 +424,7 @@ class DaoTestTableMetadata : public ::testing::Test {
     } else {
       // Run the API under test.
       ErrorCode rollback_error = db_session_manager.rollback();
-      EXPECT_EQ(ErrorCode::OK, rollback_error);
+      ASSERT_EQ(ErrorCode::OK, rollback_error);
     }
   }
 };  // class DaoTestTableMetadata

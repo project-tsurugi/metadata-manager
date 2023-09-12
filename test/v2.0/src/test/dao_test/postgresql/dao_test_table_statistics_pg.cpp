@@ -98,16 +98,22 @@ TEST_P(DaoTestTableStatisticsByTableIdException,
   error = db_session_manager.start_transaction();
   EXPECT_EQ(ErrorCode::OK, error);
 
-  int64_t reltuples        = 1000;
-  auto table_id_not_exists = GetParam();
+  int64_t reltuples = 1000;
+  std::string table_id_not_exists(std::to_string(GetParam()));
 
   ptree object;
   object.put(Table::NUMBER_OF_TUPLES, reltuples);
 
+  // Set condition keys for testing.
+  std::map<std::string_view, std::string_view> keys = {
+      {Tables::ID, table_id_not_exists}
+  };
+
+  uint64_t updated_rows = 0;
   // Run the API under test.
-  error = tables_dao->update(Tables::ID, {std::to_string(table_id_not_exists)},
-                             object);
-  EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
+  error = tables_dao->update(keys, object, updated_rows);
+  EXPECT_EQ(ErrorCode::OK, error);
+  EXPECT_EQ(0, updated_rows);
 
   // Run the API under test.
   error = db_session_manager.rollback();
@@ -136,15 +142,22 @@ TEST_P(DaoTestTableStatisticsByTableNameException,
   error = db_session_manager.start_transaction();
   EXPECT_EQ(ErrorCode::OK, error);
 
-  int64_t reltuples                 = 1000;
-  std::string table_name_not_exists = GetParam();
+  int64_t reltuples = 1000;
+  std::string table_name_not_exists(GetParam());
 
   ptree object;
   object.put(Table::NUMBER_OF_TUPLES, reltuples);
 
+  // Set condition keys for testing.
+  std::map<std::string_view, std::string_view> keys = {
+      {Tables::NAME, table_name_not_exists}
+  };
+
+  uint64_t updated_rows = 0;
   // Run the API under test.
-  error = tables_dao->update(Tables::NAME, {table_name_not_exists}, object);
-  EXPECT_EQ(ErrorCode::NAME_NOT_FOUND, error);
+  error = tables_dao->update(keys, object, updated_rows);
+  EXPECT_EQ(ErrorCode::OK, error);
+  EXPECT_EQ(0, updated_rows);
 
   // Run the API under test.
   error = db_session_manager.rollback();
@@ -169,12 +182,18 @@ TEST_P(DaoTestTableStatisticsByTableIdException,
   ASSERT_NE(nullptr, tables_dao);
   ASSERT_EQ(ErrorCode::OK, error);
 
-  auto table_id_not_exists = GetParam();
+  std::string table_id_not_exists(std::to_string(GetParam()));
+
+  // Set condition keys for testing.
+  std::map<std::string_view, std::string_view> keys = {
+      {Tables::ID, table_id_not_exists}
+  };
+
   ptree table_stats;
   // Run the API under test.
-  error = tables_dao->select(Tables::ID, {std::to_string(table_id_not_exists)},
-                             table_stats);
-  EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
+  error = tables_dao->select(keys, table_stats);
+  EXPECT_EQ(ErrorCode::OK, error);
+  EXPECT_EQ(0, table_stats.size());
 
   TableMetadataHelper::print_table_statistics(table_stats);
 }
@@ -197,12 +216,18 @@ TEST_P(DaoTestTableStatisticsByTableNameException,
   ASSERT_NE(nullptr, tables_dao);
   ASSERT_EQ(ErrorCode::OK, error);
 
-  std::string table_name_not_exists = GetParam();
+  std::string table_name_not_exists(GetParam());
+
+  // Set condition keys for testing.
+  std::map<std::string_view, std::string_view> keys = {
+      {Tables::NAME, table_name_not_exists}
+  };
+
   ptree table_stats;
   // Run the API under test.
-  error =
-      tables_dao->select(Tables::NAME, {table_name_not_exists}, table_stats);
-  EXPECT_EQ(ErrorCode::NAME_NOT_FOUND, error);
+  error = tables_dao->select(keys, table_stats);
+  EXPECT_EQ(ErrorCode::OK, error);
+  EXPECT_EQ(0, table_stats.size());
 }
 
 /**
@@ -235,10 +260,16 @@ TEST_P(DaoTestTableStatisticsByTableIdHappy,
   ASSERT_NE(nullptr, tables_dao);
   ASSERT_EQ(ErrorCode::OK, error);
 
-  // Get table metadata.
+  std::string table_id(std::to_string(ret_table_id));
+
+  // Set condition keys for testing.
+  std::map<std::string_view, std::string_view> keys = {
+      {Tables::ID, table_id}
+  };
+
   ptree temp_objects;
-  error = tables_dao->select(Tables::ID, {std::to_string(ret_table_id)},
-                             temp_objects);
+  // Get table metadata.
+  error = tables_dao->select(keys, temp_objects);
   ASSERT_EQ(ErrorCode::OK, error);
   EXPECT_EQ(1, temp_objects.size());
 
@@ -252,18 +283,18 @@ TEST_P(DaoTestTableStatisticsByTableIdHappy,
   int64_t reltuples_to_add = std::get<1>(param);
   table_object.put(Table::NUMBER_OF_TUPLES, reltuples_to_add);
 
+  uint64_t updated_rows = 0;
   // Run the API under test.
-  error = tables_dao->update(Tables::ID, {std::to_string(ret_table_id)},
-                             table_object);
+  error = tables_dao->update(keys, table_object, updated_rows);
   EXPECT_EQ(ErrorCode::OK, error);
+  EXPECT_EQ(1, updated_rows);
 
   // Run the API under test.
   error = db_session_manager.commit();
   EXPECT_EQ(ErrorCode::OK, error);
 
   // Run the API under test.
-  error = tables_dao->select(Tables::ID, {std::to_string(ret_table_id)},
-                             temp_objects);
+  error = tables_dao->select(keys, temp_objects);
   ASSERT_EQ(ErrorCode::OK, error);
   EXPECT_EQ(1, temp_objects.size());
 
@@ -298,18 +329,18 @@ TEST_P(DaoTestTableStatisticsByTableIdHappy,
   int64_t tuples_to_update = std::get<2>(param);
   table_object.put(Table::NUMBER_OF_TUPLES, tuples_to_update);
 
+  updated_rows = 0;
   // Run the API under test.
-  error = tables_dao->update(Tables::ID, {std::to_string(ret_table_id)},
-                             table_object);
+  error = tables_dao->update(keys, table_object, updated_rows);
   EXPECT_EQ(ErrorCode::OK, error);
+  EXPECT_EQ(1, updated_rows);
 
   // Run the API under test.
   error = db_session_manager.commit();
   EXPECT_EQ(ErrorCode::OK, error);
 
   // Run the API under test.
-  error = tables_dao->select(Tables::ID, {std::to_string(ret_table_id)},
-                             temp_objects);
+  error = tables_dao->select(keys, temp_objects);
   ASSERT_EQ(ErrorCode::OK, error);
   EXPECT_EQ(1, temp_objects.size());
 
@@ -371,10 +402,16 @@ TEST_P(DaoTestTableStatisticsByTableNameHappy,
   ASSERT_NE(nullptr, tables_dao);
   ASSERT_EQ(ErrorCode::OK, error);
 
-  // Get table metadata.
+  std::string table_id(std::to_string(ret_table_id));
+
+  // Set condition keys for testing.
+  std::map<std::string_view, std::string_view> keys = {
+      {Tables::ID, table_id}
+  };
+
   ptree temp_objects;
-  error = tables_dao->select(Tables::ID, {std::to_string(ret_table_id)},
-                             temp_objects);
+  // Get table metadata.
+  error = tables_dao->select(keys, temp_objects);
   ASSERT_EQ(ErrorCode::OK, error);
   EXPECT_EQ(1, temp_objects.size());
 
@@ -388,16 +425,23 @@ TEST_P(DaoTestTableStatisticsByTableNameHappy,
   int64_t reltuples_to_add = std::get<1>(param);
   table_object.put(Table::NUMBER_OF_TUPLES, reltuples_to_add);
 
+  // Set condition keys for testing.
+  keys = {
+      {Tables::NAME, table_name}
+  };
+
+  uint64_t updated_rows = 0;
   // Run the API under test.
-  error = tables_dao->update(Tables::NAME, {table_name}, table_object);
+  error = tables_dao->update(keys, table_object, updated_rows);
   EXPECT_EQ(ErrorCode::OK, error);
+  EXPECT_EQ(1, updated_rows);
 
   // Run the API under test.
   error = db_session_manager.commit();
   EXPECT_EQ(ErrorCode::OK, error);
 
   // Run the API under test.
-  error = tables_dao->select(Tables::NAME, {table_name}, temp_objects);
+  error = tables_dao->select(keys, temp_objects);
   ASSERT_EQ(ErrorCode::OK, error);
   EXPECT_EQ(1, temp_objects.size());
 
@@ -433,16 +477,18 @@ TEST_P(DaoTestTableStatisticsByTableNameHappy,
   int64_t tuples_to_update = std::get<2>(param);
   table_object.put(Table::NUMBER_OF_TUPLES, tuples_to_update);
 
+  updated_rows = 0;
   // Run the API under test.
-  error = tables_dao->update(Table::NAME, {table_name}, table_object);
+  error = tables_dao->update(keys, table_object, updated_rows);
   EXPECT_EQ(ErrorCode::OK, error);
+  EXPECT_EQ(1, updated_rows);
 
   // Run the API under test.
   error = db_session_manager.commit();
   EXPECT_EQ(ErrorCode::OK, error);
 
   // Run the API under test.
-  error = tables_dao->select(Tables::NAME, {table_name}, temp_objects);
+  error = tables_dao->select(keys, temp_objects);
   ASSERT_EQ(ErrorCode::OK, error);
   EXPECT_EQ(1, temp_objects.size());
 

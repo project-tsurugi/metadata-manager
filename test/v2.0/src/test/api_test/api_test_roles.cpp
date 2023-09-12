@@ -299,11 +299,11 @@ TEST_F(ApiTestRolesMetadataJson, test_get) {
   ptree retrieve_metadata;
 
   // Test to get the manager by role id.
-  ApiTestHelper::test_get(managers.get(), INT32_MAX, ErrorCode::NOT_SUPPORTED,
+  ApiTestHelper::test_get(managers.get(), INT32_MAX, ErrorCode::ID_NOT_FOUND,
                           retrieve_metadata);
 
   // Test to get the manager by role name.
-  ApiTestHelper::test_get(managers.get(), "role_name", ErrorCode::NOT_SUPPORTED,
+  ApiTestHelper::test_get(managers.get(), "role_name", ErrorCode::NAME_NOT_FOUND,
                           retrieve_metadata);
 }
 

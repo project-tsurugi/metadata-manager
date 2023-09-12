@@ -16,6 +16,7 @@
 #ifndef MANAGER_METADATA_DAO_POSTGRESQL_STATISTICS_DAO_PG_H_
 #define MANAGER_METADATA_DAO_POSTGRESQL_STATISTICS_DAO_PG_H_
 
+#include <map>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -58,7 +59,7 @@ class StatisticsDaoPg : public DaoPg {
    * @brief Add metadata object to metadata table.
    * @param object     [in]   metadata object to add.
    * @param object_id  [out] object id of the added row.
-   * @return ErrorCode::OK if success, otherwise an error code.
+   * @return If success ErrorCode::OK, otherwise error code.
    * @note  If success, metadata object is added management metadata.
    *   e.g. format version, generation, etc...
    */
@@ -66,49 +67,35 @@ class StatisticsDaoPg : public DaoPg {
                                       ObjectId& object_id) const override;
 
   /**
-   * @brief Get all metadata objects from a metadata table.
-   *   If the table metadata does not exist, return the container as empty.
-   * @param objects  [out] all statistics metadata.
-   * @return ErrorCode::OK if success, otherwise an error code.
-   */
-  manager::metadata::ErrorCode select_all(
-      std::vector<boost::property_tree::ptree>& objects) const override;
-
-  /**
-   * @brief Get a column statistics row from the column statistics table
-   *   based on the specified table id and the given column ordinal position.
-   * @param key     [in]  column name of a column metadata table.
-   * @param values  [in]  value to be filtered.
-   * @param object  [out] get statistics metadata for which the specified key
-   * and value are equal.
-   * @return ErrorCode::OK if success, otherwise an error code.
+   * @brief Select a metadata object from the metadata table.
+   * @param keys    [in]  key name and value of the metadata object.
+   * @param object  [out] a selected metadata object.
+   * @return If success ErrorCode::OK, otherwise error code.
    */
   manager::metadata::ErrorCode select(
-      std::string_view key, const std::vector<std::string_view>& values,
+      const std::map<std::string_view, std::string_view>& keys,
       boost::property_tree::ptree& object) const override;
 
   /**
-   * @brief Function defined for compatibility.
-   * @return Always ErrorCode::OK.
+   * @brief Unsupported function.
+   * @return Always ErrorCode::NOT_SUPPORTED.
    */
   manager::metadata::ErrorCode update(
-      std::string_view, const std::vector<std::string_view>&,
-      const boost::property_tree::ptree&) const override {
-    return ErrorCode::OK;
+      const std::map<std::string_view, std::string_view>&,
+      const boost::property_tree::ptree&, uint64_t&) const override {
+    // Do nothing and return of ErrorCode::NOT_SUPPORTED.
+    return ErrorCode::NOT_SUPPORTED;
   }
 
   /**
-   * @brief Removes column statistic with the specified key value
-   *   from the column statistics table.
-   * @param key        [in]  column name of a column metadata table.
-   * @param values     [in]  value to be filtered.
-   * @param object_id  [out] object id of the deleted row.
-   *   If multiple rows are deleted, the first column id.
-   * @return ErrorCode::OK if success, otherwise an error code.
+   * @brief Remove a metadata object from a metadata table file.
+   * @param keys        [in]  key name and value of the metadata object.
+   * @param object_ids  [out] object id of the deleted rows.
+   * @return If success ErrorCode::OK, otherwise error code.
    */
   manager::metadata::ErrorCode remove(
-      std::string_view key, const std::vector<std::string_view>& values,
-      ObjectId& object) const override;
+      const std::map<std::string_view, std::string_view>& keys,
+      std::vector<ObjectId>& object_ids) const override;
 
  private:
   /**
@@ -225,21 +212,11 @@ class StatisticsDaoPg : public DaoPg {
    * @param statement  [in]  statement name.
    * @param params     [in]  Parameters of the statement.
    * @param objects    [out] all column statistics.
-   * @return ErrorCode::OK if success, otherwise an error code.
+   * @return If success ErrorCode::OK, otherwise error code.
    */
   manager::metadata::ErrorCode get_column_statistics_rows(
       std::string_view statement_name, const std::vector<const char*>& params,
       boost::property_tree::ptree& objects) const;
-
-  /**
-   * @brief Get a NOT_FOUND error code corresponding to the key.
-   * @param key  [in] key name of the metadata object.
-   * @retval ErrorCode::ID_NOT_FOUND if the key is id.
-   * @retval ErrorCode::NAME_NOT_FOUND if the key is name.
-   * @retval ErrorCode::NOT_FOUND if the key is otherwise.
-   */
-  manager::metadata::ErrorCode get_not_found_error_code(
-      std::string_view key) const override;
 
   /**
    * @brief Gets the ptree type column statistics
@@ -250,6 +227,18 @@ class StatisticsDaoPg : public DaoPg {
    */
   boost::property_tree::ptree convert_pgresult_to_ptree(
       const PGresult* pg_result, const int row_number) const;
+
+
+  /**
+   * @brief Sets the specified key and key value.
+   * @param keys      [in]  key name and value of the metadata object.
+   * @param key_name  [out] key name.
+   * @param params    [out] statement parameters.
+   * @return If success ErrorCode::OK, otherwise error code.
+   */
+  ErrorCode set_key_params(
+      const std::map<std::string_view, std::string_view>& keys,
+      std::string& key_name, std::vector<const char*>& params) const;
 };  // class StatisticsDaoPg
 
 }  // namespace manager::metadata::db
