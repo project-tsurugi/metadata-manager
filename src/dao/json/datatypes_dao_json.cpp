@@ -117,7 +117,7 @@ ErrorCode DataTypesDaoJson::prepare() {
                  PgType::TypeName::kNumeric);
     datatypes.push_back(std::make_pair("", datatype));
 
-    // DATE : 
+    // DATE :
     datatype.put(DataTypes::FORMAT_VERSION, DataTypes::format_version());
     datatype.put(DataTypes::GENERATION, DataTypes::generation());
     datatype.put(DataTypes::ID,
@@ -129,7 +129,7 @@ ErrorCode DataTypesDaoJson::prepare() {
                  PgType::TypeName::kDate);
     datatypes.push_back(std::make_pair("", datatype));
 
-    // TIME : 
+    // TIME :
     datatype.put(DataTypes::FORMAT_VERSION, DataTypes::format_version());
     datatype.put(DataTypes::GENERATION, DataTypes::generation());
     datatype.put(DataTypes::ID,
@@ -141,7 +141,7 @@ ErrorCode DataTypesDaoJson::prepare() {
                  PgType::TypeName::kTime);
     datatypes.push_back(std::make_pair("", datatype));
 
-    // TIMETZ : 
+    // TIMETZ :
     datatype.put(DataTypes::FORMAT_VERSION, DataTypes::format_version());
     datatype.put(DataTypes::GENERATION, DataTypes::generation());
     datatype.put(DataTypes::ID,
@@ -153,7 +153,7 @@ ErrorCode DataTypesDaoJson::prepare() {
                  PgType::TypeName::kTimetz);
     datatypes.push_back(std::make_pair("", datatype));
 
-    // TIMESTAMP : 
+    // TIMESTAMP :
     datatype.put(DataTypes::FORMAT_VERSION, DataTypes::format_version());
     datatype.put(DataTypes::GENERATION, DataTypes::generation());
     datatype.put(DataTypes::ID,
@@ -165,11 +165,11 @@ ErrorCode DataTypesDaoJson::prepare() {
                  PgType::TypeName::kTimestamp);
     datatypes.push_back(std::make_pair("", datatype));
 
-    // TIMESTAMPTZ : 
+    // TIMESTAMPTZ :
     datatype.put(DataTypes::FORMAT_VERSION, DataTypes::format_version());
     datatype.put(DataTypes::GENERATION, DataTypes::generation());
-    datatype.put(DataTypes::ID,
-                 static_cast<ObjectIdType>(DataTypes::DataTypesId::TIMESTAMPTZ));
+    datatype.put(DataTypes::ID, static_cast<ObjectIdType>(
+                                    DataTypes::DataTypesId::TIMESTAMPTZ));
     datatype.put(DataTypes::NAME, "TIMESTAMPTZ");
     datatype.put(DataTypes::PG_DATA_TYPE, PgType::TypeOid::kTimestamptz);
     datatype.put(DataTypes::PG_DATA_TYPE_NAME, "timestamptz");
@@ -177,7 +177,7 @@ ErrorCode DataTypesDaoJson::prepare() {
                  PgType::TypeName::kTimestamptz);
     datatypes.push_back(std::make_pair("", datatype));
 
-    // INTERVAL : 
+    // INTERVAL :
     datatype.put(DataTypes::FORMAT_VERSION, DataTypes::format_version());
     datatype.put(DataTypes::GENERATION, DataTypes::generation());
     datatype.put(DataTypes::ID,
@@ -197,57 +197,33 @@ ErrorCode DataTypesDaoJson::prepare() {
   return error;
 }
 
-ErrorCode DataTypesDaoJson::select_all(
-    std::vector<boost::property_tree::ptree>& objects) const {
+ErrorCode DataTypesDaoJson::select(
+    const std::map<std::string_view, std::string_view>& keys,
+    boost::property_tree::ptree& object) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   // Getting a metadata contents.
   const ptree& contents = datatype_contents_;
 
-  // Convert from ptree structure type to vector<ptree>.
-  const auto& node = contents.get_child(kRootNode);
-  std::transform(node.begin(), node.end(), std::back_inserter(objects),
-                 [](ptree::value_type v) { return v.second; });
-
-  return error;
-}
-
-ErrorCode DataTypesDaoJson::select(std::string_view key,
-                                   const std::vector<std::string_view>& values,
-                                   boost::property_tree::ptree& object) const {
-  ErrorCode error = ErrorCode::UNKNOWN;
-
-  if (values.empty()) {
-    LOG_ERROR << Message::PARAMETER_FAILED << "Key value is unspecified.";
-    error = ErrorCode::INVALID_PARAMETER;
-    return error;
+  if (keys.empty()) {
+    // Extract all metadata.
+    LOG_DEBUG << "Select the datatype metadata. [*]";
+  } else {
+    // Extract metadata with key values.
+    LOG_DEBUG << "Select the datatype metadata. [" << keys << "]";
   }
-
-  // Getting a metadata contents.
-  const ptree& contents = datatype_contents_;
-
-  // Initialize the error code.
-  error = get_not_found_error_code(key);
 
   object.clear();
   BOOST_FOREACH (const auto& node, contents.get_child(kRootNode)) {
-    const ptree& temp_obj = node.second;
+    const auto& datatype = node.second;
 
-    // Get the value of the key.
-    auto data_value = temp_obj.get_optional<std::string>(key.data());
-    if (data_value) {
-      // If the key value matches, the metadata is added.
-      if (data_value.value() == values[0]) {
-        object.push_back(std::make_pair("", temp_obj));
-        error = ErrorCode::OK;
-      }
-    } else {
-      object.clear();
-      error = ErrorCode::INVALID_PARAMETER;
-      break;
+    if (ptree_helper::is_match(datatype, keys)) {
+      // Add metadata.
+      object.push_back(std::make_pair("", datatype));
     }
   }
 
+  error = ErrorCode::OK;
   return error;
 }
 

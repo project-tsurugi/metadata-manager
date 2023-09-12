@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 tsurugi project.
+ * Copyright 2020-2023 tsurugi project.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 #ifndef MANAGER_METADATA_DAO_JSON_DATATYPES_DAO_JSON_H_
 #define MANAGER_METADATA_DAO_JSON_DATATYPES_DAO_JSON_H_
 
+#include <map>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -44,7 +45,7 @@ class DataTypesDaoJson : public DaoJson {
 
   /**
    * @brief Prepare to access the constraint metadata JSON file.
-   * @return ErrorCode::OK if success, otherwise an error code.
+   * @return If success ErrorCode::OK, otherwise error code.
    */
   manager::metadata::ErrorCode prepare() override;
 
@@ -53,33 +54,20 @@ class DataTypesDaoJson : public DaoJson {
    * @return Always ErrorCode::NOT_SUPPORTED.
    */
   manager::metadata::ErrorCode insert(const boost::property_tree::ptree&,
-                                      ObjectId&) const {
+                                      ObjectId&) const override {
     // Do nothing and return of ErrorCode::NOT_SUPPORTED.
     return ErrorCode::NOT_SUPPORTED;
   }
 
   /**
-   * @brief Get all metadata objects from a metadata table file.
-   *   If the table metadata does not exist, return the container as empty.
-   * @param objects  [out] all data-types metadata.
-   * @return ErrorCode::OK if success, otherwise an error code.
-   */
-  manager::metadata::ErrorCode select_all(
-      std::vector<boost::property_tree::ptree>& objects) const override;
-
-  /**
    * @brief Get metadata object from a metadata table file.
-   * @param key    [in]  key. column name of a table metadata table.
-   * @param values [in]  value to be filtered.
+   * @param keys   [in]  key name and value of the metadata object.
    * @param object [out] datatype metadata to get, where the given key
    *   equals the given value.
-   * @retval ErrorCode::OK if success.
-   * @retval ErrorCode::ID_NOT_FOUND if the table id does not exist.
-   * @retval ErrorCode::NAME_NOT_FOUND if the table name does not exist.
-   * @retval otherwise an error code.
+   * @return If success ErrorCode::OK, otherwise error code.
    */
   manager::metadata::ErrorCode select(
-      std::string_view key, const std::vector<std::string_view>& values,
+      const std::map<std::string_view, std::string_view>& keys,
       boost::property_tree::ptree& object) const override;
 
   /**
@@ -87,8 +75,8 @@ class DataTypesDaoJson : public DaoJson {
    * @return Always ErrorCode::NOT_SUPPORTED.
    */
   manager::metadata::ErrorCode update(
-      std::string_view, const std::vector<std::string_view>&,
-      const boost::property_tree::ptree&) const {
+      const std::map<std::string_view, std::string_view>&,
+      const boost::property_tree::ptree&, uint64_t&) const override {
     // Do nothing and return of ErrorCode::NOT_SUPPORTED.
     return ErrorCode::NOT_SUPPORTED;
   }
@@ -97,9 +85,9 @@ class DataTypesDaoJson : public DaoJson {
    * @brief Unsupported function.
    * @return Always ErrorCode::NOT_SUPPORTED.
    */
-  manager::metadata::ErrorCode remove(std::string_view,
-                                      const std::vector<std::string_view>&,
-                                      ObjectId&) const {
+  manager::metadata::ErrorCode remove(
+      const std::map<std::string_view, std::string_view>&,
+      std::vector<ObjectId>& objet_ids) const override {
     // Do nothing and return of ErrorCode::NOT_SUPPORTED.
     return ErrorCode::NOT_SUPPORTED;
   }

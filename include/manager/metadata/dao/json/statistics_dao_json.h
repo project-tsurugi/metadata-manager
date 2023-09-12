@@ -16,6 +16,7 @@
 #ifndef MANAGER_METADATA_DAO_JSON_STATISTICS_DAO_JSON_H_
 #define MANAGER_METADATA_DAO_JSON_STATISTICS_DAO_JSON_H_
 
+#include <map>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -34,41 +35,31 @@ namespace manager::metadata::db {
 class StatisticsDaoJson : public DaoJson {
  public:
   /**
-    * @brief Construct a new Column Statistic DAO class for JSON data.
-    * @param session pointer to DB session manager for JSON.
-    */
+   * @brief Construct a new Column Statistic DAO class for JSON data.
+   * @param session pointer to DB session manager for JSON.
+   */
   explicit StatisticsDaoJson(DbSessionManagerJson* session)
-        : DaoJson(session, "") {}
+      : DaoJson(session, "") {}
 
   /**
    * @brief Function defined for compatibility.
-   * @return Always ErrorCode::NOT_SUPPORTED.
+   * @return Always ErrorCode::OK.
    */
   manager::metadata::ErrorCode insert(const boost::property_tree::ptree&,
                                       ObjectId&) const override {
-    // Do nothing and return of ErrorCode::NOT_SUPPORTED.
-    return ErrorCode::NOT_SUPPORTED;
+    // Do nothing and return of ErrorCode::OK.
+    return ErrorCode::OK;
   }
 
   /**
    * @brief Function defined for compatibility.
-   * @return Always ErrorCode::NOT_SUPPORTED.
-   */
-  manager::metadata::ErrorCode select_all(
-      std::vector<boost::property_tree::ptree>&) const override {
-    // Do nothing and return of ErrorCode::NOT_SUPPORTED.
-    return ErrorCode::NOT_SUPPORTED;
-  }
-
-  /**
-   * @brief Function defined for compatibility.
-   * @return Always ErrorCode::NOT_SUPPORTED.
+   * @return Always ErrorCode::OK.
    */
   manager::metadata::ErrorCode select(
-      std::string_view, const std::vector<std::string_view>&,
+      const std::map<std::string_view, std::string_view>&,
       boost::property_tree::ptree&) const override {
-    // Do nothing and return of ErrorCode::NOT_SUPPORTED.
-    return ErrorCode::NOT_SUPPORTED;
+    // Do nothing and return of ErrorCode::OK.
+    return ErrorCode::OK;
   }
 
   /**
@@ -76,8 +67,8 @@ class StatisticsDaoJson : public DaoJson {
    * @return Always ErrorCode::NOT_SUPPORTED.
    */
   manager::metadata::ErrorCode update(
-      std::string_view, const std::vector<std::string_view>&,
-      const boost::property_tree::ptree&) const override {
+      const std::map<std::string_view, std::string_view>&,
+      const boost::property_tree::ptree&, uint64_t&) const override {
     // Do nothing and return of ErrorCode::NOT_SUPPORTED.
     return ErrorCode::NOT_SUPPORTED;
   }
@@ -86,13 +77,13 @@ class StatisticsDaoJson : public DaoJson {
    * @brief Function defined for compatibility.
    * @return Always ErrorCode::OK.
    */
-  manager::metadata::ErrorCode remove(std::string_view,
-                                      const std::vector<std::string_view>&,
-                                      ObjectId&) const override {
+  manager::metadata::ErrorCode remove(
+      const std::map<std::string_view, std::string_view>&,
+      std::vector<ObjectId>&) const override {
     // Do nothing and return of ErrorCode::OK.
-    return ErrorCode::NOT_SUPPORTED;
+    return ErrorCode::OK;
   }
-};  // class RolesDaoJson
+};  // class StatisticsDaoJson
 
 }  // namespace manager::metadata::db
 

@@ -148,10 +148,7 @@ class DbSessionManagerJson : public DbSessionManager {
           std::hash<std::string>()(ptree_helper::ptree_to_json(content));
       if (this->pre_hash == 0) {
         this->pre_hash = hash_value;
-      } else if (this->cur_hash == 0) {
-        this->cur_hash = hash_value;
       } else {
-        this->pre_hash = this->cur_hash;
         this->cur_hash = hash_value;
       }
 
