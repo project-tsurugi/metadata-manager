@@ -16,6 +16,7 @@
 #ifndef MANAGER_METADATA_DAO_POSTGRESQL_DATATYPES_DAO_PG_H_
 #define MANAGER_METADATA_DAO_POSTGRESQL_DATATYPES_DAO_PG_H_
 
+#include <map>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -57,60 +58,46 @@ class DataTypesDaoPg : public DaoPg {
   using DaoPg::DaoPg;
 
   /**
-   * @brief Function defined for compatibility.
-   * @return Always ErrorCode::OK.
+   * @brief Unsupported function.
+   * @return Always ErrorCode::NOT_SUPPORTED.
    */
   manager::metadata::ErrorCode insert(const boost::property_tree::ptree&,
                                       ObjectId&) const override {
-    // Do nothing and return of ErrorCode::OK.
-    return ErrorCode::OK;
+    // Do nothing and return of ErrorCode::NOT_SUPPORTED.
+    return ErrorCode::NOT_SUPPORTED;
   }
 
   /**
-   * @brief Function defined for compatibility.
-   * @return Always ErrorCode::OK.
-   */
-  manager::metadata::ErrorCode select_all(
-      std::vector<boost::property_tree::ptree>&) const override {
-    // Do nothing and return of ErrorCode::OK.
-    return ErrorCode::OK;
-  }
-
-  /**
-   * @brief Get a metadata object from a metadata table.
-   * @param key     [in]  key. column name of a datatype metadata table.
-   * @param values  [in]  value to be filtered.
+   * @brief Select a metadata object from the metadata table.
+   * @param keys    [in]  key name and value of the metadata object.
    * @param object  [out] datatype metadata to get, where the given
    *   key equals the given value.
-   * @retval ErrorCode::OK if success.
-   * @retval ErrorCode::ID_NOT_FOUND if the object id does not exist.
-   * @retval ErrorCode::NAME_NOT_FOUND if the object name does not exist.
-   * @retval otherwise an error code.
+   * @return If success ErrorCode::OK, otherwise error code.
    */
   manager::metadata::ErrorCode select(
-      std::string_view key, const std::vector<std::string_view>& values,
+      const std::map<std::string_view, std::string_view>& keys,
       boost::property_tree::ptree& object) const override;
 
   /**
-   * @brief Function defined for compatibility.
-   * @return Always ErrorCode::OK.
+   * @brief Unsupported function.
+   * @return Always ErrorCode::NOT_SUPPORTED.
    */
   manager::metadata::ErrorCode update(
-      std::string_view, const std::vector<std::string_view>&,
-      const boost::property_tree::ptree&) const override {
-    // Do nothing and return of ErrorCode::OK.
-    return ErrorCode::OK;
+      const std::map<std::string_view, std::string_view>&,
+      const boost::property_tree::ptree&, uint64_t&) const override {
+    // Do nothing and return of ErrorCode::NOT_SUPPORTED.
+    return ErrorCode::NOT_SUPPORTED;
   }
 
   /**
-   * @brief Function defined for compatibility.
-   * @return Always ErrorCode::OK.
+   * @brief Unsupported function.
+   * @return Always ErrorCode::NOT_SUPPORTED.
    */
-  manager::metadata::ErrorCode remove(std::string_view,
-                                      const std::vector<std::string_view>&,
-                                      ObjectId&) const override {
-    // Do nothing and return of ErrorCode::OK.
-    return ErrorCode::OK;
+  manager::metadata::ErrorCode remove(
+      const std::map<std::string_view, std::string_view>&,
+      std::vector<ObjectId>& objet_ids) const override {
+    // Do nothing and return of ErrorCode::NOT_SUPPORTED.
+    return ErrorCode::NOT_SUPPORTED;
   }
 
  private:

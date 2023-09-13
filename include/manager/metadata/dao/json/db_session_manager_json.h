@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 tsurugi project.
+ * Copyright 2021-2023 tsurugi project.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,56 +43,62 @@ class DbSessionManagerJson : public DbSessionManager {
 
   /**
    * @brief Get an instance of a DAO for table metadata.
-   * @return DAO instance.
+   * @param dao  [out] DAO instance.
+   * @return ErrorCode::OK if success, otherwise an error code.
    */
-  std::shared_ptr<Dao> get_tables_dao() override;
+  ErrorCode get_tables_dao(std::shared_ptr<Dao>& dao) override;
 
   /**
    * @brief Get an instance of a DAO for column metadata.
-   * @return DAO instance.
+   * @param dao  [out] DAO instance.
+   * @return ErrorCode::OK if success, otherwise an error code.
    */
-  std::shared_ptr<Dao> get_columns_dao() override;
+  ErrorCode get_columns_dao(std::shared_ptr<Dao>& dao) override;
 
   /**
    * @brief Get an instance of a DAO for index metadata.
-   * @return DAO instance.
+   * @param dao  [out] DAO instance.
+   * @return ErrorCode::OK if success, otherwise an error code.
    */
-  std::shared_ptr<Dao> get_indexes_dao() override;
+  ErrorCode get_indexes_dao(std::shared_ptr<Dao>& dao) override;
 
   /**
    * @brief Get an instance of a DAO for constraint metadata.
-   *   Returns nullptr if the database connection fails.
-   * @return DAO instance or nullptr.
+   * @param dao  [out] DAO instance or nullptr.
+   * @return DAO instance ErrorCode::OK if success, otherwise an error code.
    */
-  std::shared_ptr<Dao> get_constraints_dao() override;
+  ErrorCode get_constraints_dao(std::shared_ptr<Dao>& dao) override;
 
   /**
    * @brief Get an instance of a DAO for data-type metadata.
-   * @return DAO instance.
+   * @param dao  [out] DAO instance.
+   * @return ErrorCode::OK if success, otherwise an error code.
    */
-  std::shared_ptr<Dao> get_datatypes_dao() override;
+  ErrorCode get_datatypes_dao(std::shared_ptr<Dao>& dao) override;
 
   /**
    * @brief Get an instance of a DAO for role metadata.
-   * @return DAO instance.
+   * @param dao  [out] DAO instance.
+   * @return ErrorCode::OK if success, otherwise an error code.
    */
-  std::shared_ptr<Dao> get_roles_dao() override;
+  ErrorCode get_roles_dao(std::shared_ptr<Dao>& dao) override;
 
   /**
    * @brief Get an instance of a DAO for privilege metadata.
-   * @return DAO instance.
+   * @param dao  [out] DAO instance.
+   * @return ErrorCode::OK if success, otherwise an error code.
    */
-  std::shared_ptr<Dao> get_privileges_dao() override;
+  ErrorCode get_privileges_dao(std::shared_ptr<Dao>& dao) override;
 
   /**
    * @brief Get an instance of a DAO for statistic metadata.
-   * @return DAO instance.
+   * @param dao  [out] DAO instance.
+   * @return ErrorCode::OK if success, otherwise an error code.
    */
-  std::shared_ptr<Dao> get_statistics_dao() override;
+  ErrorCode get_statistics_dao(std::shared_ptr<Dao>& dao) override;
 
   /**
    * @brief Starts a transaction scope managed by this DBSessionManager.
-   * @param none.
    * @return ErrorCode::OK if success, otherwise an error code.
    */
   ErrorCode start_transaction() override;
@@ -100,7 +106,6 @@ class DbSessionManagerJson : public DbSessionManager {
   /**
    * @brief Commits all transactions currently started for all DAO contexts
    *   managed by this DBSessionManager.
-   * @param none.
    * @return ErrorCode::OK if success, otherwise an error code.
    */
   ErrorCode commit() override;
@@ -108,7 +113,6 @@ class DbSessionManagerJson : public DbSessionManager {
   /**
    * @brief Rollbacks all transactions currently started for all DAO contexts
    *   managed by this DBSessionManager.
-   * @param none.
    * @return ErrorCode::OK if success, otherwise an error code.
    */
   ErrorCode rollback() override;
@@ -144,10 +148,7 @@ class DbSessionManagerJson : public DbSessionManager {
           std::hash<std::string>()(ptree_helper::ptree_to_json(content));
       if (this->pre_hash == 0) {
         this->pre_hash = hash_value;
-      } else if (this->cur_hash == 0) {
-        this->cur_hash = hash_value;
       } else {
-        this->pre_hash = this->cur_hash;
         this->cur_hash = hash_value;
       }
 
@@ -197,6 +198,16 @@ class DbSessionManagerJson : public DbSessionManager {
    * @brief Clear the content data.
    */
   void clear_contents() { contents_map_.clear(); }
+
+  /**
+   * @brief Create and initialize an instance of the DAO.
+   * @param dao  [in/out] DAO of the metadata.
+   * @return ErrorCode::OK if success, otherwise an error code.
+   */
+  template <typename T, typename = std::enable_if_t<std::is_base_of_v<Dao, T>>>
+  ErrorCode create_dao_instance(std::shared_ptr<Dao>& dao) {
+    return DbSessionManager::create_dao_instance<T>(dao, this);
+  }
 };  // class DbSessionManagerJson
 
 }  // namespace manager::metadata::db

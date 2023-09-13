@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 tsurugi project.
+ * Copyright 2020-2023 tsurugi project.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,44 +54,44 @@ ErrorCode DbSessionManagerPg::connect() {
   return error;
 }
 
-std::shared_ptr<Dao> DbSessionManagerPg::get_tables_dao() {
-  // Create an instance of DAO.
-  return std::make_shared<TablesDaoPg>(this);
+ErrorCode DbSessionManagerPg::get_tables_dao(std::shared_ptr<Dao>& dao) {
+  // Generate an instance of tables DAO.
+  return this->create_dao_instance<TablesDaoPg>(dao);
 }
 
-std::shared_ptr<Dao> DbSessionManagerPg::get_columns_dao() {
-  // Create an instance of DAO.
-  return std::make_shared<ColumnsDaoPg>(this);
+ErrorCode DbSessionManagerPg::get_columns_dao(std::shared_ptr<Dao>& dao) {
+  // Generate an instance of columns DAO.
+  return this->create_dao_instance<ColumnsDaoPg>(dao);
 }
 
-std::shared_ptr<Dao> DbSessionManagerPg::get_indexes_dao() {
-  // Create an instance of DAO.
-  return std::make_shared<IndexDaoPg>(this);
+ErrorCode DbSessionManagerPg::get_indexes_dao(std::shared_ptr<Dao>& dao) {
+  // Generate an instance of indexes DAO.
+  return this->create_dao_instance<IndexDaoPg>(dao);
 }
 
-std::shared_ptr<Dao> DbSessionManagerPg::get_constraints_dao() {
-  // Create an instance of DAO.
-  return std::make_shared<ConstraintsDaoPg>(this);
+ErrorCode DbSessionManagerPg::get_constraints_dao(std::shared_ptr<Dao>& dao) {
+  // Generate an instance of constraints DAO.
+  return this->create_dao_instance<ConstraintsDaoPg>(dao);
 }
 
-std::shared_ptr<Dao> DbSessionManagerPg::get_datatypes_dao() {
-  // Create an instance of DAO.
-  return std::make_shared<DataTypesDaoPg>(this);
+ErrorCode DbSessionManagerPg::get_datatypes_dao(std::shared_ptr<Dao>& dao) {
+  // Generate an instance of datatypes DAO.
+  return this->create_dao_instance<DataTypesDaoPg>(dao);
 }
 
-std::shared_ptr<Dao> DbSessionManagerPg::get_roles_dao() {
-  // Create an instance of DAO.
-  return std::make_shared<RolesDaoPg>(this);
+ErrorCode DbSessionManagerPg::get_roles_dao(std::shared_ptr<Dao>& dao) {
+  // Generate an instance of roles DAO.
+  return this->create_dao_instance<RolesDaoPg>(dao);
 }
 
-std::shared_ptr<Dao> DbSessionManagerPg::get_privileges_dao() {
-  // Create an instance of DAO.
-  return std::make_shared<PrivilegesDaoPg>(this);
+ErrorCode DbSessionManagerPg::get_privileges_dao(std::shared_ptr<Dao>& dao) {
+  // Generate an instance of privileges DAO.
+  return this->create_dao_instance<PrivilegesDaoPg>(dao);
 }
 
-std::shared_ptr<Dao> DbSessionManagerPg::get_statistics_dao() {
-  // Create an instance of DAO.
-  return std::make_shared<StatisticsDaoPg>(this);
+ErrorCode DbSessionManagerPg::get_statistics_dao(std::shared_ptr<Dao>& dao) {
+  // Generate an instance of statistics DAO.
+  return this->create_dao_instance<StatisticsDaoPg>(dao);
 }
 
 ErrorCode DbSessionManagerPg::start_transaction() {

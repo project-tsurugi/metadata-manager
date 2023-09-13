@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 tsurugi project.
+ * Copyright 2020-2023 tsurugi project.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -86,17 +86,30 @@ ErrorCode TablesDaoPg::insert(const boost::property_tree::ptree& object,
   return error;
 }
 
-ErrorCode TablesDaoPg::select_all(
-    std::vector<boost::property_tree::ptree>& objects) const {
+ErrorCode TablesDaoPg::select(
+    const std::map<std::string_view, std::string_view>& keys,
+    boost::property_tree::ptree& object) const {
   ErrorCode error = ErrorCode::UNKNOWN;
+  std::string statement_key;
   std::vector<const char*> params;
 
-  // Set SELECT-all statement.
-  SelectAllStatement statement;
+  if (keys.empty()) {
+    statement_key  = Statement::kDefaultKey;
+    // If no search key is specified, all are returned.
+    params.clear();
+  } else {
+    const auto& it = keys.begin();
+    // Only one search key combination is allowed.
+    statement_key  = it->first;
+    params.push_back(it->second.data());
+  }
+
+  // Set SELECT statement.
+  SelectStatement statement;
   try {
-    statement = select_all_statements_.at(Statement::kDefaultKey);
+    statement = select_statements_.at(statement_key);
   } catch (...) {
-    LOG_ERROR << Message::INVALID_STATEMENT_KEY << Statement::kDefaultKey;
+    LOG_ERROR << Message::INVALID_STATEMENT_KEY << statement_key;
     return ErrorCode::INVALID_PARAMETER;
   }
 
@@ -107,62 +120,33 @@ ErrorCode TablesDaoPg::select_all(
   if (error == ErrorCode::OK) {
     int nrows = PQntuples(res);
     if (nrows >= 0) {
+      object.clear();
+
       for (int row_number = 0; row_number < nrows; row_number++) {
-        objects.emplace_back(convert_pgresult_to_ptree(res, row_number));
+        // Convert acquired data to ptree type.
+        object.push_back(
+            std::make_pair("", convert_pgresult_to_ptree(res, row_number)));
       }
     } else {
       error = ErrorCode::INVALID_PARAMETER;
     }
   }
-
-  PQclear(res);
-  return error;
-}
-
-ErrorCode TablesDaoPg::select(std::string_view key,
-                              const std::vector<std::string_view>& values,
-                              boost::property_tree::ptree& object) const {
-  ErrorCode error = ErrorCode::UNKNOWN;
-
-  std::vector<const char*> params;
-  // Set key value.
-  std::transform(values.begin(), values.end(), std::back_inserter(params),
-                 [](std::string_view value) { return value.data(); });
-
-  // Set SELECT statement.
-  SelectStatement statement;
-  try {
-    statement = select_statements_.at(key.data());
-  } catch (...) {
-    LOG_ERROR << Message::INVALID_STATEMENT_KEY << key;
-    return ErrorCode::INVALID_PARAMETER;
-  }
-
-  PGresult* res = nullptr;
-  // Execute a prepared statement.
-  error = DbcUtils::exec_prepared(pg_conn_, statement.name(), params, res);
-
-  if (error == ErrorCode::OK) {
-    int nrows = PQntuples(res);
-    if (nrows == 1) {
-      object = convert_pgresult_to_ptree(res, kFirstRow);
-    } else if (nrows == 0) {
-      // Convert the error code.
-      error = get_not_found_error_code(key);
-    } else {
-      error = ErrorCode::INVALID_PARAMETER;
-    }
-  }
   PQclear(res);
 
   return error;
 }
 
-ErrorCode TablesDaoPg::update(std::string_view key,
-                              const std::vector<std::string_view>& values,
-                              const boost::property_tree::ptree& object) const {
+ErrorCode TablesDaoPg::update(
+    const std::map<std::string_view, std::string_view>& keys,
+    const boost::property_tree::ptree& object, uint64_t& rows) const {
   ErrorCode error = ErrorCode::UNKNOWN;
+  std::string statement_key;
   std::vector<const char*> params;
+
+  if (keys.empty()) {
+    error = ErrorCode::NOT_SUPPORTED;
+    return error;
+  }
 
   // name
   auto name =
@@ -179,16 +163,17 @@ ErrorCode TablesDaoPg::update(std::string_view key,
       object, Table::NUMBER_OF_TUPLES);
   params.emplace_back((!reltuples.empty() ? reltuples.c_str() : nullptr));
 
-  // Set key value.
-  std::transform(values.begin(), values.end(), std::back_inserter(params),
-                 [](std::string_view value) { return value.data(); });
+  // Only one search key combination is allowed.
+  const auto& it = keys.begin();
+  statement_key  = it->first;
+  params.emplace_back(it->second.data());
 
   // Set UPDATE statement.
   UpdateStatement statement;
   try {
-    statement = update_statements_.at(key.data());
+    statement = update_statements_.at(statement_key);
   } catch (...) {
-    LOG_ERROR << Message::INVALID_STATEMENT_KEY << key;
+    LOG_ERROR << Message::INVALID_STATEMENT_KEY << statement_key;
     return ErrorCode::INVALID_PARAMETER;
   }
 
@@ -197,15 +182,10 @@ ErrorCode TablesDaoPg::update(std::string_view key,
   error = DbcUtils::exec_prepared(pg_conn_, statement.name(), params, res);
 
   if (error == ErrorCode::OK) {
-    uint64_t number_of_rows_affected = 0;
     ErrorCode error_get =
-        DbcUtils::get_number_of_rows_affected(res, number_of_rows_affected);
-
+        DbcUtils::get_number_of_rows_affected(res, rows);
     if (error_get != ErrorCode::OK) {
       error = error_get;
-    } else if (number_of_rows_affected == 0) {
-      // Convert the error code.
-      error = get_not_found_error_code(key);
     }
   }
   PQclear(res);
@@ -213,22 +193,29 @@ ErrorCode TablesDaoPg::update(std::string_view key,
   return error;
 }
 
-ErrorCode TablesDaoPg::remove(std::string_view key,
-                              const std::vector<std::string_view>& values,
-                              ObjectId& object_id) const {
+ErrorCode TablesDaoPg::remove(
+    const std::map<std::string_view, std::string_view>& keys,
+    std::vector<ObjectId>& object_ids) const {
   ErrorCode error = ErrorCode::UNKNOWN;
-
+  std::string statement_key;
   std::vector<const char*> params;
-  // Set key value.
-  std::transform(values.begin(), values.end(), std::back_inserter(params),
-                 [](std::string_view value) { return value.data(); });
+
+  if (keys.empty()) {
+    error = ErrorCode::NOT_SUPPORTED;
+    return error;
+  }
+
+  // Only one search key combination is allowed.
+  const auto& it = keys.begin();
+  statement_key  = it->first;
+  params.emplace_back(it->second.data());
 
   // Set DELETE statement.
   DeleteStatement statement;
   try {
-    statement = delete_statements_.at(key.data());
+    statement = delete_statements_.at(statement_key);
   } catch (...) {
-    LOG_ERROR << Message::INVALID_STATEMENT_KEY << key;
+    LOG_ERROR << Message::INVALID_STATEMENT_KEY << statement_key;
     return ErrorCode::INVALID_PARAMETER;
   }
 
@@ -238,18 +225,23 @@ ErrorCode TablesDaoPg::remove(std::string_view key,
 
   if (error == ErrorCode::OK) {
     uint64_t number_of_rows_affected = 0;
+
     ErrorCode error_get =
         DbcUtils::get_number_of_rows_affected(res, number_of_rows_affected);
-
     if (error_get != ErrorCode::OK) {
       error = error_get;
-    } else if (number_of_rows_affected == 1) {
-      // Obtain the object ID of the added metadata object.
-      std::string result_value = PQgetvalue(res, kFirstRow, kFirstColumn);
-      error = Utility::str_to_numeric(result_value, object_id);
-    } else if (number_of_rows_affected == 0) {
-      // Convert the error code.
-      error = get_not_found_error_code(key);
+    } else if (number_of_rows_affected >= 0) {
+      object_ids.clear();
+
+      // Obtain the object ID of the deleted metadata object.
+      for (int row_number = 0; row_number < number_of_rows_affected;
+           row_number++) {
+        // Obtain the object ID of the deleted metadata object.
+        ObjectId object_id;
+        error = Utility::str_to_numeric(
+            PQgetvalue(res, row_number, kFirstColumn), object_id);
+        object_ids.push_back(object_id);
+      }
     } else {
       error = ErrorCode::INVALID_PARAMETER;
     }

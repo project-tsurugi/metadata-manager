@@ -587,7 +587,7 @@ TEST_P(ApiTestDBAccessFailureByTableIdColumnNumber, get_one_column_statistic) {
   // Execute the test.
   error = stats->get_by_column_number(table_id, column_number, column_stats);
   if ((table_id <= 0) || (column_number <= 0)) {
-    EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
+    EXPECT_EQ(ErrorCode::NOT_FOUND, error);
   } else {
     EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
   }
@@ -612,7 +612,7 @@ TEST_P(ApiTestDBAccessFailureByTableId, get_all_column_statistics) {
   // Execute the test.
   error = stats->get_all(table_id, column_stats);
   if (table_id <= 0) {
-    EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
+    EXPECT_EQ(ErrorCode::NOT_FOUND, error);
   } else {
     EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
   }
@@ -639,7 +639,7 @@ TEST_P(ApiTestDBAccessFailureByTableIdColumnNumber,
   // Execute the test.
   error = stats->remove_by_column_number(table_id, column_number);
   if ((table_id <= 0) || (column_number <= 0)) {
-    EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
+    EXPECT_EQ(ErrorCode::NOT_FOUND, error);
   } else {
     EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
   }
@@ -661,7 +661,7 @@ TEST_P(ApiTestDBAccessFailureByTableId, remove_all_column_statistics) {
   // Execute the test.
   error = stats->remove_by_table_id(table_id);
   if (table_id <= 0) {
-    EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
+    EXPECT_EQ(ErrorCode::NOT_FOUND, error);
   } else {
     EXPECT_EQ(ErrorCode::DATABASE_ACCESS_FAILURE, error);
   }

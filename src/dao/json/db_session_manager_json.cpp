@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 tsurugi project.
+ * Copyright 2021-2023 tsurugi project.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,37 +40,44 @@ using boost::property_tree::ptree;
 // =============================================================================
 // DbSessionManagerJson class methods.
 
-std::shared_ptr<Dao> DbSessionManagerJson::get_tables_dao() {
-  return std::make_shared<TablesDaoJson>(this);
+ErrorCode DbSessionManagerJson::get_tables_dao(std::shared_ptr<Dao>& dao) {
+  // Generate an instance of tables DAO.
+  return this->create_dao_instance<TablesDaoJson>(dao);
 }
 
-std::shared_ptr<Dao> DbSessionManagerJson::get_columns_dao() {
-  return std::make_shared<ColumnsDaoJson>(this);
+ErrorCode DbSessionManagerJson::get_columns_dao(std::shared_ptr<Dao>& dao) {
+  // Generate an instance of columns DAO.
+  return this->create_dao_instance<ColumnsDaoJson>(dao);
 }
 
-std::shared_ptr<Dao> DbSessionManagerJson::get_indexes_dao() {
-  return std::make_shared<IndexDaoJson>(this);
+ErrorCode DbSessionManagerJson::get_indexes_dao(std::shared_ptr<Dao>& dao) {
+  // Generate an instance of indexes DAO.
+  return this->create_dao_instance<IndexDaoJson>(dao);
 }
 
-std::shared_ptr<Dao> DbSessionManagerJson::get_constraints_dao() {
-  return std::make_shared<ConstraintsDaoJson>(this);
+ErrorCode DbSessionManagerJson::get_constraints_dao(std::shared_ptr<Dao>& dao) {
+  // Generate an instance of constraints DAO.
+  return this->create_dao_instance<ConstraintsDaoJson>(dao);
 }
 
-std::shared_ptr<Dao> DbSessionManagerJson::get_datatypes_dao() {
-  return std::make_shared<DataTypesDaoJson>(this);
+ErrorCode DbSessionManagerJson::get_datatypes_dao(std::shared_ptr<Dao>& dao) {
+  // Generate an instance of datatypes DAO.
+  return this->create_dao_instance<DataTypesDaoJson>(dao);
 }
 
-std::shared_ptr<Dao> DbSessionManagerJson::get_roles_dao() {
-  return std::make_shared<RolesDaoJson>(this);
+ErrorCode DbSessionManagerJson::get_roles_dao(std::shared_ptr<Dao>& dao) {
+  // Generate an instance of roles DAO.
+  return this->create_dao_instance<RolesDaoJson>(dao);
 }
 
-std::shared_ptr<Dao> DbSessionManagerJson::get_privileges_dao() {
-  return std::make_shared<PrivilegesDaoJson>(this);
+ErrorCode DbSessionManagerJson::get_privileges_dao(std::shared_ptr<Dao>& dao) {
+  // Generate an instance of privileges DAO.
+  return this->create_dao_instance<PrivilegesDaoJson>(dao);
 }
 
-std::shared_ptr<Dao> DbSessionManagerJson::get_statistics_dao() {
-  // Create an instance of DAO.
-  return std::make_shared<StatisticsDaoJson>(this);
+ErrorCode DbSessionManagerJson::get_statistics_dao(std::shared_ptr<Dao>& dao) {
+  // Generate an instance of statistics DAO.
+  return this->create_dao_instance<StatisticsDaoJson>(dao);
 }
 
 /**
@@ -164,7 +171,8 @@ ErrorCode DbSessionManagerJson::load_contents(
 
     if (error == ErrorCode::OK) {
 #ifndef NDEBUG
-      LOG_DEBUG << ptree_helper::ptree_to_json(contents);
+      LOG_DEBUG << "[" << database << "]"
+                << ptree_helper::ptree_to_json(contents);
 #endif
 
       object = contents;
@@ -174,10 +182,6 @@ ErrorCode DbSessionManagerJson::load_contents(
     }
   } else {
     LOG_DEBUG << "Metadata is already loaded.: " << database;
-#ifndef NDEBUG
-    LOG_DEBUG << ptree_helper::ptree_to_json(
-        contents_map_[std::string(database)].data());
-#endif
 
     object = contents_map_[std::string(database)].data();
     error  = ErrorCode::OK;
@@ -209,7 +213,8 @@ ErrorCode DbSessionManagerJson::save_contents() const {
       try {
         LOG_INFO << "Metadata has been written.: " << database;
 #ifndef NDEBUG
-        LOG_DEBUG << ptree_helper::ptree_to_json(content.data());
+        LOG_DEBUG << "[" << database << "]"
+                  << ptree_helper::ptree_to_json(content.data());
 #endif
 
         json_parser::write_json(database, content.data());

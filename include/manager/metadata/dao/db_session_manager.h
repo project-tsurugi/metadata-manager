@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 tsurugi project.
+ * Copyright 2020-2023 tsurugi project.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,56 +50,62 @@ class DbSessionManager {
 
   /**
    * @brief Get an instance of a DAO for table metadata.
-   * @return DAO instance.
+   * @param dao  [out] DAO instance.
+   * @return ErrorCode::OK if success, otherwise an error code.
    */
-  virtual std::shared_ptr<Dao> get_tables_dao() = 0;
+  virtual ErrorCode get_tables_dao(std::shared_ptr<Dao>& dao) = 0;
 
   /**
    * @brief Get an instance of a DAO for column metadata.
-   * @return DAO instance.
+   * @param dao  [out] DAO instance.
+   * @return ErrorCode::OK if success, otherwise an error code.
    */
-  virtual std::shared_ptr<Dao> get_columns_dao() = 0;
+  virtual ErrorCode get_columns_dao(std::shared_ptr<Dao>& dao) = 0;
 
   /**
    * @brief Get an instance of a DAO for index metadata.
-   * @return DAO instance.
+   * @param dao  [out] DAO instance.
+   * @return ErrorCode::OK if success, otherwise an error code.
    */
-  virtual std::shared_ptr<Dao> get_indexes_dao() = 0;
+  virtual ErrorCode get_indexes_dao(std::shared_ptr<Dao>& dao) = 0;
 
   /**
    * @brief Get an instance of a DAO for constraint metadata.
-   *   Returns nullptr if the database connection fails.
-   * @return DAO instance or nullptr.
+   * @param dao  [out] DAO instance or nullptr.
+   * @return DAO instance ErrorCode::OK if success, otherwise an error code.
    */
-  virtual std::shared_ptr<Dao> get_constraints_dao() = 0;
+  virtual ErrorCode get_constraints_dao(std::shared_ptr<Dao>& dao) = 0;
 
   /**
    * @brief Get an instance of a DAO for data-type metadata.
-   * @return DAO instance.
+   * @param dao  [out] DAO instance.
+   * @return ErrorCode::OK if success, otherwise an error code.
    */
-  virtual std::shared_ptr<Dao> get_datatypes_dao() = 0;
+  virtual ErrorCode get_datatypes_dao(std::shared_ptr<Dao>& dao) = 0;
 
   /**
    * @brief Get an instance of a DAO for role metadata.
-   * @return DAO instance.
+   * @param dao  [out] DAO instance.
+   * @return ErrorCode::OK if success, otherwise an error code.
    */
-  virtual std::shared_ptr<Dao> get_roles_dao() = 0;
+  virtual ErrorCode get_roles_dao(std::shared_ptr<Dao>& dao) = 0;
 
   /**
    * @brief Get an instance of a DAO for privilege metadata.
-   * @return DAO instance.
+   * @param dao  [out] DAO instance.
+   * @return ErrorCode::OK if success, otherwise an error code.
    */
-  virtual std::shared_ptr<Dao> get_privileges_dao() = 0;
+  virtual ErrorCode get_privileges_dao(std::shared_ptr<Dao>& dao) = 0;
 
   /**
    * @brief Get an instance of a DAO for statistic metadata.
-   * @return DAO instance.
+   * @param dao  [out] DAO instance.
+   * @return ErrorCode::OK if success, otherwise an error code.
    */
-  virtual std::shared_ptr<Dao> get_statistics_dao() = 0;
+  virtual ErrorCode get_statistics_dao(std::shared_ptr<Dao>& dao) = 0;
 
   /**
    * @brief Starts a transaction scope managed by this DBSessionManager.
-   * @param none.
    * @return ErrorCode::OK if success, otherwise an error code.
    */
   virtual ErrorCode start_transaction() = 0;
@@ -107,7 +113,6 @@ class DbSessionManager {
   /**
    * @brief Commits all transactions currently started for all DAO contexts
    *   managed by this DBSessionManager.
-   * @param none.
    * @return ErrorCode::OK if success, otherwise an error code.
    */
   virtual ErrorCode commit() = 0;
@@ -115,13 +120,43 @@ class DbSessionManager {
   /**
    * @brief Rollbacks all transactions currently started for all DAO contexts
    *   managed by this DBSessionManager.
-   * @param none.
    * @return ErrorCode::OK if success, otherwise an error code.
    */
   virtual ErrorCode rollback() = 0;
 
  protected:
   std::string database_;
+
+  /**
+   * @brief Create and initialize an instance of the DAO.
+   * @param dao  [in/out] DAO of the metadata.
+   * @return ErrorCode::OK if success, otherwise an error code.
+   */
+  template <typename T1, typename T2,
+            typename = std::enable_if_t<std::is_base_of_v<Dao, T1>>>
+  ErrorCode create_dao_instance(std::shared_ptr<Dao>& dao, T2* session) {
+    ErrorCode error = ErrorCode::UNKNOWN;
+
+    if (dao) {
+      error = ErrorCode::OK;
+    } else {
+      // Create an instance of the DAO for the metadata.
+      auto temp_dao = std::make_shared<T1>(session);
+
+      // Prepare to access metadata.
+      error = temp_dao->prepare();
+      // Convert error codes.
+      error = (error == ErrorCode::NOT_SUPPORTED ? ErrorCode::OK : error);
+
+      if (error == ErrorCode::OK) {
+        dao = temp_dao;
+      } else {
+        dao.reset();
+      }
+    }
+
+    return error;
+  }
 };  // class DbSessionManager
 
 }  // namespace manager::metadata::db

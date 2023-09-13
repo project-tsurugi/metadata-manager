@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 tsurugi project.
+ * Copyright 2021-2023 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -103,7 +103,7 @@ TEST_F(ApiTestRolesMetadataPg, test_get_by_id) {
   UtRoleMetadata ut_metadata(this->role_id_);
 
   // verifies that returned role metadata equals expected one.
-  ut_metadata.check_metadata_expected(retrieve_metadata, __FILE__, __LINE__);
+  ut_metadata.CHECK_METADATA_EXPECTED_OBJ(retrieve_metadata);
 }
 
 /**
@@ -128,7 +128,7 @@ TEST_F(ApiTestRolesMetadataPg, test_get_by_name) {
   UtRoleMetadata ut_metadata(this->role_id_);
 
   // verifies that returned role metadata equals expected one.
-  ut_metadata.check_metadata_expected(retrieve_metadata, __FILE__, __LINE__);
+  ut_metadata.CHECK_METADATA_EXPECTED_OBJ(retrieve_metadata);
 }
 
 /**
@@ -299,11 +299,11 @@ TEST_F(ApiTestRolesMetadataJson, test_get) {
   ptree retrieve_metadata;
 
   // Test to get the manager by role id.
-  ApiTestHelper::test_get(managers.get(), INT32_MAX, ErrorCode::NOT_SUPPORTED,
+  ApiTestHelper::test_get(managers.get(), INT32_MAX, ErrorCode::ID_NOT_FOUND,
                           retrieve_metadata);
 
   // Test to get the manager by role name.
-  ApiTestHelper::test_get(managers.get(), "role_name", ErrorCode::NOT_SUPPORTED,
+  ApiTestHelper::test_get(managers.get(), "role_name", ErrorCode::NAME_NOT_FOUND,
                           retrieve_metadata);
 }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 tsurugi project.
+ * Copyright 2021-2023 tsurugi project.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 #ifndef MANAGER_METADATA_DAO_JSON_PRIVILEGES_DAO_JSON_H_
 #define MANAGER_METADATA_DAO_JSON_PRIVILEGES_DAO_JSON_H_
 
+#include <map>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -69,24 +70,14 @@ class PrivilegesDaoJson : public DaoJson {
   }
 
   /**
-   * @brief Unsupported function.
-   * @return Always ErrorCode::NOT_SUPPORTED.
-   */
-  manager::metadata::ErrorCode select_all(
-      std::vector<boost::property_tree::ptree>&) const override {
-    // Do nothing and return of ErrorCode::NOT_SUPPORTED.
-    return ErrorCode::NOT_SUPPORTED;
-  }
-
-  /**
-   * @brief Unsupported function.
-   * @return Always ErrorCode::NOT_SUPPORTED.
+   * @brief Function defined for compatibility.
+   * @return Always ErrorCode::OK.
    */
   manager::metadata::ErrorCode select(
-      std::string_view, const std::vector<std::string_view>&,
+      const std::map<std::string_view, std::string_view>&,
       boost::property_tree::ptree&) const override {
-    // Do nothing and return of ErrorCode::NOT_SUPPORTED.
-    return ErrorCode::NOT_SUPPORTED;
+    // Do nothing and return of ErrorCode::OK.
+    return ErrorCode::OK;
   }
 
   /**
@@ -94,8 +85,8 @@ class PrivilegesDaoJson : public DaoJson {
    * @return Always ErrorCode::NOT_SUPPORTED.
    */
   manager::metadata::ErrorCode update(
-      std::string_view, const std::vector<std::string_view>&,
-      const boost::property_tree::ptree&) const override {
+      const std::map<std::string_view, std::string_view>&,
+      const boost::property_tree::ptree&, uint64_t&) const override {
     // Do nothing and return of ErrorCode::NOT_SUPPORTED.
     return ErrorCode::NOT_SUPPORTED;
   }
@@ -104,9 +95,9 @@ class PrivilegesDaoJson : public DaoJson {
    * @brief Unsupported function.
    * @return Always ErrorCode::NOT_SUPPORTED.
    */
-  manager::metadata::ErrorCode remove(std::string_view,
-                                      const std::vector<std::string_view>&,
-                                      ObjectId&) const override {
+  manager::metadata::ErrorCode remove(
+      const std::map<std::string_view, std::string_view>&,
+      std::vector<ObjectId>&) const override {
     // Do nothing and return of ErrorCode::NOT_SUPPORTED.
     return ErrorCode::NOT_SUPPORTED;
   }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 tsurugi project.
+ * Copyright 2021-2023 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -71,15 +71,19 @@ TEST_F(DaoTestRolesMetadata, select_role_metadata) {
   error = db_session_manager.connect();
   ASSERT_EQ(ErrorCode::OK, error);
 
-  auto roles_dao = db_session_manager.get_roles_dao();
+  std::shared_ptr<db::Dao> roles_dao;
+  error = db_session_manager.get_roles_dao(roles_dao);
   ASSERT_NE(nullptr, roles_dao);
-  error = roles_dao->prepare();
   ASSERT_EQ(ErrorCode::OK, error);
+
+  // Set condition keys for testing.
+  std::map<std::string_view, std::string_view> keys_name = {
+      {Roles::ROLE_ROLNAME, UtRoleMetadata::kRoleName}
+  };
 
   ptree role_metadata;
   // Test getting by role name.
-  error = roles_dao->select(Roles::ROLE_ROLNAME, {UtRoleMetadata::kRoleName},
-                            role_metadata);
+  error = roles_dao->select(keys_name, role_metadata);
   EXPECT_EQ(ErrorCode::OK, error);
 
   UTUtils::print("-- get role metadata by role name --");
@@ -89,40 +93,85 @@ TEST_F(DaoTestRolesMetadata, select_role_metadata) {
   UtRoleMetadata ut_metadata(this->role_id_);
 
   // verifies that returned role metadata equals expected one.
-  ut_metadata.check_metadata_expected(role_metadata, __FILE__, __LINE__);
+  ASSERT_EQ(1, role_metadata.size());
+  ut_metadata.CHECK_METADATA_EXPECTED_OBJ(role_metadata.front().second);
 
   role_metadata.clear();
 
+  // Set condition keys for testing.
+  auto s_table_id = std::to_string(this->role_id_);
+  std::map<std::string_view, std::string_view> keys_id = {
+      {Roles::ROLE_OID, s_table_id}
+  };
+
   // Test getting by role id.
-  error = roles_dao->select(Roles::ROLE_OID, {std::to_string(this->role_id_)},
-                            role_metadata);
+  error = roles_dao->select(keys_id, role_metadata);
   EXPECT_EQ(ErrorCode::OK, error);
 
   UTUtils::print("-- get role metadata by role id --");
   UTUtils::print(UTUtils::get_tree_string(role_metadata));
 
   // verifies that returned role metadata equals expected one.
-  ut_metadata.check_metadata_expected(role_metadata, __FILE__, __LINE__);
+  ASSERT_EQ(1, role_metadata.size());
+  ut_metadata.CHECK_METADATA_EXPECTED_OBJ(role_metadata.front().second);
 
   // Testing for invalid parameters.
-  error = roles_dao->select(Roles::ROLE_ROLCANLOGIN, {""}, role_metadata);
-  EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);
+  {
+    // Set condition keys for testing.
+    std::map<std::string_view, std::string_view> keys = {
+        {Roles::ROLE_ROLCANLOGIN, ""}
+    };
+    error = roles_dao->select(keys, role_metadata);
+    EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);
+  }
 
-  error = roles_dao->select(Roles::ROLE_OID, {"0"}, role_metadata);
-  EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
+  {
+    // Set condition keys for testing.
+    std::map<std::string_view, std::string_view> keys = {
+        {Roles::ROLE_OID, "0"}
+    };
+    error = roles_dao->select(keys, role_metadata);
+    EXPECT_EQ(ErrorCode::OK, error);
+    EXPECT_EQ(0, role_metadata.size());
+  }
 
-  error = roles_dao->select(Roles::ROLE_OID, {""}, role_metadata);
-  EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);
+  {
+    // Set condition keys for testing.
+    std::map<std::string_view, std::string_view> keys = {
+        {Roles::ROLE_OID, ""}
+    };
+    error = roles_dao->select(keys, role_metadata);
+    EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);
+  }
 
-  error = roles_dao->select(Roles::ROLE_ROLNAME, {"invalid_role_name"},
-                            role_metadata);
-  EXPECT_EQ(ErrorCode::NAME_NOT_FOUND, error);
+  {
+    // Set condition keys for testing.
+    std::map<std::string_view, std::string_view> keys = {
+        {Roles::ROLE_ROLNAME, "invalid_role_name"}
+    };
+    error = roles_dao->select(keys, role_metadata);
+    EXPECT_EQ(ErrorCode::OK, error);
+    EXPECT_EQ(0, role_metadata.size());
+  }
 
-  error = roles_dao->select(Roles::ROLE_ROLNAME, {""}, role_metadata);
-  EXPECT_EQ(ErrorCode::NAME_NOT_FOUND, error);
+  {
+    // Set condition keys for testing.
+    std::map<std::string_view, std::string_view> keys = {
+        {Roles::ROLE_ROLNAME, ""}
+    };
+    error = roles_dao->select(keys, role_metadata);
+    EXPECT_EQ(ErrorCode::OK, error);
+    EXPECT_EQ(0, role_metadata.size());
+  }
 
-  error = roles_dao->select("", {""}, role_metadata);
-  EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);
+  {
+    // Set condition keys for testing.
+    std::map<std::string_view, std::string_view> keys = {
+        {"", ""}
+    };
+    error = roles_dao->select(keys, role_metadata);
+    EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);
+  }
 }
 
 }  // namespace manager::metadata::testing

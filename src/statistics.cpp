@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 tsurugi project.
+ * Copyright 2020-2023 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,28 +21,20 @@
 
 #include "manager/metadata/common/message.h"
 #include "manager/metadata/helper/logging_helper.h"
-#include "manager/metadata/provider/statistics_provider.h"
+#include "manager/metadata/helper/ptree_helper.h"
+#include "manager/metadata/provider/metadata_provider.h"
 
 // =============================================================================
 namespace {
 
-std::unique_ptr<manager::metadata::db::StatisticsProvider> provider = nullptr;
+auto& provider = manager::metadata::db::MetadataProvider::get_instance();
 
 }  // namespace
 
 // =============================================================================
 namespace manager::metadata {
 
-/**
- * @brief Constructor
- * @param (database)   [in]  database name.
- * @param (component)  [in]  component name.
- */
-Statistics::Statistics(std::string_view database, std::string_view component)
-    : Metadata(database, component) {
-  // Create the provider.
-  provider = std::make_unique<db::StatisticsProvider>();
-}
+using boost::property_tree::ptree;
 
 /**
  * @brief Initialization.
@@ -56,7 +48,7 @@ ErrorCode Statistics::init() const {
   log::function_start("Statistics::init()");
 
   // Initialize the provider.
-  error = provider->init();
+  error = provider.init();
 
   // Log of API function finish.
   log::function_finish("Statistics::init()", error);
@@ -66,7 +58,7 @@ ErrorCode Statistics::init() const {
 
 /**
  * @brief Add column statistics to statistics table.
- * @param (object) [in]  statistics to add.
+ * @param object  [in]  statistics to add.
  * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode Statistics::add(const boost::property_tree::ptree& object) const {
@@ -80,8 +72,8 @@ ErrorCode Statistics::add(const boost::property_tree::ptree& object) const {
 
 /**
  * @brief Add column statistics to statistics table.
- * @param (object)      [in]  statistics to add.
- * @param (object_id)   [out] ID of the added statistic.
+ * @param object     [in]  statistics to add.
+ * @param object_id  [out] ID of the added statistic.
  * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode Statistics::add(const boost::property_tree::ptree& object,
@@ -94,15 +86,18 @@ ErrorCode Statistics::add(const boost::property_tree::ptree& object,
   // Parameter value check.
   error = param_check_statistics_add(object);
 
-  // Adds the column statistics through the provider.
-  ObjectIdType retval_object_id = 0;
+  ObjectId added_oid = INVALID_OBJECT_ID;
   if (error == ErrorCode::OK) {
-    error = provider->add_column_statistic(object, retval_object_id);
+    // Add column statistic within a transaction.
+    error = provider.transaction([&object, &added_oid]() -> ErrorCode {
+      // Adds the column statistic through the provider.
+      return provider.add_column_statistic(object, &added_oid);
+    });
   }
 
   // Set a value if object_id is not null.
   if ((error == ErrorCode::OK) && (object_id != nullptr)) {
-    *object_id = retval_object_id;
+    *object_id = added_oid;
   }
 
   // Log of API function finish.
@@ -113,8 +108,8 @@ ErrorCode Statistics::add(const boost::property_tree::ptree& object,
 
 /**
  * @brief Get column statistics.
- * @param (object_id)  [in]  statistic id.
- * @param (object)     [out] column statistics with the specified ID.
+ * @param object_id  [in]  statistic id.
+ * @param object     [out] column statistics with the specified ID.
  * @retval ErrorCode::OK if success.
  * @retval ErrorCode::ID_NOT_FOUND if the statistic id does not exist.
  * @retval otherwise an error code.
@@ -124,34 +119,46 @@ ErrorCode Statistics::get(const ObjectIdType object_id,
   ErrorCode error = ErrorCode::UNKNOWN;
 
   // Log of API function start.
-  log::function_start("Statistics::get(StatisticId)");
+  log::function_start("Statistics::get(object_id)");
 
-  // Parameter value check.
+  // Specify the key for the column statistic you want to retrieve.
+  std::string statistic_id(std::to_string(object_id));
+  std::map<std::string_view, std::string_view> keys = {
+      {Statistics::ID, statistic_id}
+  };
+
+  // Retrieve column statistic.
+  ptree tmp_object;
   if (object_id > 0) {
-    error = ErrorCode::OK;
+    // Get the column statistic through the provider.
+    error = provider.get_column_statistic(keys, tmp_object);
   } else {
     LOG_WARNING
-        << "An out-of-range value (0 or less) was specified for StatisticId.: "
+        << "An out-of-range value (0 or less) was specified for object ID.: "
         << object_id;
     error = ErrorCode::ID_NOT_FOUND;
   }
 
-  // Get the column statistics through the provider.
   if (error == ErrorCode::OK) {
-    error = provider->get_column_statistic(Statistics::ID,
-                                           std::to_string(object_id), object);
+    if (tmp_object.size() == 1) {
+      object = tmp_object.front().second;
+    } else {
+      error = ErrorCode::RESULT_MULTIPLE_ROWS;
+      LOG_WARNING << "Multiple rows retrieved.: " << keys
+                  << " exists " << tmp_object.size() << " rows";
+    }
   }
 
   // Log of API function finish.
-  log::function_finish("Statistics::get(StatisticId)", error);
+  log::function_finish("Statistics::get(object_id)", error);
 
   return error;
 }
 
 /**
  * @brief Get column statistics object based on statistic name.
- * @param (object_name)  [in]  statistic name. (Value of "name" key.)
- * @param (object)       [out] column statistics object
+ * @param object_name  [in]  statistic name. (Value of "name" key.)
+ * @param object       [out] column statistics object
  *   with the specified name.
  * @retval ErrorCode::OK if success.
  * @retval ErrorCode::NAME_NOT_FOUND if the statistic name does not exist.
@@ -162,24 +169,35 @@ ErrorCode Statistics::get(std::string_view object_name,
   ErrorCode error = ErrorCode::UNKNOWN;
 
   // Log of API function start.
-  log::function_start("Statistics::get(StatisticName)");
+  log::function_start("Statistics::get(object_name)");
 
-  // Parameter value check.
+  // Specify the key for the column statistic you want to retrieve.
+  std::map<std::string_view, std::string_view> keys = {
+      {Statistics::NAME, object_name}
+  };
+
+  // Retrieve column statistic.
+  ptree tmp_object;
   if (!object_name.empty()) {
-    error = ErrorCode::OK;
+    // Get the column statistic through the provider.
+    error = provider.get_column_statistic(keys, tmp_object);
   } else {
-    LOG_WARNING << "An empty value was specified for StatisticName.";
+    LOG_WARNING << "An empty value was specified for object name.";
     error = ErrorCode::NAME_NOT_FOUND;
   }
 
-  // Get the column statistics through the provider.
   if (error == ErrorCode::OK) {
-    error =
-        provider->get_column_statistic(Statistics::NAME, object_name, object);
+    if (tmp_object.size() == 1) {
+      object = tmp_object.front().second;
+    } else {
+      error = ErrorCode::RESULT_MULTIPLE_ROWS;
+      LOG_WARNING << "Multiple rows retrieved.: " << keys
+                  << " exists " << tmp_object.size() << " rows";
+    }
   }
 
   // Log of API function finish.
-  log::function_finish("Statistics::get(StatisticName)", error);
+  log::function_finish("Statistics::get(object_name)", error);
 
   return error;
 }
@@ -187,11 +205,11 @@ ErrorCode Statistics::get(std::string_view object_name,
 /**
  * @brief Gets one column statistic from the column statistics table
  *   based on the given column id.
- * @param (column_id)  [in]  column id.
- * @param (object)     [out] one column statistic
+ * @param column_id  [in]  column id.
+ * @param object     [out] one column statistic
  *   with the specified column id.
  * @retval ErrorCode::OK if success.
- * @retval ErrorCode::ID_NOT_FOUND if the column id does not exist.
+ * @retval ErrorCode::NOT_FOUND if the column id does not exist.
  * @retval otherwise an error code.
  */
 ErrorCode Statistics::get_by_column_id(
@@ -201,20 +219,30 @@ ErrorCode Statistics::get_by_column_id(
   // Log of API function start.
   log::function_start("Statistics::get_by_column_id()");
 
-  // Parameter value check.
+  // Specify the key for the column statistic you want to retrieve.
+  std::string s_column_id(std::to_string(column_id));
+  std::map<std::string_view, std::string_view> keys = {
+      {Statistics::COLUMN_ID, s_column_id}
+  };
+
+  // Retrieve column statistic.
+  ptree tmp_object;
   if (column_id > 0) {
-    error = ErrorCode::OK;
+    // Get the column statistic through the provider.
+    error = provider.get_column_statistic(keys, tmp_object);
   } else {
-    LOG_WARNING
-        << "An out-of-range value (0 or less) was specified for ColumnId.: "
-        << column_id;
-    error = ErrorCode::ID_NOT_FOUND;
+    LOG_WARNING << "An empty value was specified for column id.";
+    error = ErrorCode::NOT_FOUND;
   }
 
-  // Get the column statistics through the provider.
   if (error == ErrorCode::OK) {
-    error = provider->get_column_statistic(Statistics::COLUMN_ID,
-                                           std::to_string(column_id), object);
+    if (tmp_object.size() == 1) {
+      object = tmp_object.front().second;
+    } else {
+      error = ErrorCode::RESULT_MULTIPLE_ROWS;
+      LOG_WARNING << "Multiple rows retrieved.: " << keys
+                  << " exists " << tmp_object.size() << " rows";
+    }
   }
 
   // Log of API function finish.
@@ -226,12 +254,12 @@ ErrorCode Statistics::get_by_column_id(
 /**
  * @brief Gets one column statistic from the column statistics table
  *   based on the given table id and the given column ordinal position.
- * @param (table_id)          [in]  table id.
- * @param (ordinal_position)  [in]  column ordinal position.
- * @param (object)            [out] one column statistic
+ * @param table_id          [in]  table id.
+ * @param ordinal_position  [in]  column ordinal position.
+ * @param object            [out] one column statistic
  *   with the specified table id and column ordinal position.
  * @retval ErrorCode::OK if success.
- * @retval ErrorCode::ID_NOT_FOUND if the table id or ordinal position
+ * @retval ErrorCode::NOT_FOUND if the table id or ordinal position
  *   does not exist.
  * @retval otherwise an error code.
  */
@@ -243,22 +271,35 @@ ErrorCode Statistics::get_by_column_number(
   // Log of API function start.
   log::function_start("Statistics::get_by_column_number()");
 
-  // Parameter value check.
+  // Specify the key for the column statistic you want to retrieve.
+  std::string s_table_id(std::to_string(table_id));
+  std::string s_ordinal_position(std::to_string(ordinal_position));
+  std::map<std::string_view, std::string_view> keys = {
+      {Statistics::TABLE_ID, s_table_id},
+      {Statistics::COLUMN_NUMBER, s_ordinal_position}
+  };
+
+  // Retrieve column statistic.
+  ptree tmp_object;
   if ((table_id > 0) && (ordinal_position > 0)) {
-    error = ErrorCode::OK;
+    // Get the column statistic through the provider.
+    error = provider.get_column_statistic(keys, tmp_object);
   } else {
     LOG_WARNING << "An out-of-range value (0 or less) was specified for "
-                   "TableId or OrdinalPosition.: "
-                << "TableId: " << table_id
-                << ", OrdinalPosition: " << ordinal_position;
-    error = ErrorCode::ID_NOT_FOUND;
+                   "table-ID or ordinal-position.: "
+                << "table-ID: " << table_id
+                << ", ordinal-position: " << ordinal_position;
+    error = ErrorCode::NOT_FOUND;
   }
 
-  // Get the column statistic through the provider.
   if (error == ErrorCode::OK) {
-    error = provider->get_column_statistic(table_id, Statistics::COLUMN_NUMBER,
-                                           std::to_string(ordinal_position),
-                                           object);
+    if (tmp_object.size() == 1) {
+      object = tmp_object.front().second;
+    } else {
+      error = ErrorCode::RESULT_MULTIPLE_ROWS;
+      LOG_WARNING << "Multiple rows retrieved.: " << keys
+                  << " exists " << tmp_object.size() << " rows";
+    }
   }
 
   // Log of API function finish.
@@ -270,13 +311,12 @@ ErrorCode Statistics::get_by_column_number(
 /**
  * @brief Gets one column statistic from the column statistics table
  *   based on the given table id and the given column name.
- * @param (table_id)     [in]  table id.
- * @param (column_name)  [in]  column name.
- * @param (object)       [out] one column statistic
+ * @param table_id     [in]  table id.
+ * @param column_name  [in]  column name.
+ * @param object       [out] one column statistic
  *   with the specified table id and column name.
  * @retval ErrorCode::OK if success.
- * @retval ErrorCode::ID_NOT_FOUND if the table id does not exist.
- * @retval ErrorCode::NAME_NOT_FOUND if the column name does not exist.
+ * @retval ErrorCode::NOT_FOUND if the table id or column name does not exist.
  * @retval otherwise an error code.
  */
 ErrorCode Statistics::get_by_column_name(
@@ -287,23 +327,34 @@ ErrorCode Statistics::get_by_column_name(
   // Log of API function start.
   log::function_start("Statistics::get_by_column_name()");
 
-  // Parameter value check.
+  // Specify the key for the column statistic you want to retrieve.
+  std::string s_table_id(std::to_string(table_id));
+  std::map<std::string_view, std::string_view> keys = {
+      {Statistics::TABLE_ID, s_table_id},
+      {Statistics::COLUMN_NAME, column_name}
+  };
+
+  // Retrieve column statistic.
+  ptree tmp_object;
   if ((table_id > 0) && (!column_name.empty())) {
-    error = ErrorCode::OK;
-  } else if (table_id <= 0) {
-    LOG_WARNING
-        << "An out-of-range value (0 or less) was specified for TableId.: "
-        << table_id;
-    error = ErrorCode::ID_NOT_FOUND;
+    // Get the column statistic through the provider.
+    error = provider.get_column_statistic(keys, tmp_object);
   } else {
-    LOG_WARNING << "An empty value was specified for ColumnName.";
-    error = ErrorCode::NAME_NOT_FOUND;
+    LOG_WARNING
+        << "An out-of-range value (0 or less) was specified for "
+           "table-ID, or column-name was specified as an empty string.: "
+        << "table-ID: " << table_id << ", column-name: " << column_name;
+    error = ErrorCode::NOT_FOUND;
   }
 
-  // Get the column statistic through the provider.
   if (error == ErrorCode::OK) {
-    error = provider->get_column_statistic(table_id, Statistics::COLUMN_NAME,
-                                           column_name, object);
+    if (tmp_object.size() == 1) {
+      object = tmp_object.front().second;
+    } else {
+      error = ErrorCode::RESULT_MULTIPLE_ROWS;
+      LOG_WARNING << "Multiple rows retrieved.: " << keys
+                  << " exists " << tmp_object.size() << " rows";
+    }
   }
 
   // Log of API function finish.
@@ -315,18 +366,29 @@ ErrorCode Statistics::get_by_column_name(
 /**
  * @brief Gets all column statistics from the column statistics table.
  *   If the column statistic does not exist, return the container as empty.
- * @param (container)  [out] Container for statistics-objects.
+ * @param objects  [out] Container for statistics-objects.
  * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode Statistics::get_all(
-    std::vector<boost::property_tree::ptree>& container) const {
+    std::vector<boost::property_tree::ptree>& objects) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   // Log of API function start.
   log::function_start("Statistics::get_all()");
 
+  ptree tmp_object;
+  std::map<std::string_view, std::string_view> keys = {};
+
   // Get the column statistic through the provider.
-  error = provider->get_column_statistics(container);
+  error = provider.get_column_statistic(keys, tmp_object);
+
+  // Converts object types.
+  if (error == ErrorCode::OK) {
+    objects = ptree_helper::array_to_vector(tmp_object);
+  } else if (error == ErrorCode::NOT_FOUND) {
+    // Converts error code.
+    error = ErrorCode::OK;
+  }
 
   // Log of API function finish.
   log::function_finish("Statistics::get_all()", error);
@@ -338,45 +400,53 @@ ErrorCode Statistics::get_all(
  * @brief Gets all column statistics from the column statistics table
  *   based on the given table id.
  *   If the column statistic does not exist, return the container as empty.
- * @param (table_id)   [in]  table id.
- * @param (container)  [out] Container for statistics-objects.
+ * @param table_id  [in]  table id.
+ * @param objects   [out] Container for statistics-objects.
  *   with the specified table id.
- *   key : column ordinal position
- *   value : one column statistic
- * @return ErrorCode::OK if success, otherwise an error code.
+ * @retval ErrorCode::OK if success.
+ * @retval ErrorCode::NOT_FOUND if the table id does not exist.
+ * @retval otherwise an error code.
  */
 ErrorCode Statistics::get_all(
     const ObjectIdType table_id,
-    std::vector<boost::property_tree::ptree>& container) const {
+    std::vector<boost::property_tree::ptree>& objects) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   // Log of API function start.
-  log::function_start("Statistics::get_all(TableId)");
+  log::function_start("Statistics::get_all(table_id)");
 
-  // Parameter value check.
+  // Specify the key for the column statistic you want to retrieve.
+  std::string s_table_id(std::to_string(table_id));
+  std::map<std::string_view, std::string_view> keys = {
+      {Statistics::TABLE_ID, s_table_id}
+  };
+
+  // Retrieve column statistic.
+  ptree tmp_object;
   if (table_id > 0) {
-    error = ErrorCode::OK;
+    // Get the column statistic through the provider.
+    error = provider.get_column_statistic(keys, tmp_object);
   } else {
     LOG_WARNING
-        << "An out-of-range value (0 or less) was specified for TableId.: "
+        << "An out-of-range value (0 or less) was specified for table ID.: "
         << table_id;
-    error = ErrorCode::ID_NOT_FOUND;
+    error = ErrorCode::NOT_FOUND;
   }
 
-  // Get the column statistic through the provider.
+  // Converts object types.
   if (error == ErrorCode::OK) {
-    error = provider->get_column_statistics(table_id, container);
+    objects = ptree_helper::array_to_vector(tmp_object);
   }
 
   // Log of API function finish.
-  log::function_finish("Statistics::get_all(ObjectId)", error);
+  log::function_finish("Statistics::get_all(table_id)", error);
 
   return error;
 }
 
 /**
  * @brief Remove column statistics based on the given statistics id.
- * @param (object_id)  [in]  statistic id.
+ * @param object_id  [in]  statistic id.
  * @retval ErrorCode::OK if success.
  * @retval ErrorCode::ID_NOT_FOUND if the statistic id does not exist.
  * @retval otherwise an error code.
@@ -385,35 +455,38 @@ ErrorCode Statistics::remove(const ObjectIdType object_id) const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   // Log of API function start.
-  log::function_start("Statistics::remove(StatisticId)");
+  log::function_start("Statistics::remove(object_id)");
 
-  // Parameter value check.
+  // Remove the column statistic.
   if (object_id > 0) {
-    error = ErrorCode::OK;
+    // Specify the key for the column statistic you want to remove.
+    std::string statistic_id(std::to_string(object_id));
+    std::map<std::string_view, std::string_view> keys = {
+        {Statistics::ID, statistic_id}
+    };
+
+    // Remove column statistic within a transaction.
+    error = provider.transaction([&keys]() -> ErrorCode {
+      // Remove the column statistic through the provider.
+      return provider.remove_column_statistics(keys);
+    });
   } else {
     LOG_WARNING
-        << "An out-of-range value (0 or less) was specified for StatisticId.: "
+        << "An out-of-range value (0 or less) was specified for object ID.: "
         << object_id;
     error = ErrorCode::ID_NOT_FOUND;
   }
 
-  if (error == ErrorCode::OK) {
-    ObjectIdType retval_object_id = 0;
-    // Remove the column statistic through the provider.
-    error = provider->remove_column_statistic(
-        Statistics::ID, std::to_string(object_id), retval_object_id);
-  }
-
   // Log of API function finish.
-  log::function_finish("Statistics::remove(StatisticId)", error);
+  log::function_finish("Statistics::remove(object_id)", error);
 
   return error;
 }
 
 /**
  * @brief Remove column statistics based on the given statistics name.
- * @param (object_name)  [in]  statistic name.
- * @param (object_id)    [out] object id of statistic removed.
+ * @param object_name  [in]  statistic name.
+ * @param object_id    [out] object id of statistic removed.
  * @retval ErrorCode::OK if success.
  * @retval ErrorCode::NAME_NOT_FOUND if the statistic name does not exist.
  * @retval otherwise an error code.
@@ -423,30 +496,33 @@ ErrorCode Statistics::remove(std::string_view object_name,
   ErrorCode error = ErrorCode::UNKNOWN;
 
   // Log of API function start.
-  log::function_start("Statistics::remove(StatisticName)");
+  log::function_start("Statistics::remove(object_name)");
 
-  // Parameter value check.
+  // Specify the key for the column statistic you want to retrieve.
+  std::map<std::string_view, std::string_view> keys = {
+      {Statistics::NAME, object_name}
+  };
+
+  // Remove the column statistic.
+  std::vector<ObjectId> removed_ids = {};
   if (!object_name.empty()) {
-    error = ErrorCode::OK;
+    // Remove column statistic within a transaction.
+    error = provider.transaction([&keys, &removed_ids]() -> ErrorCode {
+      // Remove the column statistic through the provider.
+      return provider.remove_column_statistics(keys, &removed_ids);
+    });
   } else {
-    LOG_WARNING << "An empty value was specified for StatisticName.";
+    LOG_WARNING << "An empty value was specified for object name.";
     error = ErrorCode::NAME_NOT_FOUND;
-  }
-
-  ObjectIdType retval_object_id = 0;
-  if (error == ErrorCode::OK) {
-    // Remove the table metadata through the provider.
-    error = provider->remove_column_statistic(Statistics::NAME, object_name,
-                                              retval_object_id);
   }
 
   // Set a value if object_id is not null.
   if ((error == ErrorCode::OK) && (object_id != nullptr)) {
-    *object_id = retval_object_id;
+    *object_id = removed_ids.front();
   }
 
   // Log of API function finish.
-  log::function_finish("Statistics::remove(StatisticName)", error);
+  log::function_finish("Statistics::remove(object_name)", error);
 
   return error;
 }
@@ -454,9 +530,9 @@ ErrorCode Statistics::remove(std::string_view object_name,
 /**
  * @brief Removes all column statistics
  *   from the column statistics table based on the given table id.
- * @param (table_id)  [in]  table id.
+ * @param table_id  [in]  table id.
  * @retval ErrorCode::OK if success.
- * @retval ErrorCode::ID_NOT_FOUND if the table id does not exist.
+ * @retval ErrorCode::NOT_FOUND if the table id does not exist.
  * @retval otherwise an error code.
  */
 ErrorCode Statistics::remove_by_table_id(const ObjectIdType table_id) const {
@@ -465,19 +541,25 @@ ErrorCode Statistics::remove_by_table_id(const ObjectIdType table_id) const {
   // Log of API function start.
   log::function_start("Statistics::remove_by_table_id()");
 
-  // Parameter value check.
+  // Remove the column statistic.
+  ptree tmp_object;
   if (table_id > 0) {
-    error = ErrorCode::OK;
+    // Specify the key for the column statistic you want to remove.
+    std::string s_table_id(std::to_string(table_id));
+    std::map<std::string_view, std::string_view> keys = {
+        {Statistics::TABLE_ID, s_table_id}
+    };
+
+    // Remove column statistic within a transaction.
+    error = provider.transaction([&keys]() -> ErrorCode {
+      // Remove the all column statistics through the provider.
+      return provider.remove_column_statistics(keys);
+    });
   } else {
     LOG_WARNING
-        << "An out-of-range value (0 or less) was specified for TableId.: "
+        << "An out-of-range value (0 or less) was specified for table ID.: "
         << table_id;
-    error = ErrorCode::ID_NOT_FOUND;
-  }
-
-  if (error == ErrorCode::OK) {
-    // Remove the all column statistics through the provider.
-    error = provider->remove_column_statistics(table_id);
+    error = ErrorCode::NOT_FOUND;
   }
 
   // Log of API function finish.
@@ -489,9 +571,9 @@ ErrorCode Statistics::remove_by_table_id(const ObjectIdType table_id) const {
 /**
  * @brief Removes column statistic from the column statistics table
  *   based on the given column id.
- * @param (column_id)  [in]  column id.
+ * @param column_id  [in]  column id.
  * @retval ErrorCode::OK if success.
- * @retval ErrorCode::ID_NOT_FOUND if the column id does not exist.
+ * @retval ErrorCode::NOT_FOUND if the column id does not exist.
  * @retval otherwise an error code.
  */
 ErrorCode Statistics::remove_by_column_id(const ObjectIdType column_id) const {
@@ -500,21 +582,25 @@ ErrorCode Statistics::remove_by_column_id(const ObjectIdType column_id) const {
   // Log of API function start.
   log::function_start("Statistics::remove_by_column_id()");
 
-  // Parameter value check.
+  // Remove the column statistic.
+  ptree tmp_object;
   if (column_id > 0) {
-    error = ErrorCode::OK;
+    // Specify the key for the column statistic you want to remove.
+    std::string s_column_id(std::to_string(column_id));
+    std::map<std::string_view, std::string_view> keys = {
+        {Statistics::COLUMN_ID, s_column_id}
+    };
+
+    // Remove column statistic within a transaction.
+    error = provider.transaction([&keys]() -> ErrorCode {
+      // Remove the all column statistics through the provider.
+      return provider.remove_column_statistics(keys);
+    });
   } else {
     LOG_WARNING
-        << "An out-of-range value (0 or less) was specified for ColumnId.: "
+        << "An out-of-range value (0 or less) was specified for table ID.: "
         << column_id;
-    error = ErrorCode::ID_NOT_FOUND;
-  }
-
-  if (error == ErrorCode::OK) {
-    ObjectIdType retval_object_id = 0;
-    // Remove the column statistic through the provider.
-    error = provider->remove_column_statistic(
-        Statistics::COLUMN_ID, std::to_string(column_id), retval_object_id);
+    error = ErrorCode::NOT_FOUND;
   }
 
   // Log of API function finish.
@@ -526,10 +612,10 @@ ErrorCode Statistics::remove_by_column_id(const ObjectIdType column_id) const {
 /**
  * @brief Removes column statistic from the column statistics table
  *   based on the given table id and the given column ordinal position.
- * @param (table_id)          [in]  table id.
- * @param (ordinal_position)  [in]  column ordinal position.
+ * @param table_id          [in]  table id.
+ * @param ordinal_position  [in]  column ordinal position.
  * @retval ErrorCode::OK if success.
- * @retval ErrorCode::ID_NOT_FOUND if the table id or ordinal position does not
+ * @retval ErrorCode::NOT_FOUND if the table id or ordinal position does not
  * exist.
  * @retval otherwise an error code.
  */
@@ -540,23 +626,27 @@ ErrorCode Statistics::remove_by_column_number(
   // Log of API function start.
   log::function_start("Statistics::remove_by_column_number()");
 
-  // Parameter value check.
+  // Remove the column statistic.
   if ((table_id > 0) && (ordinal_position > 0)) {
-    error = ErrorCode::OK;
+    // Specify the key for the column statistic you want to remove.
+    std::string s_table_id(std::to_string(table_id));
+    std::string s_ordinal_position(std::to_string(ordinal_position));
+    std::map<std::string_view, std::string_view> keys = {
+        {Statistics::TABLE_ID, s_table_id},
+        {Statistics::COLUMN_NUMBER, s_ordinal_position}
+    };
+
+    // Remove column statistic within a transaction.
+    error = provider.transaction([&keys]() -> ErrorCode {
+      // Remove the all column statistics through the provider.
+      return provider.remove_column_statistics(keys);
+    });
   } else {
     LOG_WARNING << "An out-of-range value (0 or less) was specified for "
-                   "TableId or OrdinalPosition.: "
-                << "TableId: " << table_id
-                << ", OrdinalPosition: " << ordinal_position;
-    error = ErrorCode::ID_NOT_FOUND;
-  }
-
-  if (error == ErrorCode::OK) {
-    ObjectIdType retval_object_id = 0;
-    // Remove the column statistic through the provider.
-    error = provider->remove_column_statistic(
-        table_id, Statistics::COLUMN_NUMBER, std::to_string(ordinal_position),
-        retval_object_id);
+                   "table-ID or ordinal-position.: "
+                << "table-ID: " << table_id
+                << ", ordinal-position: " << ordinal_position;
+    error = ErrorCode::NOT_FOUND;
   }
 
   // Log of API function finish.
@@ -568,11 +658,10 @@ ErrorCode Statistics::remove_by_column_number(
 /**
  * @brief Removes one column statistic from the column statistics table
  *   based on the given table id and the given column ordinal position.
- * @param (table_id)     [in]  table id.
- * @param (column_name)  [in]  column name.
+ * @param table_id     [in]  table id.
+ * @param column_name  [in]  column name.
  * @retval ErrorCode::OK if success.
- * @retval ErrorCode::ID_NOT_FOUND if the table id does not exist.
- * @retval ErrorCode::NAME_NOT_FOUND if the column name does not exist.
+ * @retval ErrorCode::NOT_FOUND if the table id or column name does not exist.
  * @retval otherwise an error code.
  */
 ErrorCode Statistics::remove_by_column_name(
@@ -582,24 +671,26 @@ ErrorCode Statistics::remove_by_column_name(
   // Log of API function start.
   log::function_start("Statistics::remove_by_column_name()");
 
-  // Parameter value check.
+  // Remove the column statistic.
   if ((table_id > 0) && (!column_name.empty())) {
-    error = ErrorCode::OK;
-  } else if (table_id <= 0) {
-    LOG_WARNING
-        << "An out-of-range value (0 or less) was specified for TableId.: "
-        << table_id;
-    error = ErrorCode::ID_NOT_FOUND;
-  } else {
-    LOG_WARNING << "An empty value was specified for ColumnName.";
-    error = ErrorCode::NAME_NOT_FOUND;
-  }
+    // Specify the key for the column statistic you want to remove.
+    std::string s_table_id(std::to_string(table_id));
+    std::map<std::string_view, std::string_view> keys = {
+        {Statistics::TABLE_ID, s_table_id},
+        {Statistics::COLUMN_NAME, column_name}
+    };
 
-  if (error == ErrorCode::OK) {
-    ObjectIdType retval_object_id = 0;
-    // Remove the column statistic through the provider.
-    error = provider->remove_column_statistic(table_id, Statistics::COLUMN_NAME,
-                                              column_name, retval_object_id);
+    // Remove column statistic within a transaction.
+    error = provider.transaction([&keys]() -> ErrorCode {
+      // Remove the all column statistics through the provider.
+      return provider.remove_column_statistics(keys);
+    });
+  } else {
+    LOG_WARNING
+        << "An out-of-range value (0 or less) was specified for "
+           "table-ID, or column-name was specified as an empty string.: "
+        << "table-ID: " << table_id << ", column-name: " << column_name;
+    error = ErrorCode::NOT_FOUND;
   }
 
   // Log of API function finish.
