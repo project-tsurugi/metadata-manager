@@ -193,7 +193,6 @@ ErrorCode ConstraintsDaoJson::find_metadata_object(
   object.clear();
   // Extract the relevant metadata.
   BOOST_FOREACH (const auto& table_node, tables_metadata) {
-LOG_ERROR << "@@@[Tables Loop] ConstraintDaoJson::get_metadata_object()";
     const auto& table_metadata = table_node.second;
     auto opt_constraint_node =
         table_metadata.get_child_optional(Table::CONSTRAINTS_NODE);
@@ -210,68 +209,6 @@ LOG_ERROR << "@@@[Tables Loop] ConstraintDaoJson::get_metadata_object()";
       }
     }
   }
-
-//   auto it = keys.begin();
-//   if (it == keys.end()) {
-//     // Extract all metadata.
-//     LOG_DEBUG << "Get constraint metadata-object: all data.";
-
-//     BOOST_FOREACH (const auto& root_node, objects.get_child(kRootNode)) {
-//       auto& table = root_node.second;
-
-//       auto constraints_node = table.get_child_optional(Table::CONSTRAINTS_NODE);
-//       if (constraints_node) {
-//         object.push_back(std::make_pair("", constraints_node.get()));
-//       }
-//     }
-//     error = ErrorCode::OK;
-
-//   } else {
-//     // Extract metadata with key values.
-//     LOG_DEBUG << "Get constraint metadata-object: " << keys;
-
-//     // Initialize the error code.
-//     error = get_not_found_error_code(keys);
-
-//     ptree tables_metadata;
-//     it = keys.find(Constraint::TABLE_ID);
-//     if (it != keys.end()) {
-//       // If possible, refine the table metadata.
-//       BOOST_FOREACH (const auto& root_node, objects.get_child(kRootNode)) {
-//         const ptree& table = root_node.second;
-
-//         if (ptree_helper::is_match(table, {{Table::ID, it->second}})) {
-//           tables_metadata.push_back(std::make_pair("", table));
-//           break;
-//         }
-//       }
-//     } else {
-//       auto root_node = objects.get_child_optional(kRootNode);
-//       if (root_node) {
-//         tables_metadata = root_node.get();
-//       }
-//     }
-
-//     // Extract the relevant metadata.
-//     BOOST_FOREACH (const auto& table_node, tables_metadata) {
-//       const auto& table_metadata = table_node.second;
-//       auto opt_constraint_node =
-//           table_metadata.get_child_optional(Table::CONSTRAINTS_NODE);
-
-//       if (opt_constraint_node) {
-//         BOOST_FOREACH (const auto& constraint_node, opt_constraint_node.get()) {
-//           const auto& constraint_metadata = constraint_node.second;
-
-//           // If the key value matches, the metadata is added.
-//           if (ptree_helper::is_match(constraint_metadata, keys)) {
-//             error = ErrorCode::OK;
-//             // Add metadata.
-//             object.push_back(std::make_pair("", constraint_metadata));
-//           }
-//         }
-//       }
-//     }
-//   }
 
   error = ErrorCode::OK;
   return error;
