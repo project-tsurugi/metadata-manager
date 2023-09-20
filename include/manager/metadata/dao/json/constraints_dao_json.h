@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 tsurugi project.
+ * Copyright 2022-2023 tsurugi project.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,53 +16,108 @@
 #ifndef MANAGER_METADATA_DAO_JSON_CONSTRAINTS_DAO_JSON_H_
 #define MANAGER_METADATA_DAO_JSON_CONSTRAINTS_DAO_JSON_H_
 
+#include <map>
+#include <string>
+#include <string_view>
 #include <vector>
 
 #include <boost/property_tree/ptree.hpp>
 
-#include "manager/metadata/dao/constraints_dao.h"
-#include "manager/metadata/dao/json/db_session_manager_json.h"
+#include "manager/metadata/constraints.h"
+#include "manager/metadata/dao/json/dao_json.h"
 #include "manager/metadata/error_code.h"
+#include "manager/metadata/tables.h"
 
-namespace manager::metadata::db::json {
+namespace manager::metadata::db {
 
-class ConstraintsDAO : public manager::metadata::db::ConstraintsDAO {
+/**
+ * @brief DAO class for accessing constraint metadata for JSON data.
+ */
+class ConstraintsDaoJson : public DaoJson {
  public:
-  explicit ConstraintsDAO(DBSessionManager* session_manager) : session_manager_(session_manager) {}
+  // Root node name for constraint metadata.
+  static constexpr const char* const kRootNode = "tables";
 
-  manager::metadata::ErrorCode prepare() const override;
+  /**
+    * @brief Construct a new Constraint Metadata DAO class for JSON data.
+    * @param session pointer to DB session manager for JSON.
+    */
+  explicit ConstraintsDaoJson(DbSessionManagerJson* session)
+      : DaoJson(session, kTableName) {}
 
-  manager::metadata::ErrorCode insert_constraint_metadata(
-      const boost::property_tree::ptree& constraint_metadata,
-      ObjectIdType& constraint_id) const override;
+  /**
+   * @brief Add metadata object to metadata table file.
+   * @param object     [in]  constraint metadata object to add.
+   * @param object_id  [out] object id of the added row.
+   * @return If success ErrorCode::OK, otherwise error code.
+   * @note  If success, metadata object is added management metadata.
+   *   e.g. format version, generation, etc...
+   */
+  manager::metadata::ErrorCode insert(const boost::property_tree::ptree& object,
+                                      ObjectId& object_id) const override;
 
-  manager::metadata::ErrorCode select_constraint_metadata(
-      std::string_view object_key, std::string_view object_value,
-      boost::property_tree::ptree& constraint_metadata) const override;
-  manager::metadata::ErrorCode select_constraint_metadata(
-      std::vector<boost::property_tree::ptree>& constraint_container) const override;
+  /**
+   * @brief Select a metadata object from the metadata table.
+   * @param keys    [in]  key name and value of the metadata object.
+   * @param object  [out] a selected metadata object.
+   * @return If success ErrorCode::OK, otherwise error code.
+   */
+  manager::metadata::ErrorCode select(
+      const std::map<std::string_view, std::string_view>& keys,
+      boost::property_tree::ptree& object) const override;
 
-  manager::metadata::ErrorCode delete_constraint_metadata(
-      std::string_view object_key, std::string_view object_value) const override;
+  /**
+   * @brief Unsupported function.
+   * @return Always ErrorCode::NOT_SUPPORTED.
+   */
+  manager::metadata::ErrorCode update(
+      const std::map<std::string_view, std::string_view>&,
+      const boost::property_tree::ptree&, uint64_t&) const override {
+    // Do nothing and return of ErrorCode::NOT_SUPPORTED.
+    return ErrorCode::NOT_SUPPORTED;
+  }
+
+  /**
+   * @brief Remove a metadata object from a metadata table file.
+   * @param keys        [in]  key name and value of the metadata object.
+   * @param object_ids  [out] object id of the deleted rows.
+   * @return If success ErrorCode::OK, otherwise error code.
+   */
+  manager::metadata::ErrorCode remove(
+      const std::map<std::string_view, std::string_view>& keys,
+      std::vector<ObjectId>& object_ids) const override;
 
  private:
-  // root node.
-  static constexpr const char* const ROOT_NODE = "tables";
-  // Name of the table metadata management file.
-  static constexpr const char* const CONSTRAINTS_METADATA_NAME = "tables";
+  // Name of the constraint metadata management file.
+  static constexpr const char* const kTableName = "tables";
   // Object ID key name for constraint ID.
-  static constexpr const char* const OID_KEY_NAME_CONSTRAINT = "constraint";
+  static constexpr const char* const kOidKeyNameConstraint = "constraint";
 
-  DBSessionManager* session_manager_;
+  /**
+   * @brief Find metadata object from metadata table.
+   * @param objects  [in]  metadata container.
+   * @param keys     [in]  key name and value of a table metadata table.
+   * @param object   [out] metadata-object with the specified name.
+   * @return If success ErrorCode::OK, otherwise error code.
+   */
+  manager::metadata::ErrorCode find_metadata_object(
+      const boost::property_tree::ptree& objects,
+      const std::map<std::string_view, std::string_view>& keys,
+      boost::property_tree::ptree& object) const;
 
-  manager::metadata::ErrorCode get_constraint_metadata_object(
-      const boost::property_tree::ptree& container, std::string_view object_key,
-      std::string_view object_value, boost::property_tree::ptree& constraint_metadata) const;
-  manager::metadata::ErrorCode delete_metadata_object(boost::property_tree::ptree& container,
-                                                      std::string_view object_key,
-                                                      std::string_view object_value) const;
-};  // class ConstraintsDAO
+  /**
+   * @brief Delete a metadata object from a metadata table file.
+   * @param objects     [in/out] metadata container.
+   * @param keys        [in]     key name and value of a table metadata table.
+   * @param object_ids  [out]    table id of the row deleted.
+   * @return If success ErrorCode::OK, otherwise error code.
+   */
+  manager::metadata::ErrorCode delete_metadata_object(
+      boost::property_tree::ptree& objects,
+      const std::map<std::string_view, std::string_view>& keys,
+      std::vector<ObjectId>& object_ids) const;
+};  // class ConstraintsDaoJson
 
-}  // namespace manager::metadata::db::json
+}  // namespace manager::metadata::db
 
 #endif  // MANAGER_METADATA_DAO_JSON_CONSTRAINTS_DAO_JSON_H_

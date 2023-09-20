@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 tsurugi project.
+ * Copyright 2020-2023 tsurugi project.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -8,76 +8,113 @@
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the IndexDAOLicense is distributed on an "AS IS" BASIS,
+ * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
 #pragma once
 
+#include <map>
 #include <string>
 #include <string_view>
 #include <vector>
 
 #include <boost/property_tree/ptree.hpp>
 
+#include "manager/metadata/dao/json/dao_json.h"
 #include "manager/metadata/error_code.h"
-#include "manager/metadata/dao/dao.h"
-#include "manager/metadata/dao/db_session_manager.h"
-#include "manager/metadata/dao/json/db_session_manager_json.h"
+#include "manager/metadata/index.h"
 
 namespace manager::metadata::db {
+
 /**
- * @brief This class is base class of concrete IndexesDAO classes.
+ * @brief DAO class for accessing index metadata for JSON data.
  */
-class IndexDaoJson : public Dao {
+class IndexDaoJson : public DaoJson {
  public:
-  static constexpr const char* const INDEXES_ROOT = "indexes";
-  static constexpr const char* const OID_KEY_NAME_TABLE = "indexes";
+  // Root node name for index metadata.
+  static constexpr const char* const kRootNode = "indexes";
 
+  /**
+   * @brief Construct a new Index Metadata DAO class for JSON data.
+   * @param session pointer to DB session manager for JSON.
+   */
   explicit IndexDaoJson(DbSessionManagerJson* session)
-      : Dao(session), session_(session) {}
+      : DaoJson(session, kTableName) {}
 
-  manager::metadata::ErrorCode prepare() override;
+  /**
+   * @brief Insert a metadata object into the metadata file.
+   * @param object     [in]  metadata object.
+   * @param object_id  [out] object id of the added row.
+   * @return If success ErrorCode::OK, otherwise error code.
+   * @note  If success, metadata object is added management metadata.
+   *   e.g. format version, generation, etc...
+   */
+  manager::metadata::ErrorCode insert(const boost::property_tree::ptree& object,
+                                      ObjectId& object_id) const override;
 
-  bool exists(std::string_view name) const override;
-  bool exists(const boost::property_tree::ptree& object) const override;
-
-  manager::metadata::ErrorCode insert(
-      const boost::property_tree::ptree& object,
-      ObjectIdType& object_id) const override;
-
-  manager::metadata::ErrorCode select_all(
-      std::vector<boost::property_tree::ptree>& objects) const override;
-
+  /**
+   * @brief Select a metadata object from the metadata file.
+   * @param keys    [in]  key name and value of the metadata object.
+   * @param object  [out] a selected metadata object.
+   * @return If success ErrorCode::OK, otherwise error code.
+   */
   manager::metadata::ErrorCode select(
-      std::string_view key, std::string_view object_value,
+      const std::map<std::string_view, std::string_view>& keys,
       boost::property_tree::ptree& object) const override;
 
+  /**
+   * @brief Update a metadata object into the metadata file.
+   * @param keys    [in]  key name and value of the metadata object.
+   * @param object  [in]  metadata object.
+   * @param rows    [out] number of updated metadata object.
+   * @return If success ErrorCode::OK, otherwise error code.
+   */
   manager::metadata::ErrorCode update(
-    std::string_view key,  std::string_view value,
-    const boost::property_tree::ptree& object) const override;
+      const std::map<std::string_view, std::string_view>& keys,
+      const boost::property_tree::ptree& object, uint64_t& rows) const override;
 
+  /**
+   * @brief Remove a metadata object from a metadata table file.
+   * @param keys        [in]  key name and value of the metadata object.
+   * @param object_ids  [out] object id of the deleted rows.
+   * @return If success ErrorCode::OK, otherwise error code.
+   */
   manager::metadata::ErrorCode remove(
-      std::string_view key, std::string_view value,
-      ObjectIdType& object_id) const override;
+      const std::map<std::string_view, std::string_view>& keys,
+      std::vector<ObjectId>& object_ids) const override;
 
  private:
-  DbSessionManagerJson* session_;
+  // Name of the index metadata management file.
+  static constexpr const char* const kTableName = "indexes";
+  // Object ID key name for index ID.
+  static constexpr const char* const kOidKeyNameIndex = "indexes";
 
-  std::string get_source_name() const override { return "indexes"; }
-  std::string get_insert_statement() const override { return ""; }
-  std::string get_select_all_statement() const override { return ""; }
-  std::string get_select_statement(std::string_view) const override { 
-    return ""; 
-  }
-  std::string get_update_statement(std::string_view) const override { 
-    return ""; 
-  };
-  std::string get_delete_statement(std::string_view) const override { 
-    return ""; 
-  }
-  void create_prepared_statements() override {}
-};
+  /**
+   * @brief Find metadata object from metadata table.
+   * @param objects  [in]  container of JSON object.
+   * @param keys     [in]  key name and value of the metadata object.
+   *   e.g. object ID, object name.
+   * @param object   [out] metadata-object with the specified name.
+   * @return If success ErrorCode::OK, otherwise error code.
+   */
+  ErrorCode find_metadata_object(
+      const boost::property_tree::ptree& objects,
+      const std::map<std::string_view, std::string_view>& keys,
+      boost::property_tree::ptree& object) const;
+
+  /**
+   * @brief Delete a metadata object from a metadata table file.
+   * @param objects     [in/out] metadata container.
+   * @param keys        [in]     key name and value of a table metadata table.
+   * @param object_ids  [out]    table id of the row deleted.
+   * @return If success ErrorCode::OK, otherwise error code.
+   */
+  ErrorCode delete_metadata_object(
+      boost::property_tree::ptree& objects,
+      const std::map<std::string_view, std::string_view>& keys,
+      std::vector<ObjectId>& object_ids) const;
+};  // class IndexDaoJson
 
 }  // namespace manager::metadata::db

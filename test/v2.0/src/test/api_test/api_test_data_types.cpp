@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 tsurugi project.
+ * Copyright 2020-2023 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@
 #include <memory>
 #include <tuple>
 
-#include "manager/metadata/datatypes.h"
+#include "manager/metadata/metadata_factory.h"
 #include "test/common/global_test_environment.h"
 #include "test/common/ut_utils.h"
 #include "test/helper/metadata_helper.h"
@@ -113,7 +113,7 @@ INSTANTIATE_TEST_CASE_P(
 TEST_F(ApiTestDataTypes, test_init) {
   CALL_TRACE;
 
-  auto manager = std::make_unique<DataTypes>(GlobalTestEnvironment::TEST_DB);
+  auto manager = get_datatypes_ptr(GlobalTestEnvironment::TEST_DB);
 
   // Execute the test.
   ApiTestHelper::test_init(manager.get(), ErrorCode::OK);
@@ -125,7 +125,7 @@ TEST_F(ApiTestDataTypes, test_init) {
 TEST_F(ApiTestDataTypes, test_add) {
   CALL_TRACE;
 
-  auto manager = std::make_unique<DataTypes>(GlobalTestEnvironment::TEST_DB);
+  auto manager = get_datatypes_ptr(GlobalTestEnvironment::TEST_DB);
 
   ptree inserted_metadata;
   // Execute the test.
@@ -138,7 +138,7 @@ TEST_F(ApiTestDataTypes, test_add) {
 TEST_F(ApiTestDataTypes, test_getall) {
   CALL_TRACE;
 
-  auto manager = std::make_unique<DataTypes>(GlobalTestEnvironment::TEST_DB);
+  auto manager = get_datatypes_ptr(GlobalTestEnvironment::TEST_DB);
 
   std::vector<ptree> container = {};
   // Execute the test.
@@ -152,11 +152,12 @@ TEST_F(ApiTestDataTypes, test_getall) {
 TEST_F(ApiTestDataTypes, test_update) {
   CALL_TRACE;
 
-  auto manager = std::make_unique<DataTypes>(GlobalTestEnvironment::TEST_DB);
+  auto manager = get_datatypes_ptr(GlobalTestEnvironment::TEST_DB);
 
   ptree updated_metadata;
   // Execute the test.
-  ApiTestHelper::test_update(manager.get(), INT64_MAX, updated_metadata, ErrorCode::UNKNOWN);
+  ApiTestHelper::test_update(manager.get(), INT64_MAX, updated_metadata,
+                             ErrorCode::UNKNOWN);
 }
 
 /**
@@ -165,7 +166,7 @@ TEST_F(ApiTestDataTypes, test_update) {
 TEST_F(ApiTestDataTypes, test_remove_by_id) {
   CALL_TRACE;
 
-  auto manager = std::make_unique<DataTypes>(GlobalTestEnvironment::TEST_DB);
+  auto manager = get_datatypes_ptr(GlobalTestEnvironment::TEST_DB);
 
   // Execute the test.
   ApiTestHelper::test_remove(manager.get(), INT64_MAX, ErrorCode::UNKNOWN);
@@ -177,7 +178,7 @@ TEST_F(ApiTestDataTypes, test_remove_by_id) {
 TEST_F(ApiTestDataTypes, test_remove_by_name) {
   CALL_TRACE;
 
-  auto manager = std::make_unique<DataTypes>(GlobalTestEnvironment::TEST_DB);
+  auto manager = get_datatypes_ptr(GlobalTestEnvironment::TEST_DB);
 
   // Execute the test.
   ApiTestHelper::test_remove(manager.get(), "INT32", ErrorCode::UNKNOWN);
@@ -188,7 +189,7 @@ TEST_F(ApiTestDataTypes, test_remove_by_name) {
  * name.
  */
 TEST_P(ApiTestDataTypesByName, get_datatypes_by_name) {
-  auto datatypes = std::make_unique<DataTypes>(GlobalTestEnvironment::TEST_DB);
+  auto datatypes = get_datatypes_ptr(GlobalTestEnvironment::TEST_DB);
 
   auto param = GetParam();
   ptree datatype;
@@ -200,7 +201,7 @@ TEST_P(ApiTestDataTypesByName, get_datatypes_by_name) {
   UTUtils::print(UTUtils::get_tree_string(datatype));
 
   // Verifies that returned data type metadata equals expected one.
-  UtDataTypesMetadata().check_metadata_expected(datatype, __FILE__, __LINE__);
+  UtDataTypesMetadata().CHECK_METADATA_EXPECTED_OBJ(datatype);
 }
 
 /**
@@ -208,21 +209,23 @@ TEST_P(ApiTestDataTypesByName, get_datatypes_by_name) {
  * key/value pair.
  */
 TEST_P(ApiTestDataTypesByKeyValue, get_datatypes_by_key_value) {
-  auto datatypes = std::make_unique<DataTypes>(GlobalTestEnvironment::TEST_DB);
+  // TODO(future): Change when changing Metadata class.
+  auto datatypes_temp = get_datatypes_ptr(GlobalTestEnvironment::TEST_DB);
+  auto datatypes = static_cast<DataTypes*>(datatypes_temp.get());
 
   auto param        = GetParam();
   std::string key   = std::get<0>(param);
   std::string value = std::get<1>(param);
 
   ptree datatype;
-  ErrorCode error = datatypes->get(key.c_str(), value, datatype);
+  ErrorCode error = datatypes->get(key, value, datatype);
   EXPECT_EQ(ErrorCode::OK, error);
 
   UTUtils::print("-- get data type metadata --");
   UTUtils::print(UTUtils::get_tree_string(datatype));
 
   // Verifies that returned data type metadata equals expected one.
-  UtDataTypesMetadata().check_metadata_expected(datatype, __FILE__, __LINE__);
+  UtDataTypesMetadata().CHECK_METADATA_EXPECTED_OBJ(datatype);
 }
 
 /**
@@ -230,7 +233,7 @@ TEST_P(ApiTestDataTypesByKeyValue, get_datatypes_by_key_value) {
  * based on invalid data type name.
  */
 TEST_P(ApiTestDataTypesException, get_non_existing_datatypes_by_name) {
-  auto datatypes = std::make_unique<DataTypes>(GlobalTestEnvironment::TEST_DB);
+  auto datatypes = get_datatypes_ptr(GlobalTestEnvironment::TEST_DB);
 
   std::string value = std::get<0>(GetParam());
 
@@ -249,30 +252,44 @@ TEST_P(ApiTestDataTypesException, get_non_existing_datatypes_by_name) {
  * based on invalid data type key/value pair.
  */
 TEST_P(ApiTestDataTypesException, get_non_existing_datatypes_by_key_value) {
-  auto datatypes = std::make_unique<DataTypes>(GlobalTestEnvironment::TEST_DB);
+  // TODO(future): Change when changing Metadata class.
+  auto datatypes_temp = get_datatypes_ptr(GlobalTestEnvironment::TEST_DB);
+  auto datatypes = static_cast<DataTypes*>(datatypes_temp.get());
 
   std::string key   = std::get<0>(GetParam());
   std::string value = std::get<1>(GetParam());
 
   ptree datatype;
-  ErrorCode error = datatypes->get(key.c_str(), value, datatype);
-  if (key == DataTypes::ID) {
+  ErrorCode error = datatypes->get(key, value, datatype);
 #ifdef STORAGE_POSTGRESQL
+  if (key == DataTypes::ID) {
     if (value == "invalid_value") {
       EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);
     } else {
       EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
     }
-#else
-    EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
-#endif
   } else if (key == DataTypes::NAME) {
     EXPECT_EQ(ErrorCode::NAME_NOT_FOUND, error);
-  } else if (!key.empty() && value.empty()) {
+  } else if (key.empty()) {
+    EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);
+  } else if (value.empty()) {
     EXPECT_EQ(ErrorCode::NOT_FOUND, error);
   } else {
     EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);
   }
+#elif STORAGE_JSON
+  if (key == DataTypes::ID) {
+    EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
+  } else if (key == DataTypes::NAME) {
+    EXPECT_EQ(ErrorCode::NAME_NOT_FOUND, error);
+  } else if (key.empty()) {
+    EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);
+  } else if (value.empty()) {
+    EXPECT_EQ(ErrorCode::NOT_FOUND, error);
+  } else {
+    EXPECT_EQ(ErrorCode::NOT_FOUND, error);
+  }
+#endif
 
   // Verifies that returned data type metadata equals expected one.
   ptree empty_ptree;

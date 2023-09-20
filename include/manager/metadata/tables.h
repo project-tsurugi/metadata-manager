@@ -20,10 +20,11 @@
 #include <string_view>
 #include <vector>
 
-#include <boost/property_tree/ptree.hpp>
 #include <boost/iterator_adaptors.hpp>
+#include <boost/property_tree/ptree.hpp>
 
 #include "manager/metadata/constraints.h"
+#include "manager/metadata/datatypes.h"
 #include "manager/metadata/error_code.h"
 #include "manager/metadata/indexes.h"
 #include "manager/metadata/metadata.h"
@@ -276,7 +277,8 @@ class Tables : public Metadata {
 
   explicit Tables(std::string_view database)
       : Tables(database, kDefaultComponent) {}
-  Tables(std::string_view database, std::string_view component);
+  Tables(std::string_view database, std::string_view component)
+      : Metadata(database, component) {}
 
   Tables(const Tables&)            = delete;
   Tables& operator=(const Tables&) = delete;
@@ -294,16 +296,16 @@ class Tables : public Metadata {
   ErrorCode get_all(
       std::vector<boost::property_tree::ptree>& objects) const override;
 
-  ErrorCode get_statistic(const ObjectId table_id,
+  ErrorCode get_statistic(const ObjectId object_id,
                           boost::property_tree::ptree& object) const;
   ErrorCode get_statistic(std::string_view table_name,
                           boost::property_tree::ptree& object) const;
-  ErrorCode set_statistic(boost::property_tree::ptree& container) const;
+  ErrorCode set_statistic(const boost::property_tree::ptree& object) const;
 
-  ErrorCode update(const ObjectIdType object_id,
+  ErrorCode update(const ObjectId object_id,
                    const boost::property_tree::ptree& object) const override;
 
-  ErrorCode remove(const ObjectIdType object_id) const override;
+  ErrorCode remove(const ObjectId object_id) const override;
   ErrorCode remove(std::string_view object_name,
                    ObjectId* object_id) const override;
 
@@ -318,10 +320,21 @@ class Tables : public Metadata {
                                        bool& check_result) const;
 
  private:
-  manager::metadata::ErrorCode param_check_metadata_add(
+  ErrorCode param_check_metadata_add(
       const boost::property_tree::ptree& object) const;
-  manager::metadata::ErrorCode param_check_statistic_update(
+  ErrorCode param_check_statistic_update(
       const boost::property_tree::ptree& object) const;
+  ErrorCode param_check_permission(std::string_view permission) const;
+
+  ErrorCode get_token_user(std::string_view token,
+                           std::string& user_name) const;
+  ErrorCode get_related_metadata(boost::property_tree::ptree& object) const;
+  ErrorCode update_related_metadata(
+      const ObjectId object_id, const boost::property_tree::ptree& object) const;
+  ErrorCode remove_related_metadata(const ObjectId object_id) const;
+
+  bool check_of_privilege(const boost::property_tree::ptree& object,
+                          const std::string& permission) const;
 };  // class Tables
 
 }  // namespace manager::metadata

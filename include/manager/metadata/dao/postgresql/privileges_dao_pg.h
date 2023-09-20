@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 tsurugi project.
+ * Copyright 2021-2023 tsurugi project.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,20 +16,100 @@
 #ifndef MANAGER_METADATA_DAO_POSTGRESQL_PRIVILEGES_DAO_PG_H_
 #define MANAGER_METADATA_DAO_POSTGRESQL_PRIVILEGES_DAO_PG_H_
 
-#include "manager/metadata/dao/postgresql/db_session_manager_pg.h"
-#include "manager/metadata/dao/postgresql/dbc_utils_pg.h"
-#include "manager/metadata/dao/privileges_dao.h"
+#include <map>
+#include <string>
+#include <string_view>
+#include <vector>
+
+#include <boost/property_tree/ptree.hpp>
+
+#include "manager/metadata/dao/postgresql/dao_pg.h"
 #include "manager/metadata/error_code.h"
 
-namespace manager::metadata::db::postgresql {
+namespace manager::metadata::db {
 
-class PrivilegesDAO : public manager::metadata::db::PrivilegesDAO {
+/**
+ * @brief DAO class for accessing privileges metadata for PostgreSQL.
+ */
+class PrivilegesDaoPg : public DaoPg {
  public:
+  /**
+   * @brief privileges table name.
+   */
+  static constexpr const char* const kTableName = "privileges";
+
+  // Inheritance constructor.
+  using DaoPg::DaoPg;
+
+  /**
+   * @brief Defines all prepared statements.
+   * @return If success ErrorCode::OK, otherwise error code.
+   */
+  manager::metadata::ErrorCode prepare() override;
+
+  /**
+   * @brief Checks whether a role exists with the specified object ID.
+   * @param object_id  [in]  object id of the role.
+   * @return true if it exists, otherwise false.
+   */
+  bool exists(ObjectId object_id) const override;
+
+  /**
+   * @brief Unsupported function.
+   * @return Always ErrorCode::NOT_SUPPORTED.
+   */
+  manager::metadata::ErrorCode insert(const boost::property_tree::ptree&,
+                                      ObjectId&) const override {
+    // Do nothing and return of ErrorCode::NOT_SUPPORTED.
+    return ErrorCode::NOT_SUPPORTED;
+  }
+
+  /**
+   * @brief Get privileges from PostgreSQL for the role with the specified key.
+   * @param keys    [in]  key name and value of the metadata object.
+   * @param object  [out] a selected metadata object.
+   * @retval ErrorCode::OK if success.
+   * @retval ErrorCode::NOT_FOUND if the object name/id does not exist.
+   * @retval otherwise an error code.
+   */
+  manager::metadata::ErrorCode select(
+      const std::map<std::string_view, std::string_view>& keys,
+      boost::property_tree::ptree& object) const override;
+
+  /**
+   * @brief Unsupported function.
+   * @return Always ErrorCode::NOT_SUPPORTED.
+   */
+  manager::metadata::ErrorCode update(
+      const std::map<std::string_view, std::string_view>&,
+      const boost::property_tree::ptree&, uint64_t&) const override {
+    // Do nothing and return of ErrorCode::NOT_SUPPORTED.
+    return ErrorCode::NOT_SUPPORTED;
+  }
+
+  /**
+   * @brief Unsupported function.
+   * @return Always ErrorCode::NOT_SUPPORTED.
+   */
+  manager::metadata::ErrorCode remove(
+      const std::map<std::string_view, std::string_view>&,
+      std::vector<ObjectId>&) const override {
+    // Do nothing and return of ErrorCode::NOT_SUPPORTED.
+    return ErrorCode::NOT_SUPPORTED;
+  }
+
+ private:
+  /**
+   * @brief EXIST statement key.
+   */
+  static constexpr const char* const kStatementKeyExists = "Exists";
+
   /**
    * @brief Column ordinal position.
    */
   enum class OrdinalPosition {
-    kSelect = 0,
+    kTableName = 0,
+    kSelect,
     kInsert,
     kUpdate,
     kDelete,
@@ -39,30 +119,76 @@ class PrivilegesDAO : public manager::metadata::db::PrivilegesDAO {
   };  // enum class OrdinalPosition
 
   /**
-   * @brief Valid privilege code. The order of definition is
-   *   based on OrdinalPosition.
+   * @brief Create prepared statements.
    */
-  static constexpr std::string_view kValidPrivileges = "rawdDxt";
+  void create_prepared_statements() override;
 
-  explicit PrivilegesDAO(DBSessionManager* session_manager);
+  /**
+   * @brief Get the table source name.
+   * @return table source name.
+   */
+  std::string get_source_name() const override { return kTableName; }
 
-  manager::metadata::ErrorCode prepare() const override;
+  /**
+   * @brief Function defined for compatibility.
+   * @return Always empty string.
+   */
+  std::string get_insert_statement() const override {
+    // Returns an unconditional empty string.
+    return "";
+  }
 
-  manager::metadata::ErrorCode confirm_tables_permission(
-      std::string_view object_key, std::string_view object_value,
-      std::string_view permission, bool& check_result) const override;
+  /**
+   * @brief Function defined for compatibility.
+   * @return Always empty string.
+   */
+  std::string get_select_all_statement() const override {
+    // Returns an unconditional empty string.
+    return "";
+  }
 
- private:
-  ConnectionSPtr connection_;
+  /**
+   * @brief Get a SELECT statement to retrieve metadata matching the criteria
+   *   from the metadata table.
+   * @param key  [in]  column name of metadata table.
+   * @return SELECT statement.
+   */
+  std::string get_select_statement(std::string_view key) const override;
 
-  manager::metadata::ErrorCode check_of_privilege(
-      const PGresult* res, const int row_number, const char* permission,
-      bool& check_result) const;
+  /**
+   * @brief Function defined for compatibility.
+   * @return Always empty string.
+   */
+  std::string get_update_statement(std::string_view) const override {
+    // Returns an unconditional empty string.
+    return "";
+  }
 
-  manager::metadata::ErrorCode check_exists_authid(
-      std::string_view auth_id, bool& exists_result) const;
-};  // class PrivilegesDAO
+  /**
+   * @brief Function defined for compatibility.
+   * @return Always empty string.
+   */
+  std::string get_delete_statement(std::string_view) const override {
+    // Returns an unconditional empty string.
+    return "";
+  }
 
-}  // namespace manager::metadata::db::postgresql
+  /**
+   * @brief Returns a SELECT statement to check for the existence of an auth-id.
+   * @return a SELECT statement.
+   */
+  std::string get_exists_statement() const;
+
+  /**
+   * @brief Converts from PGresult type values to ptree type data.
+   * @param pg_result   [in]  the result of a query.
+   * @param row_number  [in]  row number of the PGresult.
+   * @return privilege object.
+   */
+  boost::property_tree::ptree convert_pgresult_to_ptree(
+      const PGresult* pg_result, const int row_number) const;
+};  // class PrivilegesDaoPg
+
+}  // namespace manager::metadata::db
 
 #endif  // MANAGER_METADATA_DAO_POSTGRESQL_PRIVILEGES_DAO_PG_H_

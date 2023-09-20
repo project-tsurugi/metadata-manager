@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 tsurugi project.
+ * Copyright 2022-2023 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@
 #include <string>
 #include <utility>
 
-#include "manager/metadata/statistics.h"
+#include "manager/metadata/metadata_factory.h"
 #include "test/metadata/ut_column_statistics.h"
 #include "test/test/metadata_test.h"
 
@@ -37,7 +37,7 @@ class StatisticsMetadataTest : public MetadataTest {
    * @return std::unique_ptr<Metadata> - metadata management object.
    */
   std::unique_ptr<Metadata> get_metadata_manager() const override {
-    return std::make_unique<Statistics>(TEST_DB);
+    return get_statistics_ptr(TEST_DB);
   }
 
   /**
@@ -104,7 +104,7 @@ class StatisticsMetadataTest : public MetadataTest {
 
  private:
 #if defined(STORAGE_POSTGRESQL)
-  static constexpr const char* const kTableName = "tsurugi_statistic";
+  static constexpr const char* const kTableName = "statistics";
 #endif
   static constexpr const int32_t kStatisticsCreateMax = 2;
 

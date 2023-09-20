@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 tsurugi project.
+ * Copyright 2020-2023 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@
 
 #include "manager/metadata/common/message.h"
 #include "manager/metadata/dao/postgresql/db_session_manager_pg.h"
-#include "manager/metadata/dao/statistics_dao.h"
+#include "manager/metadata/dao/postgresql/statistics_dao_pg.h"
 #include "test/common/global_test_environment.h"
 #include "test/common/ut_utils.h"
 #include "test/helper/column_statistics_helper.h"
@@ -34,7 +34,6 @@ namespace manager::metadata::testing {
 namespace json_parser = boost::property_tree::json_parser;
 
 using boost::property_tree::ptree;
-using db::postgresql::DBSessionManager;
 
 using BasicTestParameter =
     std::tuple<std::string, std::vector<boost::property_tree::ptree>,
@@ -202,18 +201,19 @@ ErrorCode DaoTestColumnStatistics::add_one_column_statistic(
     boost::property_tree::ptree& column_statistic) {
   ErrorCode error = ErrorCode::INTERNAL_ERROR;
 
-  std::shared_ptr<db::GenericDAO> s_gdao = nullptr;
-  DBSessionManager db_session_manager;
+  db::DbSessionManagerPg db_session_manager;
 
-  error =
-      db_session_manager.get_dao(db::GenericDAO::TableName::STATISTICS, s_gdao);
+  error = db_session_manager.connect();
   EXPECT_EQ(ErrorCode::OK, error);
 
-  std::shared_ptr<db::StatisticsDAO> sdao;
-  sdao = std::static_pointer_cast<db::StatisticsDAO>(s_gdao);
+  std::shared_ptr<db::Dao> statistics_dao;
+  error = db_session_manager.get_statistics_dao(statistics_dao);
+  EXPECT_NE(nullptr, statistics_dao);
+  EXPECT_EQ(ErrorCode::OK, error);
 
   std::string statistic_name = "statistic-name";
 
+  // column_statistic
   std::string s_column_statistic;
   if (!column_statistic.empty()) {
     std::stringstream ss;
@@ -230,13 +230,19 @@ ErrorCode DaoTestColumnStatistics::add_one_column_statistic(
     s_column_statistic = ss.str();
   }
 
+  ptree object;
+  object.put(Statistics::TABLE_ID, table_id);
+  object.put(Statistics::COLUMN_NUMBER, ordinal_position);
+  object.put(Statistics::NAME, statistic_name);
+  object.put_child(Statistics::COLUMN_STATISTIC, column_statistic);
+
+  UTUtils::print(" " + UTUtils::get_tree_string(object));
+
   error = db_session_manager.start_transaction();
   EXPECT_EQ(ErrorCode::OK, error);
 
   ObjectIdType ret_statistic_id;
-  error = sdao->upsert_column_statistic(
-      table_id, Statistics::COLUMN_NUMBER, std::to_string(ordinal_position),
-      &statistic_name, column_statistic, ret_statistic_id);
+  error = statistics_dao->insert(object, ret_statistic_id);
 
   if (error == ErrorCode::OK) {
     ErrorCode commit_error = db_session_manager.commit();
@@ -244,9 +250,6 @@ ErrorCode DaoTestColumnStatistics::add_one_column_statistic(
     EXPECT_GT(ret_statistic_id, 0);
 
     UTUtils::print(" statistic id: ", ret_statistic_id);
-    UTUtils::print(" ordinal position: ", ordinal_position);
-    UTUtils::print(" column statistics: " + s_column_statistic);
-
   } else {
     ErrorCode rollback_error = db_session_manager.rollback();
     EXPECT_EQ(ErrorCode::OK, rollback_error);
@@ -273,24 +276,36 @@ ErrorCode DaoTestColumnStatistics::get_one_column_statistic(
     const ptree& expected_column_statistic) {
   ErrorCode error = ErrorCode::INTERNAL_ERROR;
 
-  std::shared_ptr<db::GenericDAO> s_gdao = nullptr;
-  DBSessionManager db_session_manager;
+  db::DbSessionManagerPg db_session_manager;
 
-  error =
-      db_session_manager.get_dao(db::GenericDAO::TableName::STATISTICS, s_gdao);
+  error = db_session_manager.connect();
   EXPECT_EQ(ErrorCode::OK, error);
 
-  std::shared_ptr<db::StatisticsDAO> sdao;
-  sdao = std::static_pointer_cast<db::StatisticsDAO>(s_gdao);
+  std::shared_ptr<db::Dao> statistics_dao;
+  error = db_session_manager.get_statistics_dao(statistics_dao);
+  EXPECT_NE(nullptr, statistics_dao);
+  EXPECT_EQ(ErrorCode::OK, error);
 
-  ptree column_statistic;
-  error = sdao->select_column_statistic(table_id, Statistics::COLUMN_NUMBER,
-                                        std::to_string(ordinal_position),
-                                        column_statistic);
+  // Set condition keys for testing.
+  auto s_table_id = std::to_string(table_id);
+  auto s_ordinal_position = std::to_string(ordinal_position);
+  std::map<std::string_view, std::string_view> keys = {
+      {Statistics::TABLE_ID, s_table_id},
+      {Statistics::COLUMN_NUMBER, s_ordinal_position}
+  };
 
-  if (error == ErrorCode::OK) {
+  ptree column_statistics;
+  error = statistics_dao->select(keys, column_statistics);
+  if (error != ErrorCode::OK) {
+    return error;
+  }
+
+  if (column_statistics.size() >= 1) {
+    auto column_statistic = column_statistics.front().second;
+
     auto optional_ordinal_position =
-        column_statistic.get_optional<std::int64_t>(Statistics::COLUMN_NUMBER);
+        column_statistic.get_optional<std::int64_t>(
+            Statistics::COLUMN_NUMBER);
     EXPECT_TRUE(optional_ordinal_position);
 
     auto optional_column_statistic =
@@ -306,6 +321,8 @@ ErrorCode DaoTestColumnStatistics::get_one_column_statistic(
 
     UTUtils::print(" ordinal position: ", optional_ordinal_position.get());
     UTUtils::print(" column statistics: " + s_cs_returned);
+  } else {
+    error = ErrorCode::NOT_FOUND;
   }
 
   return error;
@@ -323,18 +340,36 @@ ErrorCode DaoTestColumnStatistics::get_all_column_statistics(
     ObjectIdType table_id, std::vector<ptree> column_statistics_expected) {
   ErrorCode error = ErrorCode::INTERNAL_ERROR;
 
-  std::shared_ptr<db::GenericDAO> s_gdao = nullptr;
-  DBSessionManager db_session_manager;
+  db::DbSessionManagerPg db_session_manager;
 
-  error =
-      db_session_manager.get_dao(db::GenericDAO::TableName::STATISTICS, s_gdao);
+  error = db_session_manager.connect();
   EXPECT_EQ(ErrorCode::OK, error);
 
-  std::shared_ptr<db::StatisticsDAO> sdao;
-  sdao = std::static_pointer_cast<db::StatisticsDAO>(s_gdao);
+  std::shared_ptr<db::Dao> statistics_dao;
+  error = db_session_manager.get_statistics_dao(statistics_dao);
+  EXPECT_NE(nullptr, statistics_dao);
+  EXPECT_EQ(ErrorCode::OK, error);
+
+  // Set condition keys for testing.
+  auto s_table_id = std::to_string(table_id);
+  std::map<std::string_view, std::string_view> keys = {
+      {Statistics::TABLE_ID, s_table_id}
+  };
 
   std::vector<ptree> column_statistics;
-  error = sdao->select_column_statistic(table_id, column_statistics);
+  ptree statistics;
+  error = statistics_dao->select(keys, statistics);
+  if (statistics.size() == 0) {
+    error = ErrorCode::NOT_FOUND;
+  }
+
+  if (error == ErrorCode::OK) {
+    std::transform(statistics.begin(), statistics.end(),
+                    std::back_inserter(column_statistics),
+                    [](boost::property_tree::ptree::value_type vt) {
+                      return vt.second;
+                    });
+  }
 
   if (error == ErrorCode::OK) {
     UTUtils::print(
@@ -390,18 +425,36 @@ ErrorCode DaoTestColumnStatistics::get_all_column_statistics(
     ObjectIdType ordinal_position_removed) {
   ErrorCode error = ErrorCode::INTERNAL_ERROR;
 
-  std::shared_ptr<db::GenericDAO> s_gdao = nullptr;
-  DBSessionManager db_session_manager;
+  db::DbSessionManagerPg db_session_manager;
 
-  error =
-      db_session_manager.get_dao(db::GenericDAO::TableName::STATISTICS, s_gdao);
+  error = db_session_manager.connect();
   EXPECT_EQ(ErrorCode::OK, error);
 
-  std::shared_ptr<db::StatisticsDAO> sdao;
-  sdao = std::static_pointer_cast<db::StatisticsDAO>(s_gdao);
+  std::shared_ptr<db::Dao> statistics_dao;
+  error = db_session_manager.get_statistics_dao(statistics_dao);
+  EXPECT_NE(nullptr, statistics_dao);
+  EXPECT_EQ(ErrorCode::OK, error);
+
+  // Set condition keys for testing.
+  auto s_table_id = std::to_string(table_id);
+  std::map<std::string_view, std::string_view> keys = {
+      {Statistics::TABLE_ID, s_table_id}
+  };
 
   std::vector<ptree> column_statistics;
-  error = sdao->select_column_statistic(table_id, column_statistics);
+  ptree statistics;
+  error = statistics_dao->select(keys, statistics);
+  if (statistics.size() == 0) {
+    error = ErrorCode::NOT_FOUND;
+  }
+
+  if (error == ErrorCode::OK) {
+    std::transform(statistics.begin(), statistics.end(),
+                    std::back_inserter(column_statistics),
+                    [](boost::property_tree::ptree::value_type vt) {
+                      return vt.second;
+                    });
+  }
 
   if (error == ErrorCode::OK) {
     UTUtils::print(
@@ -457,29 +510,40 @@ ErrorCode DaoTestColumnStatistics::remove_one_column_statistic(
     ObjectIdType table_id, ObjectIdType ordinal_position) {
   ErrorCode error = ErrorCode::INTERNAL_ERROR;
 
-  std::shared_ptr<db::GenericDAO> s_gdao = nullptr;
-  DBSessionManager db_session_manager;
+  db::DbSessionManagerPg db_session_manager;
 
-  error =
-      db_session_manager.get_dao(db::GenericDAO::TableName::STATISTICS, s_gdao);
+  error = db_session_manager.connect();
   EXPECT_EQ(ErrorCode::OK, error);
 
-  std::shared_ptr<db::StatisticsDAO> sdao;
-  sdao = std::static_pointer_cast<db::StatisticsDAO>(s_gdao);
+  std::shared_ptr<db::Dao> statistics_dao;
+  error = db_session_manager.get_statistics_dao(statistics_dao);
+  EXPECT_NE(nullptr, statistics_dao);
+  EXPECT_EQ(ErrorCode::OK, error);
 
   error = db_session_manager.start_transaction();
   EXPECT_EQ(ErrorCode::OK, error);
 
-  ObjectIdType ret_statistic_id;
-  error = sdao->delete_column_statistic(table_id, Statistics::COLUMN_NUMBER,
-                                        std::to_string(ordinal_position),
-                                        ret_statistic_id);
+  // Set condition keys for testing.
+  auto s_table_id = std::to_string(table_id);
+  auto s_ordinal_position = std::to_string(ordinal_position);
+  std::map<std::string_view, std::string_view> keys = {
+      {Statistics::TABLE_ID, s_table_id},
+      {Statistics::COLUMN_NUMBER, s_ordinal_position}
+  };
+
+  std::vector<ObjectId> removed_ids;
+  error = statistics_dao->remove(keys, removed_ids);
 
   if (error == ErrorCode::OK) {
     ErrorCode commit_error = db_session_manager.commit();
 
     EXPECT_EQ(ErrorCode::OK, commit_error);
-    EXPECT_GT(ret_statistic_id, 0);
+    if (removed_ids.size() >= 1) {
+      EXPECT_EQ(1, removed_ids.size());
+      EXPECT_GE(removed_ids[0], 1);
+    } else {
+      error = ErrorCode::NOT_FOUND;
+    }
   } else {
     ErrorCode rollback_error = db_session_manager.rollback();
     EXPECT_EQ(ErrorCode::OK, rollback_error);
@@ -503,25 +567,36 @@ ErrorCode DaoTestColumnStatistics::remove_all_column_statistics(
     ObjectIdType table_id) {
   ErrorCode error = ErrorCode::INTERNAL_ERROR;
 
-  std::shared_ptr<db::GenericDAO> s_gdao = nullptr;
-  DBSessionManager db_session_manager;
+  db::DbSessionManagerPg db_session_manager;
 
-  error =
-      db_session_manager.get_dao(db::GenericDAO::TableName::STATISTICS, s_gdao);
+  error = db_session_manager.connect();
   EXPECT_EQ(ErrorCode::OK, error);
 
-  std::shared_ptr<db::StatisticsDAO> sdao;
-  sdao = std::static_pointer_cast<db::StatisticsDAO>(s_gdao);
+  std::shared_ptr<db::Dao> statistics_dao;
+  error = db_session_manager.get_statistics_dao(statistics_dao);
+  EXPECT_NE(nullptr, statistics_dao);
+  EXPECT_EQ(ErrorCode::OK, error);
 
   error = db_session_manager.start_transaction();
   EXPECT_EQ(ErrorCode::OK, error);
 
-  error = sdao->delete_column_statistic(table_id);
+  // Set condition keys for testing.
+  auto s_table_id = std::to_string(table_id);
+  std::map<std::string_view, std::string_view> keys = {
+      {Statistics::TABLE_ID, s_table_id}
+  };
+
+  std::vector<ObjectId> removed_ids;
+  error = statistics_dao->remove(keys, removed_ids);
 
   if (error == ErrorCode::OK) {
     ErrorCode commit_error = db_session_manager.commit();
     EXPECT_EQ(ErrorCode::OK, commit_error);
-
+    if (removed_ids.size() >= 1) {
+      EXPECT_GE(removed_ids[0], 1);
+    } else {
+      error = ErrorCode::NOT_FOUND;
+    }
   } else {
     ErrorCode rollback_error = db_session_manager.rollback();
     EXPECT_EQ(ErrorCode::OK, rollback_error);
@@ -609,7 +684,7 @@ TEST_P(DaoTestColumnStatisticsAllAPIHappy, All_API_happy) {
         column_statistics[ordinal_position - 1]);
 
     if (ordinal_position_to_remove == ordinal_position) {
-      EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
+      EXPECT_EQ(ErrorCode::NOT_FOUND, error);
     } else {
       EXPECT_EQ(ErrorCode::OK, error);
     }
@@ -628,7 +703,7 @@ TEST_P(DaoTestColumnStatisticsAllAPIHappy, All_API_happy) {
 
   error = DaoTestColumnStatistics::get_all_column_statistics(ret_table_id,
                                                              column_statistics);
-  EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
+  EXPECT_EQ(ErrorCode::NOT_FOUND, error);
 
   for (ObjectIdType ordinal_position = 1;
        static_cast<size_t>(ordinal_position) <= column_statistics.size();
@@ -636,7 +711,7 @@ TEST_P(DaoTestColumnStatisticsAllAPIHappy, All_API_happy) {
     error = DaoTestColumnStatistics::get_one_column_statistic(
         ret_table_id, ordinal_position,
         column_statistics[ordinal_position - 1]);
-    EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
+    EXPECT_EQ(ErrorCode::NOT_FOUND, error);
   }
 
   // remove table metadata.
@@ -755,7 +830,7 @@ TEST_P(DaoTestColumnStatisticsUpdateHappy, update_column_statistics) {
         column_statistics_to_update[ordinal_position - 1]);
 
     if (ordinal_position_to_remove == ordinal_position) {
-      EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
+      EXPECT_EQ(ErrorCode::NOT_FOUND, error);
     } else {
       EXPECT_EQ(ErrorCode::OK, error);
     }
@@ -769,7 +844,7 @@ TEST_P(DaoTestColumnStatisticsUpdateHappy, update_column_statistics) {
       ret_table_id, column_statistics_to_update, ordinal_position_to_remove);
 
   if (column_statistics_to_update.size() == 1) {
-    EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
+    EXPECT_EQ(ErrorCode::NOT_FOUND, error);
   } else {
     EXPECT_EQ(ErrorCode::OK, error);
   }
@@ -781,7 +856,7 @@ TEST_P(DaoTestColumnStatisticsUpdateHappy, update_column_statistics) {
   error = DaoTestColumnStatistics::remove_all_column_statistics(ret_table_id);
 
   if (column_statistics_to_update.size() == 1) {
-    EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
+    EXPECT_EQ(ErrorCode::NOT_FOUND, error);
   } else {
     EXPECT_EQ(ErrorCode::OK, error);
   }
@@ -796,7 +871,7 @@ TEST_P(DaoTestColumnStatisticsUpdateHappy, update_column_statistics) {
     error = DaoTestColumnStatistics::get_one_column_statistic(
         ret_table_id, ordinal_position,
         column_statistics_to_update[ordinal_position - 1]);
-    EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
+    EXPECT_EQ(ErrorCode::NOT_FOUND, error);
   }
 
   // remove table metadata.
@@ -866,7 +941,7 @@ TEST_P(DaoTestColumnStatisticsRemoveAllHappy, remove_all_column_statistics) {
 
   error = DaoTestColumnStatistics::get_all_column_statistics(ret_table_id,
                                                              column_statistics);
-  EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
+  EXPECT_EQ(ErrorCode::NOT_FOUND, error);
 
   for (ObjectIdType ordinal_position = 1;
        static_cast<size_t>(ordinal_position) <= column_statistics.size();
@@ -874,7 +949,7 @@ TEST_P(DaoTestColumnStatisticsRemoveAllHappy, remove_all_column_statistics) {
     error = DaoTestColumnStatistics::get_one_column_statistic(
         ret_table_id, ordinal_position,
         column_statistics[ordinal_position - 1]);
-    EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
+    EXPECT_EQ(ErrorCode::NOT_FOUND, error);
   }
 
   // remove table metadata.
@@ -936,38 +1011,42 @@ TEST_P(DaoTestColumnStatisticsAllAPIException, all_api_exception) {
    * based on non-existing column ordinal position
    * or non-existing table id.
    */
-  for (ObjectIdType ordinal_position : g_environment_->invalid_ids) {
-    // ordinal position only not exists
-    error = DaoTestColumnStatistics::add_one_column_statistic(
-        ret_table_id, ordinal_position, column_statistics[0]);
-    EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);
-
-    for (ObjectIdType table_id : g_environment_->invalid_ids) {
-      // table id and ordinal position not exists
+  {
+    for (ObjectIdType ordinal_position : g_environment_->invalid_ids) {
+      // ordinal position only not exists
       error = DaoTestColumnStatistics::add_one_column_statistic(
-          table_id, ordinal_position, column_statistics[0]);
+          ret_table_id, ordinal_position, column_statistics[0]);
+      EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);
+
+      for (ObjectIdType table_id : g_environment_->invalid_ids) {
+        // table id and ordinal position not exists
+        error = DaoTestColumnStatistics::add_one_column_statistic(
+            table_id, ordinal_position, column_statistics[0]);
+        EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);
+      }
+    }
+
+    ObjectIdType ordinal_position_exists = 1;
+    for (ObjectIdType table_id : g_environment_->invalid_ids) {
+      // table id only not exists
+      error = DaoTestColumnStatistics::add_one_column_statistic(
+          table_id, ordinal_position_exists, column_statistics[0]);
       EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);
     }
-  }
-
-  ObjectIdType ordinal_position_exists = 1;
-  for (ObjectIdType table_id : g_environment_->invalid_ids) {
-    // table id only not exists
-    error = DaoTestColumnStatistics::add_one_column_statistic(
-        table_id, ordinal_position_exists, column_statistics[0]);
-    EXPECT_EQ(ErrorCode::INVALID_PARAMETER, error);
   }
 
   /**
    * get_all_column_statistics
    * based on non-existing table id.
    */
-  std::vector<ptree> empty_column_statistics;
-  for (ObjectIdType table_id : g_environment_->invalid_ids) {
-    // table id only not exists
-    error = DaoTestColumnStatistics::get_all_column_statistics(
-        table_id, empty_column_statistics);
-    EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
+  {
+    std::vector<ptree> column_statistics;
+    for (ObjectIdType table_id : g_environment_->invalid_ids) {
+      // table id only not exists
+      error = DaoTestColumnStatistics::get_all_column_statistics(
+          table_id, column_statistics);
+      EXPECT_EQ(ErrorCode::NOT_FOUND, error);
+    }
   }
 
   /**
@@ -975,26 +1054,29 @@ TEST_P(DaoTestColumnStatisticsAllAPIException, all_api_exception) {
    * based on non-existing column ordinal position
    * or non-existing table id.
    */
-  ptree empty_column_statistic;
-  for (ObjectIdType ordinal_position : g_environment_->invalid_ids) {
-    // ordinal position only not exists
-    error = DaoTestColumnStatistics::get_one_column_statistic(
-        ret_table_id, ordinal_position, empty_column_statistic);
-    EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
-
-    for (ObjectIdType table_id : g_environment_->invalid_ids) {
-      // table id and ordinal position not exists
+  {
+    ptree column_statistic;
+    for (ObjectIdType ordinal_position : g_environment_->invalid_ids) {
+      // ordinal position only not exists
       error = DaoTestColumnStatistics::get_one_column_statistic(
-          table_id, ordinal_position, empty_column_statistic);
-      EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
-    }
-  }
+          ret_table_id, ordinal_position, column_statistic);
+      EXPECT_EQ(ErrorCode::NOT_FOUND, error);
 
-  for (ObjectIdType table_id : g_environment_->invalid_ids) {
-    // table id only not exists
-    error = DaoTestColumnStatistics::get_one_column_statistic(
-        table_id, ordinal_position_exists, empty_column_statistic);
-    EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
+      for (ObjectIdType table_id : g_environment_->invalid_ids) {
+        // table id and ordinal position not exists
+        error = DaoTestColumnStatistics::get_one_column_statistic(
+            table_id, ordinal_position, column_statistic);
+        EXPECT_EQ(ErrorCode::NOT_FOUND, error);
+      }
+    }
+
+    ObjectIdType ordinal_position_exists = 1;
+    for (ObjectIdType table_id : g_environment_->invalid_ids) {
+      // table id only not exists
+      error = DaoTestColumnStatistics::get_one_column_statistic(
+          table_id, ordinal_position_exists, column_statistic);
+      EXPECT_EQ(ErrorCode::NOT_FOUND, error);
+    }
   }
 
   /**
@@ -1002,35 +1084,40 @@ TEST_P(DaoTestColumnStatisticsAllAPIException, all_api_exception) {
    * based on non-existing column ordinal position
    * or non-existing table id.
    */
-  for (ObjectIdType ordinal_position : g_environment_->invalid_ids) {
-    // ordinal position only not exists
-    error = DaoTestColumnStatistics::remove_one_column_statistic(
-        ret_table_id, ordinal_position);
-    EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
-
-    for (ObjectIdType table_id : g_environment_->invalid_ids) {
-      // table id and ordinal position not exists
+  {
+    for (ObjectIdType ordinal_position : g_environment_->invalid_ids) {
+      // ordinal position only not exists
       error = DaoTestColumnStatistics::remove_one_column_statistic(
-          table_id, ordinal_position);
-      EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
-    }
-  }
+          ret_table_id, ordinal_position);
+      EXPECT_EQ(ErrorCode::NOT_FOUND, error);
 
-  for (ObjectIdType table_id : g_environment_->invalid_ids) {
-    // table id only not exists
-    error = DaoTestColumnStatistics::remove_one_column_statistic(
-        table_id, ordinal_position_exists);
-    EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
+      for (ObjectIdType table_id : g_environment_->invalid_ids) {
+        // table id and ordinal position not exists
+        error = DaoTestColumnStatistics::remove_one_column_statistic(
+            table_id, ordinal_position);
+        EXPECT_EQ(ErrorCode::NOT_FOUND, error);
+      }
+    }
+
+    ObjectIdType ordinal_position_exists = 1;
+    for (ObjectIdType table_id : g_environment_->invalid_ids) {
+      // table id only not exists
+      error = DaoTestColumnStatistics::remove_one_column_statistic(
+          table_id, ordinal_position_exists);
+      EXPECT_EQ(ErrorCode::NOT_FOUND, error);
+    }
   }
 
   /**
    * remove_all_column_statistics
    * based on non-existing table id.
    */
-  for (ObjectIdType table_id : g_environment_->invalid_ids) {
-    // table id not exists
-    error = DaoTestColumnStatistics::remove_all_column_statistics(table_id);
-    EXPECT_EQ(ErrorCode::ID_NOT_FOUND, error);
+  {
+    for (ObjectIdType table_id : g_environment_->invalid_ids) {
+      // table id not exists
+      error = DaoTestColumnStatistics::remove_all_column_statistics(table_id);
+      EXPECT_EQ(ErrorCode::NOT_FOUND, error);
+    }
   }
 
   // remove table metadata.
@@ -1048,15 +1135,15 @@ TEST_F(DaoTestColumnStatisticsAllAPIException,
   ObjectIdType ret_table_id;
   TableMetadataHelper::add_table(table_name, &ret_table_id);
 
-  std::shared_ptr<db::GenericDAO> s_gdao = nullptr;
-  DBSessionManager db_session_manager;
+  db::DbSessionManagerPg db_session_manager;
 
-  error =
-      db_session_manager.get_dao(db::GenericDAO::TableName::STATISTICS, s_gdao);
+  error = db_session_manager.connect();
+  ASSERT_EQ(ErrorCode::OK, error);
+
+  std::shared_ptr<db::Dao> statistics_dao;
+  error = db_session_manager.get_statistics_dao(statistics_dao);
+  EXPECT_NE(nullptr, statistics_dao);
   EXPECT_EQ(ErrorCode::OK, error);
-
-  std::shared_ptr<db::StatisticsDAO> sdao;
-  sdao = std::static_pointer_cast<db::StatisticsDAO>(s_gdao);
 
   error = db_session_manager.start_transaction();
   EXPECT_EQ(ErrorCode::OK, error);
@@ -1065,9 +1152,11 @@ TEST_F(DaoTestColumnStatisticsAllAPIException,
   std::int64_t ordinal_position = 1;
   ObjectIdType ret_statistic_id;
 
-  error = sdao->upsert_column_statistic(
-      ret_table_id, Statistics::COLUMN_NUMBER, std::to_string(ordinal_position),
-      &statistic_name, column_statistic, ret_statistic_id);
+  column_statistic.put(Statistics::TABLE_ID, ret_table_id);
+  column_statistic.put(Statistics::COLUMN_NUMBER, ordinal_position);
+  column_statistic.put(Statistics::NAME, statistic_name);
+
+  error = statistics_dao->insert(column_statistic, ret_statistic_id);
 
   EXPECT_EQ(ErrorCode::OK, error);
   EXPECT_GT(ret_statistic_id, 0);

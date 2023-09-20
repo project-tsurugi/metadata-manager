@@ -15,17 +15,15 @@
  */
 #include "test/helper/postgresql/metadata_helper_pg.h"
 
-#include <libpq-fe.h>
-
 #include <boost/format.hpp>
 
 #include "manager/metadata/common/config.h"
-#include "manager/metadata/dao/postgresql/common_pg.h"
+#include "manager/metadata/dao/postgresql/pg_common.h"
 #include "test/common/ut_utils.h"
 
 namespace manager::metadata::testing {
 
-namespace dao = ::manager::metadata::db::postgresql;
+namespace dao = ::manager::metadata::db;
 
 /**
  * @brief Get the number of records in the current constraint metadata.
@@ -35,7 +33,7 @@ int64_t MetadataHelperPg::get_record_count() const {
   PGconn* connection = PQconnectdb(Config::get_connection_string().c_str());
 
   boost::format statement = boost::format("SELECT COUNT(*) FROM %s.%s") %
-                            dao::SCHEMA_NAME % this->table_name_;
+                            dao::kSchemaTsurugiCatalog % this->table_name_;
   PGresult* res = PQexec(connection, statement.str().c_str());
 
   int64_t res_val = UTUtils::to_integral<int64_t>(PQgetvalue(res, 0, 0));

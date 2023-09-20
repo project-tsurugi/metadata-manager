@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 tsurugi project.
+ * Copyright 2021-2023 tsurugi project.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,17 +16,75 @@
 #ifndef MANAGER_METADATA_DAO_POSTGRESQL_ROLES_DAO_PG_H_
 #define MANAGER_METADATA_DAO_POSTGRESQL_ROLES_DAO_PG_H_
 
+#include <map>
+#include <string>
+#include <string_view>
+#include <vector>
+
 #include <boost/property_tree/ptree.hpp>
 
-#include "manager/metadata/dao/postgresql/db_session_manager_pg.h"
-#include "manager/metadata/dao/postgresql/dbc_utils_pg.h"
-#include "manager/metadata/dao/roles_dao.h"
-#include "manager/metadata/error_code.h"
+#include "manager/metadata/dao/postgresql/dao_pg.h"
+#include "manager/metadata/roles.h"
 
-namespace manager::metadata::db::postgresql {
+namespace manager::metadata::db {
 
-class RolesDAO : public manager::metadata::db::RolesDAO {
+/**
+ * @brief DAO class for accessing role metadata for PostgreSQL.
+ */
+class RolesDaoPg : public DaoPg {
  public:
+  /**
+   * @brief roles table name.
+   */
+  static constexpr const char* const kTableName = "roles";
+
+  // Inheritance constructor.
+  using DaoPg::DaoPg;
+
+  /**
+   * @brief Unsupported function.
+   * @return Always ErrorCode::NOT_SUPPORTED.
+   */
+  manager::metadata::ErrorCode insert(const boost::property_tree::ptree&,
+                                      ObjectId&) const override {
+    // Do nothing and return of ErrorCode::NOT_SUPPORTED.
+    return ErrorCode::NOT_SUPPORTED;
+  }
+
+  /**
+   * @brief Select a role object from the PostgreSQL with the specified key
+   * value.
+   * @param keys    [in]  key name and value of the metadata object.
+   * @param object  [out] a selected metadata object.
+   * @return If success ErrorCode::OK, otherwise error code.
+   */
+  manager::metadata::ErrorCode select(
+      const std::map<std::string_view, std::string_view>& keys,
+      boost::property_tree::ptree& object) const override;
+
+  /**
+   * @brief Unsupported function.
+   * @return Always ErrorCode::NOT_SUPPORTED.
+   */
+  manager::metadata::ErrorCode update(
+      const std::map<std::string_view, std::string_view>&,
+      const boost::property_tree::ptree&, uint64_t&) const override {
+    // Do nothing and return of ErrorCode::NOT_SUPPORTED.
+    return ErrorCode::NOT_SUPPORTED;
+  }
+
+  /**
+   * @brief Unsupported function.
+   * @return Always ErrorCode::NOT_SUPPORTED.
+   */
+  manager::metadata::ErrorCode remove(
+      const std::map<std::string_view, std::string_view>&,
+      std::vector<ObjectId>&) const override {
+    // Do nothing and return of ErrorCode::NOT_SUPPORTED.
+    return ErrorCode::NOT_SUPPORTED;
+  }
+
+ private:
   /**
    * @brief Column ordinal position of the role metadata table
    *   in the PostgreSQL repository.
@@ -46,22 +104,71 @@ class RolesDAO : public manager::metadata::db::RolesDAO {
     kValidUntil,
   };  // enum class OrdinalPosition
 
-  explicit RolesDAO(DBSessionManager* session_manager);
+  /**
+   * @brief Create prepared statements.
+   */
+  void create_prepared_statements() override;
 
-  manager::metadata::ErrorCode prepare() const override;
+  /**
+   * @brief Get the table source name.
+   * @return table source name.
+   */
+  std::string get_source_name() const override { return kTableName; }
 
-  manager::metadata::ErrorCode select_role_metadata(
-      std::string_view object_key, std::string_view object_value,
-      boost::property_tree::ptree& object) const override;
+  /**
+   * @brief Function defined for compatibility.
+   * @return Always empty string.
+   */
+  std::string get_insert_statement() const {
+    // Returns an unconditional empty string.
+    return "";
+  }
 
- private:
-  ConnectionSPtr connection_;
+  /**
+   * @brief Function defined for compatibility.
+   * @return Always empty string.
+   */
+  std::string get_select_all_statement() const {
+    // Returns an unconditional empty string.
+    return "";
+  }
 
-  manager::metadata::ErrorCode convert_pgresult_to_ptree(
-      const PGresult* res, const int row_number,
-      boost::property_tree::ptree& role) const;
-};  // class RolesDAO
+  /**
+   * @brief Get a SELECT statement to retrieve metadata matching the criteria
+   *   from the metadata table.
+   * @param key  [in]  column name of metadata table.
+   * @return SELECT statement.
+   */
+  std::string get_select_statement(std::string_view key) const override;
 
-}  // namespace manager::metadata::db::postgresql
+  /**
+   * @brief Function defined for compatibility.
+   * @return Always empty string.
+   */
+  std::string get_update_statement(std::string_view) const {
+    // Returns an unconditional empty string.
+    return "";
+  }
+
+  /**
+   * @brief Function defined for compatibility.
+   * @return Always empty string.
+   */
+  std::string get_delete_statement(std::string_view) const {
+    // Returns an unconditional empty string.
+    return "";
+  }
+
+  /**
+   * @brief Converts from PGresult type values to ptree type data.
+   * @param pg_result   [in]  the result of a query.
+   * @param row_number  [in]  row number of the PGresult.
+   * @return metadata object.
+   */
+  boost::property_tree::ptree convert_pgresult_to_ptree(
+      const PGresult* pg_result, const int row_number) const;
+};  // class RolesDaoPg
+
+}  // namespace manager::metadata::db
 
 #endif  // MANAGER_METADATA_DAO_POSTGRESQL_ROLES_DAO_PG_H_

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2022 tsurugi project.
+ * Copyright 2020-2021 tsurugi project.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,29 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#if !defined(STORAGE_POSTGRESQL) && !defined(STORAGE_JSON)
-#define STORAGE_POSTGRESQL
-#endif
+#include "manager/metadata/dao/json/dao_json.h"
 
-#include "manager/metadata/dao/db_session_manager.h"
+#include <boost/format.hpp>
 
-#if defined(STORAGE_POSTGRESQL)
-#include "manager/metadata/dao/postgresql/db_session_manager_pg.h"
-#elif defined(STORAGE_JSON)
-#include "manager/metadata/dao/json/db_session_manager_json.h"
-#endif
+#include "manager/metadata/common/config.h"
 
 // =============================================================================
 namespace manager::metadata::db {
 
-DbSessionManager& DbSessionManager::get_instance() {
-#if defined(STORAGE_POSTGRESQL)
-  static DbSessionManagerPg instance;
-#elif defined(STORAGE_JSON)
-  static DbSessionManagerJson instance;
-#endif
+ErrorCode DaoJson::prepare() {
+  ErrorCode error = ErrorCode::UNKNOWN;
 
-  return instance;
+  // Filename of the metadata.
+  boost::format file_path = boost::format("%s/%s.json") %
+                            Config::get_storage_dir_path() % source_name_;
+  // Set metadata file name.
+  database_ = file_path.str();
+
+  // Generate object ID generator.
+  oid_generator_ = std::make_unique<ObjectIdGenerator>();
+
+  error = ErrorCode::OK;
+  return error;
 }
 
 }  // namespace manager::metadata::db

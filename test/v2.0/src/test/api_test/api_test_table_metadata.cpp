@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2022 tsurugi project.
+ * Copyright 2020-2023 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -57,7 +57,8 @@ class ApiTestTableMetadataEx
     if (g_environment_->is_open()) {
       // If valid test data could not be made, skip this test.
       if (valid_table_metadata.empty()) {
-        GTEST_SKIP_("  Skipped: Could not read a json file with table metadata.");
+        GTEST_SKIP_(
+            "  Skipped: Could not read a json file with table metadata.");
       }
     }
   }
@@ -70,7 +71,7 @@ TEST_F(ApiTestTableMetadata, test_duplicate_table_name) {
   CALL_TRACE;
 
   // Generate tables metadata manager.
-  auto managers = get_table_metadata(GlobalTestEnvironment::TEST_DB);
+  auto managers = get_tables_ptr(GlobalTestEnvironment::TEST_DB);
 
   // Generate test metadata.
   UtTableMetadata ut_metadata;
@@ -110,8 +111,9 @@ TEST_F(ApiTestTableMetadata, test_without_initialized) {
   // Add table metadata.
   {
     // Generate tables metadata manager.
-    auto managers = get_table_metadata(GlobalTestEnvironment::TEST_DB);
+    auto managers = get_tables_ptr(GlobalTestEnvironment::TEST_DB);
 
+    CALL_TRACE;
     object_id = ApiTestHelper::test_add(managers.get(), inserted_metadata,
                                         ErrorCode::OK);
   }
@@ -119,9 +121,11 @@ TEST_F(ApiTestTableMetadata, test_without_initialized) {
   // Get table metadata by table id with ptree.
   {
     // Generate tables metadata manager.
-    auto managers = get_table_metadata(GlobalTestEnvironment::TEST_DB);
+    auto managers = get_tables_ptr(GlobalTestEnvironment::TEST_DB);
 
     ptree retrieved_metadata;
+
+    CALL_TRACE;
     ApiTestHelper::test_get(managers.get(), object_id, ErrorCode::OK,
                             retrieved_metadata);
   }
@@ -129,9 +133,11 @@ TEST_F(ApiTestTableMetadata, test_without_initialized) {
   // Get table metadata by table name with ptree.
   {
     // Generate tables metadata manager.
-    auto managers = get_table_metadata(GlobalTestEnvironment::TEST_DB);
+    auto managers = get_tables_ptr(GlobalTestEnvironment::TEST_DB);
 
     ptree retrieved_metadata;
+
+    CALL_TRACE;
     ApiTestHelper::test_get(managers.get(), object_name, ErrorCode::OK,
                             retrieved_metadata);
   }
@@ -139,9 +145,11 @@ TEST_F(ApiTestTableMetadata, test_without_initialized) {
   // Get table metadata by table id with structure.
   {
     // Generate tables metadata manager.
-    auto managers = get_table_metadata(GlobalTestEnvironment::TEST_DB);
+    auto managers = get_tables_ptr(GlobalTestEnvironment::TEST_DB);
 
     Table retrieved_metadata;
+
+    CALL_TRACE;
     ApiTestHelper::test_get(managers.get(), object_id, ErrorCode::OK,
                             retrieved_metadata);
   }
@@ -149,9 +157,11 @@ TEST_F(ApiTestTableMetadata, test_without_initialized) {
   // Get table metadata by table name with structure.
   {
     // Generate tables metadata manager.
-    auto managers = get_table_metadata(GlobalTestEnvironment::TEST_DB);
+    auto managers = get_tables_ptr(GlobalTestEnvironment::TEST_DB);
 
     Table retrieved_metadata;
+
+    CALL_TRACE;
     ApiTestHelper::test_get(managers.get(), object_name, ErrorCode::OK,
                             retrieved_metadata);
   }
@@ -159,19 +169,20 @@ TEST_F(ApiTestTableMetadata, test_without_initialized) {
   // Get all table metadata with ptree.
   {
     // Generate tables metadata manager.
-    auto managers = get_table_metadata(GlobalTestEnvironment::TEST_DB);
+    auto managers = get_tables_ptr(GlobalTestEnvironment::TEST_DB);
 
     std::vector<ptree> container = {};
-    // Get all table metadata.
+
+    CALL_TRACE;
     ApiTestHelper::test_getall(managers.get(), ErrorCode::OK, container);
   }
 
   // Update table metadata.
   {
     // Generate tables metadata manager.
-    auto managers = get_table_metadata(GlobalTestEnvironment::TEST_DB);
+    auto managers = get_tables_ptr(GlobalTestEnvironment::TEST_DB);
 
-    // Execute the test.
+    CALL_TRACE;
     ApiTestHelper::test_update(managers.get(), object_id, inserted_metadata,
                                ErrorCode::OK);
   }
@@ -179,17 +190,18 @@ TEST_F(ApiTestTableMetadata, test_without_initialized) {
   // Remove table metadata by table id.
   {
     // Generate tables metadata manager.
-    auto managers = get_table_metadata(GlobalTestEnvironment::TEST_DB);
+    auto managers = get_tables_ptr(GlobalTestEnvironment::TEST_DB);
 
-    // Remove table metadata by table id.
+    CALL_TRACE;
     ApiTestHelper::test_remove(managers.get(), object_id, ErrorCode::OK);
   }
 
   // Add table metadata.
   {
     // Generate tables metadata manager.
-    auto managers = get_table_metadata(GlobalTestEnvironment::TEST_DB);
+    auto managers = get_tables_ptr(GlobalTestEnvironment::TEST_DB);
 
+    CALL_TRACE;
     object_id = ApiTestHelper::test_add(managers.get(), inserted_metadata,
                                         ErrorCode::OK);
   }
@@ -197,9 +209,9 @@ TEST_F(ApiTestTableMetadata, test_without_initialized) {
   // Remove table metadata by table name.
   {
     // Generate tables metadata manager.
-    auto managers = get_table_metadata(GlobalTestEnvironment::TEST_DB);
+    auto managers = get_tables_ptr(GlobalTestEnvironment::TEST_DB);
 
-    // Remove table metadata by table id.
+    CALL_TRACE;
     ApiTestHelper::test_remove(managers.get(), object_name, ErrorCode::OK);
   }
 }
@@ -208,6 +220,8 @@ TEST_F(ApiTestTableMetadata, test_without_initialized) {
  * @brief Add, get, remove valid table metadata based on table name.
  */
 TEST_F(ApiTestTableMetadataEx, add_get_remove_table_metadata_by_table_name) {
+  CALL_TRACE;
+
   int32_t count = 0;
 
   // variable "table_metadata" is test data set.
@@ -221,15 +235,17 @@ TEST_F(ApiTestTableMetadataEx, add_get_remove_table_metadata_by_table_name) {
     TableMetadataHelper::add_table(table_expected, &ret_table_id);
 
     // Generate tables metadata manager.
-    auto tables = get_table_metadata(GlobalTestEnvironment::TEST_DB);
+    auto tables = get_tables_ptr(GlobalTestEnvironment::TEST_DB);
 
     // Test initialization.
+    CALL_TRACE;
     ApiTestHelper::test_init(tables.get(), ErrorCode::OK);
 
     ptree table_metadata_inserted;
     std::string table_name = table_expected.get<std::string>(Table::NAME);
 
     // Get table metadata by table name with ptree.
+    CALL_TRACE;
     ApiTestHelper::test_get(tables.get(), table_name, ErrorCode::OK,
                             table_metadata_inserted);
 
@@ -239,10 +255,12 @@ TEST_F(ApiTestTableMetadataEx, add_get_remove_table_metadata_by_table_name) {
                                            table_metadata_inserted);
 
     // Remove table metadata by table name.
+    CALL_TRACE;
     ApiTestHelper::test_remove(tables.get(), table_name, ErrorCode::OK);
 
     // Verifies that table metadata does not exist.
     ptree table_metadata_got;
+    CALL_TRACE;
     ApiTestHelper::test_get(tables.get(), table_name, ErrorCode::NAME_NOT_FOUND,
                             table_metadata_got);
   }
@@ -253,6 +271,8 @@ TEST_F(ApiTestTableMetadataEx, add_get_remove_table_metadata_by_table_name) {
  */
 TEST_F(ApiTestTableMetadataEx,
        add_get_update_remove_table_metadata_by_table_id) {
+  CALL_TRACE;
+
   int32_t count = 0;
 
   // variable "table_metadata" is test data set.
@@ -266,13 +286,15 @@ TEST_F(ApiTestTableMetadataEx,
     TableMetadataHelper::add_table(table_expected, &ret_table_id);
 
     // get valid table metadata by table id.
-    auto tables = std::make_unique<Tables>(GlobalTestEnvironment::TEST_DB);
+    auto tables = get_tables_ptr(GlobalTestEnvironment::TEST_DB);
 
     // Test initialization.
+    CALL_TRACE;
     ApiTestHelper::test_init(tables.get(), ErrorCode::OK);
 
     ptree table_metadata_inserted;
     // Get table metadata by table id with ptree.
+    CALL_TRACE;
     ApiTestHelper::test_get(tables.get(), ret_table_id, ErrorCode::OK,
                             table_metadata_inserted);
 
@@ -289,11 +311,13 @@ TEST_F(ApiTestTableMetadataEx,
     table_expected.put(Table::NAME, table_name);
 
     // Update table metadata by table id with ptree.
+    CALL_TRACE;
     ApiTestHelper::test_update(tables.get(), ret_table_id, table_expected,
                                ErrorCode::OK);
 
     ptree table_metadata_updated;
     // Get table metadata by table id with ptree.
+    CALL_TRACE;
     ApiTestHelper::test_get(tables.get(), ret_table_id, ErrorCode::OK,
                             table_metadata_updated);
 
@@ -302,10 +326,12 @@ TEST_F(ApiTestTableMetadataEx,
                                            table_metadata_updated);
 
     // Remove table metadata by table name.
+    CALL_TRACE;
     ApiTestHelper::test_remove(tables.get(), ret_table_id, ErrorCode::OK);
 
     // Verifies that table metadata does not exist.
     ptree table_metadata_got;
+    CALL_TRACE;
     ApiTestHelper::test_get(tables.get(), ret_table_id, ErrorCode::ID_NOT_FOUND,
                             table_metadata_got);
   }

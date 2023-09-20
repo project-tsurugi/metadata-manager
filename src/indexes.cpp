@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 tsurugi project.
+ * Copyright 2020-2023 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,14 +16,18 @@
 #include "manager/metadata/indexes.h"
 
 #include <memory>
-#include <jwt-cpp/jwt.h>
 
-#include "manager/metadata/common/config.h"
-#include "manager/metadata/common/jwt_claims.h"
 #include "manager/metadata/common/message.h"
 #include "manager/metadata/helper/logging_helper.h"
 #include "manager/metadata/helper/ptree_helper.h"
-#include "manager/metadata/provider/provider_factory.h"
+#include "manager/metadata/provider/metadata_provider.h"
+
+// =============================================================================
+namespace {
+
+auto& provider = manager::metadata::db::MetadataProvider::get_instance();
+
+}  // namespace
 
 // =============================================================================
 namespace manager::metadata {
@@ -33,36 +37,30 @@ using boost::property_tree::ptree;
 // ==========================================================================
 // Indexes class methods.
 /**
- * @brief Constructor
- * @param database   [in]  database name.
- * @param component  [in]  component name.
- */
-Indexes::Indexes(std::string_view database, std::string_view component)
-    : Metadata(database, component) {
-  provider_ = manager::metadata::db::get_metadata_provider();
-}
-
-/**
  * @brief Initialization.
  * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode Indexes::init() const {
   ErrorCode error = ErrorCode::UNKNOWN;
 
-  log::function_start("Index::init()");
+  // Log of API function start.
+  log::function_start("Indexes::init()");
 
-  error = provider_->init();
+  error = provider.init();
 
-  log::function_finish("Index::init()", error);
+  // Log of API function finish.
+  log::function_finish("Indexes::init()", error);
 
   return error;
 }
 
 /**
- * @brief
+ * @brief Add index metadata to index metadata table.
+ * @param object  [in]  index metadata to add.
+ * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode Indexes::add(const boost::property_tree::ptree& object) const {
-
+  // Adds the index metadata through the class method.
   return this->add(object, nullptr);
 }
 
@@ -74,19 +72,31 @@ ErrorCode Indexes::add(const boost::property_tree::ptree& object) const {
  */
 ErrorCode Indexes::add(const boost::property_tree::ptree& object,
                       ObjectId* object_id) const {
-  
+  ErrorCode error = ErrorCode::UNKNOWN;
+
+  // Log of API function start.
   log::function_start("Indexes::add()");
 
-  ErrorCode error = ErrorCode::UNKNOWN;
-  ObjectId id = INVALID_OBJECT_ID;
+  // Parameter value check.
+  error = param_check_metadata_add(object);
 
-  error = provider_->add_index_metadata(object, id);
-  if ((error == ErrorCode::OK) && (object_id != nullptr)) {
-    *object_id = id;
+  ObjectId added_oid = INVALID_OBJECT_ID;
+  if (error == ErrorCode::OK) {
+    // Add index metadata within a transaction.
+    error = provider.transaction([&object, &added_oid]() -> ErrorCode {
+      // Adds the index metadata through the provider.
+      return provider.add_index_metadata(object, &added_oid);
+    });
   }
 
-  log::function_finish("Index::add()", error);
-  
+  // Set a value if object_id is not null.
+  if ((error == ErrorCode::OK) && (object_id != nullptr)) {
+    *object_id = added_oid;
+  }
+
+  // Log of API function finish.
+  log::function_finish("Indexes::add()", error);
+
   return error;
 }
 
@@ -100,49 +110,86 @@ ErrorCode Indexes::add(const boost::property_tree::ptree& object,
  */
 ErrorCode Indexes::get(const ObjectId object_id,
                       boost::property_tree::ptree& object) const {
-
-  log::function_start("Index::get(object_id)");
-
   ErrorCode error = ErrorCode::UNKNOWN;
 
+  // Log of API function start.
+  log::function_start("Indexes::get(object_id)");
+
+  // Specify the key for the index metadata you want to retrieve.
+  std::string index_id(std::to_string(object_id));
+  std::map<std::string_view, std::string_view> keys = {
+      {Index::ID, index_id}
+  };
+
+  // Retrieve index metadata.
+  ptree tmp_object;
   if (object_id > 0) {
-    error = provider_->get_index_metadata(Object::ID, 
-                                        std::to_string(object_id), 
-                                        object);
+    // Get the index metadata through the provider.
+    error = provider.get_index_metadata(keys, tmp_object);
   } else {
     LOG_WARNING
         << "An out-of-range value (0 or less) was specified for object ID.: "
         << object_id;
-    error = ErrorCode::INVALID_PARAMETER;
+    error = ErrorCode::ID_NOT_FOUND;
   }
 
-  log::function_finish("Index::get(object_id)", error);
+  if (error == ErrorCode::OK) {
+    if (tmp_object.size() == 1) {
+      object = tmp_object.front().second;
+    } else {
+      error = ErrorCode::RESULT_MULTIPLE_ROWS;
+      LOG_WARNING << "Multiple rows retrieved.: " << keys
+                  << " exists " << tmp_object.size() << " rows";
+    }
+  }
+
+  // Log of API function finish.
+  log::function_finish("Indexes::get(object_id)", error);
 
   return error;
-}
+  }
 
 /**
  * @brief Get index metadata object based on name.
  * @param object_name [in]  object name.
  * @param object      [out] index metadata object with the specified name.
  * @retval ErrorCode::OK if success,
- * @retval ErrorCode::NAME_NOT_FOUND if the table name does not exist.
+ * @retval ErrorCode::NAME_NOT_FOUND if the index name does not exist.
  * @retval otherwise an error code.
  */
 ErrorCode Indexes::get(std::string_view object_name,
                       boost::property_tree::ptree& object) const {
-
-  log::function_start("Indexes::get(object_name)");
-
   ErrorCode error = ErrorCode::UNKNOWN;
 
+  // Log of API function start.
+  log::function_start("Indexes::get(object_name)");
+
+  // Specify the key for the index metadata you want to retrieve.
+  std::map<std::string_view, std::string_view> keys = {
+      {Index::NAME, object_name}
+  };
+
+  // Retrieve index metadata.
+  ptree tmp_object;
   if (!object_name.empty()) {
-    error = provider_->get_index_metadata(Object::NAME, object_name, object);
+    // Get the index metadata through the provider.
+    error = provider.get_index_metadata(keys, tmp_object);
   } else {
-    LOG_WARNING << "An empty value was specified for TableName.";
-    error = ErrorCode::INVALID_PARAMETER;
+    LOG_WARNING << "An empty value was specified for object name.";
+    error = ErrorCode::NAME_NOT_FOUND;
   }
 
+  if (error == ErrorCode::OK) {
+    if (tmp_object.size() == 1) {
+      object = tmp_object.front().second;
+    } else {
+      error = ErrorCode::RESULT_MULTIPLE_ROWS;
+      LOG_WARNING << "Multiple rows retrieved.: " << keys
+                  << " exists " << tmp_object.size() << " rows";
+    }
+  }
+
+  // Log of API function finish.
   log::function_finish("Indexes::get(object_name)", error);
 
   return error;
@@ -150,18 +197,33 @@ ErrorCode Indexes::get(std::string_view object_name,
 
 /**
  * @brief Get all index metadata objects from the metadata table.
- *   If no index metadata existst, return the container as empty.
+ *   If no index metadata exists, return the container as empty.
  * @param objects  [out] Container of metadata objects.
  * @return ErrorCode::OK if success, otherwise an error code.
  */
 ErrorCode Indexes::get_all(
     std::vector<boost::property_tree::ptree>& objects) const {
+  ErrorCode error = ErrorCode::UNKNOWN;
 
-  log::function_start("Tables::get_all()");
+  // Log of API function start.
+  log::function_start("Indexes::get_all()");
 
-  ErrorCode error = provider_->get_index_metadata(objects);
+  ptree tmp_object;
+  std::map<std::string_view, std::string_view> keys = {};
 
-  log::function_finish("Tables::get_all()", error);
+  // Get the index metadata through the provider.
+  error = provider.get_index_metadata(keys, tmp_object);
+
+  // Converts object types.
+  if (error == ErrorCode::OK) {
+    objects = ptree_helper::array_to_vector(tmp_object);
+  } else if (error == ErrorCode::NOT_FOUND) {
+    // Converts error code.
+    error = ErrorCode::OK;
+  }
+
+  // Log of API function finish.
+  log::function_finish("Indexes::get_all()", error);
 
   return error;
 }
@@ -174,21 +236,33 @@ ErrorCode Indexes::get_all(
  */
 ErrorCode Indexes::update(const ObjectIdType object_id,
                           const boost::property_tree::ptree& object) const {
-
-  log::function_start("Indexes::get(object_name)");
-
   ErrorCode error = ErrorCode::UNKNOWN;
 
+  // Log of API function start.
+  log::function_start("Indexes::update(object_id)");
+
+  // Updated index metadata.
   if (object_id > 0) {
-    error = provider_->update_index_metadata(object_id, object);
+    // Specify the key for the index metadata you want to retrieve.
+    std::string index_id(std::to_string(object_id));
+    std::map<std::string_view, std::string_view> keys = {
+        {Index::ID, index_id}
+    };
+
+    // Update index metadata within a transaction.
+    error = provider.transaction([&keys, &object]() -> ErrorCode {
+      // Update the index metadata through the provider.
+      return provider.update_index_metadata(keys, object);
+    });
   } else {
     LOG_WARNING
         << "An out-of-range value (0 or less) was specified for object ID.: "
         << object_id;
-    error = ErrorCode::INVALID_PARAMETER;
+    error = ErrorCode::ID_NOT_FOUND;
   }
 
-  log::function_finish("Indexes::get(object_name)", error);
+  // Log of API function finish.
+  log::function_finish("Indexes::update(object_id)", error);
 
   return error;
 }
@@ -201,58 +275,106 @@ ErrorCode Indexes::update(const ObjectIdType object_id,
  * @retval otherwise an error code.
  */
 ErrorCode Indexes::remove(const ObjectId object_id) const {
-
-  log::function_start("Indexes::remove(object_id)");
-
   ErrorCode error = ErrorCode::UNKNOWN;
 
+  // Log of API function start.
+  log::function_start("Indexes::remove(object_id)");
+
+  // Remove the index metadata.
   if (object_id > 0) {
-    ObjectIdType ret_object_id = INVALID_OBJECT_ID;
-    error = provider_->remove_index_metadata(
-        Object::ID, std::to_string(object_id), ret_object_id);
+    // Specify the key for the index metadata you want to remove.
+    std::string index_id(std::to_string(object_id));
+    std::map<std::string_view, std::string_view> keys = {
+        {Index::ID, index_id}
+    };
+
+    // Remove index metadata within a transaction.
+    error = provider.transaction([&keys]() -> ErrorCode {
+      // Remove the index metadata through the provider.
+      return provider.remove_index_metadata(keys);
+    });
   } else {
     LOG_WARNING
-        << "An out-of-range value (0 or less) was specified for TableId.: "
+        << "An out-of-range value (0 or less) was specified for object ID.: "
         << object_id;
-    error = ErrorCode::INVALID_PARAMETER;
+    error = ErrorCode::ID_NOT_FOUND;
   }
 
+  // Log of API function finish.
   log::function_finish("Indexes::remove(object_id)", error);
 
   return error;
 }
 
 /**
- * @brief Remove a indexmetadata object which has the specified name.
+ * @brief Remove a index metadata object which has the specified name.
  * @param object_name  [in]  object name.
  * @param object_id    [out] ID of removed object.
  * @retval ErrorCode::OK if success,
- * @retval ErrorCode::NAME_NOT_FOUND if the table name does not exist.
+ * @retval ErrorCode::NAME_NOT_FOUND if the index name does not exist.
  * @retval otherwise an error code.
  */
 ErrorCode Indexes::remove(std::string_view object_name,
                           ObjectId* object_id) const {
-
-  log::function_start("Indexes::remove(object_name)");
-
   ErrorCode error = ErrorCode::UNKNOWN;
 
-  if (!object_name.empty()) {
-    ObjectIdType ret_object_id = INVALID_OBJECT_ID;
-    error = provider_->remove_index_metadata(Object::NAME, object_name,
-                                            ret_object_id);
+  // Log of API function start.
+  log::function_start("Indexes::remove(object_name)");
 
-    if ((error == ErrorCode::OK) && (object_id != nullptr)) {
-      *object_id = ret_object_id;
-    }
+  // Specify the key for the index metadata you want to retrieve.
+  std::map<std::string_view, std::string_view> keys = {
+      {Index::NAME, object_name}
+  };
+
+  // Remove the index metadata.
+  std::vector<ObjectId> removed_ids = {};
+  if (!object_name.empty()) {
+    // Remove index metadata within a transaction.
+    error = provider.transaction([&keys, &removed_ids]() -> ErrorCode {
+      // Remove the index metadata through the provider.
+      return provider.remove_index_metadata(keys, &removed_ids);
+    });
   } else {
-    LOG_WARNING << "An empty value was specified for TableName.";
-    error = ErrorCode::INVALID_PARAMETER;
+    LOG_WARNING << "An empty value was specified for object name.";
+    error = ErrorCode::NAME_NOT_FOUND;
   }
 
+  // Set a value if object_id is not null.
+  if ((error == ErrorCode::OK) && (object_id != nullptr)) {
+    *object_id = removed_ids.front();
+  }
+
+  // Log of API function finish.
   log::function_finish("Indexes::remove(object_name)", error);
 
   return error;
 }
 
-} // namespace manager::metadata
+/* =============================================================================
+ * Private method area
+ */
+
+/**
+ * @brief Checks if the parameters for additional are correct.
+ * @param object  [in]  metadata-object
+ * @return ErrorCode::OK if success, otherwise an error code.
+ */
+ErrorCode Indexes::param_check_metadata_add(
+    const boost::property_tree::ptree& object) const {
+  ErrorCode error                        = ErrorCode::UNKNOWN;
+  constexpr const char* const kLogFormat = R"("%s" => undefined or empty)";
+
+  auto table_id = object.get_optional<ObjectId>(Index::TABLE_ID);
+  if (table_id.value_or(0) > 0) {
+    error = ErrorCode::OK;
+  } else {
+    LOG_ERROR << Message::PARAMETER_FAILED << "\"" << Index::TABLE_ID
+              << "\" => undefined or empty";
+
+    error = ErrorCode::INSUFFICIENT_PARAMETERS;
+  }
+
+  return error;
+}
+
+}  // namespace manager::metadata

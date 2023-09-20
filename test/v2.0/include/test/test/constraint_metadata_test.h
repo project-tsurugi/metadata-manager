@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 tsurugi project.
+ * Copyright 2022-2023 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,7 +40,7 @@ class ConstraintMetadataTest : public MetadataTest {
    * @return std::unique_ptr<Metadata> - metadata management object.
    */
   std::unique_ptr<Metadata> get_metadata_manager() const override {
-    return get_constraint_metadata(TEST_DB);
+    return get_constraints_ptr(TEST_DB);
   }
 
   /**
@@ -104,7 +104,7 @@ class ConstraintMetadataTest : public MetadataTest {
 
  private:
 #if defined(STORAGE_POSTGRESQL)
-  static constexpr const char* const kTableName = "tsurugi_constraint";
+  static constexpr const char* const kTableName = "constraints";
 #elif defined(STORAGE_JSON)
   static constexpr const char* const kMetadataName = "tables";
   static constexpr const char* const kRootNode = "tables";

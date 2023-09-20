@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2022 tsurugi project.
+ * Copyright 2021-2023 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -81,7 +81,7 @@ class TableMetadataHelper : public MetadataHelper {
 
  private:
 #if defined(STORAGE_POSTGRESQL)
-  static constexpr const char* const kTableName = "tsurugi_constraint";
+  static constexpr const char* const kTableName = "tables";
 #elif defined(STORAGE_JSON)
   static constexpr const char* const kMetadataName = "tables";
   static constexpr const char* const kRootNode     = "tables";

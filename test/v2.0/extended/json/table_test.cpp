@@ -25,20 +25,20 @@
 #include <boost/property_tree/ptree.hpp>
 
 #include "manager/metadata/dao/json/object_id_json.h"
-#include "manager/metadata/datatypes.h"
-#include "manager/metadata/tables.h"
+#include "manager/metadata/metadata_factory.h"
 
 #define ERROR(error) print_error(error, __FILE__, __LINE__);
 
 using boost::property_tree::ptree;
 using boost::property_tree::ptree_error;
+
 using manager::metadata::Column;
 using manager::metadata::DataTypes;
 using manager::metadata::ErrorCode;
 using manager::metadata::ObjectIdType;
 using manager::metadata::Table;
 using manager::metadata::Tables;
-using manager::metadata::db::json::ObjectId;
+using manager::metadata::db::ObjectIdGenerator;
 
 const char* const TEST_DB = "test_DB";
 
@@ -71,9 +71,9 @@ void print_error(ErrorCode error, const char* file, uint64_t line) {
  * @brief generate new table name.
  */
 const std::string get_table_name() {
-  auto oid_manager = std::make_unique<ObjectId>();
+  auto oid_generator = std::make_unique<ObjectIdGenerator>();
 
-  ObjectIdType number = oid_manager->current("tables") + 1;
+  ObjectIdType number = oid_generator->current("tables") + 1;
   std::string name    = "table_" + std::to_string(number);
 
   return name;
@@ -139,7 +139,7 @@ ErrorCode output_object_diff(std::string_view key, const ptree& before,
 ErrorCode display_table_metadata_object(const ptree& table) {
   ErrorCode error = ErrorCode::OK;
 
-  auto datatypes = std::make_unique<DataTypes>(TEST_DB);
+  auto datatypes = manager::metadata::get_datatypes_ptr(TEST_DB);
   ptree datatype;
 
   // table metadata
@@ -255,7 +255,7 @@ ErrorCode display_table_metadata_object(const ptree& before,
                                         const ptree& after) {
   ErrorCode error = ErrorCode::OK;
 
-  auto datatypes = std::make_unique<DataTypes>(TEST_DB);
+  auto datatypes = manager::metadata::get_datatypes_ptr(TEST_DB);
   ptree datatype;
 
   // table metadata
@@ -401,8 +401,10 @@ ErrorCode add_table_metadata() {
 
   ptree datatype_metadata;
   ptree new_table_metadata;
-  auto tables    = std::make_unique<Tables>(TEST_DB);  // use Template-Method.
-  auto datatypes = std::make_unique<DataTypes>(TEST_DB);
+  auto tables = manager::metadata::get_tables_ptr(TEST_DB);  // use Template-Method.
+  // TODO(future): Change when changing Metadata class.
+  auto datatypes_tmp = manager::metadata::get_datatypes_ptr(TEST_DB);
+  auto datatypes = static_cast<DataTypes*>(datatypes_tmp.get());
 
   //
   // table-metadata
@@ -523,9 +525,9 @@ ErrorCode test_tables_add_get() {
   }
 
   ptree table_metadata;
-  auto tables      = std::make_unique<Tables>(TEST_DB);  // use Template-Method.
-  auto oid_manager = std::make_unique<ObjectId>();
-  auto table_id    = oid_manager->current("tables");
+  auto tables        = manager::metadata::get_tables_ptr(TEST_DB);  // use Template-Method.
+  auto oid_generator = std::make_unique<ObjectIdGenerator>();
+  auto table_id      = oid_generator->current("tables");
 
   std::string table_name = "table_" + std::to_string(table_id);
   if (error == ErrorCode::OK) {
@@ -569,9 +571,9 @@ ErrorCode test_tables_add_get() {
 ErrorCode test_tables_update() {
   ErrorCode error = ErrorCode::UNKNOWN;
 
-  auto tables      = std::make_unique<Tables>(TEST_DB);  // use Template-Method.
-  auto datatypes   = std::make_unique<DataTypes>(TEST_DB);
-  auto oid_manager = std::make_unique<ObjectId>();
+  auto tables        = manager::metadata::get_tables_ptr(TEST_DB);  // use Template-Method.
+  auto datatypes     = manager::metadata::get_datatypes_ptr(TEST_DB);
+  auto oid_generator = std::make_unique<ObjectIdGenerator>();
 
   try {
     error = add_table_metadata();
@@ -583,7 +585,7 @@ ErrorCode test_tables_update() {
     ERROR(error);
   }
 
-  auto table_id = oid_manager->current("tables");
+  auto table_id = oid_generator->current("tables");
   ptree table_metadata_before;
   if (error == ErrorCode::OK) {
     error = tables->get(table_id, table_metadata_before);
@@ -713,14 +715,15 @@ ErrorCode tables_remove_test() {
     }
   }
 
-  auto tables = std::make_unique<Tables>(TEST_DB);  // use Template-Method.
+  auto tables = manager::metadata::get_tables_ptr(TEST_DB);  // use Template-Method.
 
   //
   // remove table-metadata object
   //
-  auto oid_manager = std::make_unique<ObjectId>();
+  auto oid_generator = std::make_unique<ObjectIdGenerator>();
 
-  ObjectIdType number                  = oid_manager->current("tables");
+  ObjectIdType number = oid_generator->current("tables");
+
   std::vector<std::string> table_names = {
       "table_" + std::to_string(number - 3),
       "table_" + std::to_string(number - 1),
@@ -761,8 +764,8 @@ ErrorCode tables_remove_test() {
   //
   // remove table-metadata object
   //
+  number = oid_generator->current("tables");
 
-  number                               = oid_manager->current("tables");
   std::vector<ObjectIdType> object_ids = {number - 3, number - 1, number - 0,
                                           number - 2};
 
@@ -797,7 +800,7 @@ ErrorCode tables_remove_test() {
 ErrorCode datatypes_test() {
   ErrorCode error = ErrorCode::UNKNOWN;
 
-  auto datatypes = std::make_unique<DataTypes>(TEST_DB);
+  auto datatypes = manager::metadata::get_datatypes_ptr(TEST_DB);
   ptree datatype_id;
   ptree datatype_name;
 

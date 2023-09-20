@@ -62,7 +62,8 @@ int64_t MetadataHelperJson::get_record_count() const {
 boost::property_tree::ptree MetadataHelperJson::load_contents() const {
   // Filename of the constraint metadata.
   boost::format filename = boost::format("%s/%s.json") %
-                           Config::get_storage_dir_path() % this->metadata_name_;
+                           Config::get_storage_dir_path() %
+                           this->metadata_name_;
 
   ptree contents;
 

@@ -140,12 +140,12 @@ INSTANTIATE_TEST_CASE_P(ParameterizedTest,
  * @brief Add invalid table metadata.
  */
 TEST_F(ApiTestAddTableMetadataException, add_table_metadata) {
-  auto tables = get_table_metadata(GlobalTestEnvironment::TEST_DB);
+  auto tables = get_tables_ptr(GlobalTestEnvironment::TEST_DB);
 
   ApiTestHelper::test_init(tables.get(), ErrorCode::OK);
   for (auto invalid_table : invalid_table_metadata_) {
     ApiTestHelper::test_add(tables.get(), invalid_table,
-                            ErrorCode::INVALID_PARAMETER);
+                            ErrorCode::INSUFFICIENT_PARAMETERS);
   }
 }
 
@@ -155,7 +155,7 @@ TEST_F(ApiTestAddTableMetadataException, add_table_metadata) {
  */
 TEST_P(ApiTestTableMetadataByTableIdException,
        get_table_metadata_by_non_existing_table_id) {
-  auto tables = get_table_metadata(GlobalTestEnvironment::TEST_DB);
+  auto tables = get_tables_ptr(GlobalTestEnvironment::TEST_DB);
 
   ApiTestHelper::test_init(tables.get(), ErrorCode::OK);
 
@@ -170,7 +170,7 @@ TEST_P(ApiTestTableMetadataByTableIdException,
  */
 TEST_P(ApiTestTableMetadataByTableNameException,
        get_table_metadata_by_non_existing_table_name) {
-  auto tables = get_table_metadata(GlobalTestEnvironment::TEST_DB);
+  auto tables = get_tables_ptr(GlobalTestEnvironment::TEST_DB);
 
   ApiTestHelper::test_init(tables.get(), ErrorCode::OK);
 
@@ -183,14 +183,14 @@ TEST_P(ApiTestTableMetadataByTableNameException,
  * @brief Update invalid table metadata.
  */
 TEST_F(ApiTestAddTableMetadataException, update_table_metadata) {
-  auto tables = get_table_metadata(GlobalTestEnvironment::TEST_DB);
+  auto tables = get_tables_ptr(GlobalTestEnvironment::TEST_DB);
 
   ApiTestHelper::test_init(tables.get(), ErrorCode::OK);
 
   for (auto invalid_table : invalid_table_metadata_) {
     ObjectIdType dummy_table_id = 1;
     ApiTestHelper::test_update(tables.get(), dummy_table_id, invalid_table,
-                               ErrorCode::INVALID_PARAMETER);
+                               ErrorCode::INSUFFICIENT_PARAMETERS);
   }
 }
 
@@ -206,7 +206,7 @@ TEST_P(ApiTestTableMetadataByTableIdException,
   UTUtils::print(
       UTUtils::get_tree_string(testdata_table_metadata.get_metadata_ptree()));
 
-  auto tables = get_table_metadata(GlobalTestEnvironment::TEST_DB);
+  auto tables = get_tables_ptr(GlobalTestEnvironment::TEST_DB);
 
   ApiTestHelper::test_init(tables.get(), ErrorCode::OK);
 
@@ -221,7 +221,7 @@ TEST_P(ApiTestTableMetadataByTableIdException,
  */
 TEST_P(ApiTestTableMetadataByTableIdException,
        remove_table_metadata_by_non_existing_table_id) {
-  auto tables = get_table_metadata(GlobalTestEnvironment::TEST_DB);
+  auto tables = get_tables_ptr(GlobalTestEnvironment::TEST_DB);
 
   ApiTestHelper::test_init(tables.get(), ErrorCode::OK);
   ApiTestHelper::test_remove(tables.get(), GetParam(), ErrorCode::ID_NOT_FOUND);
@@ -233,7 +233,7 @@ TEST_P(ApiTestTableMetadataByTableIdException,
  */
 TEST_P(ApiTestTableMetadataByTableNameException,
        remove_table_metadata_by_non_existing_table_name) {
-  auto tables = get_table_metadata(GlobalTestEnvironment::TEST_DB);
+  auto tables = get_tables_ptr(GlobalTestEnvironment::TEST_DB);
 
   ApiTestHelper::test_init(tables.get(), ErrorCode::OK);
   ApiTestHelper::test_remove(tables.get(), GetParam().c_str(),

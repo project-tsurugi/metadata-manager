@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2022 tsurugi project.
+ * Copyright 2020-2023 tsurugi project.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,26 +21,26 @@
 #include <boost/format.hpp>
 #include <boost/property_tree/ptree.hpp>
 
-#include "manager/metadata/dao/postgresql/common_pg.h"
-#include "manager/metadata/tables.h"
+#include "manager/metadata/dao/postgresql/pg_common.h"
+#include "manager/metadata/metadata_factory.h"
 
 namespace {
 
 using boost::property_tree::ptree;
 using manager::metadata::Column;
 using manager::metadata::Constraint;
+using manager::metadata::DataTypes;
 using manager::metadata::ErrorCode;
 using manager::metadata::FormatVersionType;
 using manager::metadata::GenerationType;
 using manager::metadata::ObjectIdType;
 using manager::metadata::Table;
 using manager::metadata::Tables;
-using manager::metadata::db::postgresql::ConnectionSPtr;
 
 static constexpr const char* const TEST_DB   = "test";
 static constexpr const char* const ROLE_NAME = "tsurugi_ut_role_user_1";
 
-ConnectionSPtr connection;
+manager::metadata::db::PgConnectionPtr connection;
 bool test_succeed = true;
 
 #define EXPECT_EQ(expected, actual) \
@@ -191,7 +191,7 @@ void add_table(const boost::property_tree::ptree& new_table,
                ObjectIdType* ret_table_id = nullptr) {
   std::cout << "-- add table metadata --" << std::endl;
 
-  auto tables = std::make_unique<Tables>(TEST_DB);
+  auto tables = manager::metadata::get_tables_ptr(TEST_DB);
 
   ErrorCode result = tables->init();
   EXPECT_EQ(ErrorCode::OK, result);
@@ -218,7 +218,7 @@ void add_table(const boost::property_tree::ptree& new_table,
 void remove_table(std::string_view table_name) {
   std::cout << "-- remove table metadata --" << std::endl;
 
-  auto tables = std::make_unique<Tables>(TEST_DB);
+  auto tables = manager::metadata::get_tables_ptr(TEST_DB);
 
   ErrorCode result = tables->init();
   EXPECT_EQ(ErrorCode::OK, result);
@@ -380,6 +380,9 @@ void check_table_metadata_expected(const ptree& expected, const ptree& actual) {
         // default
         check_expected<std::string>(columns_expected, columns_actual,
                                     Column::DEFAULT_EXPR);
+        // is_funcexpr
+        check_expected<bool>(columns_expected, columns_actual,
+                             Column::IS_FUNCEXPR);
       }
     } else {
       EXPECT_EQ(o_columns_expected.is_initialized(),
@@ -482,15 +485,19 @@ ErrorCode tables_test() {
   ptree column;
   column.put(Column::NAME, "col-1");
   column.put(Column::COLUMN_NUMBER, 1);
-  column.put(Column::DATA_TYPE_ID, 6);
+  column.put(Column::DATA_TYPE_ID,
+             static_cast<int64_t>(DataTypes::DataTypesId::INT64));
   column.put(Column::IS_NOT_NULL, "true");
+  column.put(Column::VARYING, "false");
+  column.put(Column::IS_FUNCEXPR, "false");
   columns.push_back(std::make_pair("", column));
 
   column.clear();
   column.put(Column::NAME, "col-2");
   column.put(Column::COLUMN_NUMBER, 2);
   column.put(Column::IS_NOT_NULL, "false");
-  column.put(Column::DATA_TYPE_ID, 14);
+  column.put(Column::DATA_TYPE_ID,
+             static_cast<int64_t>(DataTypes::DataTypesId::VARCHAR));
   column.put(Column::VARYING, "true");
   {
     ptree elements;
@@ -548,7 +555,7 @@ ErrorCode tables_test() {
   helper::add_table(new_table, &ret_table_id);
   new_table.put(Table::ID, ret_table_id);
 
-  auto tables = std::make_unique<Tables>(TEST_DB);
+  auto tables = manager::metadata::get_tables_ptr(TEST_DB);
   result      = tables->init();
   EXPECT_EQ(ErrorCode::OK, result);
 
@@ -585,47 +592,70 @@ ErrorCode tables_test() {
   update_table.put(Table::NAMESPACE, "namespace-update");
   update_table.put(Table::NUMBER_OF_TUPLES, 31);
 
-  auto columns_node = table_metadata.get_child(Table::COLUMNS_NODE);
-  auto it           = columns_node.begin();
-
-  ptree update_columns;
-  ptree update_column;
-
-  // 1 item skip.
-  // 2 item update.
-  update_column = (++it)->second;
-  update_column.put(Column::ID,
-                    it->second.get_optional<ObjectIdType>(Column::ID).value());
-  update_column.put(
-      Column::NAME,
-      it->second.get_optional<std::string>(Column::NAME).value_or("unknown-1") +
-          "-update");
-  update_column.put(Column::COLUMN_NUMBER, 1);
-  update_column.put(Column::DATA_TYPE_ID, 6);
-  update_column.erase(Column::DATA_LENGTH);
-  update_column.put<bool>(Column::VARYING, false);
-  update_column.put<bool>(Column::IS_NOT_NULL, true);
-  update_column.put(Column::DEFAULT_EXPR, -1);
-  update_columns.push_back(std::make_pair("", update_column));
-
-  // 3 item add.
-  update_column.clear();
-  update_column.put(Column::NAME, "new-col-3");
-  update_column.put(Column::COLUMN_NUMBER, 2);
-  update_column.put(Column::DATA_TYPE_ID, 14);
-  update_column.put<bool>(Column::VARYING, false);
-  update_column.put<bool>(Column::IS_NOT_NULL, true);
+  // columns metadata.
   {
-    ptree elements;
-    ptree element;
-    element.put("", 200);
-    elements.push_back(std::make_pair("", element));
-    update_column.add_child(Column::DATA_LENGTH, elements);
-  }
-  update_column.put(Column::DEFAULT_EXPR, "default-text-2");
-  update_columns.push_back(std::make_pair("", update_column));
+    auto columns_node = table_metadata.get_child(Table::COLUMNS_NODE);
+    ptree update_columns;
+    ptree update_column;
 
-  update_table.add_child(Table::COLUMNS_NODE, update_columns);
+    auto it = columns_node.begin();
+    // 1 item skip.
+    // 2 item update.
+    update_column = (++it)->second;
+    update_column.put(
+        Column::ID, it->second.get_optional<ObjectIdType>(Column::ID).value());
+    update_column.put(Column::NAME,
+                      it->second.get_optional<std::string>(Column::NAME)
+                              .value_or("unknown-1") +
+                          "-update");
+    update_column.put(Column::COLUMN_NUMBER, 1);
+    update_column.put(Column::DATA_TYPE_ID,
+                      static_cast<int64_t>(DataTypes::DataTypesId::INT64));
+    update_column.erase(Column::DATA_LENGTH);
+    update_column.put<bool>(Column::VARYING, false);
+    update_column.put<bool>(Column::IS_NOT_NULL, true);
+    update_column.put(Column::DEFAULT_EXPR, -1);
+    update_column.put<bool>(Column::IS_FUNCEXPR, false);
+    update_columns.push_back(std::make_pair("", update_column));
+
+    // 3 item add.
+    update_column.clear();
+    update_column.put(Column::NAME, "new-col-3");
+    update_column.put(Column::COLUMN_NUMBER, 2);
+    update_column.put(Column::DATA_TYPE_ID,
+                      static_cast<int64_t>(DataTypes::DataTypesId::VARCHAR));
+    update_column.put<bool>(Column::VARYING, false);
+    update_column.put<bool>(Column::IS_NOT_NULL, true);
+    {
+      ptree elements;
+      ptree element;
+      element.put("", 200);
+      elements.push_back(std::make_pair("", element));
+      update_column.add_child(Column::DATA_LENGTH, elements);
+    }
+    update_column.put(Column::DEFAULT_EXPR, "default-text-2");
+    update_columns.push_back(std::make_pair("", update_column));
+    update_column.put<bool>(Column::IS_FUNCEXPR, true);
+
+    update_table.add_child(Table::COLUMNS_NODE, update_columns);
+  }
+
+  // constraint metadata.
+  {
+    auto constraints_node = table_metadata.get_child(Table::CONSTRAINTS_NODE);
+    ptree update_constraints;
+    ptree update_constraint;
+
+    auto it = constraints_node.begin();
+    // 1 item update.
+    update_constraint = it->second;
+    update_constraint.put(Constraint::NAME,
+                          it->second.get_optional<std::string>(Constraint::NAME)
+                                  .value_or("unknown-1") +
+                              "-update");
+    update_constraints.push_back(std::make_pair("", update_constraint));
+    update_table.add_child(Table::CONSTRAINTS_NODE, update_constraints);
+  }
 
   // update table metadata.
   result = tables->update(ret_table_id, update_table);

@@ -15,18 +15,76 @@
  */
 #pragma once
 
-#include <string_view>
 #include <memory>
-#include "manager/metadata/metadata.h"
-#include "manager/metadata/tables.h"
+#include <string_view>
+
+#include "manager/metadata/datatypes.h"
 #include "manager/metadata/indexes.h"
+#include "manager/metadata/metadata.h"
+#include "manager/metadata/roles.h"
+#include "manager/metadata/statistics.h"
+#include "manager/metadata/tables.h"
 
 namespace manager::metadata {
-  std::unique_ptr<Metadata> get_table_metadata(std::string_view database);
-  std::unique_ptr<Metadata> get_index_metadata(std::string_view database);
-  std::unique_ptr<Metadata> get_constraint_metadata(std::string_view database);
 
-  std::unique_ptr<Metadata> get_tables_ptr(std::string_view database);
-  std::unique_ptr<Metadata> get_indexes_ptr(std::string_view database);
-  std::unique_ptr<Metadata> get_constraints_ptr(std::string_view database);
-} // namespace manager::metadata
+/**
+ * @brief Generate tables metadata manager.
+ * @param database database name.
+ * @deprecated Please use get_tables_ptr function.
+ */
+[[deprecated("please use get_tables_ptr function")]]
+std::unique_ptr<Metadata> get_table_metadata(std::string_view database);
+
+/**
+ * @brief Generate indexes metadata manager.
+ * @param database database name.
+ * @deprecated Please use get_indexes_ptr function.
+ */
+[[deprecated("please use get_indexes_ptr function")]]
+std::unique_ptr<Metadata> get_index_metadata(std::string_view database);
+
+/**
+ * @brief Generate constraints metadata manager.
+ * @param database database name.
+ * @deprecated Please use get_constraints_ptr function.
+ */
+[[deprecated("please use get_constraints_ptr function")]]
+std::unique_ptr<Metadata> get_constraint_metadata(std::string_view database);
+
+/**
+ * @brief Generate tables metadata manager.
+ * @param database database name.
+ */
+std::unique_ptr<Metadata> get_tables_ptr(std::string_view database);
+
+/**
+ * @brief Generate indexes metadata manager.
+ * @param database database name.
+ */
+std::unique_ptr<Metadata> get_indexes_ptr(std::string_view database);
+
+/**
+ * @brief Generate constraints metadata manager.
+ * @param database database name.
+ */
+std::unique_ptr<Metadata> get_constraints_ptr(std::string_view database);
+
+/**
+ * @brief Generate datatypes metadata manager.
+ * @param database database name.
+ */
+std::unique_ptr<Metadata> get_datatypes_ptr(std::string_view database);
+
+/**
+ * @brief Generate roles metadata manager.
+ * @param database database name.
+ */
+std::unique_ptr<Metadata> get_roles_ptr(std::string_view database);
+
+/**
+ * @brief Generate columns statistics metadata manager.
+ * @param database database name.
+ */
+std::unique_ptr<Metadata> get_statistics_ptr(std::string_view database);
+
+}  // namespace manager::metadata

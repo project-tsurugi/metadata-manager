@@ -152,8 +152,10 @@ struct Constraint : public Object {
  */
 class Constraints : public Metadata {
  public:
-  explicit Constraints(std::string_view database) : Constraints(database, kDefaultComponent) {}
-  Constraints(std::string_view database, std::string_view component);
+  explicit Constraints(std::string_view database)
+      : Constraints(database, kDefaultComponent) {}
+  Constraints(std::string_view database, std::string_view component)
+      : Metadata(database, component) {}
 
   Constraints(const Constraints&)            = delete;
   Constraints& operator=(const Constraints&) = delete;

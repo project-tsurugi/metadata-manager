@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2022 tsurugi project.
+ * Copyright 2020-2023 tsurugi project.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 #pragma once
 
 #include <libpq-fe.h>
+
 #include <functional>
 #include <memory>
 
@@ -26,8 +27,8 @@ typedef struct pg_result PGresult;
 
 namespace manager::metadata::db {
 
-static constexpr const int64_t FIRST_ROW = 0;    // zero origin.
-static constexpr const int64_t FIRST_COLUMN = 0;   // zero origin.
+static constexpr const int64_t kFirstRow    = 0;  // zero origin.
+static constexpr const int64_t kFirstColumn = 0;  // zero origin.
 
 // Shared smart pointer for DB connection. Just an alias for user convenience.
 using PgConnectionPtr = std::shared_ptr<PGconn>;
@@ -35,8 +36,9 @@ using PgConnectionPtr = std::shared_ptr<PGconn>;
 // Unique smart pointer for DB result. Just an alias for user convenience.
 using ResultPtr = std::unique_ptr<PGresult, std::function<void(PGresult*)>>;
 
-static constexpr const char* const SCHEMA_PUBLIC = "public";
-static constexpr const char* const SCHEMA_TSURUGI_CATALOG = "tsurugi_catalog";
+static constexpr const char* const kSchemaPublic         = "public";
+static constexpr const char* const kSchemaTsurugiCatalog = "tg_catalog";
+static constexpr const char* const kEmptyStringJson      = "{}";
 
 class PgErrorCode {
  public:
