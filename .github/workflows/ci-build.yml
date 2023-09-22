@@ -46,8 +46,6 @@ jobs:
           cd build
           cmake -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -DFORCE_INSTALL_RPATH=ON -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/.local ..
           cmake --build . --target install --clean-first -- -j8
-          make
-          make install
 
       - name: Cleanup_Postgresql
         run: |
