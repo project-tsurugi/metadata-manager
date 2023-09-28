@@ -18,7 +18,7 @@
 
 #include <string>
 #include <vector>
-#include <memory>
+
 #include <boost/property_tree/ptree.hpp>
 
 #include "manager/metadata/metadata.h"

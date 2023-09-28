@@ -16,7 +16,6 @@
 #ifndef MANAGER_METADATA_HELPER_LOGGING_HELPER_H_
 #define MANAGER_METADATA_HELPER_LOGGING_HELPER_H_
 
-#include <iomanip>
 #include <map>
 #include <vector>
 

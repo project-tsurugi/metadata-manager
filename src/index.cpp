@@ -15,14 +15,6 @@
  */
 #include "manager/metadata/indexes.h"
 
-#include <memory>
-#include <jwt-cpp/jwt.h>
-
-#include "manager/metadata/common/config.h"
-#include "manager/metadata/common/jwt_claims.h"
-#include "manager/metadata/common/message.h"
-#include "manager/metadata/helper/logging_helper.h"
-#include "manager/metadata/helper/table_metadata_helper.h"
 #include "manager/metadata/helper/ptree_helper.h"
 
 namespace manager::metadata {

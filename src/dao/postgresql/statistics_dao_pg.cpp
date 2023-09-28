@@ -20,7 +20,6 @@
 #include "manager/metadata/common/message.h"
 #include "manager/metadata/common/utility.h"
 #include "manager/metadata/dao/postgresql/columns_dao_pg.h"
-#include "manager/metadata/dao/postgresql/dbc_utils_pg.h"
 #include "manager/metadata/helper/logging_helper.h"
 #include "manager/metadata/helper/ptree_helper.h"
 
@@ -110,7 +109,7 @@ ErrorCode StatisticsDaoPg::insert(const boost::property_tree::ptree& object,
 
   PGresult* res = nullptr;
   // Execute a prepared statement.
-  error = DbcUtils::exec_prepared(pg_conn_, statement.name(), params, res);
+  error = DbcUtils::execute_statement(pg_conn_, statement.name(), params, res);
 
   if (error == ErrorCode::OK) {
     int nrows = PQntuples(res);
@@ -158,7 +157,7 @@ ErrorCode StatisticsDaoPg::select(
 
   PGresult* res = nullptr;
   // Execute a prepared statement.
-  error = DbcUtils::exec_prepared(pg_conn_, statement.name(), params, res);
+  error = DbcUtils::execute_statement(pg_conn_, statement.name(), params, res);
 
   if (error == ErrorCode::OK) {
     int nrows = PQntuples(res);
@@ -208,7 +207,7 @@ ErrorCode StatisticsDaoPg::remove(
 
   PGresult* res = nullptr;
   // Execute a prepared statement.
-  error = DbcUtils::exec_prepared(pg_conn_, statement.name(), params, res);
+  error = DbcUtils::execute_statement(pg_conn_, statement.name(), params, res);
 
   if (error == ErrorCode::OK) {
     uint64_t number_of_rows_affected = 0;
@@ -260,14 +259,6 @@ void StatisticsDaoPg::create_prepared_statements() {
             ColumnsDaoPg::ColumnName::kColumnNumber),
         Statistics::COLUMN_NUMBER};
     insert_statements_.emplace(Statistics::COLUMN_NUMBER, statement_number);
-  }
-
-  {
-    // SELECT-all statement with table id specified.
-    SelectAllStatement statement{this->get_source_name(),
-                                 this->get_select_statement_tid(),
-                                 ColumnsDaoPg::ColumnName::kTableId};
-    select_all_statements_.emplace(Statistics::TABLE_ID, statement);
   }
 
   {
@@ -491,7 +482,7 @@ ErrorCode StatisticsDaoPg::get_column_statistics_rows(
 
   PGresult* res = nullptr;
   // Execute a prepared statement.
-  error = DbcUtils::exec_prepared(pg_conn_, statement, params, res);
+  error = DbcUtils::execute_statement(pg_conn_, statement, params, res);
 
   if (error == ErrorCode::OK) {
     int nrows = PQntuples(res);

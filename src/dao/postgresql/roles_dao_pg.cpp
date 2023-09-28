@@ -18,7 +18,6 @@
 #include <boost/format.hpp>
 
 #include "manager/metadata/common/message.h"
-#include "manager/metadata/dao/postgresql/dbc_utils_pg.h"
 #include "manager/metadata/helper/logging_helper.h"
 
 // =============================================================================
@@ -54,7 +53,7 @@ ErrorCode RolesDaoPg::select(
 
   PGresult* res = nullptr;
   // Execute a prepared statement.
-  error = DbcUtils::exec_prepared(pg_conn_, statement.name(), params, res);
+  error = DbcUtils::execute_statement(pg_conn_, statement.name(), params, res);
 
   if (error == ErrorCode::OK) {
     int nrows = PQntuples(res);

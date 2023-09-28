@@ -19,7 +19,6 @@
 
 #include "manager/metadata/common/message.h"
 #include "manager/metadata/common/utility.h"
-#include "manager/metadata/dao/postgresql/dbc_utils_pg.h"
 #include "manager/metadata/helper/logging_helper.h"
 #include "manager/metadata/helper/ptree_helper.h"
 
@@ -151,7 +150,7 @@ ErrorCode ColumnsDaoPg::insert(const boost::property_tree::ptree& object,
 
   PGresult* res = nullptr;
   // Execute a prepared statement.
-  error = DbcUtils::exec_prepared(pg_conn_, statement.name(), params, res);
+  error = DbcUtils::execute_statement(pg_conn_, statement.name(), params, res);
 
   if (error == ErrorCode::OK) {
     uint64_t number_of_rows_affected = 0;
@@ -203,7 +202,7 @@ ErrorCode ColumnsDaoPg::select(
 
   PGresult* res = nullptr;
   // Execute a prepared statement.
-  error = DbcUtils::exec_prepared(pg_conn_, statement.name(), params, res);
+  error = DbcUtils::execute_statement(pg_conn_, statement.name(), params, res);
 
   if (error == ErrorCode::OK) {
     int nrows = PQntuples(res);
@@ -252,7 +251,7 @@ ErrorCode ColumnsDaoPg::remove(
 
   PGresult* res = nullptr;
   // Execute a prepared statement.
-  error = DbcUtils::exec_prepared(pg_conn_, statement.name(), params, res);
+  error = DbcUtils::execute_statement(pg_conn_, statement.name(), params, res);
 
   if (error == ErrorCode::OK) {
     uint64_t number_of_rows_affected = 0;

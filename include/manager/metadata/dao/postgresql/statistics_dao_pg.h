@@ -99,11 +99,6 @@ class StatisticsDaoPg : public DaoPg {
 
  private:
   /**
-   * @brief Statement key by table id.
-   */
-  static constexpr const char* const kStatementKeyTableId = "table_id";
-
-  /**
    * @brief Column ordinal position of the column statistics table
    *   in the metadata repository.
    */
@@ -227,7 +222,6 @@ class StatisticsDaoPg : public DaoPg {
    */
   boost::property_tree::ptree convert_pgresult_to_ptree(
       const PGresult* pg_result, const int row_number) const;
-
 
   /**
    * @brief Sets the specified key and key value.

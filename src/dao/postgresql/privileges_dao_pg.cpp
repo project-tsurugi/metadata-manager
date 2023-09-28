@@ -20,7 +20,6 @@
 #include "manager/metadata/common/message.h"
 #include "manager/metadata/common/utility.h"
 #include "manager/metadata/dao/common/pg_type.h"
-#include "manager/metadata/dao/postgresql/dbc_utils_pg.h"
 #include "manager/metadata/dao/postgresql/tables_dao_pg.h"
 #include "manager/metadata/helper/logging_helper.h"
 
@@ -81,7 +80,7 @@ bool PrivilegesDaoPg::exists(ObjectId object_id) const {
   }
   PGresult* res = nullptr;
   // Execute a prepared statement.
-  error = DbcUtils::exec_prepared(pg_conn_, statement.name(), params, res);
+  error = DbcUtils::execute_statement(pg_conn_, statement.name(), params, res);
 
   bool exists = false;
   if (error == ErrorCode::OK) {
@@ -126,7 +125,7 @@ ErrorCode PrivilegesDaoPg::select(
 
   PGresult* res = nullptr;
   // Execute a prepared statement.
-  error = DbcUtils::exec_prepared(pg_conn_, statement.name(), params, res);
+  error = DbcUtils::execute_statement(pg_conn_, statement.name(), params, res);
 
   if (error == ErrorCode::OK) {
     int nrows = PQntuples(res);

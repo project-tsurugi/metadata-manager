@@ -15,21 +15,13 @@
  */
 #include "manager/metadata/provider/metadata_provider.h"
 
-#include <regex>
-#include <typeinfo>
-
 #include <boost/foreach.hpp>
 
-#include "manager/metadata/common/message.h"
 #include "manager/metadata/common/utility.h"
 #include "manager/metadata/constraints.h"
-#include "manager/metadata/dao/db_session_manager.h"
-#include "manager/metadata/datatypes.h"
 #include "manager/metadata/helper/logging_helper.h"
 #include "manager/metadata/helper/ptree_helper.h"
-#include "manager/metadata/index.h"
 #include "manager/metadata/roles.h"
-#include "manager/metadata/statistics.h"
 #include "manager/metadata/tables.h"
 
 namespace manager::metadata::db {

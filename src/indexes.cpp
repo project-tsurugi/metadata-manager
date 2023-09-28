@@ -15,8 +15,6 @@
  */
 #include "manager/metadata/indexes.h"
 
-#include <memory>
-
 #include "manager/metadata/common/message.h"
 #include "manager/metadata/helper/logging_helper.h"
 #include "manager/metadata/helper/ptree_helper.h"

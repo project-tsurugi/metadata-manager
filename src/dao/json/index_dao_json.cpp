@@ -16,12 +16,9 @@
 #include "manager/metadata/dao/json/index_dao_json.h"
 
 #include <boost/foreach.hpp>
-#include <boost/format.hpp>
 
-#include "manager/metadata/common/config.h"
 #include "manager/metadata/common/message.h"
 #include "manager/metadata/helper/logging_helper.h"
-#include "manager/metadata/helper/ptree_helper.h"
 #include "manager/metadata/indexes.h"
 
 namespace manager::metadata::db {

@@ -16,6 +16,7 @@
 #include "manager/metadata/metadata.h"
 
 #include <memory>
+
 #include "manager/metadata/log/default_logger.h"
 #include "manager/metadata/log/log_controller.h"
 

@@ -15,8 +15,6 @@
  */
 #include "manager/metadata/datatypes.h"
 
-#include <memory>
-
 #include "manager/metadata/common/message.h"
 #include "manager/metadata/helper/logging_helper.h"
 #include "manager/metadata/provider/metadata_provider.h"

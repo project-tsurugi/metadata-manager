@@ -18,7 +18,6 @@
 
 #include <memory>
 #include <string>
-#include <vector>
 
 #include "manager/metadata/dao/dao.h"
 #include "manager/metadata/dao/json/db_session_manager_json.h"

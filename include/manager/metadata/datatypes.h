@@ -17,7 +17,6 @@
 #define MANAGER_METADATA_DATATYPES_H_
 
 #include <string>
-#include <string_view>
 #include <vector>
 
 #include <boost/property_tree/ptree.hpp>

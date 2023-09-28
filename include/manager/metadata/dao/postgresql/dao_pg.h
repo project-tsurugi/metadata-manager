@@ -52,7 +52,6 @@ class DaoPg : public Dao {
   PgConnectionPtr pg_conn_;
 
   std::unordered_map<std::string, InsertStatement> insert_statements_;
-  std::unordered_map<std::string, SelectAllStatement> select_all_statements_;
   std::unordered_map<std::string, SelectStatement> select_statements_;
   std::unordered_map<std::string, UpdateStatement> update_statements_;
   std::unordered_map<std::string, DeleteStatement> delete_statements_;

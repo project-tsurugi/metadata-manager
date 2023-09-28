@@ -15,7 +15,6 @@
  */
 #include "manager/metadata/helper/table_metadata_helper.h"
 
-#include <iostream>
 #include <regex>
 
 #include <boost/foreach.hpp>
