@@ -798,7 +798,7 @@ ErrorCode Tables::get_acls(std::string_view token,
   // Get the table metadata.
   ptree tables;
   if (error == ErrorCode::OK) {
-    error = provider.get_table_metadata({{}}, tables);
+    error = provider.get_table_metadata({}, tables);
   }
 
   if (error == ErrorCode::OK) {
@@ -1134,6 +1134,31 @@ ErrorCode Tables::get_token_user(std::string_view token,
     return error;
   }
 
+  // Claim verification lambda.
+  auto claim_verifier = [](const jwt::verify_context& ctx,
+                           std::string_view regex) -> std::error_code {
+    using verify_error = jwt::error::token_verification_error;
+    std::error_code ec = verify_error::ok;
+
+    // Get claims from jwt.
+    auto claim_data = ctx.get_claim(false, ec);
+    if (ec != verify_error::ok) {
+      return ec;
+    }
+
+    // Check the type of the claim.
+    if (claim_data.get_type() == jwt::json::type::string) {
+      // Check the value of the claim.
+      auto regex_results =
+          std::regex_match(claim_data.as_string(), std::regex(regex.data()));
+      ec = (regex_results ? verify_error::ok
+                          : verify_error::claim_value_missmatch);
+    } else {
+      ec = verify_error::claim_type_missmatch;
+    }
+    return ec;
+  };
+
   // Decode tokens.
   auto decoded_token = jwt::decode(std::string(token));
   // Cryptographic algorithms.
@@ -1141,18 +1166,28 @@ ErrorCode Tables::get_token_user(std::string_view token,
   // Setting up data for verification.
   auto verifier = jwt::verify()
                       .allow_algorithm(algorithm)
-                      .issued_at_leeway(Token::Leeway::kIssued)
-                      .expires_at_leeway(Token::Leeway::kExpiration);
+                      .issued_at_leeway(token::Leeway::kIssued)
+                      .expires_at_leeway(token::Leeway::kExpiration);
+  // User name verification.
+  verifier.with_claim(
+      token::Payload::kAuthUserName,
+      [&claim_verifier](const jwt::verify_context& ctx, std::error_code& ec) {
+        // Claim verification.
+        ec = claim_verifier(ctx, ".+");
+      });
 
-  std::string temp_name;
+  // Token type verification.
+  verifier.with_claim(
+      token::Payload::kTokenType,
+      [&claim_verifier](const jwt::verify_context& ctx, std::error_code& ec) {
+        // Claim verification.
+        ec = claim_verifier(ctx, token::TokenType::kAccess);
+      });
+
   try {
     // Verify the token.
     verifier.verify(decoded_token);
-    // Get the user name from the token.
-    auto claim_user_name =
-        decoded_token.get_payload_claim(Token::Payload::kAuthUserName);
-    temp_name = claim_user_name.as_string();
-    error     = ErrorCode::OK;
+    error = ErrorCode::OK;
   } catch (jwt::error::token_verification_exception ex) {
     LOG_ERROR << Message::INVALID_TOKEN << ex.what();
     error = ErrorCode::INVALID_PARAMETER;
@@ -1166,6 +1201,11 @@ ErrorCode Tables::get_token_user(std::string_view token,
   if (error != ErrorCode::OK) {
     return error;
   }
+
+  // Get the user name from the token.
+  auto claim_user_name =
+      decoded_token.get_payload_claim(token::Payload::kAuthUserName);
+  std::string temp_name(claim_user_name.as_string());
 
   // Specify the key for the role object you want to retrieve.
   std::map<std::string_view, std::string_view> keys = {
