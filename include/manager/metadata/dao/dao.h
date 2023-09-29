@@ -50,7 +50,7 @@ class Dao {
   Dao() {}
   virtual ~Dao() {}
 
-  virtual manager::metadata::ErrorCode prepare() = 0;
+  virtual ErrorCode prepare() = 0;
 
   /**
    * @brief Verify that the object with the specified name exists
@@ -107,9 +107,8 @@ class Dao {
    * @note  If success, metadata object is added management metadata.
    *   e.g. format version, generation, etc...
    */
-  virtual manager::metadata::ErrorCode insert(
-      const boost::property_tree::ptree&,
-      ObjectIdType&) const = 0;
+  virtual ErrorCode insert(const boost::property_tree::ptree&,
+                           ObjectIdType&) const = 0;
 
   /**
    * @brief Select a metadata object from the metadata table.
@@ -117,9 +116,8 @@ class Dao {
    * @param object  [out] a selected metadata object.
    * @return If success ErrorCode::OK, otherwise error code.
    */
-  virtual manager::metadata::ErrorCode select(
-      const std::map<std::string_view, std::string_view>&,
-      boost::property_tree::ptree&) const = 0;
+  virtual ErrorCode select(const std::map<std::string_view, std::string_view>&,
+                           boost::property_tree::ptree&) const = 0;
 
   /**
    * @brief Update a metadata object into the metadata table.
@@ -128,9 +126,9 @@ class Dao {
    * @param rows    [out] number of updated metadata object.
    * @return If success ErrorCode::OK, otherwise error code.
    */
-  virtual manager::metadata::ErrorCode update(
-      const std::map<std::string_view, std::string_view>&,
-      const boost::property_tree::ptree&, uint64_t&) const = 0;
+  virtual ErrorCode update(const std::map<std::string_view, std::string_view>&,
+                           const boost::property_tree::ptree&,
+                           uint64_t&) const = 0;
 
   /**
    * @brief Update a metadata object into the metadata table.
@@ -138,9 +136,8 @@ class Dao {
    * @param object_id  [out] object id of the deleted row.
    * @return If success ErrorCode::OK, otherwise error code.
    */
-  virtual manager::metadata::ErrorCode remove(
-      const std::map<std::string_view, std::string_view>&,
-      std::vector<ObjectId>&) const = 0;
+  virtual ErrorCode remove(const std::map<std::string_view, std::string_view>&,
+                           std::vector<ObjectId>&) const = 0;
 };  // class Dao
 
 }  // namespace manager::metadata::db

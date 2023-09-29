@@ -45,8 +45,8 @@ class StatisticsDaoJson : public DaoJson {
    * @brief Function defined for compatibility.
    * @return Always ErrorCode::OK.
    */
-  manager::metadata::ErrorCode insert(const boost::property_tree::ptree&,
-                                      ObjectId&) const override {
+  ErrorCode insert(const boost::property_tree::ptree&,
+                   ObjectId&) const override {
     // Do nothing and return of ErrorCode::OK.
     return ErrorCode::OK;
   }
@@ -55,9 +55,8 @@ class StatisticsDaoJson : public DaoJson {
    * @brief Function defined for compatibility.
    * @return Always ErrorCode::OK.
    */
-  manager::metadata::ErrorCode select(
-      const std::map<std::string_view, std::string_view>&,
-      boost::property_tree::ptree&) const override {
+  ErrorCode select(const std::map<std::string_view, std::string_view>&,
+                   boost::property_tree::ptree&) const override {
     // Do nothing and return of ErrorCode::OK.
     return ErrorCode::OK;
   }
@@ -66,9 +65,9 @@ class StatisticsDaoJson : public DaoJson {
    * @brief Function defined for compatibility.
    * @return Always ErrorCode::NOT_SUPPORTED.
    */
-  manager::metadata::ErrorCode update(
-      const std::map<std::string_view, std::string_view>&,
-      const boost::property_tree::ptree&, uint64_t&) const override {
+  ErrorCode update(const std::map<std::string_view, std::string_view>&,
+                   const boost::property_tree::ptree&,
+                   uint64_t&) const override {
     // Do nothing and return of ErrorCode::NOT_SUPPORTED.
     return ErrorCode::NOT_SUPPORTED;
   }
@@ -77,9 +76,8 @@ class StatisticsDaoJson : public DaoJson {
    * @brief Function defined for compatibility.
    * @return Always ErrorCode::OK.
    */
-  manager::metadata::ErrorCode remove(
-      const std::map<std::string_view, std::string_view>&,
-      std::vector<ObjectId>&) const override {
+  ErrorCode remove(const std::map<std::string_view, std::string_view>&,
+                   std::vector<ObjectId>&) const override {
     // Do nothing and return of ErrorCode::OK.
     return ErrorCode::OK;
   }

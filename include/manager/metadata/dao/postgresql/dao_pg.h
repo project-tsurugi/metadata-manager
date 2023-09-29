@@ -34,9 +34,9 @@ namespace manager::metadata::db {
 class DaoPg : public Dao {
  public:
   /**
-    * @brief Construct a new DAO class for PostgreSQL.
-    * @param session pointer to DB session manager for PostgreSQL.
-    */
+   * @brief Construct a new DAO class for PostgreSQL.
+   * @param session pointer to DB session manager for PostgreSQL.
+   */
   explicit DaoPg(DbSessionManagerPg* session)
       : session_(session), pg_conn_(session->connection().pg_conn) {}
   virtual ~DaoPg() {}
@@ -45,7 +45,7 @@ class DaoPg : public Dao {
    * @brief Defines all prepared statements.
    * @return If success ErrorCode::OK, otherwise error code.
    */
-  virtual manager::metadata::ErrorCode prepare();
+  virtual ErrorCode prepare();
 
  protected:
   DbSessionManagerPg* session_;

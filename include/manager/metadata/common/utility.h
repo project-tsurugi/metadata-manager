@@ -37,8 +37,7 @@ class Utility {
    * @return ErrorCode::OK if success, otherwise an error code.
    */
   template <typename T>
-  static manager::metadata::ErrorCode str_to_numeric(std::string_view str,
-                                                     T& value);
+  static ErrorCode str_to_numeric(std::string_view str, T& value);
 
   /**
    * @brief Converts boolean expression in metadata repository to boolean value

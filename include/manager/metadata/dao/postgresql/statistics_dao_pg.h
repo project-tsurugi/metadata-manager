@@ -63,8 +63,8 @@ class StatisticsDaoPg : public DaoPg {
    * @note  If success, metadata object is added management metadata.
    *   e.g. format version, generation, etc...
    */
-  manager::metadata::ErrorCode insert(const boost::property_tree::ptree& object,
-                                      ObjectId& object_id) const override;
+  ErrorCode insert(const boost::property_tree::ptree& object,
+                   ObjectId& object_id) const override;
 
   /**
    * @brief Select a metadata object from the metadata table.
@@ -72,17 +72,16 @@ class StatisticsDaoPg : public DaoPg {
    * @param object  [out] a selected metadata object.
    * @return If success ErrorCode::OK, otherwise error code.
    */
-  manager::metadata::ErrorCode select(
-      const std::map<std::string_view, std::string_view>& keys,
-      boost::property_tree::ptree& object) const override;
+  ErrorCode select(const std::map<std::string_view, std::string_view>& keys,
+                   boost::property_tree::ptree& object) const override;
 
   /**
    * @brief Unsupported function.
    * @return Always ErrorCode::NOT_SUPPORTED.
    */
-  manager::metadata::ErrorCode update(
-      const std::map<std::string_view, std::string_view>&,
-      const boost::property_tree::ptree&, uint64_t&) const override {
+  ErrorCode update(const std::map<std::string_view, std::string_view>&,
+                   const boost::property_tree::ptree&,
+                   uint64_t&) const override {
     // Do nothing and return of ErrorCode::NOT_SUPPORTED.
     return ErrorCode::NOT_SUPPORTED;
   }
@@ -93,9 +92,8 @@ class StatisticsDaoPg : public DaoPg {
    * @param object_ids  [out] object id of the deleted rows.
    * @return If success ErrorCode::OK, otherwise error code.
    */
-  manager::metadata::ErrorCode remove(
-      const std::map<std::string_view, std::string_view>& keys,
-      std::vector<ObjectId>& object_ids) const override;
+  ErrorCode remove(const std::map<std::string_view, std::string_view>& keys,
+                   std::vector<ObjectId>& object_ids) const override;
 
  private:
   /**
@@ -209,7 +207,7 @@ class StatisticsDaoPg : public DaoPg {
    * @param objects    [out] all column statistics.
    * @return If success ErrorCode::OK, otherwise error code.
    */
-  manager::metadata::ErrorCode get_column_statistics_rows(
+  ErrorCode get_column_statistics_rows(
       std::string_view statement_name, const std::vector<const char*>& params,
       boost::property_tree::ptree& objects) const;
 

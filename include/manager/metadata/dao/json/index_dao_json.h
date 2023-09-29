@@ -51,8 +51,8 @@ class IndexDaoJson : public DaoJson {
    * @note  If success, metadata object is added management metadata.
    *   e.g. format version, generation, etc...
    */
-  manager::metadata::ErrorCode insert(const boost::property_tree::ptree& object,
-                                      ObjectId& object_id) const override;
+  ErrorCode insert(const boost::property_tree::ptree& object,
+                   ObjectId& object_id) const override;
 
   /**
    * @brief Select a metadata object from the metadata file.
@@ -60,9 +60,8 @@ class IndexDaoJson : public DaoJson {
    * @param object  [out] a selected metadata object.
    * @return If success ErrorCode::OK, otherwise error code.
    */
-  manager::metadata::ErrorCode select(
-      const std::map<std::string_view, std::string_view>& keys,
-      boost::property_tree::ptree& object) const override;
+  ErrorCode select(const std::map<std::string_view, std::string_view>& keys,
+                   boost::property_tree::ptree& object) const override;
 
   /**
    * @brief Update a metadata object into the metadata file.
@@ -71,9 +70,9 @@ class IndexDaoJson : public DaoJson {
    * @param rows    [out] number of updated metadata object.
    * @return If success ErrorCode::OK, otherwise error code.
    */
-  manager::metadata::ErrorCode update(
-      const std::map<std::string_view, std::string_view>& keys,
-      const boost::property_tree::ptree& object, uint64_t& rows) const override;
+  ErrorCode update(const std::map<std::string_view, std::string_view>& keys,
+                   const boost::property_tree::ptree& object,
+                   uint64_t& rows) const override;
 
   /**
    * @brief Remove a metadata object from a metadata table file.
@@ -81,9 +80,8 @@ class IndexDaoJson : public DaoJson {
    * @param object_ids  [out] object id of the deleted rows.
    * @return If success ErrorCode::OK, otherwise error code.
    */
-  manager::metadata::ErrorCode remove(
-      const std::map<std::string_view, std::string_view>& keys,
-      std::vector<ObjectId>& object_ids) const override;
+  ErrorCode remove(const std::map<std::string_view, std::string_view>& keys,
+                   std::vector<ObjectId>& object_ids) const override;
 
  private:
   // Name of the index metadata management file.

@@ -45,7 +45,7 @@ class PrivilegesDaoPg : public DaoPg {
    * @brief Defines all prepared statements.
    * @return If success ErrorCode::OK, otherwise error code.
    */
-  manager::metadata::ErrorCode prepare() override;
+  ErrorCode prepare() override;
 
   /**
    * @brief Checks whether a role exists with the specified object ID.
@@ -58,8 +58,8 @@ class PrivilegesDaoPg : public DaoPg {
    * @brief Unsupported function.
    * @return Always ErrorCode::NOT_SUPPORTED.
    */
-  manager::metadata::ErrorCode insert(const boost::property_tree::ptree&,
-                                      ObjectId&) const override {
+  ErrorCode insert(const boost::property_tree::ptree&,
+                   ObjectId&) const override {
     // Do nothing and return of ErrorCode::NOT_SUPPORTED.
     return ErrorCode::NOT_SUPPORTED;
   }
@@ -72,17 +72,16 @@ class PrivilegesDaoPg : public DaoPg {
    * @retval ErrorCode::NOT_FOUND if the object name/id does not exist.
    * @retval otherwise an error code.
    */
-  manager::metadata::ErrorCode select(
-      const std::map<std::string_view, std::string_view>& keys,
-      boost::property_tree::ptree& object) const override;
+  ErrorCode select(const std::map<std::string_view, std::string_view>& keys,
+                   boost::property_tree::ptree& object) const override;
 
   /**
    * @brief Unsupported function.
    * @return Always ErrorCode::NOT_SUPPORTED.
    */
-  manager::metadata::ErrorCode update(
-      const std::map<std::string_view, std::string_view>&,
-      const boost::property_tree::ptree&, uint64_t&) const override {
+  ErrorCode update(const std::map<std::string_view, std::string_view>&,
+                   const boost::property_tree::ptree&,
+                   uint64_t&) const override {
     // Do nothing and return of ErrorCode::NOT_SUPPORTED.
     return ErrorCode::NOT_SUPPORTED;
   }
@@ -91,9 +90,8 @@ class PrivilegesDaoPg : public DaoPg {
    * @brief Unsupported function.
    * @return Always ErrorCode::NOT_SUPPORTED.
    */
-  manager::metadata::ErrorCode remove(
-      const std::map<std::string_view, std::string_view>&,
-      std::vector<ObjectId>&) const override {
+  ErrorCode remove(const std::map<std::string_view, std::string_view>&,
+                   std::vector<ObjectId>&) const override {
     // Do nothing and return of ErrorCode::NOT_SUPPORTED.
     return ErrorCode::NOT_SUPPORTED;
   }

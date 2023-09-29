@@ -185,7 +185,7 @@ class Constraints : public Metadata {
   }
 
  private:
-  manager::metadata::ErrorCode param_check_metadata_add(
+  ErrorCode param_check_metadata_add(
       const boost::property_tree::ptree& object) const;
 };
 

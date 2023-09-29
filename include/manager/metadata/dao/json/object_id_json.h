@@ -29,7 +29,7 @@ class ObjectIdGenerator {
  public:
   ObjectIdGenerator();
 
-  manager::metadata::ErrorCode init();
+  ErrorCode init();
   ObjectId current(std::string_view metadata_name);
   ObjectId generate(std::string_view metadata_name);
   ObjectId update(std::string_view metadata_name, ObjectId new_oid);

@@ -30,13 +30,13 @@ class DbcUtils {
   static bool is_open(const PgConnectionPtr& connection);
   static std::string convert_boolean_expression(const char* string);
 
-  static manager::metadata::ErrorCode get_number_of_rows_affected(
+  static ErrorCode get_number_of_rows_affected(
       PGresult*& pgres, uint64_t& return_value);
 
   static PgConnectionPtr make_connection_sptr(PGconn* pgconn);
   static ResultPtr make_result_uptr(PGresult* pgres);
 
-  static manager::metadata::ErrorCode prepare(
+  static ErrorCode prepare(
       const PgConnectionPtr& connection, std::string_view statement_name,
       std::string_view statement, std::vector<Oid>* param_types = nullptr);
 

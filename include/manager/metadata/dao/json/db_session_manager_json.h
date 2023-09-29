@@ -192,7 +192,7 @@ class DbSessionManagerJson : public DbSessionManager {
    * @param database  [in]  path to the JSON file.
    * @return ErrorCode::OK if success, otherwise an error code.
    */
-  manager::metadata::ErrorCode save_contents() const;
+  ErrorCode save_contents() const;
 
   /**
    * @brief Clear the content data.

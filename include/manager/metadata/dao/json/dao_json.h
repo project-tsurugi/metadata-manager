@@ -31,10 +31,10 @@ namespace manager::metadata::db {
 class DaoJson : public Dao {
  public:
   /**
-    * @brief Construct a new DAO class for JSON data.
-    * @param session pointer to DB session manager for JSON.
-    * @param source_name name of the source file.
-    */
+   * @brief Construct a new DAO class for JSON data.
+   * @param session pointer to DB session manager for JSON.
+   * @param source_name name of the source file.
+   */
   DaoJson(DbSessionManagerJson* session, std::string_view source_name)
       : session_(session), source_name_(source_name) {}
 
@@ -44,7 +44,7 @@ class DaoJson : public Dao {
    * @brief Prepare to access the metadata JSON file.
    * @return ErrorCode::OK if success, otherwise an error code.
    */
-  virtual manager::metadata::ErrorCode prepare();
+  virtual ErrorCode prepare();
 
  protected:
   DbSessionManagerJson* session() const { return session_; }

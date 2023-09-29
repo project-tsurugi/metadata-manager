@@ -37,9 +37,9 @@ class DataTypesDaoJson : public DaoJson {
   static constexpr const char* const kRootNode = "data_types";
 
   /**
-    * @brief Construct a new DataType Metadata DAO class for JSON data.
-    * @param session pointer to DB session manager for JSON.
-    */
+   * @brief Construct a new DataType Metadata DAO class for JSON data.
+   * @param session pointer to DB session manager for JSON.
+   */
   explicit DataTypesDaoJson(DbSessionManagerJson* session)
       : DaoJson(session, "") {}
 
@@ -47,14 +47,14 @@ class DataTypesDaoJson : public DaoJson {
    * @brief Prepare to access the constraint metadata JSON file.
    * @return If success ErrorCode::OK, otherwise error code.
    */
-  manager::metadata::ErrorCode prepare() override;
+  ErrorCode prepare() override;
 
   /**
    * @brief Unsupported function.
    * @return Always ErrorCode::NOT_SUPPORTED.
    */
-  manager::metadata::ErrorCode insert(const boost::property_tree::ptree&,
-                                      ObjectId&) const override {
+  ErrorCode insert(const boost::property_tree::ptree&,
+                   ObjectId&) const override {
     // Do nothing and return of ErrorCode::NOT_SUPPORTED.
     return ErrorCode::NOT_SUPPORTED;
   }
@@ -66,17 +66,16 @@ class DataTypesDaoJson : public DaoJson {
    *   equals the given value.
    * @return If success ErrorCode::OK, otherwise error code.
    */
-  manager::metadata::ErrorCode select(
-      const std::map<std::string_view, std::string_view>& keys,
-      boost::property_tree::ptree& object) const override;
+  ErrorCode select(const std::map<std::string_view, std::string_view>& keys,
+                   boost::property_tree::ptree& object) const override;
 
   /**
    * @brief Unsupported function.
    * @return Always ErrorCode::NOT_SUPPORTED.
    */
-  manager::metadata::ErrorCode update(
-      const std::map<std::string_view, std::string_view>&,
-      const boost::property_tree::ptree&, uint64_t&) const override {
+  ErrorCode update(const std::map<std::string_view, std::string_view>&,
+                   const boost::property_tree::ptree&,
+                   uint64_t&) const override {
     // Do nothing and return of ErrorCode::NOT_SUPPORTED.
     return ErrorCode::NOT_SUPPORTED;
   }
@@ -85,9 +84,8 @@ class DataTypesDaoJson : public DaoJson {
    * @brief Unsupported function.
    * @return Always ErrorCode::NOT_SUPPORTED.
    */
-  manager::metadata::ErrorCode remove(
-      const std::map<std::string_view, std::string_view>&,
-      std::vector<ObjectId>& objet_ids) const override {
+  ErrorCode remove(const std::map<std::string_view, std::string_view>&,
+                   std::vector<ObjectId>& objet_ids) const override {
     // Do nothing and return of ErrorCode::NOT_SUPPORTED.
     return ErrorCode::NOT_SUPPORTED;
   }
