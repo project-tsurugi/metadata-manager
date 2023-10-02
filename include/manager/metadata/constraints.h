@@ -94,7 +94,7 @@ struct Constraint : public Object {
   };
 
   /**
-   * @brief Represents the match type for refrerenced rows.
+   * @brief Represents the match type for referenced rows.
    */
   enum class MatchType : int64_t {
     SIMPLE = 0,               //!< @brief MATCH SIMPLE.
@@ -104,7 +104,7 @@ struct Constraint : public Object {
   };
 
   /**
-   * @brief Represents the match type for refrerenced rows.
+   * @brief Represents the match type for referenced rows.
    */
   enum class ActionType : int64_t {
     NO_ACTION = 0,            //!< @brief NO ACTION.

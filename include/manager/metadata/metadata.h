@@ -77,7 +77,7 @@ struct Object {
 
   /**
    * @brief   Transform metadata from ptree object to structure object.
-   * @param   pt [in] ptree object of metdata.
+   * @param   pt [in] ptree object of metadata.
    * @return  structure object of metadata.
    */
   virtual void convert_from_ptree(const boost::property_tree::ptree& pt) = 0;

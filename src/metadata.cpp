@@ -46,7 +46,7 @@ boost::property_tree::ptree Object::base_convert_to_ptree() const {
 
 /**
  * @brief   Transform metadata from ptree object to structure object.
- * @param   pt [in] ptree object of metdata.
+ * @param   pt [in] ptree object of metadata.
  * @return  structure object of metadata.
  */
 void 
@@ -78,7 +78,7 @@ boost::property_tree::ptree ClassObject::base_convert_to_ptree() const {
 
 /**
  * @brief   Convert metadata from ptree object to structure object.
- * @param   ptree [in] ptree object of metdata.
+ * @param   ptree [in] ptree object of metadata.
  * @return  structure object of metadata.
  */
 void 
@@ -103,7 +103,7 @@ boost::property_tree::ptree ClassObject::convert_to_ptree() const {
 
 /**
  * @brief   Convert metadata from ptree object to structure object.
- * @param   ptree [in] ptree object of metdata.
+ * @param   ptree [in] ptree object of metadata.
  * @return  structure object of metadata.
  */
 void ClassObject::convert_from_ptree(const boost::property_tree::ptree& pt) {
