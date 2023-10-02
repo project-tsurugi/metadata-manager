@@ -18,7 +18,6 @@
 #include <boost/format.hpp>
 
 #include "manager/metadata/common/message.h"
-#include "manager/metadata/dao/postgresql/dbc_utils_pg.h"
 #include "manager/metadata/helper/logging_helper.h"
 
 // =============================================================================
@@ -54,7 +53,7 @@ ErrorCode DataTypesDaoPg::select(
 
   PGresult* res = nullptr;
   // Execute a prepared statement.
-  error = DbcUtils::exec_prepared(pg_conn_, statement.name(), params, res);
+  error = DbcUtils::execute_statement(pg_conn_, statement.name(), params, res);
 
   if (error == ErrorCode::OK) {
     int nrows = PQntuples(res);
@@ -94,8 +93,7 @@ void DataTypesDaoPg::create_prepared_statements() {
       this->get_source_name(),
       this->get_select_statement(ColumnName::kPgDataTypeName),
       DataType::PG_DATA_TYPE_NAME};
-  select_statements_.emplace(DataType::PG_DATA_TYPE_NAME,
-                              statement_type_name);
+  select_statements_.emplace(DataType::PG_DATA_TYPE_NAME, statement_type_name);
 
   // SELECT statement with pg_data_type_qualified_name specified.
   SelectStatement statement_qualified{
@@ -103,7 +101,7 @@ void DataTypesDaoPg::create_prepared_statements() {
       this->get_select_statement(ColumnName::kPgDataTypeQualifiedName),
       DataType::PG_DATA_TYPE_QUALIFIED_NAME};
   select_statements_.emplace(DataType::PG_DATA_TYPE_QUALIFIED_NAME,
-                              statement_qualified);
+                             statement_qualified);
 }
 
 /**

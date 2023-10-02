@@ -38,9 +38,9 @@ class TablesDaoJson : public DaoJson {
   static constexpr const char* const kRootNode = "tables";
 
   /**
-    * @brief Construct a new Table Metadata DAO class for JSON data.
-    * @param session pointer to DB session manager for JSON.
-    */
+   * @brief Construct a new Table Metadata DAO class for JSON data.
+   * @param session pointer to DB session manager for JSON.
+   */
   explicit TablesDaoJson(DbSessionManagerJson* session)
       : DaoJson(session, kTableName) {}
 
@@ -52,8 +52,8 @@ class TablesDaoJson : public DaoJson {
    * @note  If success, metadata object is added management metadata.
    *   e.g. format version, generation, etc...
    */
-  manager::metadata::ErrorCode insert(const boost::property_tree::ptree& object,
-                                      ObjectId& object_id) const override;
+  ErrorCode insert(const boost::property_tree::ptree& object,
+                   ObjectId& object_id) const override;
 
   /**
    * @brief Select a metadata object from the metadata file.
@@ -61,9 +61,8 @@ class TablesDaoJson : public DaoJson {
    * @param object  [out] a selected metadata object.
    * @return If success ErrorCode::OK, otherwise error code.
    */
-  manager::metadata::ErrorCode select(
-      const std::map<std::string_view, std::string_view>& keys,
-      boost::property_tree::ptree& object) const override;
+  ErrorCode select(const std::map<std::string_view, std::string_view>& keys,
+                   boost::property_tree::ptree& object) const override;
 
   /**
    * @brief Update a metadata object into the metadata file.
@@ -72,9 +71,9 @@ class TablesDaoJson : public DaoJson {
    * @param rows    [out] number of updated metadata object.
    * @return If success ErrorCode::OK, otherwise error code.
    */
-  manager::metadata::ErrorCode update(
-      const std::map<std::string_view, std::string_view>& keys,
-      const boost::property_tree::ptree& object, uint64_t& rows) const override;
+  ErrorCode update(const std::map<std::string_view, std::string_view>& keys,
+                   const boost::property_tree::ptree& object,
+                   uint64_t& rows) const override;
 
   /**
    * @brief Removes table metadata with the specified key value
@@ -83,9 +82,8 @@ class TablesDaoJson : public DaoJson {
    * @param object_ids  [out] object id of the deleted row.
    * @return If success ErrorCode::OK, otherwise error code.
    */
-  manager::metadata::ErrorCode remove(
-      const std::map<std::string_view, std::string_view>& keys,
-      std::vector<ObjectId>& object_ids) const override;
+  ErrorCode remove(const std::map<std::string_view, std::string_view>& keys,
+                   std::vector<ObjectId>& object_ids) const override;
 
  private:
   // Name of the table metadata management file.
@@ -104,7 +102,7 @@ class TablesDaoJson : public DaoJson {
    * @param object   [out] metadata-object with the specified name.
    * @return If success ErrorCode::OK, otherwise error code.
    */
-  manager::metadata::ErrorCode find_metadata_object(
+  ErrorCode find_metadata_object(
       const boost::property_tree::ptree& objects,
       const std::map<std::string_view, std::string_view>& keys,
       boost::property_tree::ptree& object) const;
@@ -116,7 +114,7 @@ class TablesDaoJson : public DaoJson {
    * @param object_ids  [out]    table id of the row deleted.
    * @return If success ErrorCode::OK, otherwise error code.
    */
-  manager::metadata::ErrorCode delete_metadata_object(
+  ErrorCode delete_metadata_object(
       boost::property_tree::ptree& objects,
       const std::map<std::string_view, std::string_view>& keys,
       std::vector<ObjectId>& object_ids) const;

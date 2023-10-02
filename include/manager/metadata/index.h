@@ -17,7 +17,9 @@
 
 #include <string>
 #include <vector>
+
 #include <boost/property_tree/ptree.hpp>
+
 #include "manager/metadata/metadata.h"
 
 namespace manager::metadata {
@@ -52,14 +54,14 @@ struct Index : public ClassObject {
   static constexpr const char* const OPTIONS            = "options";
 
   ObjectId  table_id;
-  int64_t   access_method;           // refer to enumlation of AccessMethod.
+  int64_t   access_method;           // refer to emulation of AccessMethod.
   int64_t   number_of_columns;       // include non-key (included) columns.
   int64_t   number_of_key_columns;   // exclude non-key (included) columns.
   bool      is_unique;
   bool      is_primary;
   std::vector<int64_t>  keys;      // include non-key (included) columns.
   std::vector<int64_t>  keys_id;
-  std::vector<int64_t>  options;   // refer to enumlation of Direction.
+  std::vector<int64_t>  options;   // refer to emulation of Direction.
 
   Index()
       :ClassObject(),

@@ -21,7 +21,6 @@
 
 #include "manager/metadata/common/message.h"
 #include "manager/metadata/common/utility.h"
-#include "manager/metadata/dao/postgresql/dbc_utils_pg.h"
 #include "manager/metadata/helper/logging_helper.h"
 #include "manager/metadata/helper/ptree_helper.h"
 
@@ -69,7 +68,7 @@ ErrorCode TablesDaoPg::insert(const boost::property_tree::ptree& object,
 
   PGresult* res = nullptr;
   // Execute a prepared statement.
-  error = DbcUtils::exec_prepared(pg_conn_, statement.name(), params, res);
+  error = DbcUtils::execute_statement(pg_conn_, statement.name(), params, res);
 
   if (error == ErrorCode::OK) {
     int nrows = PQntuples(res);
@@ -94,13 +93,13 @@ ErrorCode TablesDaoPg::select(
   std::vector<const char*> params;
 
   if (keys.empty()) {
-    statement_key  = Statement::kDefaultKey;
+    statement_key = Statement::kDefaultKey;
     // If no search key is specified, all are returned.
     params.clear();
   } else {
     const auto& it = keys.begin();
     // Only one search key combination is allowed.
-    statement_key  = it->first;
+    statement_key = it->first;
     params.push_back(it->second.data());
   }
 
@@ -115,7 +114,7 @@ ErrorCode TablesDaoPg::select(
 
   PGresult* res = nullptr;
   // Execute a prepared statement.
-  error = DbcUtils::exec_prepared(pg_conn_, statement.name(), params, res);
+  error = DbcUtils::execute_statement(pg_conn_, statement.name(), params, res);
 
   if (error == ErrorCode::OK) {
     int nrows = PQntuples(res);
@@ -179,11 +178,10 @@ ErrorCode TablesDaoPg::update(
 
   PGresult* res = nullptr;
   // Execute a prepared statement.
-  error = DbcUtils::exec_prepared(pg_conn_, statement.name(), params, res);
+  error = DbcUtils::execute_statement(pg_conn_, statement.name(), params, res);
 
   if (error == ErrorCode::OK) {
-    ErrorCode error_get =
-        DbcUtils::get_number_of_rows_affected(res, rows);
+    ErrorCode error_get = DbcUtils::get_number_of_rows_affected(res, rows);
     if (error_get != ErrorCode::OK) {
       error = error_get;
     }
@@ -221,7 +219,7 @@ ErrorCode TablesDaoPg::remove(
 
   PGresult* res = nullptr;
   // Execute a prepared statement.
-  error = DbcUtils::exec_prepared(pg_conn_, statement.name(), params, res);
+  error = DbcUtils::execute_statement(pg_conn_, statement.name(), params, res);
 
   if (error == ErrorCode::OK) {
     uint64_t number_of_rows_affected = 0;

@@ -39,9 +39,9 @@ class ConstraintsDaoJson : public DaoJson {
   static constexpr const char* const kRootNode = "tables";
 
   /**
-    * @brief Construct a new Constraint Metadata DAO class for JSON data.
-    * @param session pointer to DB session manager for JSON.
-    */
+   * @brief Construct a new Constraint Metadata DAO class for JSON data.
+   * @param session pointer to DB session manager for JSON.
+   */
   explicit ConstraintsDaoJson(DbSessionManagerJson* session)
       : DaoJson(session, kTableName) {}
 
@@ -53,8 +53,8 @@ class ConstraintsDaoJson : public DaoJson {
    * @note  If success, metadata object is added management metadata.
    *   e.g. format version, generation, etc...
    */
-  manager::metadata::ErrorCode insert(const boost::property_tree::ptree& object,
-                                      ObjectId& object_id) const override;
+  ErrorCode insert(const boost::property_tree::ptree& object,
+                   ObjectId& object_id) const override;
 
   /**
    * @brief Select a metadata object from the metadata table.
@@ -62,17 +62,16 @@ class ConstraintsDaoJson : public DaoJson {
    * @param object  [out] a selected metadata object.
    * @return If success ErrorCode::OK, otherwise error code.
    */
-  manager::metadata::ErrorCode select(
-      const std::map<std::string_view, std::string_view>& keys,
-      boost::property_tree::ptree& object) const override;
+  ErrorCode select(const std::map<std::string_view, std::string_view>& keys,
+                   boost::property_tree::ptree& object) const override;
 
   /**
    * @brief Unsupported function.
    * @return Always ErrorCode::NOT_SUPPORTED.
    */
-  manager::metadata::ErrorCode update(
-      const std::map<std::string_view, std::string_view>&,
-      const boost::property_tree::ptree&, uint64_t&) const override {
+  ErrorCode update(const std::map<std::string_view, std::string_view>&,
+                   const boost::property_tree::ptree&,
+                   uint64_t&) const override {
     // Do nothing and return of ErrorCode::NOT_SUPPORTED.
     return ErrorCode::NOT_SUPPORTED;
   }
@@ -83,9 +82,8 @@ class ConstraintsDaoJson : public DaoJson {
    * @param object_ids  [out] object id of the deleted rows.
    * @return If success ErrorCode::OK, otherwise error code.
    */
-  manager::metadata::ErrorCode remove(
-      const std::map<std::string_view, std::string_view>& keys,
-      std::vector<ObjectId>& object_ids) const override;
+  ErrorCode remove(const std::map<std::string_view, std::string_view>& keys,
+                   std::vector<ObjectId>& object_ids) const override;
 
  private:
   // Name of the constraint metadata management file.
@@ -100,7 +98,7 @@ class ConstraintsDaoJson : public DaoJson {
    * @param object   [out] metadata-object with the specified name.
    * @return If success ErrorCode::OK, otherwise error code.
    */
-  manager::metadata::ErrorCode find_metadata_object(
+  ErrorCode find_metadata_object(
       const boost::property_tree::ptree& objects,
       const std::map<std::string_view, std::string_view>& keys,
       boost::property_tree::ptree& object) const;
@@ -112,7 +110,7 @@ class ConstraintsDaoJson : public DaoJson {
    * @param object_ids  [out]    table id of the row deleted.
    * @return If success ErrorCode::OK, otherwise error code.
    */
-  manager::metadata::ErrorCode delete_metadata_object(
+  ErrorCode delete_metadata_object(
       boost::property_tree::ptree& objects,
       const std::map<std::string_view, std::string_view>& keys,
       std::vector<ObjectId>& object_ids) const;

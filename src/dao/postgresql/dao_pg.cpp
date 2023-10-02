@@ -29,11 +29,6 @@ ErrorCode DaoPg::prepare() {
   // Set the prepared INSERT statements.
   error = exec_prepare(insert_statements_);
 
-  // Set the prepared SELECT-all statements.
-  if (error == ErrorCode::OK) {
-    exec_prepare(select_all_statements_);
-  }
-
   // Set the prepared SELECT statements.
   if (error == ErrorCode::OK) {
     exec_prepare(select_statements_);

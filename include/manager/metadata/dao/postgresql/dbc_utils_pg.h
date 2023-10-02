@@ -18,10 +18,8 @@
 
 #include <string>
 #include <string_view>
-#include <unordered_map>
 #include <vector>
 
-#include "manager/metadata/dao/common/statement_name.h"
 #include "manager/metadata/dao/postgresql/pg_common.h"
 #include "manager/metadata/error_code.h"
 
@@ -32,32 +30,19 @@ class DbcUtils {
   static bool is_open(const PgConnectionPtr& connection);
   static std::string convert_boolean_expression(const char* string);
 
-  static manager::metadata::ErrorCode get_number_of_rows_affected(
+  static ErrorCode get_number_of_rows_affected(
       PGresult*& pgres, uint64_t& return_value);
 
   static PgConnectionPtr make_connection_sptr(PGconn* pgconn);
   static ResultPtr make_result_uptr(PGresult* pgres);
 
-  static manager::metadata::ErrorCode prepare(
-      const PgConnectionPtr& connection, const StatementName& statement_name,
-      std::string_view statement, std::vector<Oid>* param_types = nullptr);
-  static manager::metadata::ErrorCode prepare(
+  static ErrorCode prepare(
       const PgConnectionPtr& connection, std::string_view statement_name,
       std::string_view statement, std::vector<Oid>* param_types = nullptr);
 
-  static manager::metadata::ErrorCode exec_prepared(
-      const PgConnectionPtr& connection, const StatementName& statement_name,
-      const std::vector<const char*>& param_values, PGresult*& res);
-  static manager::metadata::ErrorCode exec_prepared(
-      const PgConnectionPtr& connection, std::string_view statement_name,
-      const std::vector<const char*>& param_values, PGresult*& res);
   static ErrorCode execute_statement(
       const PgConnectionPtr& connection, std::string_view statement_name,
       const std::vector<const char*>& param_values, PGresult*& res);
-
-  static manager::metadata::ErrorCode find_statement_name(
-      const std::unordered_map<std::string, std::string>& statement_names_map,
-      std::string_view key_value, std::string& statement_name);
 };  // class DbcUtils
 
 }  // namespace manager::metadata::db

@@ -18,7 +18,7 @@
 
 #include <string>
 #include <vector>
-#include <memory>
+
 #include <boost/property_tree/ptree.hpp>
 
 #include "manager/metadata/metadata.h"
@@ -94,7 +94,7 @@ struct Constraint : public Object {
   };
 
   /**
-   * @brief Represents the match type for refrerenced rows.
+   * @brief Represents the match type for referenced rows.
    */
   enum class MatchType : int64_t {
     SIMPLE = 0,               //!< @brief MATCH SIMPLE.
@@ -104,7 +104,7 @@ struct Constraint : public Object {
   };
 
   /**
-   * @brief Represents the match type for refrerenced rows.
+   * @brief Represents the match type for referenced rows.
    */
   enum class ActionType : int64_t {
     NO_ACTION = 0,            //!< @brief NO ACTION.
@@ -185,7 +185,7 @@ class Constraints : public Metadata {
   }
 
  private:
-  manager::metadata::ErrorCode param_check_metadata_add(
+  ErrorCode param_check_metadata_add(
       const boost::property_tree::ptree& object) const;
 };
 

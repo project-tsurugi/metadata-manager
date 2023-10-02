@@ -15,8 +15,6 @@
  */
 #include "manager/metadata/statistics.h"
 
-#include <memory>
-
 #include <boost/format.hpp>
 
 #include "manager/metadata/common/message.h"

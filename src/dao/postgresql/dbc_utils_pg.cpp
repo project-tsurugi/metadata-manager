@@ -91,24 +91,6 @@ ResultPtr DbcUtils::make_result_uptr(PGresult* pgres) {
 /**
  * @brief Defines a prepared statement.
  * @param connection      [in]  a connection.
- * @param statement_name  [in]  unique name for the new prepared statement.
- * @param statement       [in]  SQL statement to prepare.
- * @param param_types     [in]  Data types assigned to parameter symbols.
- * (default: nullptr)
- * @return ErrorCode::OK if success, otherwise an error code.
- */
-ErrorCode DbcUtils::prepare(const PgConnectionPtr& connection,
-                            const StatementName& statement_name,
-                            std::string_view statement,
-                            std::vector<Oid>* param_types) {
-  return DbcUtils::prepare(connection,
-                           std::to_string(static_cast<int>(statement_name)),
-                           statement, param_types);
-}
-
-/**
- * @brief Defines a prepared statement.
- * @param connection      [in]  a connection.
  * @param statement_name  [in]  unique name for the prepared statement.
  * @param statement       [in]  SQL statement to prepare.
  * @param param_types     [in]  Data types assigned to parameter symbols.
@@ -155,43 +137,18 @@ ErrorCode DbcUtils::prepare(const PgConnectionPtr& connection,
   return ErrorCode::OK;
 }
 
+/**
+ * @brief Executes a prepared statement, with given parameters.
+ * @param connection      [in]  a connection.
+ * @param statement_name  [in]  unique name for the prepared statement.
+ * @param param_values    [in]  the actual values of the parameters.
+ *   A null pointer in this array means the corresponding parameter is null.
+ * @param res             [out] the result of a query.
+ * @return ErrorCode::OK if success, otherwise an error code.
+ */
 ErrorCode DbcUtils::execute_statement(
     const PgConnectionPtr& connection, std::string_view statement_name,
     const std::vector<const char*>& param_values, PGresult*& res) {
-  return exec_prepared(connection, statement_name, param_values, res);
-}
-
-/**
- * @brief Executes a prepared statement, with given parameters.
- * @param connection      [in]  a connection.
- * @param statement_name  [in]  unique name for the prepared statement.
- * @param param_values    [in]  the actual values of the parameters.
- *   A null pointer in this array means the corresponding parameter is null.
- * @param res             [out] the result of a query.
- * @return ErrorCode::OK if success, otherwise an error code.
- */
-ErrorCode DbcUtils::exec_prepared(const PgConnectionPtr& connection,
-                                  const StatementName& statement_name,
-                                  const std::vector<const char*>& param_values,
-                                  PGresult*& res) {
-  return exec_prepared(connection,
-                       std::to_string(static_cast<int>(statement_name)),
-                       param_values, res);
-}
-
-/**
- * @brief Executes a prepared statement, with given parameters.
- * @param connection      [in]  a connection.
- * @param statement_name  [in]  unique name for the prepared statement.
- * @param param_values    [in]  the actual values of the parameters.
- *   A null pointer in this array means the corresponding parameter is null.
- * @param res             [out] the result of a query.
- * @return ErrorCode::OK if success, otherwise an error code.
- */
-ErrorCode DbcUtils::exec_prepared(const PgConnectionPtr& connection,
-                                  std::string_view statement_name,
-                                  const std::vector<const char*>& param_values,
-                                  PGresult*& res) {
   ErrorCode error = ErrorCode::INVALID_PARAMETER;
 
   if (!DbcUtils::is_open(connection)) {
@@ -217,40 +174,6 @@ ErrorCode DbcUtils::exec_prepared(const PgConnectionPtr& connection,
     } else {
       error = ErrorCode::INVALID_PARAMETER;
     }
-  }
-
-  return error;
-}
-
-/**
- * @brief get the value of the specified key_value from the statement-names map.
- * @param statement_names_map  [in]  statement names map.
- * @param key_value            [in]  key.
- * @param statement_name       [out] statement name.
- * @return ErrorCode::OK if success, otherwise an error code.
- */
-ErrorCode DbcUtils::find_statement_name(
-    const std::unordered_map<std::string, std::string>& statement_names_map,
-    std::string_view key_value, std::string& statement_name) {
-  ErrorCode error = ErrorCode::UNKNOWN;
-
-  try {
-    if (!statement_names_map.empty()) {
-      statement_name = statement_names_map.at(key_value.data());
-      error          = ErrorCode::OK;
-    } else {
-      LOG_ERROR << Message::PARAMETER_FAILED
-                << "Statement names map is empty.: "
-                << "[" << key_value << "]";
-      error = ErrorCode::INVALID_PARAMETER;
-    }
-  } catch (std::out_of_range& e) {
-    LOG_ERROR << Message::METADATA_KEY_NOT_FOUND << "[" << key_value
-              << "]: " << e.what();
-    error = ErrorCode::INVALID_PARAMETER;
-  } catch (...) {
-    LOG_ERROR << Message::METADATA_KEY_NOT_FOUND << "[" << key_value << "]";
-    error = ErrorCode::INVALID_PARAMETER;
   }
 
   return error;

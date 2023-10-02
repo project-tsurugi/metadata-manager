@@ -15,10 +15,10 @@
  */
 #include "manager/metadata/helper/logging_helper.h"
 
+#include <algorithm>
+#include <iterator>
 #include <string>
 #include <vector>
-
-#include <boost/algorithm/string/split.hpp>
 
 namespace manager::metadata {
 

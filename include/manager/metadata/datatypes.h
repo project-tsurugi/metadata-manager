@@ -17,7 +17,6 @@
 #define MANAGER_METADATA_DATATYPES_H_
 
 #include <string>
-#include <string_view>
 #include <vector>
 
 #include <boost/property_tree/ptree.hpp>
@@ -96,7 +95,7 @@ class DataTypes : public Metadata {
     MONTH = 0x0002,             //!< @brief MONTH.
     DAY = 0x0008,               //!< @brief DAY.
     HOUR = 0x0400,              //!< @brief HOUR.
-    MINUTE = 0x0800,            //!< @brief MIUNTE.
+    MINUTE = 0x0800,            //!< @brief MINUTE.
     SECOND = 0x1000,            //!< @brief SECOND.
     YEAR_TO_MONTH = 0x0006,     //!< @brief YEAR TO MONTH.
     DAY_TO_HOUR = 0x0408,       //!< @brief DAY TO HOUR.

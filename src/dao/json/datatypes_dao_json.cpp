@@ -17,7 +17,6 @@
 
 #include <boost/foreach.hpp>
 
-#include "manager/metadata/common/message.h"
 #include "manager/metadata/dao/common/pg_type.h"
 #include "manager/metadata/helper/logging_helper.h"
 

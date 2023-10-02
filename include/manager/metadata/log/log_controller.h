@@ -17,8 +17,6 @@
 #define MANAGER_METADATA_LOG_LOG_CONTROLLER_H_
 
 #include <iomanip>
-#include <memory>
-#include <utility>
 
 #include "manager/metadata/log/logging.h"
 

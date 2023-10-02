@@ -88,20 +88,6 @@ class InsertStatement : public Statement {
 };
 
 /**
- * @brief Class for managing select-all statements.
- */
-class SelectAllStatement : public Statement {
- public:
-  // Inheritance constructor.
-  using Statement::Statement;
-
- private:
-  std::string get_base_name() const override {
-    return std::to_string(__LINE__);
-  }
-};
-
-/**
  * @brief Class for managing select statements.
  */
 class SelectStatement : public Statement {

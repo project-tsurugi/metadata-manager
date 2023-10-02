@@ -18,7 +18,6 @@
 #include <chrono>
 #include <iomanip>
 #include <iostream>
-#include <string_view>
 
 namespace {
 

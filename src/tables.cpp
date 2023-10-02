@@ -15,7 +15,6 @@
  */
 #include "manager/metadata/tables.h"
 
-#include <memory>
 #include <regex>
 
 #include <boost/foreach.hpp>
@@ -26,7 +25,6 @@
 #include "manager/metadata/common/jwt_claims.h"
 #include "manager/metadata/common/message.h"
 #include "manager/metadata/common/utility.h"
-#include "manager/metadata/datatypes.h"
 #include "manager/metadata/helper/logging_helper.h"
 #include "manager/metadata/helper/ptree_helper.h"
 #include "manager/metadata/helper/table_metadata_helper.h"
