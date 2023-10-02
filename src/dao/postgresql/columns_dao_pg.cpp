@@ -319,14 +319,15 @@ std::string ColumnsDaoPg::get_insert_statement() const {
   boost::format query =
       boost::format(
           "INSERT INTO %1%.%2%"
-          " (%3%, %4%, %5%, %6%, %7%, %8%, %9%, %10%, %11%, %12%, %13%)"
-          " VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)"
-          " RETURNING %14%") %
-      kSchemaTsurugiCatalog % kTableName % ColumnName::kFormatVersion %
-      ColumnName::kGeneration % ColumnName::kTableId % ColumnName::kName %
-      ColumnName::kColumnNumber % ColumnName::kDataTypeId %
-      ColumnName::kDataLength % ColumnName::kVarying % ColumnName::kIsNotNull %
-      ColumnName::kDefaultExpr % ColumnName::kIsFuncExpr % ColumnName::kId;
+          " (%4%, %5%, %6%, %7%, %8%, %9%, %10%, %11%, %12%, %13%, %14%, %15%)"
+          " VALUES ($1, $2, nextval('%3%'), $3, $4, $5, $6, $7, $8, $9, $10, $11)"
+          " RETURNING %16%") %
+      kSchemaTsurugiCatalog % kTableName % kSequenceId %
+      ColumnName::kFormatVersion % ColumnName::kGeneration % ColumnName::kId %
+      ColumnName::kTableId % ColumnName::kName % ColumnName::kColumnNumber %
+      ColumnName::kDataTypeId % ColumnName::kDataLength % ColumnName::kVarying %
+      ColumnName::kIsNotNull % ColumnName::kDefaultExpr %
+      ColumnName::kIsFuncExpr % ColumnName::kId;
 
   return query.str();
 }

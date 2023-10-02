@@ -38,7 +38,8 @@ using ResultPtr = std::unique_ptr<PGresult, std::function<void(PGresult*)>>;
 
 static constexpr const char* const kSchemaPublic         = "public";
 static constexpr const char* const kSchemaTsurugiCatalog = "tg_catalog";
-static constexpr const char* const kEmptyStringJson      = "{}";
+static constexpr const char* const kSequenceId      = "tg_catalog.id_sequence";
+static constexpr const char* const kEmptyStringJson = "{}";
 
 class PgErrorCode {
  public:

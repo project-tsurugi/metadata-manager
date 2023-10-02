@@ -89,7 +89,7 @@ class ConstraintsDaoJson : public DaoJson {
   // Name of the constraint metadata management file.
   static constexpr const char* const kTableName = "tables";
   // Object ID key name for constraint ID.
-  static constexpr const char* const kOidKeyNameConstraint = "constraint";
+  static constexpr const char* const kOidKeyNameConstraint = "global";
 
   /**
    * @brief Find metadata object from metadata table.

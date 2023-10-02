@@ -329,18 +329,19 @@ std::string ConstraintsDaoPg::get_insert_statement() const {
   // SQL statement
   boost::format query =
       boost::format(
-          "INSERT INTO %1%.%2% (%3%, %4%, %5%, %6%, %7%, %8%, %9%, %10%,"
-          " %11%, %12%, %13%, %14%, %15%, %16%, %17%)"
-          " VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13,"
-          " $14, $15)"
-          " RETURNING %18%") %
-      kSchemaTsurugiCatalog % kTableName % ColumnName::kFormatVersion %
-      ColumnName::kGeneration % ColumnName::kName % ColumnName::kTableId %
-      ColumnName::kType % ColumnName::kColumns % ColumnName::kColumnsId %
-      ColumnName::kIndexId % ColumnName::kExpression % ColumnName::kPkTable %
-      ColumnName::kPkColumns % ColumnName::kPkColumnsId %
-      ColumnName::kFkMatchType % ColumnName::kFkDeleteAction %
-      ColumnName::kFkUpdateAction % ColumnName::kId;
+          "INSERT INTO %1%.%2% (%4%, %5%, %6%, %7%, %8%, %9%, %10%, %11%,"
+          " %12%, %13%, %14%, %15%, %16%, %17%, %18%, %19%)"
+          " VALUES ($1, $2, nextval('%3%'), $3, $4, $5, $6, $7, $8, $9, $10,"
+          " $11, $12, $13, $14, $15)"
+          " RETURNING %20%") %
+      kSchemaTsurugiCatalog % kTableName % kSequenceId %
+      ColumnName::kFormatVersion % ColumnName::kGeneration % ColumnName::kId %
+      ColumnName::kName % ColumnName::kTableId % ColumnName::kType %
+      ColumnName::kColumns % ColumnName::kColumnsId % ColumnName::kIndexId %
+      ColumnName::kExpression % ColumnName::kPkTable % ColumnName::kPkColumns %
+      ColumnName::kPkColumnsId % ColumnName::kFkMatchType %
+      ColumnName::kFkDeleteAction % ColumnName::kFkUpdateAction %
+      ColumnName::kId;
 
   return query.str();
 }
