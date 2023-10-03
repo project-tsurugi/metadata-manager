@@ -89,11 +89,11 @@ class TablesDaoJson : public DaoJson {
   // Name of the table metadata management file.
   static constexpr const char* const kTableName = "tables";
   // Object ID key name for table ID.
-  static constexpr const char* const kOidKeyNameTable = "tables";
+  static constexpr const char* const kOidKeyNameTable = "global";
   // Object ID key name for column ID.
-  static constexpr const char* const kOidKeyNameColumn = "column";
+  static constexpr const char* const kOidKeyNameColumn = "global";
   // Object ID key name for constraint ID.
-  static constexpr const char* const kOidKeyNameConstraint = "constraint";
+  static constexpr const char* const kOidKeyNameConstraint = "global";
 
   /**
    * @brief Find metadata object from metadata table.

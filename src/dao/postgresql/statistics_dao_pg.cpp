@@ -327,14 +327,15 @@ std::string StatisticsDaoPg::get_insert_statement() const {
   // SQL statement
   boost::format query =
       boost::format(
-          "INSERT INTO %1%.%2% (%3%, %4%, %5%, %6%, %7%)"
-          " VALUES ($1, $2, $3, $4, $5)"
-          " ON CONFLICT (%6%)"
-          " DO UPDATE SET %3% = $1, %4% = $2, %5% = $3, %7% = $5"
-          " RETURNING %8%") %
-      kSchemaTsurugiCatalog % kTableName % ColumnName::kFormatVersion %
-      ColumnName::kGeneration % ColumnName::kName % ColumnName::kColumnId %
-      ColumnName::kColumnStatistic % ColumnName::kId;
+          "INSERT INTO %1%.%2% (%4%, %5%, %6%, %7%, %8%, %9%)"
+          " VALUES ($1, $2, nextval('%3%'), $3, $4, $5)"
+          " ON CONFLICT (%8%)"
+          " DO UPDATE SET %4% = $1, %5% = $2, %7% = $3, %9% = $5"
+          " RETURNING %10%") %
+      kSchemaTsurugiCatalog % kTableName % kSequenceId %
+      ColumnName::kFormatVersion % ColumnName::kGeneration % ColumnName::kId %
+      ColumnName::kName % ColumnName::kColumnId % ColumnName::kColumnStatistic %
+      ColumnName::kId;
 
   return query.str();
 }
@@ -344,17 +345,17 @@ std::string StatisticsDaoPg::get_insert_statement_columns(
   // SQL statement
   boost::format query =
       boost::format(
-          "INSERT INTO %1%.%2% (%3%, %4%, %5%, %6%, %7%)"
-          " VALUES ($1, $2, $3"
-          " , (SELECT %9% FROM %1%.%8% WHERE %10%=$4 AND %11%=$5), $6)"
-          " ON CONFLICT (%6%)"
-          " DO UPDATE SET %3% = $1, %4% = $2, %5% = $3, %7% = $6"
-          " RETURNING %12%") %
-      kSchemaTsurugiCatalog % kTableName % ColumnName::kFormatVersion %
-      ColumnName::kGeneration % ColumnName::kName % ColumnName::kColumnId %
-      ColumnName::kColumnStatistic % ColumnsDaoPg::kTableName %
-      ColumnsDaoPg::ColumnName::kId % ColumnsDaoPg::ColumnName::kTableId % key %
-      ColumnName::kId;
+          "INSERT INTO %1%.%2% (%4%, %5%, %6%, %7%, %8%, %9%)"
+          " VALUES ($1, $2, nextval('%3%'), $3,"
+          " (SELECT %11% FROM %1%.%10% WHERE %12%=$4 AND %13%=$5), $6)"
+          " ON CONFLICT (%8%)"
+          " DO UPDATE SET %4% = $1, %5% = $2, %7% = $3, %9% = $6"
+          " RETURNING %14%") %
+      kSchemaTsurugiCatalog % kTableName % kSequenceId %
+      ColumnName::kFormatVersion % ColumnName::kGeneration % ColumnName::kId %
+      ColumnName::kName % ColumnName::kColumnId % ColumnName::kColumnStatistic %
+      ColumnsDaoPg::kTableName % ColumnsDaoPg::ColumnName::kId %
+      ColumnsDaoPg::ColumnName::kTableId % key % ColumnName::kId;
 
   return query.str();
 }

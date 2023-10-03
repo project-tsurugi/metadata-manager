@@ -87,7 +87,7 @@ class IndexDaoJson : public DaoJson {
   // Name of the index metadata management file.
   static constexpr const char* const kTableName = "indexes";
   // Object ID key name for index ID.
-  static constexpr const char* const kOidKeyNameIndex = "indexes";
+  static constexpr const char* const kOidKeyNameIndex = "global";
 
   /**
    * @brief Find metadata object from metadata table.

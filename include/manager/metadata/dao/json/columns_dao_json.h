@@ -88,7 +88,7 @@ class ColumnsDaoJson : public DaoJson {
   // Name of the column metadata management file.
   static constexpr const char* const kTableName = "tables";
   // Object ID key name for column ID.
-  static constexpr const char* const kOidKeyNameColumn = "column";
+  static constexpr const char* const kOidKeyNameColumn = "global";
 
   /**
    * @brief Find metadata object from metadata table.

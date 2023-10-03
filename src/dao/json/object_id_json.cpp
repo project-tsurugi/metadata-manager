@@ -32,6 +32,7 @@ using boost::property_tree::ini_parser_error;
 using boost::property_tree::ptree;
 
 static ObjectId INVALID_OID = 0;
+static ObjectId OID_INITIAL_VALUE = 100001;
 
 /**
  * @brief Contractor.
@@ -90,7 +91,7 @@ ObjectId ObjectIdGenerator::current(std::string_view metadata_name) {
 
   auto oid = oid_data.get_optional<ObjectId>(metadata_name.data());
 
-  return oid.value_or(0);
+  return oid.value_or(OID_INITIAL_VALUE);
 }
 
 /**
@@ -114,7 +115,7 @@ ObjectId ObjectIdGenerator::generate(std::string_view metadata_name) {
 
   boost::optional<ObjectId> oid =
       oid_data.get_optional<ObjectId>(metadata_name.data());
-  ObjectId object_id = oid.value_or(0);
+  ObjectId object_id = oid.value_or(OID_INITIAL_VALUE);
 
   // Generate next OID.
   oid_data.put(metadata_name.data(), ++object_id);
@@ -150,7 +151,7 @@ ObjectId ObjectIdGenerator::update(std::string_view metadata_name,
 
   boost::optional<ObjectId> oid =
       oid_data.get_optional<ObjectId>(metadata_name.data());
-  ObjectId current_oid = oid.value_or(1);
+  ObjectId current_oid = oid.value_or(OID_INITIAL_VALUE);
 
   // If the specified OID exceeds the current OID,
   // the OID management file is updated.

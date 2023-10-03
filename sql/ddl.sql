@@ -105,6 +105,8 @@ CREATE TABLE tg_catalog.statistics
     UNIQUE(column_id)
 );
 
+CREATE SEQUENCE tg_catalog.id_sequence MINVALUE 100001;
+
 -- INT32
 INSERT INTO tg_catalog.types (format_version, generation, id, name, pg_data_type, pg_data_type_name, pg_data_type_qualified_name) values (1, 1, 23, 'INT32', 23,'integer','int4');
 -- INT64

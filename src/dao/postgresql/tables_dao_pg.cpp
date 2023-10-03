@@ -256,13 +256,14 @@ ErrorCode TablesDaoPg::remove(
 std::string TablesDaoPg::get_insert_statement() const {
   // SQL statement
   boost::format query = boost::format(
-                            "INSERT INTO %1%.%2% (%3%, %4%, %5%, %6%, %7%)"
-                            " VALUES ($1, $2, $3, $4, $5)"
-                            " RETURNING %8%") %
-                        kSchemaTsurugiCatalog % kTableName %
+                            "INSERT INTO %1%.%2% (%4%, %5%, %6%, %7%, %8%, %9%)"
+                            " VALUES ($1, $2, nextval('%3%'), $3, $4, $5)"
+                            " RETURNING %10%") %
+                        kSchemaTsurugiCatalog % kTableName % kSequenceId %
                         ColumnName::kFormatVersion % ColumnName::kGeneration %
-                        ColumnName::kName % ColumnName::kNamespace %
-                        ColumnName::kTuples % ColumnName::kId;
+                        ColumnName::kId % ColumnName::kName %
+                        ColumnName::kNamespace % ColumnName::kTuples %
+                        ColumnName::kId;
 
   return query.str();
 }

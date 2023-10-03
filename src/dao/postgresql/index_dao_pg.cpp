@@ -424,18 +424,18 @@ std::string IndexDaoPg::get_insert_statement() const {
   boost::format query =
       boost::format(
           "INSERT INTO %1%.%2%"
-          " (%3%, %4%, %5%, %6%, %7%, %8%, %9%, %10%, %11%, %12%, %13%, %14%,"
-          " %15%, %16%)"
-          " VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13,"
-          " $14)"
-          " RETURNING %17%") %
-      kSchemaTsurugiCatalog % kTableName % ColumnName::kFormatVersion %
-      ColumnName::kGeneration % ColumnName::kName % ColumnName::kNamespace %
-      ColumnName::kOwnerId % ColumnName::kAcl % ColumnName::kTableId %
-      ColumnName::kAccessMethod % ColumnName::kIsUnique %
-      ColumnName::kIsPrimary % ColumnName::kNumKeyColumn %
-      ColumnName::kColumns % ColumnName::kColumnsId % ColumnName::kOptions %
-      ColumnName::kId;
+          " (%4%, %5%, %6%, %7%, %8%, %9%, %10%, %11%, %12%, %13%, %14%,"
+          " %15%, %16%, %17%, %18%)"
+          " VALUES ($1, $2, nextval('%3%'), $3, $4, $5, $6, $7, $8, $9, $10,"
+          " $11, $12, $13, $14)"
+          " RETURNING %19%") %
+      kSchemaTsurugiCatalog % kTableName % kSequenceId %
+      ColumnName::kFormatVersion % ColumnName::kGeneration % ColumnName::kId %
+      ColumnName::kName % ColumnName::kNamespace % ColumnName::kOwnerId %
+      ColumnName::kAcl % ColumnName::kTableId % ColumnName::kAccessMethod %
+      ColumnName::kIsUnique % ColumnName::kIsPrimary %
+      ColumnName::kNumKeyColumn % ColumnName::kColumns %
+      ColumnName::kColumnsId % ColumnName::kOptions % ColumnName::kId;
 
   return query.str();
 }
