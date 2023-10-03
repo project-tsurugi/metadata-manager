@@ -110,15 +110,6 @@ ninja install
    ctest -V
    ```
 
-### generate documents
-
-```sh
-mkdir build
-cd build
-cmake -G Ninja -DBUILD_DOCUMENTS=ON ..
-ninja doxygen
-```
-
 ## License
 
 [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0)
