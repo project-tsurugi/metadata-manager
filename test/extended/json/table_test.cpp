@@ -21,8 +21,9 @@
 #include <boost/foreach.hpp>
 #include <boost/optional.hpp>
 #include <boost/property_tree/exceptions.hpp>
-#include <boost/property_tree/json_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
+#define BOOST_BIND_GLOBAL_PLACEHOLDERS
+#include <boost/property_tree/json_parser.hpp>
 
 #include "manager/metadata/dao/json/object_id_json.h"
 #include "manager/metadata/metadata_factory.h"
