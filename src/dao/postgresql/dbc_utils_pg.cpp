@@ -106,16 +106,6 @@ ErrorCode DbcUtils::prepare(const PgConnectionPtr& connection,
     return ErrorCode::NOT_INITIALIZED;
   }
 
-  // Existence check of prepared statements.
-  auto res_describe = DbcUtils::make_result_uptr(
-      PQdescribePrepared(connection.get(), statement_name.data()));
-  if (PQresultStatus(res_describe.get()) == PGRES_COMMAND_OK) {
-    LOG_DEBUG << "Prepared statement already exists. [" << statement_name.data()
-              << "]";
-
-    return ErrorCode::OK;
-  }
-
   int types_size  = 0;
   Oid* types_oids = nullptr;
   if (param_types) {
