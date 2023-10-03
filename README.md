@@ -9,7 +9,7 @@
 ### Dockerfile
 
 ```dockerfile
-FROM ubuntu:18.04
+FROM ubuntu:22.04
 
 RUN apt update -y && apt install -y git build-essential cmake ninja-build doxygen libboost-system-dev libboost-filesystem-dev
 ```
@@ -118,10 +118,6 @@ cd build
 cmake -G Ninja -DBUILD_DOCUMENTS=ON ..
 ninja doxygen
 ```
-
-## How to release
-
-see [metadata-manager_release_procedures.md](docs/metadata-manager_release_procedures.md).
 
 ## License
 
