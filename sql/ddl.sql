@@ -125,13 +125,7 @@ INSERT INTO tg_catalog.types (format_version, generation, id, name, pg_data_type
 INSERT INTO tg_catalog.types (format_version, generation, id, name, pg_data_type, pg_data_type_name, pg_data_type_qualified_name) values (1, 1, 1082, 'DATE', 1082,'date','date');
 -- TIME
 INSERT INTO tg_catalog.types (format_version, generation, id, name, pg_data_type, pg_data_type_name, pg_data_type_qualified_name) values (1, 1, 1083, 'TIME', 1083,'time','time');
--- TIMETZ
-INSERT INTO tg_catalog.types (format_version, generation, id, name, pg_data_type, pg_data_type_name, pg_data_type_qualified_name) values (1, 1, 1266, 'TIMETZ', 1266,'timetz','timetz');
 -- TIMESTAMP
 INSERT INTO tg_catalog.types (format_version, generation, id, name, pg_data_type, pg_data_type_name, pg_data_type_qualified_name) values (1, 1, 1114, 'TIMESTAMP', 1114,'timestamp','timestamp');
--- TIMESTAMPTZ
-INSERT INTO tg_catalog.types (format_version, generation, id, name, pg_data_type, pg_data_type_name, pg_data_type_qualified_name) values (1, 1, 1184, 'TIMESTAMPTZ', 1184,'timestamptz','timestamptz');
--- INTERVAL
-INSERT INTO tg_catalog.types (format_version, generation, id, name, pg_data_type, pg_data_type_name, pg_data_type_qualified_name) values (1, 1, 1186, 'INTERVAL', 1186,'interval','interval');
 
 GRANT ALL ON ALL TABLES IN SCHEMA tg_catalog To current_user;
