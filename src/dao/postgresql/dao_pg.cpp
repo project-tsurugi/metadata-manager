@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2023 Project Tsurugi.
+ * Copyright 2020-2024 Project Tsurugi.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -97,8 +97,7 @@ void DaoPg::create_prepared_statements() {
   delete_statements_.emplace(Object::NAME, delete_by_name_statement);
 }
 
-template <typename T,
-          typename = std::enable_if_t<std::is_base_of_v<Statement, T>>>
+template <typename T, typename>
 ErrorCode DaoPg::exec_prepare(
     const std::unordered_map<std::string, T>& statements) const {
   ErrorCode error = ErrorCode::UNKNOWN;
