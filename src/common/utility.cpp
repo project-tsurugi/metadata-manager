@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 Project Tsurugi.
+ * Copyright 2020-2024 Project Tsurugi.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 #include "manager/metadata/common/utility.h"
 
 #include <charconv>
+#include <cstdint>
 #include <type_traits>
 
 #include "manager/metadata/common/message.h"
