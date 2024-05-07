@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2022 Project Tsurugi.
+ * Copyright 2020-2024 Project Tsurugi.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 #include "manager/metadata/helper/logging_helper.h"
 
 #include <algorithm>
+#include <cstdint>
 #include <iterator>
 #include <string>
 #include <vector>
