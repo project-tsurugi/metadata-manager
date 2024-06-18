@@ -812,7 +812,7 @@ TEST_P(UpdateTest, test_update) {
 
   auto update_data_creator = metadata_test->get_update_data_creator();
   // Generate data for updating.
-  auto ut_metadata_update = std::move(update_data_creator(before_ptree));
+  auto ut_metadata_update = update_data_creator(before_ptree);
 
   auto updated_metadata = ut_metadata_update->get_metadata_ptree();
   // Update metadata.
