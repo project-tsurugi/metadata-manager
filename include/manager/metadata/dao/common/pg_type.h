@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2022 Project Tsurugi.
+ * Copyright 2021-2024 Project Tsurugi.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,7 +39,6 @@ class PgType {
     static constexpr std::uint32_t kTimetz = 1266;
     static constexpr std::uint32_t kTimestamp = 1114;
     static constexpr std::uint32_t kTimestamptz = 1184;
-    static constexpr std::uint32_t kInterval = 1186;
   };
 
   /**
@@ -59,7 +58,6 @@ class PgType {
     static constexpr const char* const kTimetz = "timetz";
     static constexpr const char* const kTimestamp = "timestamp";
     static constexpr const char* const kTimestamptz = "timestamptz";
-    static constexpr const char* const kInterval = "interval";
   };
 };
 

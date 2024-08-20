@@ -3,13 +3,13 @@
 === Start test of add and get of Tables class. ===
 --- get table metadata by table name. ---
 --- table metadata ---
-         id: [1]
-       name: [table_1]
+         id: [100002]
+       name: [table_100002]
   namespace: [public]
  numberOfTu: [123]
 --- columns metadata ---
-         id: [1]
-    tableId: [1]
+         id: [100003]
+    tableId: [100002]
        name: [column_1]
  columnNumb: [1]
  dataTypeId: [700]
@@ -18,8 +18,8 @@
   isNotNull: [0]
  defaultExp: [--]
   ------------------
-         id: [2]
-    tableId: [1]
+         id: [100004]
+    tableId: [100002]
        name: [column_2]
  columnNumb: [2]
  dataTypeId: [1043]
@@ -28,8 +28,8 @@
   isNotNull: [0]
  defaultExp: [--]
   ------------------
-         id: [3]
-    tableId: [1]
+         id: [100005]
+    tableId: [100002]
        name: [column_3]
  columnNumb: [3]
  dataTypeId: [1042]
@@ -40,13 +40,13 @@
   ------------------
 --- get table metadata by table id. ---
 --- table metadata ---
-         id: [1]
-       name: [table_1]
+         id: [100002]
+       name: [table_100002]
   namespace: [public]
  numberOfTu: [123]
 --- columns metadata ---
-         id: [1]
-    tableId: [1]
+         id: [100003]
+    tableId: [100002]
        name: [column_1]
  columnNumb: [1]
  dataTypeId: [700]
@@ -55,8 +55,8 @@
   isNotNull: [0]
  defaultExp: [--]
   ------------------
-         id: [2]
-    tableId: [1]
+         id: [100004]
+    tableId: [100002]
        name: [column_2]
  columnNumb: [2]
  dataTypeId: [1043]
@@ -65,8 +65,8 @@
   isNotNull: [0]
  defaultExp: [--]
   ------------------
-         id: [3]
-    tableId: [1]
+         id: [100005]
+    tableId: [100002]
        name: [column_3]
  columnNumb: [3]
  dataTypeId: [1042]
@@ -79,13 +79,13 @@
 
 === Start test of update of Tables class. ===
  --- table metadata ---
-         id: [2] --> [2]
-       name: [table_2] --> [table_2-update]
+         id: [100006] --> [100006]
+       name: [table_100006] --> [table_100006-update]
   namespace: [public] --> [public-update]
  numberOfTu: [123] --> [246]
 --- columns metadata ---
-         id: [4] --> [--]
-    tableId: [2] --> [--]
+         id: [100007] --> [--]
+    tableId: [100006] --> [--]
        name: [column_1] --> [--]
  columnNumb: [1] --> [--]
  dataTypeId: [700] --> [--]
@@ -94,8 +94,8 @@
   isNotNull: [0] --> [--]
  defaultExp: [--] --> [--]
  ------------------
-         id: [5] --> [5]
-    tableId: [2] --> [2]
+         id: [100008] --> [100008]
+    tableId: [100006] --> [100006]
        name: [column_2] --> [column_2-update]
  columnNumb: [2] --> [1]
  dataTypeId: [1043] --> [20]
@@ -104,8 +104,8 @@
   isNotNull: [0] --> [1]
  defaultExp: [--] --> [-1]
  ------------------
-         id: [6] --> [6]
-    tableId: [2] --> [2]
+         id: [100009] --> [100009]
+    tableId: [100006] --> [100006]
        name: [column_3] --> [column_3-update]
  columnNumb: [3] --> [2]
  dataTypeId: [1042] --> [1043]
@@ -114,8 +114,8 @@
   isNotNull: [1] --> [0]
  defaultExp: [--] --> [default-string]
  ------------------
-         id: [--] --> [7]
-    tableId: [--] --> [2]
+         id: [--] --> [100010]
+    tableId: [--] --> [100006]
        name: [--] --> [new-col]
  columnNumb: [--] --> [3]
  dataTypeId: [--] --> [23]
@@ -127,18 +127,17 @@
 === Done test of update of Tables class. ===
 
 === Start test of remove of Tables class. ===
-=== Done test of remove of Tables class. ===
-remove table name :table_3, id:3
-remove table name :table_5, id:5
-remove table name :table_6, id:6
-remove table name :table_4, id:4
+remove table name :table_100023, id:100023
+remove table name :table_100015, id:100015
+remove table name :table_100011, id:100011
+remove table name :table_100019, id:100019
 can't remove table name not exists :table_name_not_exists
-remove table id:7
-remove table id:9
-remove table id:10
-remove table id:8
+remove table id:100039
+remove table id:100031
+remove table id:100027
+remove table id:100035
 can't remove table id not exists :0
-=== remove table functions test done. ===
+=== Done test of remove of Tables class. ===
 
 === Start test of get of DataTypes class. ===
 DataTypes -> FORMAT_VERSION:[1] / GENERATION:[1] / ID:[23] / NAME:[INT32]
@@ -153,7 +152,6 @@ DataTypes -> FORMAT_VERSION:[1] / GENERATION:[1] / ID:[1083] / NAME:[TIME]
 DataTypes -> FORMAT_VERSION:[1] / GENERATION:[1] / ID:[1266] / NAME:[TIMETZ]
 DataTypes -> FORMAT_VERSION:[1] / GENERATION:[1] / ID:[1114] / NAME:[TIMESTAMP]
 DataTypes -> FORMAT_VERSION:[1] / GENERATION:[1] / ID:[1184] / NAME:[TIMESTAMPTZ]
-DataTypes -> FORMAT_VERSION:[1] / GENERATION:[1] / ID:[1186] / NAME:[INTERVAL]
 === Done test of get of DataTypes class. ===
 
 Tables add and get functions test: Success

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 Project Tsurugi.
+ * Copyright 2020-2024 Project Tsurugi.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,10 +44,10 @@ using manager::metadata::db::ObjectIdGenerator;
 const char* const TEST_DB = "test_DB";
 
 std::vector<std::pair<ObjectIdType, std::string>> datatypes_list = {
-    {23,         "INT32"},
-    {20,         "INT64"},
-    {700,      "FLOAT32"},
-    {701,      "FLOAT64"},
+    {  23,       "INT32"},
+    {  20,       "INT64"},
+    { 700,     "FLOAT32"},
+    { 701,     "FLOAT64"},
     {1042,        "CHAR"},
     {1043,     "VARCHAR"},
     {1700,     "NUMERIC"},
@@ -56,7 +56,6 @@ std::vector<std::pair<ObjectIdType, std::string>> datatypes_list = {
     {1266,      "TIMETZ"},
     {1114,   "TIMESTAMP"},
     {1184, "TIMESTAMPTZ"},
-    {1186,    "INTERVAL"}
 };
 
 /*
@@ -69,15 +68,11 @@ void print_error(ErrorCode error, const char* file, uint64_t line) {
 }
 
 /*
- * @brief generate new table name.
+ * @brief generate new table id.
  */
-const std::string get_table_name() {
+const ObjectIdType generate_table_id() {
   auto oid_generator = std::make_unique<ObjectIdGenerator>();
-
-  ObjectIdType number = oid_generator->current("tables") + 1;
-  std::string name    = "table_" + std::to_string(number);
-
-  return name;
+  return oid_generator->current("global") + 1;
 }
 
 /**
@@ -397,22 +392,24 @@ ErrorCode display_table_metadata_object(const ptree& before,
 /**
  *  @brief Add table-metadata to the metadata-table.
  */
-ErrorCode add_table_metadata() {
+ErrorCode add_table_metadata(ObjectIdType& table_id) {
   ErrorCode error = ErrorCode::UNKNOWN;
 
   ptree datatype_metadata;
   ptree new_table_metadata;
+
   auto tables = manager::metadata::get_tables_ptr(TEST_DB);  // use Template-Method.
   // TODO(future): Change when changing Metadata class.
   auto datatypes_tmp = manager::metadata::get_datatypes_ptr(TEST_DB);
-  auto datatypes = static_cast<DataTypes*>(datatypes_tmp.get());
+  auto datatypes     = static_cast<DataTypes*>(datatypes_tmp.get());
 
   //
   // table-metadata
   //
+  table_id = generate_table_id();
   new_table_metadata.put(Table::FORMAT_VERSION, Tables::format_version());
   new_table_metadata.put(Table::GENERATION, Tables::generation());
-  new_table_metadata.put(Table::NAME, get_table_name());
+  new_table_metadata.put(Table::NAME, "table_" + std::to_string(table_id));
   new_table_metadata.put(Table::NAMESPACE, "public");
   new_table_metadata.put(Table::NUMBER_OF_TUPLES, "123");
 
@@ -513,8 +510,9 @@ ErrorCode add_table_metadata() {
 ErrorCode test_tables_add_get() {
   ErrorCode error = ErrorCode::UNKNOWN;
 
+  ObjectIdType table_id = -1;
   try {
-    error = add_table_metadata();
+    error = add_table_metadata(table_id);
   } catch (const ptree_error& e) {
     std::cerr << e.what() << std::endl;
     ERROR(error);
@@ -526,9 +524,7 @@ ErrorCode test_tables_add_get() {
   }
 
   ptree table_metadata;
-  auto tables        = manager::metadata::get_tables_ptr(TEST_DB);  // use Template-Method.
-  auto oid_generator = std::make_unique<ObjectIdGenerator>();
-  auto table_id      = oid_generator->current("tables");
+  auto tables = manager::metadata::get_tables_ptr(TEST_DB);  // use Template-Method.
 
   std::string table_name = "table_" + std::to_string(table_id);
   if (error == ErrorCode::OK) {
@@ -572,12 +568,12 @@ ErrorCode test_tables_add_get() {
 ErrorCode test_tables_update() {
   ErrorCode error = ErrorCode::UNKNOWN;
 
-  auto tables        = manager::metadata::get_tables_ptr(TEST_DB);  // use Template-Method.
-  auto datatypes     = manager::metadata::get_datatypes_ptr(TEST_DB);
-  auto oid_generator = std::make_unique<ObjectIdGenerator>();
+  auto tables    = manager::metadata::get_tables_ptr(TEST_DB);  // use Template-Method.
+  auto datatypes = manager::metadata::get_datatypes_ptr(TEST_DB);
 
+  ObjectIdType table_id = -1;
   try {
-    error = add_table_metadata();
+    error = add_table_metadata(table_id);
   } catch (const ptree_error& e) {
     std::cerr << e.what() << std::endl;
     ERROR(error);
@@ -586,7 +582,6 @@ ErrorCode test_tables_update() {
     ERROR(error);
   }
 
-  auto table_id = oid_generator->current("tables");
   ptree table_metadata_before;
   if (error == ErrorCode::OK) {
     error = tables->get(table_id, table_metadata_before);
@@ -708,8 +703,9 @@ ErrorCode tables_remove_test() {
   ErrorCode error     = ErrorCode::UNKNOWN;
   int TABLE_NUM_ADDED = 4;
 
+  ObjectIdType table_id[TABLE_NUM_ADDED];
   for (int num = 0; num < TABLE_NUM_ADDED; num++) {
-    error = add_table_metadata();
+    error = add_table_metadata(table_id[num]);
     if (error != ErrorCode::OK) {
       ERROR(error);
       return error;
@@ -723,13 +719,11 @@ ErrorCode tables_remove_test() {
   //
   auto oid_generator = std::make_unique<ObjectIdGenerator>();
 
-  ObjectIdType number = oid_generator->current("tables");
-
   std::vector<std::string> table_names = {
-      "table_" + std::to_string(number - 3),
-      "table_" + std::to_string(number - 1),
-      "table_" + std::to_string(number - 0),
-      "table_" + std::to_string(number - 2)};
+      "table_" + std::to_string(table_id[3]),
+      "table_" + std::to_string(table_id[1]),
+      "table_" + std::to_string(table_id[0]),
+      "table_" + std::to_string(table_id[2])};
 
   for (std::string name : table_names) {
     ObjectIdType object_id = 0;
@@ -755,7 +749,7 @@ ErrorCode tables_remove_test() {
   }
 
   for (int num = 0; num < TABLE_NUM_ADDED; num++) {
-    error = add_table_metadata();
+    error = add_table_metadata(table_id[num]);
     if (error != ErrorCode::OK) {
       ERROR(error);
       return error;
@@ -765,10 +759,8 @@ ErrorCode tables_remove_test() {
   //
   // remove table-metadata object
   //
-  number = oid_generator->current("tables");
-
-  std::vector<ObjectIdType> object_ids = {number - 3, number - 1, number - 0,
-                                          number - 2};
+  std::vector<ObjectIdType> object_ids = {table_id[3], table_id[1], table_id[0],
+                                          table_id[2]};
 
   for (uint64_t object_id : object_ids) {
     error = tables->remove(object_id);
@@ -877,9 +869,8 @@ int main(void) {
   std::cout << std::endl;
 
   std::cout << "=== Start test of remove of Tables class. ===" << std::endl;
-  std::cout << "=== Done test of remove of Tables class. ===" << std::endl;
   ErrorCode tables_remove_test_error = tables_remove_test();
-  std::cout << "=== remove table functions test done. ===" << std::endl;
+  std::cout << "=== Done test of remove of Tables class. ===" << std::endl;
   std::cout << std::endl;
 
   std::cout << "=== Start test of get of DataTypes class. ===" << std::endl;
