@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Project Tsurugi.
+ * Copyright 2021-2024 Project Tsurugi.
  *
  * Licensed under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -174,18 +174,6 @@ ErrorCode DataTypesDaoJson::prepare() {
     datatype.put(DataTypes::PG_DATA_TYPE_NAME, "timestamptz");
     datatype.put(DataTypes::PG_DATA_TYPE_QUALIFIED_NAME,
                  PgType::TypeName::kTimestamptz);
-    datatypes.push_back(std::make_pair("", datatype));
-
-    // INTERVAL :
-    datatype.put(DataTypes::FORMAT_VERSION, DataTypes::format_version());
-    datatype.put(DataTypes::GENERATION, DataTypes::generation());
-    datatype.put(DataTypes::ID,
-                 static_cast<ObjectIdType>(DataTypes::DataTypesId::INTERVAL));
-    datatype.put(DataTypes::NAME, "INTERVAL");
-    datatype.put(DataTypes::PG_DATA_TYPE, PgType::TypeOid::kInterval);
-    datatype.put(DataTypes::PG_DATA_TYPE_NAME, "interval");
-    datatype.put(DataTypes::PG_DATA_TYPE_QUALIFIED_NAME,
-                 PgType::TypeName::kInterval);
     datatypes.push_back(std::make_pair("", datatype));
   }
 
