@@ -34,8 +34,9 @@ target_include_directories(api
 
 set_target_properties(api
   PROPERTIES
-  LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}"
-  LIBRARY_OUTPUT_NAME "metadata-manager"
+    INSTALL_RPATH "\$ORIGIN/../lib"
+    LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}"
+    LIBRARY_OUTPUT_NAME "metadata-manager"
 )
 
 if (DATA_STORAGE_PG)
