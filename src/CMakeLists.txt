@@ -1,4 +1,4 @@
-# Copyright 2019-2020 Project Tsurugi.
+# Copyright 2019-2025 Project Tsurugi.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -34,7 +34,7 @@ target_include_directories(api
 
 set_target_properties(api
   PROPERTIES
-    INSTALL_RPATH "\$ORIGIN/../lib"
+    INSTALL_RPATH "\$ORIGIN"
     LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}"
     LIBRARY_OUTPUT_NAME "metadata-manager"
 )
