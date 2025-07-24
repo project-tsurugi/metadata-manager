@@ -4,14 +4,14 @@
 
 - CMake `>= 3.10`
 - C++ Compiler `>= C++17`
-- libpq
+- and see *Dockerfile* section
 
 ### Dockerfile
 
 ```dockerfile
 FROM ubuntu:22.04
 
-RUN apt update -y && apt install -y git build-essential cmake ninja-build doxygen libboost-system-dev libboost-filesystem-dev
+RUN apt update -y && apt install -y git build-essential cmake ninja-build doxygen libboost-system-dev libboost-filesystem-dev libpq-dev libssl-dev
 ```
 
 ## How to initially set up the metadata manager
